@@ -1,10 +1,9 @@
 
 From Coq Require Import List Utf8
   Lia.
-From CAS Require Import coq.common.compute
-coq.eqv.properties coq.eqv.structures
-coq.eqv.theory coq.sg.properties
-coq.algorithm.Listprop.
+Require Import 
+  Algorithm.Definitions
+  Algorithm.Listprop.
 Import ListNotations.
 
 Section Def.

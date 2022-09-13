@@ -1,12 +1,11 @@
 From Coq Require Import List Utf8
   FunctionalExtensionality BinNatDef 
   Lia Even.
-From CAS Require Import coq.common.compute
-  coq.eqv.properties coq.eqv.structures
-  coq.eqv.theory coq.sg.properties
-  coq.algorithm.Listprop
-  coq.algorithm.Orel
-  coq.algorithm.Path.
+Require Import
+  Algorithm.Definitions
+  Algorithm.Listprop
+  Algorithm.Orel
+  Algorithm.Path.
 Import ListNotations.
 
 

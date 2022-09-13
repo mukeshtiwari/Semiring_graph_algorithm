@@ -1,2 +1,2 @@
 # Semiring_graph_algorithm
-Semiring for short
+Run `make` in this directory to compile the project. 

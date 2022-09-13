@@ -1,13 +1,9 @@
-(* This file contains list proofs which is not in the 
-   coq/eqv/list.v
-*)
+
 From Coq Require Import List Utf8
   FunctionalExtensionality BinNatDef 
   Lia Even.
-From CAS Require Import coq.common.compute
-  coq.eqv.properties coq.eqv.structures
-  coq.eqv.theory coq.sg.properties
-  coq.eqv.list.
+Require Import Algorithm.Definitions.
+
 Import ListNotations.
 
 
