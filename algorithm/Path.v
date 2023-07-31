@@ -375,7 +375,7 @@ Section Pathprops.
       (m : Matrix Node R) (c : Node),  
     all_elems_non_empty_list _ 
     (append_node_in_paths Node R m c l) = true.
-  Proof using -All.
+  Proof.
     induction l as [|a l IHl].
     + simpl; intros ? ?. 
       reflexivity.
@@ -402,7 +402,7 @@ Section Pathprops.
       source Node eqN R c xs = true /\ 
       source Node eqN R y ys = true /\ 
       ys <> [].
-  Proof using Node R eqN eqR refN symN.
+  Proof.
     induction l.
     - simpl; intros ? ? ? Hf.
       inversion Hf.
@@ -445,8 +445,7 @@ Section Pathprops.
     In_eq_bool _ _ _ eqN eqN eqR xs 
       (all_paths_klength _ eqN _ 
         oneR finN m n c d) = true -> xs <> [].
-  Proof using Node R eqN eqR finN 
-  oneR refN symN.
+  Proof.
     induction n.
     - simpl; intros ? ? ? ? Hin.
       case (eqN c d) eqn:Ht.
@@ -481,7 +480,7 @@ Section Pathprops.
       (all_paths_klength _ eqN _ 
         oneR finN m n c d) = true -> 
     source Node eqN R c xs = true.
-  Proof using Node R eqN eqR finN oneR refN symN.
+  Proof.
     induction n.
     - simpl; intros ? ? ? ? Hin.
       case (eqN c d) eqn:Ht.
@@ -521,7 +520,7 @@ Section Pathprops.
       (append_node_in_paths Node R m c l) = true ->
     In_eq_bool _ _ _ eqN eqN eqR 
       (List.tl xs) l = true.
-  Proof using -All.
+  Proof.
     induction l.
     - simpl; 
       intros ? ? ? Hin.
@@ -554,7 +553,7 @@ Section Pathprops.
     forall (xs : list (Node * Node * R)) (d : Node), 
     target Node eqN R d (List.tl xs) = true -> 
     target Node eqN R d xs = true.
-  Proof using -All.
+  Proof.
     destruct xs.
     - simpl; intros ? ?.
       exact H.
@@ -571,7 +570,7 @@ Section Pathprops.
     List.tl xs <> [] -> 
     target Node eqN R d xs = true -> 
     target Node eqN R d (List.tl xs) = true.
-  Proof using -All.
+  Proof.
     destruct xs.
     - simpl; intros ? ?.
       congruence.
@@ -597,7 +596,7 @@ Section Pathprops.
       (append_node_in_paths _ _  m a l) =
     In_eq_bool _ _ _ eqN eqN eqR y 
     (append_node_in_paths _ _ m x l).
-  Proof using Node R eqN eqR refN symN symR trnN trnR.
+  Proof.
     induction l.
     - simpl; intros ? ? ? ? Hm Hax;
       reflexivity.
@@ -624,8 +623,7 @@ Section Pathprops.
     mat_cong Node eqN R eqR m -> 
     in_eq_bool_cong Node eqN R eqR (λ x : Node, 
         all_paths_klength  _ eqN _ oneR finN m n x d).
-  Proof using Node R eqN eqR finN oneR 
-  refN symN symR trnN trnR.
+  Proof.
     unfold in_eq_bool_cong.
     induction n.
     - simpl; intros ? ? Hm ? ? ? Hxa.
@@ -672,8 +670,7 @@ Section Pathprops.
       (all_paths_klength _ eqN _ 
       oneR finN m n c d) = true -> 
     target Node eqN R d xs = true.
-  Proof using Node R eqN eqR finN 
-  oneR refN symN symR trnN trnR.
+  Proof.
     induction n.
     - simpl; intros ? ? ? ? Hm Hin.
       case (c =n= d) eqn:Ht.
@@ -729,8 +726,7 @@ Section Pathprops.
     xs <> [] ∧
     source _ eqN _ c xs = true ∧
     target _ eqN _ d xs = true.
-  Proof using Node R eqN eqR finN 
-  oneR refN symN symR trnN trnR.
+  Proof.
     intros ? ? ? ? ? Hm Hin.
     split.
     apply non_empty_paths_in_kpath with 
@@ -757,7 +753,7 @@ Section Pathprops.
     source _ eqN _ y ys = true ->
     well_formed_path_aux Node eqN R eqR m (List.tl xs) = true ->
     well_formed_path_aux Node eqN R eqR m xs = true.
-  Proof using Node R congrR eqN eqR refR symN symR trnN.
+  Proof.
     destruct xs.
     - simpl; intros ? ? ? ? Hm Hys Ht Hs Hsy Hw.
       congruence.
@@ -844,8 +840,7 @@ Section Pathprops.
     In_eq_bool _ _ _ eqN eqN eqR xs (all_paths_klength _ eqN _ 
     oneR finN m n c d) = true ->
     well_formed_path_aux Node eqN R eqR m xs = true.
-  Proof using Node R congrR eqN eqR finN oneR refN 
-  refR symN symR trnN trnR. 
+  Proof. 
     induction n.
     - simpl; intros ? ? ? ? Hcd Hm Hin.
       case (c =n= d) eqn:Ht.
@@ -909,7 +904,7 @@ Section Pathprops.
     exists l', 
       triple_elem_list _ _ _ eqN eqN eqR 
         l (l' ++ [(d, d, 1)]) = true.   
-  Proof using Node R eqN eqR finN oneR refN symN trnN.
+  Proof.
     induction k.
     + simpl. 
       intros ? ? ? ? Hin.
@@ -975,7 +970,7 @@ Section Pathprops.
     source _ eqN _ x l₁ = true -> 
     source _ eqN _ y l₂ = true ->
     x =n= y = true.
-  Proof using Node R eqN eqR symN trnN.
+  Proof.
     induction l₁.
     + intros * Ht Hx Hy. 
       simpl in * |-. 
@@ -1008,8 +1003,7 @@ Section Pathprops.
       xs (all_paths_klength _ eqN _ 
       oneR finN m k c d) = true ->
     (List.length xs = S k).
-  Proof using Node R eqN eqR finN 
-    oneR refN symN symR trnN trnR.
+  Proof.
     induction k.
     + simpl; intros ? ? ? ? Hm Hin.
       case (c =n= d) eqn:Hcd.
@@ -1064,8 +1058,7 @@ Section Pathprops.
     exists xs', 
       triple_elem_list _ _ _ eqN eqN eqR 
         xs (xs' ++ [(d, d, 1)]) = true. 
-  Proof using Node R congrR eqN eqR finN oneR 
-    refN refR symN symR trnN trnR. 
+  Proof. 
     intros ? ? ? ? ? Hcd Hm Hin.
     split.
     apply non_empty_paths_in_kpath with 
@@ -1099,7 +1092,7 @@ Section Pathprops.
     (x : Node * Node * R) (d : Node),
     target_alt _ eqN _ d (l ++ [x]) = 
     target_alt _ eqN _ d [x].
-  Proof using -All.
+  Proof.
     intros ? ? ?.
     unfold target_alt.
     rewrite rev_unit.
@@ -1115,7 +1108,7 @@ Section Pathprops.
     (x : Node * Node * R) (d : Node),
     target _ eqN _ d (l ++ [x]) = 
     target _ eqN _ d [x].
-  Proof using -All.
+  Proof.
     induction l.
     - simpl; intros ? ?. reflexivity.
     - intros ? ?.
@@ -1133,7 +1126,7 @@ Section Pathprops.
   Lemma target_target_alt_same : 
     forall (l : list (Node * Node * R)) (d : Node), 
     target _ eqN _ d l = target_alt _ eqN _ d l.
-  Proof using -All.
+  Proof.
     induction l using rev_ind.
     - unfold target_alt; simpl; intros ?.
       reflexivity.
@@ -1152,7 +1145,7 @@ Section Pathprops.
       (List.tl xs) ((au, av, aw) :: ys) = true ->
     triple_elem_list Node Node R eqN eqN eqR 
       xs ((c, au, m c au) :: (au, av, aw) :: ys) = true.
-  Proof using Node R congrR eqN eqR refR symN symR trnN.
+  Proof.
     intros * Hm Ha Hs Hw Ht.
     destruct xs as [|((bbu, bbv), bbw) xs].
     simpl in Ha;
@@ -1363,8 +1356,7 @@ Section Pathprops.
     measure_of_path _ _ oneR mulR l =r= 
     measure_of_path _ _ oneR mulR l₁ * 
     measure_of_path _ _ oneR mulR l₂ = true.
-  Proof using Node R congrM congrR eqN eqR mulR 
-  mul_associative oneR one_left_identity_mul refR symR.
+  Proof.
     induction l.
     - simpl; intros ? ? Hl.
       destruct l₁; 
@@ -1450,8 +1442,7 @@ Section Pathprops.
       (map (fun y => w * measure_of_path _ _  oneR mulR y) l) =r=
     w * fold_right (fun a b => a + b) 0 
       (map (@measure_of_path Node R oneR mulR) l) = true.
-  Proof using Node R congrP congrR eqR left_distributive_mul_over_plus
-  mulR oneR plusR refR symR zeroR zero_right_anhilator_mul.
+  Proof.
     induction l.
     - simpl; intros ?.
       apply symR, 
@@ -1489,7 +1480,7 @@ Section Pathprops.
            (append_node_in_paths Node R m c l))
       (map (fun y => m c a * 
         measure_of_path _ _  oneR mulR y) l) = true.
-  Proof using Node R congrM eqN eqR mulR oneR refN refR symN.
+  Proof.
     induction l as [|ys yss IH].
     - simpl; intros ? ? ? Hm Hin.
       reflexivity.
@@ -1536,8 +1527,7 @@ Section Pathprops.
         (all_paths_klength _ eqN _ oneR finN m n a d)))
     (map (fun y => m c a * measure_of_path _ _ oneR mulR y) 
       (all_paths_klength _ eqN _ oneR finN m n a d)) = true.
-  Proof using Node R congrM eqN eqR finN 
-  mulR oneR refN refR symN symR trnN trnR.
+  Proof.
     intros ? ? ? ? ? Hm.
     apply map_measure_simp_gen.
     exact Hm.
@@ -1554,7 +1544,7 @@ Section Pathprops.
     list_eqv R eqR l₁ l₂ = true -> 
     fold_right (fun a b => a + b) 0 l₁ =r= 
     fold_right (fun a b => a + b) 0 l₂ = true.
-  Proof using R congrP eqR plusR refR zeroR.
+  Proof.
     induction l₁; destruct l₂; simpl; intro H.
     - apply refR.
     - inversion H.
@@ -1579,7 +1569,7 @@ Section Pathprops.
       (map (measure_of_path Node R 1 mulR)
         (append_node_in_paths Node R m c l₁ ++ 
         append_node_in_paths Node R m c l₂)) = true.
-  Proof using Node R congrP eqR mulR oneR plusR refR zeroR.
+  Proof.
     induction l₁ as [|a l₁ IHL₁].
     - simpl; intros ? ? ?.
       apply refR.
@@ -1605,9 +1595,7 @@ Section Pathprops.
     fold_right (λ b v : R, b + v) 0
       (map (measure_of_path Node R 1 mulR) 
         (all_paths_klength _ eqN _ oneR finN m n a d))) = true.
-  Proof using Node R congrM congrP congrR eqN eqR finN
-  left_distributive_mul_over_plus mulR oneR plusR refN refR symN symR trnN trnR
-  zeroR zero_right_anhilator_mul.
+  Proof.
     intros ? ? ? ? ? Hm.
     assert (Ht : 
     fold_right (λ u₁ v₁ : R, u₁ + v₁) 0
@@ -1646,7 +1634,7 @@ Section Pathprops.
       (construct_path_from_nodes _ _ 
         (collect_nodes_from_a_path Node R l) m)
       l = true.
-  Proof using Node R congrR eqN eqR refN refR symN.
+  Proof.
     induction l.
     + intros * Hm Hw. 
       simpl; reflexivity.
@@ -1702,8 +1690,7 @@ Section Pathprops.
     exists d lc, 
     triple_elem_list _ _ _ eqN eqN eqR 
       l ((c, d, m c d) :: lc) = true.
-  Proof using Node R congrR 
-  eqN eqR refN refR symN symR.
+  Proof.
     destruct l.
     + intros ? ? Hm Hw Hs.
       simpl in Hs. congruence.
@@ -4286,7 +4273,7 @@ Section Pathprops.
   Lemma fold_right_dist_eqr_aide :
     forall a b c d e : R, b =r= d + e = true ->
     a + b =r= a + d + e = true.
-  Proof using R congrP congrR eqR plusR plus_associative refR symR.
+  Proof.
     intros ? ? ? ? ? H.
     assert (Ht : a + d + e =r= a + (d + e) = true).
     apply symR. 
@@ -4305,8 +4292,7 @@ Section Pathprops.
     =r= 
     (fold_right (fun u₁ v₁ : R => u₁ + v₁) 0 l₁ + 
     fold_right (fun u₂ v₂ : R => u₂ + v₂) 0 l₂) = true.
-  Proof using R congrP congrR eqR plusR plus_associative refR symR zeroR
-  zero_left_identity_plus.
+  Proof.
     induction l₁.
     - simpl; intros ?.
       apply symR.
@@ -4330,9 +4316,7 @@ Section Pathprops.
       (fold_right (fun b v => b + v) 0 
         (map (measure_of_path Node R 1 mulR) (all_paths_klength _ eqN _ oneR finN m n x d))) + t) 0 l 
     = true.
-  Proof using Node R congrM congrP congrR eqN eqR finN
-  left_distributive_mul_over_plus mulR oneR plusR plus_associative refN refR
-  symN symR trnN trnR zeroR zero_left_identity_plus zero_right_anhilator_mul.
+  Proof.
     induction l as [|a l IHL].
     - simpl; intros ? ? ? ? Hm.
       apply refR.
@@ -4366,7 +4350,7 @@ Section Pathprops.
     forall l (g f: Node -> R -> R) a,
     (forall x u v, u =r= v = true -> f x u =r= g x v = true) -> 
     fold_right f a l =r= fold_right g a l = true.
-  Proof using Node R eqR refR.
+  Proof.
     induction l.
     - simpl; intros ? ? ? Hx.
       apply refR.

@@ -76,7 +76,7 @@ Section Proofs.
   
   Lemma orel_refl : 
     forall a, Orel R plusR eqR a a.
-  Proof using R eqR plusR plus_idempotence.
+  Proof.
     unfold Orel; intros ?.
     apply plus_idempotence.
   Qed.
@@ -86,8 +86,7 @@ Section Proofs.
     Orel R plusR eqR a b -> 
     Orel R plusR eqR b a -> 
     a =r= b = true.
-  Proof using R congrR eqR plusR 
-  plus_commutative refR symR.
+  Proof.
     unfold Orel; intros ? ? Hab Hba.
     assert (Ht : a =r= a + b = true).
     apply symR. exact Hab.
@@ -105,8 +104,7 @@ Section Proofs.
     Orel R plusR eqR a b -> 
     Orel R plusR eqR b c -> 
     Orel R plusR eqR a c.
-  Proof using R congrP congrR 
-  eqR plusR plus_associative refR symR.
+  Proof.
     unfold Orel; intros ? ? ? Hab Hbc.
     assert (Ht : a + c =r= a + b + c = true).
     apply congrP. apply symR.
@@ -131,8 +129,7 @@ Section Proofs.
 
   Lemma neutral_abouve : 
     forall (a : R), Orel R plusR eqR  a 0.
-  Proof using R eqR plusR zeroR 
-    zero_right_identity_plus.
+  Proof.
     intro a; unfold Orel.
     apply zero_right_identity_plus.
   Qed.
@@ -140,9 +137,7 @@ Section Proofs.
 
   Lemma a_b_a : 
     forall a b, Orel R plusR eqR  (a + b) a.
-  Proof using R congrP congrR 
-  eqR plusR plus_associative 
-  plus_commutative plus_idempotence refR symR.
+  Proof.
     unfold Orel; intros ? ?.
     assert (Ht : a + b + a =r= a + a + b = true).
     pose proof (plus_commutative (a + b) a) as Hw.
@@ -162,8 +157,7 @@ Section Proofs.
 
   Lemma a_b_b : 
     forall a b, Orel R plusR eqR  (a + b) b.
-  Proof using R congrP congrR eqR plusR 
-  plus_associative plus_idempotence refR symR.
+  Proof.
     unfold Orel; intros ? ?.
     assert (Ht : a + b + b =r= a + (b + b) = true).
     apply symR, plus_associative.
@@ -180,9 +174,7 @@ Section Proofs.
     forall a b c, 
     Orel R plusR eqR a b -> 
     Orel R plusR eqR (a + c) (b + c).
-  Proof using R congrP congrR eqR 
-  plusR plus_associative plus_commutative
-  plus_idempotence refR symR.
+  Proof.
     unfold Orel; intros ? ? ? Ho.
     assert (Ht : a + c + (b + c) =r= 
       a + (c + (b + c)) = true).
@@ -218,8 +210,7 @@ Section Proofs.
     forall a b c : R, 
     Orel R plusR eqR a b -> 
     Orel R plusR eqR (a * c) (b * c).
-  Proof using R congrM congrR eqR mulR plusR refR
-  right_distributive_mul_over_plus symR.
+  Proof.
     unfold Orel; intros ? ? ? Ho.
     assert (Ht : a * c + b * c =r= (a + b) * c = true).
     apply symR.
@@ -237,10 +228,7 @@ Section Proofs.
   Lemma path_weight_rel : 
     forall a b c : R,
     Orel R plusR eqR (a * c) (a * b * c).
-  Proof using R congrM congrP congrR eqR 
-  left_distributive_mul_over_plus mulR
-  mul_associative oneR one_left_identity_mul plusR refR
-  right_distributive_mul_over_plus symR zero_stable.
+  Proof.
     unfold Orel; intros ? ? ?.
     assert (Ht : a * c + a * b * c =r= 
       a * c + a * (b * c) = true).
