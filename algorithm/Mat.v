@@ -73,12 +73,9 @@ Section Matrix_def.
   Definition matrix_add (m₁ m₂ : Matrix Node R) : Matrix Node R :=
     fun c d => (m₁ c d + m₂ c d).
 
-  
-  Fixpoint sum_fn (f : Node -> R) (l : list Node) : R :=
-    match l with 
-    | [] => 0
-    | h :: t => f h + sum_fn f t
-    end.
+ 
+  Definition sum_fn (f : Node -> R) (l : list Node) : R :=
+    List.fold_right (fun x y => f x + y) 0 l.
 
 
   (* generalised matrix multiplication *)
@@ -165,6 +162,7 @@ Section Matrix_def.
     forall a b c d, a =n= c = true -> b =n= d = true -> 
     m₁ a b =r= m₂ c d = true. 
 
+
   
 End Matrix_def.
 
@@ -243,8 +241,7 @@ Section Matrix_proofs.
     Lemma zero_add_left : forall c d m,
       matrix_add Node R plusR (zero_matrix Node R zeroR) m c d =r= 
       m c d = true.
-    Proof using Node R eqR plusR zeroR 
-    zero_left_identity_plus.
+    Proof.
       intros c d m.
       unfold matrix_add, zero_matrix.
       rewrite zero_left_identity_plus.
@@ -255,8 +252,7 @@ Section Matrix_proofs.
       matrix_add Node R plusR m 
       (zero_matrix Node R zeroR) c d =r= 
       m c d = true.
-    Proof using Node R eqR plusR zeroR 
-    zero_right_identity_plus.
+    Proof.
       intros c d m.
       unfold matrix_add, zero_matrix.
       rewrite zero_right_identity_plus.
@@ -266,7 +262,7 @@ Section Matrix_proofs.
     Lemma matrix_add_assoc : forall m₁ m₂ m₃ c d, 
       matrix_add _ _ plusR m₁ (matrix_add _ _ plusR m₂ m₃) c d =r= 
       matrix_add _ _ plusR (matrix_add Node R plusR m₁ m₂) m₃ c d = true.
-    Proof using Node R eqR plusR plus_associative.
+    Proof.
       unfold matrix_add; intros.
       rewrite plus_associative;
       exact eq_refl.
@@ -276,7 +272,7 @@ Section Matrix_proofs.
     Lemma matrix_add_comm : forall m₁ m₂ c d, 
       matrix_add Node R plusR m₁ m₂ c d =r= 
       matrix_add Node R plusR m₂ m₁ c d = true.
-    Proof using Node R eqR plusR plus_commutative.
+    Proof.
       intros; unfold matrix_add.
       rewrite plus_commutative.
       reflexivity.
@@ -285,8 +281,7 @@ Section Matrix_proofs.
 
     Lemma sum_with_two_var : forall fn ga u v, 
       fn =r= u + v= true -> ga + fn =r= u + (ga + v) = true.
-    Proof using R congrP congrR eqR plusR plus_associative 
-    plus_commutative refR symR.
+    Proof.
       intros.
       unfold bop_congruence in congrP.
       assert (Ht: ga + fn =r= ga + (u + v) = true).
@@ -309,8 +304,7 @@ Section Matrix_proofs.
     Lemma sum_first_congr : forall fa ga u v fn, 
       fn =r= u + v = true -> 
       fa + ga + fn =r= fa + u + (ga + v) = true.
-    Proof using R congrP congrR eqR plusR refR symR
-    plus_associative plus_commutative.
+    Proof.
       intros.
       pose proof (congrP fa (ga + fn) fa (u + (ga + v)) (refR fa)
         (sum_with_two_var _ _ _ _ H)) as Href.
@@ -328,8 +322,7 @@ Section Matrix_proofs.
       f a + g a + sum_fn Node R zeroR plusR (λ x : Node, f x + g x) l =r= 
       f a + sum_fn Node R zeroR plusR f l + 
       (g a + sum_fn Node R zeroR plusR g l) = true.
-    Proof using Node R congrP congrR eqR plusR 
-    plus_associative plus_commutative refR symR zeroR.
+    Proof.
       intros. 
       apply sum_first_congr.
       exact H.
@@ -341,8 +334,7 @@ Section Matrix_proofs.
       sum_fn Node R zeroR plusR (fun x => f x + g x) l =r= 
       sum_fn Node R zeroR plusR f l + 
       sum_fn Node R zeroR plusR g l = true.
-    Proof using Node R congrP congrR eqR plusR plus_associative 
-    plus_commutative refR symR zeroR zero_left_identity_plus.
+    Proof.
       intros ? ?.
       induction l; simpl.
       + apply symR, zero_left_identity_plus.
@@ -354,8 +346,7 @@ Section Matrix_proofs.
     Lemma mul_gen_left_distr : 
       forall c fa fn gn, 
       fn =r= c * gn = true -> c * fa + fn =r= c * (fa + gn) = true.
-    Proof using R congrP congrR eqR left_distributive_mul_over_plus 
-    mulR plusR refR.
+    Proof.
       intros ? ? ? ? H.
       assert (Ht : c * fa + fn =r= c * fa + c * gn = true).
       apply congrP. 
@@ -378,8 +369,7 @@ Section Matrix_proofs.
       forall (f : Node -> R) (c : R) (l : list Node), 
       sum_fn Node R zeroR plusR (fun x => c * f x) l =r= 
       (c * sum_fn Node R zeroR plusR f l) = true.
-    Proof using Node R congrP congrR eqR left_distributive_mul_over_plus 
-    mulR plusR refR symR zeroR zero_right_anhilator_mul.
+    Proof.
       intros ? ?. 
       induction l; simpl.
       + apply symR,
@@ -392,8 +382,7 @@ Section Matrix_proofs.
     Lemma mul_gen_right_distr : 
       forall c fa fn gn, 
       fn =r= gn * c = true -> fa * c + fn =r= (fa + gn) * c = true.
-    Proof using R congrP congrR eqR mulR plusR refR
-    right_distributive_mul_over_plus.
+    Proof.
       intros.
       assert (Ht : fa * c + fn =r= fa * c + gn * c = true).
       apply congrP. 
@@ -415,8 +404,7 @@ Section Matrix_proofs.
       forall (f : Node -> R) (c : R) (l : list Node), 
       sum_fn Node R zeroR plusR (fun x => (f x * c)) l =r= 
       sum_fn Node R zeroR plusR f l * c = true.
-    Proof using Node R congrP congrR eqR mulR plusR refR
-    right_distributive_mul_over_plus symR zeroR zero_left_anhilator_mul.
+    Proof.
       intros ? ?.
       induction l; simpl.
       + apply symR, zero_left_anhilator_mul.
@@ -427,8 +415,7 @@ Section Matrix_proofs.
     Lemma push_mul_right_gen : forall a b c d fn gn, 
       fn =r= gn = true -> 
       (a * b + c) * d + fn =r= a * b * d + c * d + gn = true.
-    Proof using R congrP eqR mulR plusR 
-    right_distributive_mul_over_plus.
+    Proof.
       intros. apply congrP.
       apply right_distributive_mul_over_plus.
       exact H.
@@ -444,8 +431,7 @@ Section Matrix_proofs.
       sum_fn Node R zeroR plusR (λ y : Node, 
         (m₁ x a * m₂ a y * m₃ y x0 + sum_fn Node R zeroR plusR 
           (λ y0 : Node, m₁ x y0 * m₂ y0 y) l₁ * m₃ y x0)) l₂ = true.
-    Proof using Node R congrP eqR mulR plusR refR
-    right_distributive_mul_over_plus zeroR.
+    Proof.
       intros.
       revert l₁ m₁ m₂ m₃ a x x0.
       induction l₂; simpl; intros ? ? ? ? ? ? ?.
@@ -460,9 +446,7 @@ Section Matrix_proofs.
       a * d + f =r= g = true -> 
       a * (b * c + d) + (e * c + f) =r= 
       (a * b + e) * c + g = true.
-    Proof using R congrP congrR eqR left_distributive_mul_over_plus mulR
-    mul_associative plusR plus_associative plus_commutative refR
-    right_distributive_mul_over_plus symR.
+    Proof.
       intros.
       assert (Ht : a * (b * c + d) + (e * c + f) =r= 
         a * b * c + a * d + (e * c + f) = true).
@@ -530,10 +514,7 @@ Section Matrix_proofs.
         (matrix_mul_gen Node R zeroR plusR mulR m₂ m₃ l₂) l₁ c d) =r= 
       (matrix_mul_gen Node R zeroR plusR mulR 
         (matrix_mul_gen Node R zeroR plusR mulR  m₁ m₂ l₁) m₃ l₂ c d) = true.
-    Proof using Node R congrP congrR eqR left_distributive_mul_over_plus mulR
-    mul_associative plusR plus_associative plus_commutative refR
-    right_distributive_mul_over_plus symR zeroR zero_left_anhilator_mul
-    zero_left_identity_plus zero_right_anhilator_mul.
+    Proof.
       intros.
         revert l₁ l₂ m₁ m₂ m₃ c d.
       unfold matrix_mul_gen; induction l₁; simpl;
@@ -595,8 +576,7 @@ Section Matrix_proofs.
       forall (l₁ l₂ : list Node) (f : Node -> R), 
       sum_fn Node R zeroR plusR f (l₁ ++ l₂) =r= 
       (sum_fn Node R zeroR plusR f l₁ + sum_fn Node R zeroR plusR f l₂) = true.
-    Proof using Node R congrP congrR eqR plusR plus_associative 
-    refR symR zeroR zero_left_identity_plus.
+    Proof.
       induction l₁; simpl.
       intros ? ?.
       + apply symR, zero_left_identity_plus.
@@ -625,8 +605,7 @@ Section Matrix_proofs.
       sum_fn Node R zeroR plusR f l₁ + 
       sum_fn Node R zeroR plusR f l₂ + 
       sum_fn Node R zeroR plusR f l₃ = true.
-    Proof using Node R congrP congrR eqR plusR plus_associative 
-    refR symR zeroR zero_left_identity_plus.
+    Proof.
       intros. 
       assert (Ht : sum_fn Node R zeroR plusR f (l₁ ++ l₂ ++ l₃) =r= 
         sum_fn Node R zeroR plusR f l₁ + sum_fn Node R zeroR plusR f (l₂ ++ l₃) = true).
@@ -660,8 +639,7 @@ Section Matrix_proofs.
       sum_fn Node R zeroR plusR f l₁ =r= 0 = true ->  
       sum_fn Node R zeroR plusR f (l₁ ++ l₂) =r= 
       sum_fn Node R zeroR plusR f l₂ = true.
-    Proof using Node R congrP congrR eqR plusR plus_associative 
-    refR symR zeroR zero_left_identity_plus.
+    Proof.
       intros ? ? ? Hf.
       assert (sum_fn Node R zeroR plusR f (l₁ ++ l₂) =r= 
       sum_fn Node R zeroR plusR f l₁ + sum_fn Node R zeroR plusR f l₂ = true).
@@ -691,7 +669,7 @@ Section Matrix_proofs.
       fncong Node eqN R eqR f -> list_eqv Node eqN l (la ++ lb) = true ->
       sum_fn Node R zeroR plusR f l =r= 
       sum_fn Node R zeroR plusR f (la ++ lb) = true.
-    Proof using Node R congrP eqN eqR plusR refR zeroR.
+    Proof.
       induction l.
       + simpl; intros ? ? ? Hc Hl.
         destruct (la ++ lb).
@@ -735,7 +713,7 @@ Section Matrix_proofs.
       list_eqv Node eqN l (la ++ [c] ++ lb) = true ->
       sum_fn Node R zeroR plusR f l =r= 
       sum_fn Node R zeroR plusR f (la ++ [c] ++ lb) = true.
-    Proof using Node R congrP eqN eqR plusR refR zeroR.
+    Proof.
       intros ? ? ? ? ? Hc Hl.
       exact (sum_fn_list_eqv_gen l la ([c] ++ lb) f Hc Hl).
     Qed. 
@@ -745,10 +723,9 @@ Section Matrix_proofs.
       forall (l : list Node) (c d : Node) 
       (m : Node -> Node -> R), 
       in_list eqN l c = false ->
-      sum_fn Node R zeroR plusR (λ y : Node, (if c =n= y then 1 else 0) * m y d) l =r= 
-      0 = true.
-    Proof using Node R congrP congrR eqN eqR mulR oneR plusR refR symR zeroR
-    zero_left_anhilator_mul zero_left_identity_plus.
+      sum_fn Node R zeroR plusR (λ y : Node, 
+      (if c =n= y then 1 else 0) * m y d) l =r= 0 = true.
+    Proof.
       induction l; simpl; intros c d m H.
       + apply refR.
       + apply Bool.orb_false_iff in H.
@@ -782,10 +759,7 @@ Section Matrix_proofs.
       mat_cong Node eqN R eqR m ->
       matrix_mul_gen Node R zeroR plusR mulR 
         (I Node eqN R 0 1) m l c d =r= m c d = true.
-    Proof using Node R congrM congrP congrR eqN eqR mulR oneR
-    one_left_identity_mul plusR plus_associative refN refR 
-    symN symR trnN zeroR zero_left_anhilator_mul 
-    zero_left_identity_plus zero_right_identity_plus.
+    Proof.
       unfold matrix_mul_gen, I.
       intros ? Hl Hx Hn ? ? ? Hm.
       destruct (list_split _ eqN refN symN trnN l c Hl (Hx c) 
@@ -891,8 +865,7 @@ Section Matrix_proofs.
       in_list eqN l d = false ->
       sum_fn Node R zeroR plusR 
       (λ y : Node, m c y * (if y =n= d then 1 else 0)) l =r= 0 = true.
-    Proof using Node R congrP congrR eqN eqR mulR oneR plusR refR 
-    symN symR zeroR zero_right_anhilator_mul zero_right_identity_plus.
+    Proof.
       induction l; simpl; intros c d m H.
       + apply refR.
       + apply Bool.orb_false_iff in H.
@@ -937,9 +910,7 @@ Section Matrix_proofs.
       mat_cong Node eqN R eqR m ->
       matrix_mul_gen Node R zeroR plusR mulR 
         m (I Node eqN R 0 1) l c d =r= m c d = true.
-    Proof using Node R congrM congrP congrR eqN eqR mulR oneR
-    one_right_identity_mul plusR plus_associative refN refR symN symR trnN zeroR
-    zero_left_identity_plus zero_right_anhilator_mul zero_right_identity_plus.
+    Proof.
       unfold matrix_mul_gen, I.
       intros ? Hl Hx Hn ? ? ? Hm.
       destruct (list_split _ eqN refN symN trnN l d Hl (Hx d) 
@@ -1041,10 +1012,7 @@ Section Matrix_proofs.
         (matrix_mul Node finN R 0 plusR mulR m₂ m₃) c d =r= 
       matrix_mul Node finN R 0 plusR mulR 
         (matrix_mul Node finN R 0 plusR mulR m₁ m₂) m₃ c d = true.
-    Proof using Node R congrP congrR eqR finN left_distributive_mul_over_plus
-    mulR mul_associative plusR plus_associative plus_commutative refR
-    right_distributive_mul_over_plus symR zeroR zero_left_anhilator_mul
-    zero_left_identity_plus zero_right_anhilator_mul.
+    Proof.
       unfold matrix_mul.
       apply matrix_mul_gen_assoc.
     Qed.
@@ -1065,9 +1033,7 @@ Section Matrix_proofs.
       mat_cong Node eqN R eqR m -> 
       matrix_mul Node finN R 0 plusR mulR 
         (I Node eqN R 0 1) m c d =r= m c d = true.
-    Proof using Node R congrM congrP congrR dupN eqN eqR finN lenN memN mulR oneR
-    one_left_identity_mul plusR plus_associative refN refR symN symR trnN zeroR
-    zero_left_anhilator_mul zero_left_identity_plus zero_right_identity_plus.
+    Proof.
       unfold matrix_mul.
       apply matrix_mul_left_identity_gen.
       intro Hfin.
@@ -1084,9 +1050,7 @@ Section Matrix_proofs.
       mat_cong Node eqN R eqR m -> 
       matrix_mul Node finN R 0 plusR mulR 
         m (I Node eqN R 0 1) c d =r= m c d = true.
-    Proof using Node R congrM congrP congrR dupN eqN eqR finN memN lenN mulR oneR
-    one_right_identity_mul plusR plus_associative refN refR symN symR trnN zeroR
-    zero_left_identity_plus zero_right_anhilator_mul zero_right_identity_plus.
+    Proof.
       unfold matrix_mul.
       apply matrix_mul_right_identity_gen.
       apply empN. 
@@ -1154,7 +1118,7 @@ Section Matrix_proofs.
     Lemma add_r_cong : 
       forall a b c d, a =r= c = true ->
       b =r= d = true -> a + b =r= c + d = true.
-    Proof using R congrP eqR plusR.
+    Proof.
       intros ? ? ? ? Hac Hbd.
       apply congrP.
       exact Hac.
@@ -1171,7 +1135,7 @@ Section Matrix_proofs.
       mat_cong Node eqN R eqR m₁ -> 
       mat_cong Node eqN R eqR m₂ -> 
       m₁ a b * m₂ e f =r=  m₁ c d * m₂ g h = true.
-    Proof using Node R congrM eqN eqR mulR.
+    Proof.
       intros ? ? ? ? ? ? ? ? ? ? Hac Hbd Heg Hfh
         Hm₁ Hm₂.
       apply congrM.
@@ -1185,8 +1149,7 @@ Section Matrix_proofs.
       mat_cong Node eqN R eqR m₂ ->
       sum_fn Node R zeroR plusR (λ y : Node, m₁ a y * m₂ y b) l =r= 
       sum_fn Node R zeroR plusR (λ y : Node, m₁ c y * m₂ y d) l = true.
-    Proof using Node R congrM congrP eqN eqR mulR 
-    plusR refN refR zeroR.
+    Proof.
       induction l; simpl; 
       intros ? ? ? ? ? ? Hac Hbd Hm₁ Hm₂.
       + apply refR.
@@ -1205,8 +1168,7 @@ Section Matrix_proofs.
       mat_cong Node eqN R eqR m₂ -> 
       matrix_mul Node finN R 0 plusR mulR m₁ m₂ a b =r= 
       matrix_mul Node finN R 0 plusR mulR m₁ m₂ c d = true.
-    Proof using Node R congrM congrP eqN eqR finN mulR 
-    plusR refN refR zeroR.
+    Proof.
       intros.
       unfold matrix_mul, matrix_mul_gen.
       apply sum_fn_mul_congr; assumption.
@@ -1217,7 +1179,7 @@ Section Matrix_proofs.
       (a =n= c) = true -> 
       (b =n= d) = true ->
       I Node eqN R 0 1 a b =r= I Node eqN R 0 1 c d = true.
-    Proof using Node R eqN eqR oneR refR symN trnN zeroR.
+    Proof.
       intros ? ? ? ? Hac Hbd.
       unfold I.
       case_eq (a =n= b); intros Hf; auto.
@@ -1242,8 +1204,7 @@ Section Matrix_proofs.
       mat_cong Node eqN R eqR e →
       matrix_exp_unary Node eqN finN R 0 1 plusR mulR e k a b =r= 
       matrix_exp_unary Node eqN finN R 0 1 plusR mulR e k c d = true.
-    Proof using Node R congrM congrP eqN eqR finN 
-    mulR oneR plusR refN refR symN trnN zeroR.
+    Proof.
       induction k; simpl; 
       intros ? ? ? ? ? Hac Hbd Hme.
       + apply identity_cong; assumption.
@@ -1261,7 +1222,7 @@ Section Matrix_proofs.
       two_mat_congr Node R eqR m₁ m₂ ->  
       sum_fn Node R 0 plusR (λ y : Node, e c y * m₁ y d) l =r= 
       sum_fn Node R 0 plusR (λ y : Node, e c y * m₂ y d) l = true.
-    Proof using Node R congrM congrP eqR mulR plusR refR zeroR.
+    Proof.
       induction l; simpl; 
       intros  ? ? ? ? ? Hm.
       + apply refR.
@@ -1278,7 +1239,7 @@ Section Matrix_proofs.
       two_mat_congr  Node R eqR m₁ m₂ ->
       matrix_mul Node finN R 0 plusR mulR e m₁ c d =r= 
       matrix_mul Node finN R 0 plusR mulR e m₂ c d = true.
-    Proof using Node R congrM congrP eqR finN mulR plusR refR zeroR.
+    Proof.
       intros ? ? ? ? ? Hm.
       unfold matrix_mul, matrix_mul_gen.
       apply sum_fn_mul_congr_diff.
@@ -1292,11 +1253,7 @@ Section Matrix_proofs.
       matrix_mul Node finN R 0 plusR mulR 
         (matrix_exp_unary Node eqN finN R 0 1 plusR mulR e k1) 
         (matrix_exp_unary Node eqN finN R 0 1 plusR mulR e k2) c d = true.
-    Proof using Node R congrM congrP congrR dupN lenN eqN eqR finN
-    left_distributive_mul_over_plus memN mulR mul_associative oneR
-    one_left_identity_mul plusR plus_associative plus_commutative refN refR
-    right_distributive_mul_over_plus symN symR trnN zeroR zero_left_anhilator_mul
-    zero_left_identity_plus zero_right_anhilator_mul zero_right_identity_plus.
+    Proof.
       induction k1; simpl.
       + intros ? ? ? ? ?.
         apply symR, matrix_mul_left_identity.
@@ -1331,7 +1288,7 @@ Section Matrix_proofs.
       two_mat_congr_gen Node eqN R eqR m₂ m₄ -> 
       sum_fn Node R 0 plusR (λ y : Node, m₁ a y * m₂ y b) l =r=
       sum_fn Node R 0 plusR (λ y : Node, m₃ c y * m₄ y d) l = true.
-    Proof using Node R congrM congrP eqN eqR mulR plusR refN refR zeroR.
+    Proof.
       induction l; simpl; 
       intros ? ? ? ? ? ? ? ? Hac Hbd Hm₁ Hm₂.
       + apply refR.
@@ -1355,8 +1312,7 @@ Section Matrix_proofs.
       two_mat_congr_gen Node eqN R eqR m₂ m₄ -> 
       matrix_mul Node finN R 0 plusR mulR m₁ m₂ a b =r= 
       matrix_mul Node finN R 0 plusR mulR m₃ m₄ c d = true.
-    Proof using Node R congrM congrP eqN eqR finN mulR 
-    plusR refN refR zeroR.
+    Proof.
       intros ? ? ? ? ? ? ? ? Hac Hbd H₁ H₂.
       unfold matrix_mul, matrix_mul_gen.
       apply sum_fn_congr_gen; assumption.
@@ -1367,7 +1323,7 @@ Section Matrix_proofs.
       (forall c d, m₁ c d =r= m₂ c d = true) ->
       sum_fn Node R 0 plusR (λ y : Node, m₁ u y * m₁ y v) l =r=
       sum_fn Node R 0 plusR (λ y : Node, m₂ u y * m₂ y v) l = true.
-    Proof using Node R congrM congrP eqR mulR plusR refR zeroR.
+    Proof.
       induction l; simpl; 
       intros  ? ? ? ? Hm.
       + apply refR.
@@ -1385,8 +1341,7 @@ Section Matrix_proofs.
       (forall c d, m₁ c d =r= m₂ c d = true) ->
       matrix_mul Node finN R 0 plusR mulR m₁ m₁ u v =r= 
       matrix_mul Node finN R 0 plusR mulR m₂ m₂ u v = true.
-    Proof using Node R congrM congrP eqR finN mulR 
-    plusR refR zeroR.
+    Proof.
       intros ? ? ? ? Hcd.
       unfold matrix_mul, matrix_mul_gen.
       apply sum_fn_mat_ind.
@@ -1399,12 +1354,7 @@ Section Matrix_proofs.
       mat_cong Node eqN R eqR m -> 
       matrix_exp_unary Node eqN finN R 0 1 plusR mulR m (N.to_nat n) c d =r= 
       matrix_exp_binary Node eqN finN R 0 1 plusR mulR m n c d = true.
-    Proof using Node R congrM congrP congrR dupN eqN eqR finN
-    left_distributive_mul_over_plus lenN memN mulR mul_associative oneR
-    one_left_identity_mul one_right_identity_mul plusR plus_associative
-    plus_commutative refN refR right_distributive_mul_over_plus symN symR trnN zeroR
-    zero_left_anhilator_mul zero_left_identity_plus zero_right_anhilator_mul
-    zero_right_identity_plus.
+    Proof.
       destruct n;
       intros ? ? ? Hm.
       + apply refR.
@@ -1473,7 +1423,7 @@ Section Matrix_proofs.
       forall l f, 
       sum_fn Node R 0 plusR f l =r= 
       sum_fn_fold Node R 0 plusR f l = true.
-    Proof using Node R congrP eqR plusR refR zeroR.
+    Proof.
       induction l.
       + simpl; intros ?.
         apply refR.
@@ -1491,10 +1441,7 @@ Section Matrix_proofs.
       sum_all_rvalues R 0 plusR 
         (get_all_rvalues Node R 1 mulR 
           (construct_all_paths Node eqN R 1 finN m n c d)) = true.
-    Proof using Node R congrM congrP congrR eqN eqR finN
-    left_distributive_mul_over_plus mulR oneR one_left_identity_mul plusR
-    plus_associative refN refR symN symR trnN trnR zeroR zero_left_identity_plus
-    zero_right_anhilator_mul zero_right_identity_plus.
+    Proof.
       intros ? ? ? ? Hm.
       unfold sum_all_rvalues, get_all_rvalues, construct_all_paths;
       rewrite map_map.
@@ -1555,7 +1502,7 @@ Section Matrix_proofs.
     
     Lemma matrix_add_idempotence : forall m c d, 
       matrix_add Node R plusR m m c d =r= m c d = true.
-    Proof using Node R eqR plusR plus_idempotence.
+    Proof.
       unfold matrix_add; intros *.
       apply plus_idempotence.
     Qed.
@@ -1566,8 +1513,7 @@ Section Matrix_proofs.
       forall (n m : nat) (a : R), 
       exp_r _ 1 mulR a (n + m) =r= 
       exp_r  _ 1 mulR a n * exp_r  _ 1 mulR a m = true.
-    Proof using R congrM congrR eqR mulR mul_associative oneR
-    one_left_identity_mul refR symR.
+    Proof.
       induction n.
       - simpl; intros ? ?.
         apply symR. 
@@ -1596,9 +1542,7 @@ Section Matrix_proofs.
       forall (t : nat) (a : R),
       partial_sum_r R 1 plusR mulR a t + a * exp_r  _ 1 mulR a t =r=
       partial_sum_r R 1 plusR mulR a t = true.
-    Proof using R congrM congrP congrR eqR mulR oneR one_left_identity_mul
-    one_right_identity_mul plusR plus_associative refR
-    right_distributive_mul_over_plus symR zero_stable.
+    Proof.
       induction t.
       - simpl; intros ?. 
         rewrite <-(zero_stable a).
@@ -1655,9 +1599,7 @@ Section Matrix_proofs.
     Lemma astar_exists_zero_stable : 
       forall (t : nat) (a : R), 
       partial_sum_r R 1 plusR mulR a t =r= partial_sum_r R 1 plusR mulR a 0 = true.
-    Proof using R congrM congrP congrR eqR mulR oneR one_left_identity_mul
-    one_right_identity_mul plusR plus_associative refR
-    right_distributive_mul_over_plus symR zero_stable.
+    Proof.
       induction t.
       - simpl; intros ?.
         apply refR.
@@ -1677,9 +1619,7 @@ Section Matrix_proofs.
       forall (t : nat) (a : R),
       (partial_sum_r R 1 plusR mulR a (S t)) =r= 
       (1 + a * partial_sum_r R 1 plusR mulR a t) = true.
-    Proof using R congrP congrR eqR
-    left_distributive_mul_over_plus mulR oneR plusR
-    plus_associative refR symR.
+    Proof.
       induction t.
       - simpl; intros ?.
         apply refR.
@@ -1719,9 +1659,7 @@ Section Matrix_proofs.
       forall (t : nat) (a : R), 
       partial_sum_r R 1 plusR mulR a (t + q) =r= 
       partial_sum_r R 1 plusR mulR a q = true.
-    Proof using R congrM congrP congrR eqR
-    left_distributive_mul_over_plus mulR oneR plusR
-    plus_associative refR symR.
+    Proof.
       intros ? q_stable.
       induction t.
       - simpl; intros ?.
@@ -1754,7 +1692,7 @@ Section Matrix_proofs.
       two_mat_congr Node R eqR m₂ m₄ -> 
       matrix_add Node R plusR m₁ m₂ c d =r= 
       matrix_add Node R plusR m₃ m₄ c d = true.
-    Proof using Node R congrP eqR plusR.
+    Proof.
       intros * H₁ H₂.
       unfold matrix_add.
       apply congrP.
@@ -1771,9 +1709,7 @@ Section Matrix_proofs.
       (sum_fn Node R 0 plusR (λ y : Node, m₁ c y * (m₂ y d + m₃ y d)) l =r=
       sum_fn Node R 0 plusR (λ y : Node, m₁ c y * m₂ y d) l +
       sum_fn Node R 0 plusR (λ y : Node, m₁ c y * m₃ y d) l) = true.
-    Proof using Node R congrP congrR eqR left_distributive_mul_over_plus mulR
-    plusR plus_associative plus_commutative refR symR zeroR
-    zero_left_identity_plus.
+    Proof.
       induction l.
       - simpl. intros ? ? ? ? ?.
         apply symR, zero_left_identity_plus.
@@ -1841,9 +1777,7 @@ Section Matrix_proofs.
       forall (m₁ m₂ m₃ : Matrix Node R) (c d : Node), 
       (m₁ *M (m₂ +M m₃)) c d =r= 
       (m₁ *M m₂ +M m₁ *M m₃) c d = true.
-    Proof using Node R congrP congrR eqR finN left_distributive_mul_over_plus
-    mulR plusR plus_associative plus_commutative refR symR zeroR
-    zero_left_identity_plus.
+    Proof.
       intros *.
       unfold matrix_mul, matrix_mul_gen,
       matrix_add.
@@ -1858,15 +1792,7 @@ Section Matrix_proofs.
       (partial_sum_mat Node eqN finN R 0 1 plusR mulR m (S t) c d) =r= 
       (I Node eqN R 0 1 +M 
       m *M partial_sum_mat Node eqN finN R 0 1 plusR mulR m t) c d = true.
-    Proof using Node R congrM congrP congrR dupN eqN eqR
-    finN left_distributive_mul_over_plus memN
-    mulR mul_associative oneR one_left_identity_mul
-    one_right_identity_mul plusR plus_associative
-    plus_commutative plus_idempotence refN refR
-    right_distributive_mul_over_plus symN
-    symR trnN trnR zeroR zero_left_anhilator_mul
-    zero_left_identity_plus zero_right_anhilator_mul
-    zero_right_identity_plus.
+    Proof.
       induction t.
       - simpl; intros ? ? ?.
         apply refR.
@@ -1915,12 +1841,7 @@ Section Matrix_proofs.
       forall (t : nat)  (u v : Node), 
       partial_sum_mat Node eqN finN R 0 1 plusR mulR m (t + q) u v =r= 
       partial_sum_mat Node eqN finN R 0 1 plusR mulR m q u v = true.
-    Proof using Node R congrM congrP congrR dupN eqN eqR finN
-    left_distributive_mul_over_plus memN mulR mul_associative oneR
-    one_left_identity_mul one_right_identity_mul plusR plus_associative
-    plus_commutative plus_idempotence refN refR right_distributive_mul_over_plus
-    symN symR trnN trnR zeroR zero_left_anhilator_mul zero_left_identity_plus
-    zero_right_anhilator_mul zero_right_identity_plus.
+    Proof.
       intros * q_stable.
       induction t.
       - simpl; intros *.
@@ -1952,9 +1873,7 @@ Section Matrix_proofs.
       (sum_fn Node R 0 plusR (λ y : Node, (m₂ c y + m₃ c y) * m₁ y d) l =r=
       sum_fn Node R 0 plusR (λ y : Node, m₂ c y * m₁ y d) l +
       sum_fn Node R 0 plusR (λ y : Node, m₃ c y * m₁ y d) l) = true.
-    Proof using Node R congrP congrR eqR mulR plusR plus_associative
-    plus_commutative refR right_distributive_mul_over_plus symR zeroR
-    zero_left_identity_plus.
+    Proof.
       induction l.
       - simpl. intros ? ? ? ? ?.
         apply symR, zero_left_identity_plus.
@@ -2008,9 +1927,7 @@ Section Matrix_proofs.
       forall (m₁ m₂ m₃ : Matrix Node R) (c d : Node), 
       ((m₂ +M m₃) *M m₁) c d =r= 
       (m₂ *M m₁ +M m₃ *M m₁) c d = true.
-    Proof using Node R congrP congrR eqR finN mulR plusR plus_associative
-    plus_commutative refR right_distributive_mul_over_plus symR zeroR
-    zero_left_identity_plus.
+    Proof.
       intros *.
       unfold matrix_mul, matrix_mul_gen,
       matrix_add.
@@ -2023,8 +1940,7 @@ Section Matrix_proofs.
       mat_cong Node eqN R eqR m ->  
       mat_cong Node eqN R eqR (partial_sum_mat Node eqN finN 
       R zeroR oneR plusR mulR m n).
-    Proof using Node R congrM congrP eqN eqR finN 
-    mulR oneR plusR refN refR symN trnN zeroR.
+    Proof.
       unfold mat_cong.
       induction n.
       - simpl; intros ? ? ? ? ? Hm Hac Hbd.
@@ -2056,9 +1972,7 @@ Section Matrix_proofs.
         R zeroR oneR plusR mulR m n) c d =r=
       (partial_sum_mat Node eqN finN 
       R zeroR oneR plusR mulR m (S n) c d) = true.
-    Proof using Node R congrP congrR eqN eqR finN left_distributive_mul_over_plus
-    mulR oneR plusR plus_associative plus_commutative plus_idempotence refR symR
-    zeroR zero_left_identity_plus.
+    Proof.
       induction n.
       - simpl; intros ? ? ?.
         apply matrix_add_comm.
@@ -2161,11 +2075,7 @@ Section Matrix_proofs.
       matrix_exp_unary Node eqN finN R 0 1 plusR mulR (m +M I Node eqN R 0 1) n c d =r= 
       partial_sum_mat Node eqN finN 
       R zeroR oneR plusR mulR m n c d = true.
-    Proof using Node R congrM congrP congrR dupN eqN eqR finN
-    left_distributive_mul_over_plus lenN memN mulR oneR one_left_identity_mul plusR
-    plus_associative plus_commutative plus_idempotence refN refR
-    right_distributive_mul_over_plus symN symR trnN zeroR zero_left_anhilator_mul
-    zero_left_identity_plus zero_right_identity_plus.
+    Proof.
       induction n.
       - simpl; intros ? ? ? Hm.
         apply refR.
@@ -2293,12 +2203,7 @@ Section Matrix_proofs.
       (m +M I Node eqN R 0 1) (List.length finN) c d =r= 
       matrix_exp_unary Node eqN finN R 0 1 plusR mulR 
       (m +M I Node eqN R 0 1) (n + List.length finN) c d = true.
-    Proof using Node R congrM congrP congrR dupN eqN eqR finN
-    left_distributive_mul_over_plus lenN memN mulR mul_associative oneR
-    one_left_identity_mul one_right_identity_mul plusR plus_associative
-    plus_commutative plus_idempotence refN refR right_distributive_mul_over_plus symN
-    symR trnN trnR zeroR zero_left_anhilator_mul zero_left_identity_plus
-    zero_right_anhilator_mul zero_right_identity_plus.
+    Proof.
       intros ? ? ? ? Hm q_stable.
       apply symR.
       assert (Ht:
