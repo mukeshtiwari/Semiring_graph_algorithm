@@ -346,7 +346,6 @@ Section Pathprops.
       (a + b) + c = true)
     (plus_commutative  : forall a b : R, a + b =r= b + a = true)
     (plus_idempotence : forall a : R, a + a =r= a = true)
-    (zero_stable : forall a : R, 1 + a =r= 1 = true)
     (one_left_identity_mul  : forall r : R, 1 * r =r= r = true)
     (one_right_identity_mul : forall r : R, r * 1 =r= r = true)
     (mul_associative : forall a b c : R, a * (b * c) =r= 
@@ -357,6 +356,9 @@ Section Pathprops.
       (a + b) * c =r= a * c + b * c = true)
     (zero_left_anhilator_mul  : forall a : R, 0 * a =r= 0 = true)
     (zero_right_anhilator_mul : forall a : R, a * 0 =r= 0 = true)
+  
+    (* 1 is additive annhilator *)
+    (zero_stable : forall a : R, 1 + a =r= 1 = true)
     (* end of axioms *)
 
     (* start of congruence relation *)
@@ -377,16 +379,14 @@ Section Pathprops.
     (append_node_in_paths Node R m c l) = true.
   Proof.
     induction l as [|a l IHl].
-    + simpl; intros ? ?. 
+    + simpl; intros ? ?; 
       reflexivity.
-    + simpl.
-      destruct a. 
-      apply IHl.
-      intros. 
-      destruct p. 
-      destruct p.
-      simpl. 
-      apply IHl.
+    + simpl; destruct a.
+      ++ 
+        apply IHl.
+      ++
+        intros; repeat destruct p;
+        simpl; apply IHl.
   Qed.
 
   

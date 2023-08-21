@@ -1,0 +1,49 @@
+This is BibTeX, Version 0.99d (TeX Live 2022)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: paper.aux
+The style file: splncs04.bst
+Database file #1: ref.bib
+Warning--entry type for "the_coq_development_team" isn't style-file defined
+--line 722 of file ref.bib
+You've used 1 entry,
+            2850 wiz_defined-function locations,
+            601 strings with 4627 characters,
+and the built_in function-call counts, 403 in all, are:
+= -- 29
+> -- 7
+< -- 0
++ -- 4
+- -- 2
+* -- 26
+:= -- 58
+add.period$ -- 1
+call.type$ -- 1
+change.case$ -- 4
+chr.to.int$ -- 0
+cite$ -- 1
+duplicate$ -- 34
+empty$ -- 45
+format.name$ -- 2
+if$ -- 83
+int.to.chr$ -- 0
+int.to.str$ -- 1
+missing$ -- 5
+newline$ -- 9
+num.names$ -- 2
+pop$ -- 15
+preamble$ -- 1
+purify$ -- 3
+quote$ -- 0
+skip$ -- 8
+stack$ -- 0
+substring$ -- 24
+swap$ -- 14
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 4
+warning$ -- 0
+while$ -- 3
+width$ -- 2
+write$ -- 15
+(There was 1 warning)
