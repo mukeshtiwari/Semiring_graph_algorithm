@@ -218,7 +218,6 @@ Section Matrix_proofs.
       (a + b) + c = true)
     (plus_commutative  : forall a b : R, a + b =r= b + a = true)
     (plus_idempotence : forall a : R, a + a =r= a = true)
-    (zero_stable : forall a : R, 1 + a =r= 1 = true)
     (one_left_identity_mul  : forall r : R, 1 * r =r= r = true)
     (one_right_identity_mul : forall r : R, r * 1 =r= r = true)
     (mul_associative : forall a b c : R, a * (b * c) =r= 
@@ -1538,7 +1537,8 @@ Section Matrix_proofs.
   
 
      
-    Lemma astar_aide_zero_stable : 
+    Lemma astar_aide_zero_stable 
+      (zero_stable : forall a : R, 1 + a =r= 1 = true) :
       forall (t : nat) (a : R),
       partial_sum_r R 1 plusR mulR a t + a * exp_r  _ 1 mulR a t =r=
       partial_sum_r R 1 plusR mulR a t = true.
@@ -1596,7 +1596,8 @@ Section Matrix_proofs.
 
 
     (* special case q := 0 *)
-    Lemma astar_exists_zero_stable : 
+    Lemma astar_exists_zero_stable 
+      (zero_stable : forall a : R, 1 + a =r= 1 = true) : 
       forall (t : nat) (a : R), 
       partial_sum_r R 1 plusR mulR a t =r= partial_sum_r R 1 plusR mulR a 0 = true.
     Proof.
@@ -1604,7 +1605,7 @@ Section Matrix_proofs.
       - simpl; intros ?.
         apply refR.
       - simpl; intros ?.
-        rewrite <-(astar_aide_zero_stable t a).
+        rewrite <-(astar_aide_zero_stable zero_stable t a).
         apply congrR.
         apply refR.
         simpl in IHt.
@@ -2165,7 +2166,8 @@ Section Matrix_proofs.
    
 
 
-    Lemma zero_stable_partial : forall m,
+    Lemma zero_stable_partial (zero_stable : forall a : R, 1 + a =r= 1 = true) : 
+      forall m,
       mat_cong Node eqN R eqR m -> 
       (∀ u v : Node, (u =n= v) = true → (m u v =r= 1) = true) ->
       (forall (c d : Node), 
