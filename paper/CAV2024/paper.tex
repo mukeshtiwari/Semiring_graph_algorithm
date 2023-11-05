@@ -60,17 +60,49 @@ ABC Institute, Rupert-Karls-University Heidelberg, Heidelberg, Germany\\
 \maketitle              % typeset the header of the contribution
 %
 \begin{abstract}
-  Semirings are generalisation of rings and have found numerous applications 
-Semirings are widely used in .... but so far it is based on the pen-and-paper 
-reasoning. In this paper, we produce the first formally verified implement
-in Coq \cite{the_coq_development_team} and use it for various case studies. 
+  Semiring, a fundamental concept in abstract algebra, plays
+  a pivotal role in graph theory, optimisation, social choice, voting, 
+  and many more. Its generality puts it into a sweet spot 
+  where a single abstract implementation can be used, depending 
+  on the concrete instantiation of abstract operators, 
+  for shortest path, the Schulze method, program analysis, 
+  databases, networking, etc. 
 
+  In this paper, we present a formal implementation of semiring in the Coq 
+  theorem prover and demonstrate its usability by instantiating it
+  with various operators to 
+  get shortest path implementation, Schulze method, more examples. 
+
+  
+
+
+  
 \keywords{First keyword  \and Second keyword \and Another keyword.}
 \end{abstract}
 
 \section{Introduction}
 
+Semiring is a generalisation of ring where the additive inverse requirement is dropped. 
+It is equipped with 
+
+is an algebraic structures that 
+
+
+combines the essential properties of both rings and monoids. 
+They are equipped with two binary operations, typically addition and multiplication, that exhibit 
+intriguing properties, making them a powerful tool in solving a diverse range of problems. 
+This abstract explores the algebraic properties of semirings, highlighting their distributive, associative, and zero elements.
+
+\section{Schulze Method}
+
+\section{Technical Details (Explain the whole semiring)}
+
 \section{Case Studies}
+  \begin{itemize}
+    \item Shortest Path
+    \item Optimisation 
+    \item Put everything that can be computed using our algorithm
+  \end{itemize}
 
 \section{Related Work and Limitations}
 %
