@@ -4885,10 +4885,8 @@ Section Pathprops.
 
 
   Lemma sum_all_flat_paths_fixpoint : 
-    forall k c d m,
-    (∀ u v : Node, (u =n= v) = true → (m u v =r= 1) = true) ->
-    mat_cong Node eqN R eqR m ->
-    sum_all_flat_paths Node R zeroR oneR plusR mulR
+    forall k c d m, (∀ u v : Node, (u =n= v) = true → (m u v =r= 1) = true) ->
+    mat_cong Node eqN R eqR m -> sum_all_flat_paths Node R zeroR oneR plusR mulR
       (enum_all_paths_flat Node eqN R oneR finN m (length finN - 1)%nat c d) =r=
     sum_all_flat_paths Node R zeroR oneR plusR mulR
       (enum_all_paths_flat Node eqN R oneR finN m (k + length finN - 1)%nat c d) = true.
