@@ -1650,13 +1650,26 @@ Section Matrix_proofs.
         apply refR.
         apply refR.
     Qed.
-        
+    
+
+
+    Lemma astar_aide_gen_q_stable_gen :
+      forall (t : nat) (a : R) (zero_stable : forall a : R, 1 + a =r= 1 = true),
+      partial_sum_r R 1 plusR mulR a t =r= partial_sum_r R 1 plusR mulR a (S t) = true. 
+    Proof.
+      intros * zero_stable; simpl.
+      eapply symR, astar_aide_zero_stable;
+      try assumption.
+    Qed.
+
+
+
+      
 
     
     Lemma astar_exists_gen_q_stable : 
       forall (q : nat),
-      (forall w : R, partial_sum_r R 1 plusR mulR w q =r= 
-        partial_sum_r R 1 plusR mulR w (S q) = true) -> 
+      (forall w : R, 1 + w =r= 1 = true) -> 
       forall (t : nat) (a : R), 
       partial_sum_r R 1 plusR mulR a (t + q) =r= 
       partial_sum_r R 1 plusR mulR a q = true.
@@ -1682,7 +1695,7 @@ Section Matrix_proofs.
         pose proof (astar_aide_gen_q_stable q a) as Ht.
         rewrite <-Ht; clear Ht.
         apply congrR. 
-        apply q_stable.
+        apply astar_aide_gen_q_stable_gen, q_stable.
         apply refR.
     Qed.
 
@@ -1831,6 +1844,11 @@ Section Matrix_proofs.
         apply symR.
         apply left_distributive_mat_mul_over_plus.
     Qed.
+
+     
+   
+    
+
 
 
 
@@ -2232,21 +2250,4 @@ End Matrix_proofs.
 
       
 
-      
-      
-  
     
-    
-
-
-
-
-  
-
-
-
-    
-    
-
-
-  
