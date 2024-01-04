@@ -58,7 +58,7 @@ Section Listsingleprops.
   Lemma list_eqv_refl : 
     forall l : list A, 
     list_eqv _ eqA l l = true.
-  Proof.
+  Proof using refA.
     induction l.
     + simpl; reflexivity.
     + simpl. 
@@ -74,7 +74,7 @@ Section Listsingleprops.
     forall l₁ l₂ : list A, 
     list_eqv _ eqA l₁ l₂ = true -> 
     list_eqv _ eqA l₂ l₁ = true.
-  Proof.
+  Proof using symA.
     induction l₁; simpl.
     + intros ? Hl. 
       destruct l₂.
@@ -99,7 +99,7 @@ Section Listsingleprops.
     list_eqv _ eqA l₁ l₂ = true -> 
     list_eqv _ eqA l₂ l₃ = true ->
     list_eqv _ eqA l₁ l₃ = true.
-  Proof.
+  Proof using trnA.
     induction l₁ as [|a l₁];
     destruct l₂ as [|b l₂];
     destruct l₃ as [|c l₃];
@@ -120,7 +120,7 @@ Section Listsingleprops.
     eqA c a = true ->
     in_list eqA l a = false -> 
     in_list eqA l c = false.
-  Proof.
+  Proof using symA trnA.
     induction l; 
     simpl; 
     intros ? ? Heq Hf.
@@ -141,10 +141,11 @@ Section Listsingleprops.
       exact Hfb.
   Qed.
 
+  
   Lemma enum_list_inc_dec_rev : 
     forall n : nat,
     enum_list_inc n = List.rev (enum_list_dec n).
-  Proof.
+  Proof using Type.
     induction n.
     + simpl.
       reflexivity.
@@ -154,10 +155,11 @@ Section Listsingleprops.
   Qed.
 
   
+  
   Lemma enum_list_dec_inc_rev : 
     forall n : nat,
     enum_list_dec n = List.rev (enum_list_inc n).
-  Proof.
+  Proof using Type.
     induction n. 
     + simpl.
       reflexivity.
@@ -176,7 +178,7 @@ Section Listsingleprops.
     in_list eqA l a = false -> 
     in_list eqA l c = true -> 
     eqA c a = false.
-  Proof.
+  Proof using symA trnA.
     induction l; 
     simpl; 
     intros ? ? Ha Hb.
@@ -204,7 +206,7 @@ Section Listsingleprops.
     list_eqv _ eqA l (l₁ ++ [c] ++ l₂) = true /\ 
     in_list eqA l₁ c = false /\ 
     in_list eqA l₂ c = false.
-  Proof.
+  Proof using refA symA trnA.
     induction l; simpl.
     + intros ? H₁ H₂ H₃.
       inversion H₂.
@@ -276,7 +278,7 @@ Section Listsingleprops.
       (list_eqv _ eqA lf [pu] = true /\ 
       eqA pv au = true /\ 
       list_eqv _ eqA lr [] = true).
-    Proof.
+    Proof using symA.
       intros [|u lf] [|v lr] ? ? ? Hle.
       simpl in Hle.
       apply Bool.andb_true_iff in Hle.
@@ -368,7 +370,7 @@ Section Listsingleprops.
       list_eqv _ eqA t (pl ++ [xb]) = true ->
       exists tp, list_eqv _ eqA t (tp ++ [xb]) = true /\ 
       list_eqv _ eqA tp pl = true.
-    Proof.
+    Proof using refA.
       intros ? ? ? Hl.
       exists pl.
       split. exact Hl.
@@ -383,7 +385,7 @@ Section Listsingleprops.
       list_eqv _ eqA c l = true ->
       in_list eqA c x = true ->
       in_list eqA l x = true.
-    Proof.
+    Proof using trnA.
       induction l; 
       destruct c; 
       simpl;
@@ -412,7 +414,7 @@ Section Listsingleprops.
       (length c < n)%nat -> 
       list_eqv _ eqA c l = true ->
       (length l < n)%nat.
-    Proof.
+    Proof using Type.
       induction l.
       + simpl;
         intros * Ha Hb.
@@ -439,7 +441,7 @@ Section Listsingleprops.
       forall (c l : list A), 
       (forall y : A, in_list eqA c y = true) ->
       covers _ eqA c l.
-    Proof.
+    Proof using Type.
       unfold covers.
       destruct c as [|a c].
       + intros ? Hy ? Hl.
@@ -458,7 +460,7 @@ Section Listsingleprops.
       eqA x a = false -> 
       in_list eqA (l₁ ++ a :: l₂) x = true ->
       in_list eqA (l₁ ++ l₂) x = true.
-    Proof.
+    Proof using Type.
       induction l₁;
       simpl; 
       intros ? ? ? Hxa Hlx.
@@ -480,7 +482,7 @@ Section Listsingleprops.
       covers _ eqA c l ->  (length c < List.length l)%nat -> 
       exists a l₁ l₂ l₃, 
         list_eqv _ eqA l (l₁ ++ [a] ++ l₂ ++ [a] ++ l₃) = true.
-    Proof.
+    Proof using refA symA trnA.
       induction l. 
       + simpl.
         intros * Ha Hb.
@@ -541,6 +543,7 @@ Section Listsingleprops.
         simpl in *.
         exact Hlp.
     Qed.
+    
 
 
     Lemma list_eqv_in_list_rewrite_gen :
@@ -549,7 +552,7 @@ Section Listsingleprops.
       list_eqv _ eqA l₁ l₂ = true ->
       in_list eqA l₂ n = true ->
       in_list eqA l₁ a = true.
-    Proof.
+    Proof using symA trnA.
       induction l₁ as [|a₁ l₁]; 
       destruct l₂ as [|b₂ l₂]; 
       simpl;
@@ -580,7 +583,7 @@ Section Listsingleprops.
       list_eqv _ eqA l₁ l₂ = true ->
       no_dup _ eqA l₂ = false ->
       no_dup _ eqA l₁ = false.
-    Proof.
+    Proof using symA trnA.
       induction l₁.
       + simpl.
         intros ? Ha Hb.
@@ -694,7 +697,7 @@ Section Listtripleprops.
   (* triple_elem_list is equivalence relation *)
   Lemma triple_elem_eq_list_refl : 
     forall l, @triple_elem_list _ _ _ rA rB rC l l = true.
-  Proof.
+  Proof using refA refB refC.
     induction l as [|((au, av), aw) l].
     - simpl. reflexivity.
     - simpl.
@@ -709,7 +712,7 @@ Section Listtripleprops.
   Lemma triple_elem_eq_list_sym : forall xs ys, 
       @triple_elem_list _ _ _ rA rB rC xs ys = true -> 
       @triple_elem_list _ _ _ rA rB rC ys xs = true.
-  Proof.
+  Proof using symA symB symC.
     induction xs.
     + intros * Ht.
       destruct ys.
@@ -745,7 +748,7 @@ Section Listtripleprops.
     @triple_elem_list _ _ _ rA rB rC xs ys = true -> 
     @triple_elem_list _ _ _ rA rB rC ys zs = true ->
     @triple_elem_list _ _ _ rA rB rC xs zs = true.
-  Proof.
+  Proof using trnA trnB trnC.
     induction xs.
     + intros * Hy Hz.
       destruct ys; 
@@ -790,7 +793,7 @@ Section Listtripleprops.
   Lemma length_rewrite : forall xs ys,
     @triple_elem_list _ _ _ rA rB rC xs ys = true ->
     List.length xs = List.length ys.
-  Proof.
+  Proof using Type.
     induction xs.
     + intros * Hin.
       destruct ys.
@@ -816,7 +819,7 @@ Section Listtripleprops.
       @triple_elem_list _ _ _ rA rB rC xs ys = true ->
       In_eq_bool _ _ _ rA rB rC xs lss = true -> 
       In_eq_bool _ _ _ rA rB rC ys lss = true.
-    Proof.
+    Proof using symA symB symC trnA trnB trnC.
       induction lss.
       + intros * Ht Hin.
         simpl in Hin.
@@ -836,11 +839,12 @@ Section Listtripleprops.
         apply IHlss with xs; assumption.
     Qed.
 
+    
     Lemma triple_trim_tail : forall (xs : list (A * B * C)) 
       (a b : A * B * C) (c : list (A * B * C)),
       triple_elem_list _ _ _ rA rB rC xs (a :: b :: c) = true ->
       triple_elem_list _ _ _ rA rB rC (List.tl xs) (b :: c) = true.
-    Proof.
+    Proof using Type.
       destruct xs.
       - simpl; intros ? ? ? He.
         congruence.
@@ -853,13 +857,15 @@ Section Listtripleprops.
         exact Her.
     Qed.
 
+    
+
     Lemma in_eq_bool_mem_first : 
       forall (l₁ l₂ : list (list (A * B * C)))
       (y : list (A * B * C)), 
       In_eq_bool _ _ _ rA rB rC y (l₁ ++ l₂) = true -> 
       In_eq_bool _ _ _ rA rB rC y l₁ = true \/ 
       In_eq_bool _ _ _ rA rB rC y l₂ = true.
-    Proof.
+    Proof using Type.
       induction l₁.
       - simpl; intros ? ? Hin.
         right. exact Hin.
@@ -876,6 +882,7 @@ Section Listtripleprops.
         right.
         exact H.
     Qed.
+    
 
 
     Lemma in_eq_bool_mem_second : 
@@ -884,7 +891,7 @@ Section Listtripleprops.
       In_eq_bool _ _ _ rA rB rC y l₁ = true \/ 
       In_eq_bool _ _ _ rA rB rC y l₂ = true -> 
       In_eq_bool _ _ _ rA rB rC y (l₁ ++ l₂) = true.
-    Proof.
+    Proof using Type.
       induction l₁.
       - simpl; intros ? ? [Hin | Hin]; 
         congruence.
@@ -899,6 +906,7 @@ Section Listtripleprops.
         right.
         exact (IHl₁ l₂ y (or_intror Hin)).
     Qed.
+    
 
 
     Lemma in_flat_map_bool_first : 
@@ -907,7 +915,7 @@ Section Listtripleprops.
       In_eq_bool _ _ _ rA rB rC y (flat_map f l) = true -> 
       (exists x : A, in_list rA l x = true /\ 
       In_eq_bool _ _ _ rA rB rC y (f x) = true).
-    Proof.
+    Proof using refA.
       induction l.
       - simpl; intros ? ? Hin.
         congruence.
@@ -938,7 +946,7 @@ Section Listtripleprops.
       in_list rA l x = true -> 
       In_eq_bool _ _ _ rA rB rC y (f x) = true ->
       In_eq_bool _ _ _ rA rB rC y (flat_map f l) = true.
-    Proof.
+    Proof using Type.
       induction l.
       - simpl; intros ? ? ? Hc Hin Hf.
         congruence.
@@ -967,7 +975,7 @@ Section Listtripleprops.
       In_eq_bool _ _ _ rA rB rC y (flat_map f l) = true <-> 
       (exists x : A, in_list rA l x = true /\ 
       In_eq_bool _ _ _ rA rB rC y (f x) = true).
-    Proof.
+    Proof using refA.
       intros ? ? ? Hc; split; intros H.
       apply in_flat_map_bool_first; exact H.
       destruct H as [x [Hl Hr]].
@@ -978,15 +986,16 @@ Section Listtripleprops.
 
     Lemma orb_eq : forall (a b c : bool), 
       a = c -> (a || b = c || b)%bool.
-    Proof using -All.
+    Proof using Type.
       intros [|] [|] [|] H; simpl;
       try reflexivity; try congruence.
     Qed.
 
+    
     Lemma andb_eq : forall (a b c d e f g: bool), 
       (a && b && c = e && f && g)%bool -> 
       (a && b && c && d = e && f && g && d)%bool.
-    Proof using -All.
+    Proof using Type.
       intros [|] [|] [|] [|] [|] [|] [|] H; simpl in * |- *;
       try reflexivity; try congruence.
     Qed.
@@ -1001,16 +1010,11 @@ Section Listtripleprops.
       rC r₁ r₂ = true ->
       triple_elem_list _ _ _ rA rB rC y ((a₁, b₁, r₁) :: v :: l) =
       triple_elem_list _ _ _ rA rB rC y ((a₂, b₂, r₂) :: v :: l).
-    Proof.
+    Proof using symA symB symC trnA trnB trnC.
       intros ? ? ? ? ? ? ? ? ? H₁ H₂ H₃.
       destruct y; simpl. reflexivity.
       repeat destruct p. 
       apply andb_eq.
-      
-      (* 
-        God, give me strenght to prove
-        this lemma! 
-      *)
       case (rA a a₁) eqn:Hn₁;
       case (rB b b₁) eqn:Hn₂;
       case (rC c r₁) eqn:Hr₁;
@@ -1053,8 +1057,9 @@ Section Listtripleprops.
       apply symB in H₂.
       pose proof (trnB _ _ _ Hn₄ H₂) as Hf.
       rewrite Hf in Hn₂. congruence.
-      (* Thank you, God! *)
     Qed.
+
+    
 
     Lemma list_equality_cons_gen : 
       forall l ld le c d mcd e f mef,
@@ -1065,7 +1070,7 @@ Section Listtripleprops.
       triple_elem_list _ _ _ rA rB rC l [(e, f, mef)] = true) ∨ 
       (exists lm, 
       triple_elem_list _ _ _ rA rB rC l ((c, d, mcd) :: lm ++ [(e, f, mef)]) = true).
-    Proof.
+    Proof using Type.
       induction l as [|((au, av), aw) l].
       + intros * H He Hf.
         congruence.
@@ -1120,11 +1125,12 @@ Section Listtripleprops.
         exact IHl.
     Qed.
 
+    
     Lemma triple_elem_eq : 
       forall bl lrt, 
       triple_elem_list _ _ _ rA rB rC bl lrt = true ->
       (length lrt < S (S (length bl)))%nat.
-    Proof.
+    Proof using Type.
       (* proof by nia? *)
       induction bl as [|((bau, bav), baw) bl].
       + intros [|((aau, aav), aaw) lrt].
@@ -1152,7 +1158,7 @@ Section Listtripleprops.
       forall bl llt awt lrt, 
       triple_elem_list _ _ _ rA rB rC bl (llt ++ [awt] ++ lrt) = true ->
       (length lrt < S (length bl))%nat.
-    Proof.
+    Proof using Type.
       induction bl as [|((bau, bav), baw) bl].
       + simpl.
         intros * Ha.
@@ -1184,10 +1190,12 @@ Section Listtripleprops.
         nia.
     Qed.
 
+    
+
     Lemma list_tl_lia : forall (xs : list A) k, 
       List.tl xs <> [] -> (length (List.tl xs) = S k)%nat ->
       (length xs = S (S k))%nat.
-    Proof using -All.
+    Proof using Type.
       induction xs.
       + intros * Hf Hin.
         simpl in * |- *.
@@ -1197,6 +1205,7 @@ Section Listtripleprops.
         lia.
     Qed.
 
+    
   Lemma elem_path_aux_true : 
     forall (l : list A) (a : A),
     in_list rA l a = true -> 
@@ -1225,7 +1234,7 @@ Section Listtripleprops.
   Lemma in_list_true : 
     forall l₁ l₂ a, 
     in_list rA (l₁ ++ a :: l₂) a = true.
-  Proof.
+  Proof using refA.
     induction l₁.
     + simpl.
       intros ? ?.
@@ -1243,7 +1252,7 @@ Section Listtripleprops.
   Lemma no_dup_false_one : 
     forall l₁ l₂ l₃ a, 
     no_dup A rA (l₁ ++ a :: l₂ ++ a :: l₃) = false.
-  Proof.
+  Proof using refA.
     induction l₁.
     + simpl.
       intros *.

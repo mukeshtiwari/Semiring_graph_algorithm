@@ -45,25 +45,22 @@ Section Proofs.
 
 
   Variables 
-    (* Semiring Axiom on R *)
-    (zero_left_identity_plus  : forall r : R, 0 + r =r= r = true)
+    (* Semiring axiom on R *)
     (zero_right_identity_plus : forall r : R, r + 0 =r= r = true)
     (plus_associative : forall a b c : R, a + (b + c) =r= 
-      (a + b) + c = true)
+      (a + b) + c = true )
     (plus_commutative  : forall a b : R, a + b =r= b + a = true)
-    (plus_idempotence : forall a, a + a =r= a = true)
     (zero_stable : forall a, 1 + a =r= 1 = true)
     (one_left_identity_mul  : forall r : R, 1 * r =r= r = true)
-    (one_right_identity_mul : forall r : R, r * 1 =r= r = true)
     (mul_associative : forall a b c : R, a * (b * c) =r= 
       (a * b) * c = true)
     (left_distributive_mul_over_plus : forall a b c : R, 
       a * (b + c) =r= a * b + a * c = true)
     (right_distributive_mul_over_plus : forall a b c : R, 
       (a + b) * c =r= a * c + b * c = true)
-    (zero_left_anhilator_mul  : forall a : R, 0 * a =r= 0 = true)
-    (zero_right_anhilator_mul : forall a : R, a * 0 =r= 0 = true)
-    (* end of axioms *)
+    (* end of semiring axioms *)
+
+    (plus_idempotence : forall a, a + a =r= a = true)
 
     (* start of congruence relation *)
     (congrP : bop_congruence R eqR plusR)
@@ -76,17 +73,18 @@ Section Proofs.
   
   Lemma orel_refl : 
     forall a, Orel R plusR eqR a a.
-  Proof.
+  Proof using plus_idempotence.
     unfold Orel; intros ?.
     apply plus_idempotence.
   Qed.
 
+  
   Lemma orel_anti_sym : 
     forall a b : R, 
     Orel R plusR eqR a b -> 
     Orel R plusR eqR b a -> 
     a =r= b = true.
-  Proof.
+  Proof using congrR plus_commutative refR symR.
     unfold Orel; intros ? ? Hab Hba.
     assert (Ht : a =r= a + b = true).
     apply symR. exact Hab.
@@ -99,12 +97,13 @@ Section Proofs.
     apply refR.
   Qed.
 
+  
   Lemma orel_trans : 
     forall a b c : R, 
     Orel R plusR eqR a b -> 
     Orel R plusR eqR b c -> 
     Orel R plusR eqR a c.
-  Proof.
+  Proof using congrP congrR plus_associative refR symR.
     unfold Orel; intros ? ? ? Hab Hbc.
     assert (Ht : a + c =r= a + b + c = true).
     apply congrP. apply symR.
@@ -129,7 +128,7 @@ Section Proofs.
 
   Lemma neutral_abouve : 
     forall (a : R), Orel R plusR eqR  a 0.
-  Proof.
+  Proof using zero_right_identity_plus.
     intro a; unfold Orel.
     apply zero_right_identity_plus.
   Qed.
@@ -137,7 +136,8 @@ Section Proofs.
 
   Lemma a_b_a : 
     forall a b, Orel R plusR eqR  (a + b) a.
-  Proof.
+  Proof using congrP congrR plus_associative plus_commutative
+    plus_idempotence refR symR.
     unfold Orel; intros ? ?.
     assert (Ht : a + b + a =r= a + a + b = true).
     pose proof (plus_commutative (a + b) a) as Hw.
@@ -157,7 +157,7 @@ Section Proofs.
 
   Lemma a_b_b : 
     forall a b, Orel R plusR eqR  (a + b) b.
-  Proof.
+  Proof using congrP congrR plus_associative plus_idempotence refR symR.
     unfold Orel; intros ? ?.
     assert (Ht : a + b + b =r= a + (b + b) = true).
     apply symR, plus_associative.
@@ -174,7 +174,7 @@ Section Proofs.
     forall a b c, 
     Orel R plusR eqR a b -> 
     Orel R plusR eqR (a + c) (b + c).
-  Proof.
+  Proof using congrP congrR plus_associative plus_commutative plus_idempotence refR symR.
     unfold Orel; intros ? ? ? Ho.
     assert (Ht : a + c + (b + c) =r= 
       a + (c + (b + c)) = true).
@@ -210,7 +210,7 @@ Section Proofs.
     forall a b c : R, 
     Orel R plusR eqR a b -> 
     Orel R plusR eqR (a * c) (b * c).
-  Proof.
+  Proof using congrM congrR refR right_distributive_mul_over_plus symR.
     unfold Orel; intros ? ? ? Ho.
     assert (Ht : a * c + b * c =r= (a + b) * c = true).
     apply symR.
@@ -228,7 +228,9 @@ Section Proofs.
   Lemma path_weight_rel : 
     forall a b c : R,
     Orel R plusR eqR (a * c) (a * b * c).
-  Proof.
+  Proof using congrM congrP congrR left_distributive_mul_over_plus
+    mul_associative one_left_identity_mul refR right_distributive_mul_over_plus
+    symR zero_stable.
     unfold Orel; intros ? ? ?.
     assert (Ht : a * c + a * b * c =r= 
       a * c + a * (b * c) = true).
