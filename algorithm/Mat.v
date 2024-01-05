@@ -1687,23 +1687,49 @@ Section Matrix_proofs.
     Qed.
     
 
+   
+
+
     
-    Lemma astar_aide_gen_q_stable_gen :
+     Lemma astar_exists_gen_q_stable : 
+      forall (q : nat),
+      (forall w : R, partial_sum_r R 1 plusR mulR w q =r= 
+        partial_sum_r R 1 plusR mulR w (S q) = true) -> 
+      forall (t : nat) (a : R), 
+      partial_sum_r R 1 plusR mulR a (t + q) =r= 
+      partial_sum_r R 1 plusR mulR a q = true.
+     Proof using congrM congrP congrR left_distributive_mul_over_plus
+       plus_associative refR symR.
+       intros * q_stable.
+       induction t as [|t Iht];
+         intro a.
+       +
+         simpl; eapply refR.
+       +
+          pose proof (astar_aide_gen_q_stable (t + q) a) as IHs.
+          simpl in IHs.
+          rewrite <-IHs; clear IHs.
+          apply congrR; [eapply refR |].
+          pose proof (astar_aide_gen_q_stable q a) as Ht.
+          rewrite <-Ht; clear Ht.
+          apply congrR; [eapply q_stable |].
+          eapply congrP; [eapply refR | ].
+          eapply congrM; [eapply refR | eapply Iht].
+     Qed.
+
+
+     Lemma astar_aide_zero_stable_q_stable :
       forall (t : nat) (a : R) (zero_stable : forall a : R, 1 + a =r= 1 = true),
       partial_sum_r R 1 plusR mulR a t =r= partial_sum_r R 1 plusR mulR a (S t) = true. 
-    Proof using congrM congrP congrR one_left_identity_mul one_right_identity_mul
-      plus_associative refR right_distributive_mul_over_plus symR.
-      intros * zero_stable; simpl.
-      eapply symR, astar_aide_zero_stable;
-      try assumption.
-    Qed.
+     Proof using congrM congrP congrR one_left_identity_mul one_right_identity_mul
+       plus_associative refR right_distributive_mul_over_plus symR.
+       intros * zero_stable; simpl.
+       eapply symR, astar_aide_zero_stable;
+         try assumption.
+     Qed.
 
-
-
-      
-
-    
-    Lemma astar_exists_gen_q_stable : 
+          
+    Lemma astar_exists_gen_zero_stable : 
       forall (q : nat),
       (forall w : R, 1 + w =r= 1 = true) -> 
       forall (t : nat) (a : R), 
@@ -1712,30 +1738,12 @@ Section Matrix_proofs.
     Proof using congrM congrP congrR left_distributive_mul_over_plus
       one_left_identity_mul one_right_identity_mul plus_associative refR
       right_distributive_mul_over_plus symR.
-      intros ? q_stable.
-      induction t.
-      - simpl; intros ?.
-        apply refR.
-      - simpl; intros ?.
-        pose proof (astar_aide_gen_q_stable (t + q) a) as Ht.
-        rewrite <-Ht; clear Ht.
-        apply congrR.
-        apply refR.
-        assert (Ht : 1 + a * partial_sum_r R 1 plusR mulR a (t + q) =r= 
-          1 + a * partial_sum_r R 1 plusR mulR a q = true).
-        apply congrP. apply refR. 
-        apply congrM. apply refR.
-        apply IHt.
-        apply symR.
-        rewrite <-Ht; clear Ht.
-        apply congrR.
-        apply refR.
-        pose proof (astar_aide_gen_q_stable q a) as Ht.
-        rewrite <-Ht; clear Ht.
-        apply congrR. 
-        apply astar_aide_gen_q_stable_gen, q_stable.
-        apply refR.
+      intros * zero_stable *.
+      eapply astar_exists_gen_q_stable.
+      intros; eapply astar_aide_zero_stable_q_stable.
+      assumption.      
     Qed.
+    
 
     
     Lemma mat_add_cong_gen : 
