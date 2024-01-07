@@ -45,12 +45,11 @@ Section Proofs.
 
 
   Variables 
-    (* Semiring axiom on R *)
+    (* axiom on R *)
     (zero_right_identity_plus : forall r : R, r + 0 =r= r = true)
     (plus_associative : forall a b c : R, a + (b + c) =r= 
       (a + b) + c = true )
     (plus_commutative  : forall a b : R, a + b =r= b + a = true)
-    (zero_stable : forall a, 1 + a =r= 1 = true)
     (one_left_identity_mul  : forall r : R, 1 * r =r= r = true)
     (mul_associative : forall a b c : R, a * (b * c) =r= 
       (a * b) * c = true)
@@ -58,7 +57,7 @@ Section Proofs.
       a * (b + c) =r= a * b + a * c = true)
     (right_distributive_mul_over_plus : forall a b c : R, 
       (a + b) * c =r= a * c + b * c = true)
-    (* end of semiring axioms *)
+    (* end of axioms *)
 
     (plus_idempotence : forall a, a + a =r= a = true)
 
@@ -225,12 +224,13 @@ Section Proofs.
   Qed.
 
 
-  Lemma path_weight_rel : 
+  (* This proof relies on 0-stable *)
+  Lemma path_weight_rel  (zero_stable : forall a, 1 + a =r= 1 = true) : 
     forall a b c : R,
     Orel R plusR eqR (a * c) (a * b * c).
   Proof using congrM congrP congrR left_distributive_mul_over_plus
     mul_associative one_left_identity_mul refR right_distributive_mul_over_plus
-    symR zero_stable.
+    symR.
     unfold Orel; intros ? ? ?.
     assert (Ht : a * c + a * b * c =r= 
       a * c + a * (b * c) = true).

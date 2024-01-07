@@ -3996,9 +3996,9 @@ Section Pathprops.
     apply refR.
     rewrite Ht; clear Ht.
     eapply path_weight_rel;
-    try assumption.
-    apply zero_stable.
-    apply one_left_identity_mul.
+      try assumption.
+    eassumption.
+    eassumption.
   Qed.
   
 
