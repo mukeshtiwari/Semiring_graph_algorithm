@@ -1895,9 +1895,6 @@ Section Matrix_proofs.
 
      
    
-    
-
-
 
 
     Lemma astar_exists_gen_q_stable_matrix : 
@@ -2038,10 +2035,8 @@ Section Matrix_proofs.
     Lemma mat_mul_idem_ind : 
       forall n m c d,  
       (m *M partial_sum_mat Node eqN finN R zeroR oneR plusR mulR m n +M 
-        partial_sum_mat Node eqN finN 
-        R zeroR oneR plusR mulR m n) c d =r=
-      (partial_sum_mat Node eqN finN 
-      R zeroR oneR plusR mulR m (S n) c d) = true.
+        partial_sum_mat Node eqN finN R zeroR oneR plusR mulR m n) c d =r=
+      (partial_sum_mat Node eqN finN R zeroR oneR plusR mulR m (S n) c d) = true.
     Proof using congrP congrR left_distributive_mul_over_plus plus_associative
       plus_commutative plus_idempotence refR symR zero_left_identity_plus.
       induction n.
@@ -2140,12 +2135,10 @@ Section Matrix_proofs.
       
     
     Lemma matrix_pow_idempotence :
-      forall (n : nat) (m : Matrix Node R) 
-      (c d : Node),
+      forall (n : nat) (m : Matrix Node R) (c d : Node),
       mat_cong Node eqN R eqR m ->
       matrix_exp_unary Node eqN finN R 0 1 plusR mulR (m +M I Node eqN R 0 1) n c d =r= 
-      partial_sum_mat Node eqN finN 
-      R zeroR oneR plusR mulR m n c d = true.
+      partial_sum_mat Node eqN finN R zeroR oneR plusR mulR m n c d = true.
     Proof using congrM congrP congrR dupN left_distributive_mul_over_plus
       lenN memN one_left_identity_mul plus_associative plus_commutative
       plus_idempotence refN refR right_distributive_mul_over_plus symN symR
@@ -2244,7 +2237,7 @@ Section Matrix_proofs.
 
    
 
-
+    (* *)
     Lemma zero_stable_partial (zero_stable : forall a : R, 1 + a =r= 1 = true) : 
       forall m,
       mat_cong Node eqN R eqR m -> 
@@ -2277,38 +2270,32 @@ Section Matrix_proofs.
     Qed.
 
 
-
-    Lemma matrix_fixpoint : forall (n : nat) (m : Matrix Node R) c d,
-      mat_cong Node eqN R eqR m ->
-      (forall (c d : Node), 
-        partial_sum_mat Node eqN finN R 0 1 plusR mulR m (length finN) c d =r= 
-        partial_sum_mat Node eqN finN R 0 1 plusR mulR m (S (length finN)) c d = true) ->  
+    
+    Lemma matrix_fixpoint 
+      (zero_stable : forall a : R, 1 + a =r= 1 = true) :
+      forall (n : nat) (m : Matrix Node R) c d,
+       (∀ u v : Node, (u =n= v) = true → (m u v =r= 1) = true) ->
+      mat_cong Node eqN R eqR m ->  
       matrix_exp_unary Node eqN finN R 0 1 plusR mulR 
-      (m +M I Node eqN R 0 1) (List.length finN) c d =r= 
+      (m +M I Node eqN R 0 1) (List.length finN - 1) c d =r= 
       matrix_exp_unary Node eqN finN R 0 1 plusR mulR 
-      (m +M I Node eqN R 0 1) (n + List.length finN) c d = true.
-    Proof using congrM congrP congrR dupN left_distributive_mul_over_plus lenN
-      memN one_left_identity_mul plus_associative plus_commutative plus_idempotence
-      refN refR right_distributive_mul_over_plus symN symR trnN zero_left_anhilator_mul
-      zero_left_identity_plus zero_right_identity_plus.
-      intros ? ? ? ? Hm q_stable.
-      apply symR.
-      assert (Ht:
-      (matrix_exp_unary Node eqN finN R 0 1 plusR mulR 
-        (m +M I Node eqN R 0 1) (n + length finN) c d =r=
-      matrix_exp_unary Node eqN finN R 0 1 plusR mulR 
-        (m +M I Node eqN R 0 1) (length finN) c d) =
-      (partial_sum_mat Node eqN finN R 0 1 plusR mulR m (n + length finN) c d =r=
-      partial_sum_mat Node eqN finN R 0 1 plusR mulR m (length finN) c d)).
-      apply congrR.
-      apply matrix_pow_idempotence; exact Hm.
-      apply matrix_pow_idempotence; exact Hm.
-      rewrite Ht; clear Ht.
-      apply astar_exists_gen_q_stable_matrix.
-      intros ut vt.
-      apply q_stable.
+      (m +M I Node eqN R 0 1) (n + List.length finN - 1) c d = true.
+    Proof.
+      intros * Ha Hb.
+      pose proof connect_unary_matrix_exp_partial_sum_paths.
+      rewrite <-(connect_unary_matrix_exp_partial_sum_paths (length finN - 1) m c d Hb).
+      eapply congrR.
+      eapply refR.
+      rewrite <-(connect_unary_matrix_exp_partial_sum_paths (n + length finN - 1) m c d Hb).
+      eapply congrR.
+      eapply refR.
+      eapply zero_stable_partial_sum_path; try assumption.
     Qed.
 
+
+
+      
+      
 
 End Matrix_proofs.
 

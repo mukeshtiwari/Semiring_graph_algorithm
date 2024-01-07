@@ -3769,7 +3769,7 @@ Section Pathprops.
     forall ll lr lm au av aw c d m,
     mat_cong Node eqN R eqR m ->
     well_formed_path_aux Node eqN R eqR m
-         (ll ++ ((au, av, aw) :: lm) ++ lr ++ [(d, d, 1)]) = true -> 
+      (ll ++ ((au, av, aw) :: lm) ++ lr ++ [(d, d, 1)]) = true -> 
     source Node eqN R c
       (ll ++ ((au, av, aw) :: lm) ++ lr ++ [(d, d, 1)]) = true ->
     cyclic_path Node eqN R au ((au, av, aw) :: lm) ->
