@@ -217,7 +217,6 @@ Section Matrix_proofs.
     (plus_associative : forall a b c : R, a + (b + c) =r= 
       (a + b) + c = true)
     (plus_commutative  : forall a b : R, a + b =r= b + a = true)
-    (plus_idempotence : forall a : R, a + a =r= a = true)
     (one_left_identity_mul  : forall r : R, 1 * r =r= r = true)
     (one_right_identity_mul : forall r : R, r * 1 =r= r = true)
     (mul_associative : forall a b c : R, a * (b * c) =r= 
@@ -1532,9 +1531,11 @@ Section Matrix_proofs.
     Qed.
 
     
-    Lemma matrix_add_idempotence : forall m c d, 
+    Lemma matrix_add_idempotence  
+      (plus_idempotence : forall a : R, a + a =r= a = true) :
+    forall m c d, 
       matrix_add Node R plusR m m c d =r= m c d = true.
-    Proof using plus_idempotence.
+    Proof.
       unfold matrix_add; intros *.
       apply plus_idempotence.
     Qed.
@@ -2032,13 +2033,14 @@ Section Matrix_proofs.
     Qed.
 
     
-    Lemma mat_mul_idem_ind : 
+    Lemma mat_mul_idem_ind 
+       (plus_idempotence : forall a : R, a + a =r= a = true) : 
       forall n m c d,  
       (m *M partial_sum_mat Node eqN finN R zeroR oneR plusR mulR m n +M 
         partial_sum_mat Node eqN finN R zeroR oneR plusR mulR m n) c d =r=
       (partial_sum_mat Node eqN finN R zeroR oneR plusR mulR m (S n) c d) = true.
     Proof using congrP congrR left_distributive_mul_over_plus plus_associative
-      plus_commutative plus_idempotence refR symR zero_left_identity_plus.
+      plus_commutative refR symR zero_left_identity_plus.
       induction n.
       - simpl; intros ? ? ?.
         apply matrix_add_comm.
@@ -2134,14 +2136,15 @@ Section Matrix_proofs.
 
       
     
-    Lemma matrix_pow_idempotence :
+    Lemma matrix_pow_idempotence 
+      (plus_idempotence : forall a : R, a + a =r= a = true) :
       forall (n : nat) (m : Matrix Node R) (c d : Node),
       mat_cong Node eqN R eqR m ->
       matrix_exp_unary Node eqN finN R 0 1 plusR mulR (m +M I Node eqN R 0 1) n c d =r= 
       partial_sum_mat Node eqN finN R zeroR oneR plusR mulR m n c d = true.
     Proof using congrM congrP congrR dupN left_distributive_mul_over_plus
       lenN memN one_left_identity_mul plus_associative plus_commutative
-      plus_idempotence refN refR right_distributive_mul_over_plus symN symR
+      refN refR right_distributive_mul_over_plus symN symR
       trnN zero_left_anhilator_mul zero_left_identity_plus zero_right_identity_plus.
       induction n.
       - simpl; intros ? ? ? Hm.
@@ -2192,6 +2195,7 @@ Section Matrix_proofs.
         apply refR.
         rewrite Ht; clear Ht.
         apply mat_mul_idem_ind.
+        eapply plus_idempotence.
     Qed.
 
     
@@ -2219,26 +2223,30 @@ Section Matrix_proofs.
     Qed.
 
 
-    Lemma connect_unary_matrix_exp_partial_sum_paths : forall n m c d,
+    Lemma connect_unary_matrix_exp_partial_sum_paths 
+      (plus_idempotence : forall a : R, a + a =r= a = true) : 
+      forall n m c d,
       mat_cong Node eqN R eqR m -> 
       matrix_exp_unary Node eqN finN R 0 1 plusR mulR (m +M I Node eqN R 0 1) n c d =r= 
       partial_sum_paths Node eqN R 0 1 plusR mulR finN m n c d = true.
     Proof using congrM congrP congrR dupN left_distributive_mul_over_plus
       lenN memN one_left_identity_mul plus_associative plus_commutative
-      plus_idempotence refN refR right_distributive_mul_over_plus symN
+      refN refR right_distributive_mul_over_plus symN
       symR trnN trnR zero_left_anhilator_mul zero_left_identity_plus
       zero_right_anhilator_mul zero_right_identity_plus.
       intros * Hm.
-      pose proof matrix_pow_idempotence n m c d Hm as Hp.
+      pose proof matrix_pow_idempotence plus_idempotence n m c d Hm as Hp.
       pose proof connect_partial_sum_mat_paths n m c d Hm as Hpp.
-      eapply trnR with (partial_sum_mat Node eqN finN R 0 1 plusR mulR m n c d); assumption.
+      eapply trnR with (partial_sum_mat Node eqN finN R 0 1 plusR mulR m n c d); 
+      assumption.
     Qed.
-
+    
 
    
 
     (* *)
-    Lemma zero_stable_partial (zero_stable : forall a : R, 1 + a =r= 1 = true) : 
+    Lemma zero_stable_partial 
+      (zero_stable : forall a : R, 1 + a =r= 1 = true) : 
       forall m,
       mat_cong Node eqN R eqR m -> 
       (∀ u v : Node, (u =n= v) = true → (m u v =r= 1) = true) ->
@@ -2272,6 +2280,7 @@ Section Matrix_proofs.
 
     
     Lemma matrix_fixpoint 
+      (plus_idempotence : forall a : R, a + a =r= a = true)
       (zero_stable : forall a : R, 1 + a =r= 1 = true) :
       forall (n : nat) (m : Matrix Node R) c d,
        (∀ u v : Node, (u =n= v) = true → (m u v =r= 1) = true) ->
@@ -2283,10 +2292,12 @@ Section Matrix_proofs.
     Proof.
       intros * Ha Hb.
       pose proof connect_unary_matrix_exp_partial_sum_paths.
-      rewrite <-(connect_unary_matrix_exp_partial_sum_paths (length finN - 1) m c d Hb).
+      rewrite <-(connect_unary_matrix_exp_partial_sum_paths plus_idempotence 
+        (length finN - 1) m c d Hb).
       eapply congrR.
       eapply refR.
-      rewrite <-(connect_unary_matrix_exp_partial_sum_paths (n + length finN - 1) m c d Hb).
+      rewrite <-(connect_unary_matrix_exp_partial_sum_paths plus_idempotence 
+        (n + length finN - 1) m c d Hb).
       eapply congrR.
       eapply refR.
       eapply zero_stable_partial_sum_path; try assumption.
