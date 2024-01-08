@@ -358,7 +358,7 @@ Section Pathprops.
     (* end of semiring axioms *)
   
     (* 1 is additive annhilator *)
-    (zero_stable : forall a : R, 1 + a =r= 1 = true)
+    (* zero_stable : forall a : R, 1 + a =r= 1 = true *)
     (* end of axioms *)
 
     (* start of congruence relation *)
@@ -3948,14 +3948,15 @@ Section Pathprops.
   Qed.
   
 
-  Lemma cycle_path_dup_remove : 
+  Lemma cycle_path_dup_remove 
+    (zero_stable : forall a : R, 1 + a =r= 1 = true) : 
     forall ll lm lr,
     Orel R plusR eqR
       (measure_of_path Node R oneR mulR (ll ++ lr))
       (measure_of_path Node R oneR mulR (ll ++ lm ++ lr)). 
   Proof using congrM congrP congrR left_distributive_mul_over_plus
     mul_associative one_left_identity_mul refN refR
-    right_distributive_mul_over_plus symR zero_stable.
+    right_distributive_mul_over_plus symR.
     intros *.
     unfold Orel.
     assert (Ht : (measure_of_path Node R oneR mulR (ll ++ lr) + 
@@ -4043,7 +4044,8 @@ Section Pathprops.
   Qed.
 
 
-  Lemma reduce_path_into_simpl_path :
+  Lemma reduce_path_into_simpl_path 
+    (zero_stable : forall a : R, 1 + a =r= 1 = true) :
     forall (l : list (Node * Node * R)) m c d,
     (length finN <= length l)%nat ->
     mat_cong Node eqN R eqR m -> 
@@ -4060,7 +4062,7 @@ Section Pathprops.
         (measure_of_path Node R oneR mulR l).
   Proof using congrM congrP congrR dupN left_distributive_mul_over_plus
     lenN memN mul_associative one_left_identity_mul plus_associative refN
-    refR right_distributive_mul_over_plus symN symR trnN zero_stable.
+    refR right_distributive_mul_over_plus symN symR trnN.
     intros l.
     induction (zwf_well_founded l) as [l Hf IHl].
     unfold zwf in * |- *.
@@ -4099,7 +4101,7 @@ Section Pathprops.
     eapply orel_rewrite.
     try assumption.
     exact Hte.
-    eapply cycle_path_dup_remove.
+    eapply cycle_path_dup_remove; try assumption.
 
     (* Now we are in Inductive case *)
     specialize (IHl (ll ++ lr) Hlt m c d Hdisj Hm).
@@ -4127,10 +4129,10 @@ Section Pathprops.
     exact Htn.
     eapply orel_rewrite.
     exact Hte.
-    pose proof cycle_path_dup_remove 
+    pose proof cycle_path_dup_remove zero_stable
       ll ((au, av, aw) :: lm) lr as Hcp.
     eapply orel_trans;
-    try assumption.
+    try assumption. 
     exact Horel.
     exact Hcp.
   Qed.
@@ -4201,7 +4203,8 @@ Section Pathprops.
   Qed.
   
   
-  Lemma reduce_path_gen_lemma : 
+  Lemma reduce_path_gen_lemma 
+    (zero_stable : forall a : R, 1 + a =r= 1 = true) : 
     ∀ (n : nat) (m : Matrix Node R) 
     (c d : Node) (xs : list (Node * Node * R)),
     (length finN <= n)%nat ->
@@ -4220,12 +4223,12 @@ Section Pathprops.
   Proof using congrM congrP congrR dupN left_distributive_mul_over_plus lenN
     memN mul_associative one_left_identity_mul one_right_identity_mul
     plus_associative refN refR right_distributive_mul_over_plus symN symR
-    trnN trnR zero_stable.
+    trnN trnR.
     intros * Hfin Hcd Hm Hin.
     destruct (source_target_non_empty_kpath_and_well_formed 
       n m c d xs Hcd Hm Hin) as 
     (Hxs & Hsn & Htn & Hw & Hl & xs' & Hxs').
-    pose proof reduce_path_into_simpl_path xs' m c d as Hpath.
+    pose proof reduce_path_into_simpl_path zero_stable xs' m c d as Hpath.
     pose proof length_rewrite _ _ _ eqN eqN eqR _ _ Hxs' as Hlen.
     rewrite app_length in Hlen.
     simpl in Hlen.
@@ -4822,7 +4825,8 @@ Section Pathprops.
 
 
 
-  Lemma sum_all_flat_paths_fixpoint : 
+  Lemma sum_all_flat_paths_fixpoint 
+    (zero_stable : forall a : R, 1 + a =r= 1 = true) : 
     forall k c d m, (∀ u v : Node, (u =n= v) = true → (m u v =r= 1) = true) ->
     mat_cong Node eqN R eqR m -> sum_all_flat_paths Node R zeroR oneR plusR mulR
       (enum_all_paths_flat Node eqN R oneR finN m (length finN - 1)%nat c d) =r=
@@ -4831,7 +4835,7 @@ Section Pathprops.
   Proof using congrM congrP congrR dupN left_distributive_mul_over_plus lenN memN
     mul_associative one_left_identity_mul one_right_identity_mul plus_associative
     plus_commutative refN refR right_distributive_mul_over_plus symN symR trnN trnR
-    zero_left_identity_plus zero_stable.
+    zero_left_identity_plus.
     induction k.
     + intros ? ? ? Huv Hm.
       simpl.
@@ -4858,7 +4862,7 @@ Section Pathprops.
       subst.
       assert(Hl : (length finN <= S (k + length finN - 1))%nat).
       nia.
-      pose proof reduce_path_gen_lemma (S (k + length finN - 1))
+      pose proof reduce_path_gen_lemma zero_stable (S (k + length finN - 1))
         m c d as Hpl.
       unfold Orel in Hpl.
       specialize (IHk c d m Huv Hm).
@@ -4955,7 +4959,8 @@ Section Pathprops.
 
 
  
-  Lemma zero_stable_partial_sum_path : 
+  Lemma zero_stable_partial_sum_path 
+    (zero_stable : forall a : R, 1 + a =r= 1 = true) : 
     forall k m,
     (∀ u v : Node, (u =n= v) = true → (m u v =r= 1) = true) ->
     mat_cong Node eqN R eqR m -> 
@@ -4965,7 +4970,7 @@ Section Pathprops.
   Proof using congrM congrP congrR dupN left_distributive_mul_over_plus lenN memN
     mul_associative one_left_identity_mul one_right_identity_mul plus_associative
     plus_commutative refN refR right_distributive_mul_over_plus symN symR trnN trnR
-    zero_left_identity_plus zero_right_identity_plus zero_stable.
+    zero_left_identity_plus zero_right_identity_plus.
     intros * Huv Hm ? ?.
     assert (Htt: 
     (partial_sum_paths Node eqN R 0 1 plusR mulR finN m (length finN - 1) c d =r=

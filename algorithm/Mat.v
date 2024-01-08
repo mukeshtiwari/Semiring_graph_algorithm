@@ -2243,7 +2243,7 @@ Section Matrix_proofs.
     Qed.
     
 
-     Lemma zero_stable_partial_tmp 
+     Lemma zero_stable_partial 
       (zero_stable : forall a : R, 1 + a =r= 1 = true) : 
       forall k m,
       mat_cong Node eqN R eqR m -> 
@@ -2265,40 +2265,6 @@ Section Matrix_proofs.
       try assumption.
     Qed.
    
-
-    (* *)
-    Lemma zero_stable_partial 
-      (zero_stable : forall a : R, 1 + a =r= 1 = true) : 
-      forall m,
-      mat_cong Node eqN R eqR m -> 
-      (∀ u v : Node, (u =n= v) = true → (m u v =r= 1) = true) ->
-      (forall (c d : Node), 
-        partial_sum_mat Node eqN finN R 0 1 plusR mulR  m (length finN - 1) c d =r= 
-        partial_sum_mat Node eqN finN R 0 1 plusR mulR  m (length finN) c d = true).
-    Proof using congrM congrP congrR dupN left_distributive_mul_over_plus lenN memN
-      mul_associative one_left_identity_mul one_right_identity_mul plus_associative
-      plus_commutative refN refR right_distributive_mul_over_plus symN symR trnN
-      trnR zero_left_identity_plus zero_right_anhilator_mul zero_right_identity_plus.
-      intros * Hm Huv ? ?.
-      rewrite <-(connect_partial_sum_mat_paths
-        (length finN - 1) m c d Hm).
-      apply congrR.
-      apply refR.
-      rewrite <-(connect_partial_sum_mat_paths
-        (length finN) m c d Hm).
-      apply congrR.
-      apply refR.
-      assert (Hwt: (1 + length finN - 1 = length finN)%nat).
-      nia.
-      rewrite <-Hwt at 2;
-      clear Hwt.
-      eapply zero_stable_partial_sum_path with (k := S O) (eqR := eqR)
-        (Node := Node) (eqN := eqN) (R := R) (zeroR := 0)
-        (oneR := 1) (plusR := plusR) (mulR := mulR)
-        (finN := finN) (m := m) (c := c) (d := d);
-      try assumption.
-    Qed.
-
 
     
     Lemma matrix_fixpoint 
