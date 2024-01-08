@@ -2242,6 +2242,27 @@ Section Matrix_proofs.
     Qed.
     
 
+     Lemma zero_stable_partial_tmp 
+      (zero_stable : forall a : R, 1 + a =r= 1 = true) : 
+      forall k m,
+      mat_cong Node eqN R eqR m -> 
+      (∀ u v : Node, (u =n= v) = true → (m u v =r= 1) = true) ->
+      (forall (c d : Node), 
+        partial_sum_mat Node eqN finN R 0 1 plusR mulR  m (length finN - 1) c d =r= 
+        partial_sum_mat Node eqN finN R 0 1 plusR mulR  m (k + length finN - 1) c d = true).
+    Proof.
+      intros * Hm Huv ? ?.
+      rewrite <-(connect_partial_sum_mat_paths
+        (length finN - 1) m c d Hm).
+      apply congrR.
+      apply refR.
+      rewrite <-(connect_partial_sum_mat_paths
+        (k + length finN -1) m c d Hm).
+      apply congrR.
+      apply refR.
+      eapply zero_stable_partial_sum_path;
+      try assumption.
+    Qed.
    
 
     (* *)
