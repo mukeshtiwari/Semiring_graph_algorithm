@@ -2033,8 +2033,9 @@ Section Matrix_proofs.
     Qed.
 
     
+    (* m +M *)
     Lemma mat_mul_idem_ind 
-       (plus_idempotence : forall a : R, a + a =r= a = true) : 
+      (plus_idempotence : forall a : R, a + a =r= a = true) : 
       forall n m c d,  
       (m *M partial_sum_mat Node eqN finN R zeroR oneR plusR mulR m n +M 
         partial_sum_mat Node eqN finN R zeroR oneR plusR mulR m n) c d =r=
