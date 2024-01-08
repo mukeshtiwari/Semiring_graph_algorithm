@@ -356,10 +356,6 @@ Section Pathprops.
     (zero_left_anhilator_mul  : forall a : R, 0 * a =r= 0 = true)
     (zero_right_anhilator_mul : forall a : R, a * 0 =r= 0 = true)
     (* end of semiring axioms *)
-  
-    (* 1 is additive annhilator *)
-    (* zero_stable : forall a : R, 1 + a =r= 1 = true *)
-    (* end of axioms *)
 
     (* start of congruence relation *)
     (congrP : bop_congruence R eqR plusR)
