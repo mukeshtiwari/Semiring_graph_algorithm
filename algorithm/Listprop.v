@@ -2,7 +2,7 @@
 From Coq Require Import List Utf8
   FunctionalExtensionality BinNatDef 
   Lia Even.
-Require Import Algorithm.Definitions.
+Require Import Semiring.algorithm.Definitions.
 
 Import ListNotations.
 

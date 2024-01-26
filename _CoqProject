@@ -1,7 +1,8 @@
--R algorithm/  Algorithm
+-R . Semiring
 
 algorithm/Definitions.v
 algorithm/Listprop.v
 algorithm/Orel.v
 algorithm/Path.v
 algorithm/Mat.v
+examples/Schulze.v

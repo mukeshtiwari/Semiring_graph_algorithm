@@ -2,10 +2,10 @@ From Coq Require Import List Utf8
   FunctionalExtensionality BinNatDef 
   Lia Even.
 Require Import
-  Algorithm.Definitions
-  Algorithm.Listprop
-  Algorithm.Orel
-  Algorithm.Path.
+  Semiring.algorithm.Definitions
+  Semiring.algorithm.Listprop
+  Semiring.algorithm.Orel
+  Semiring.algorithm.Path.
 Import ListNotations.
 
 
@@ -139,6 +139,8 @@ Section Matrix_def.
     | O => I 
     | S n' => (partial_sum_mat m n') +M (matrix_exp_unary m n)
     end.
+
+ 
 
   
 

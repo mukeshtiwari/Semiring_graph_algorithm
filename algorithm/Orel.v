@@ -2,8 +2,8 @@
 From Coq Require Import List Utf8
   Lia.
 Require Import 
-  Algorithm.Definitions
-  Algorithm.Listprop.
+  Semiring.algorithm.Definitions
+  Semiring.algorithm.Listprop.
 Import ListNotations.
 
 Section Def.
