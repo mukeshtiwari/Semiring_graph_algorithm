@@ -1,6 +1,6 @@
 From Coq Require Import List Utf8
   FunctionalExtensionality BinNatDef 
-  Lia Even.
+  Lia PeanoNat.
 Require Import
   Semiring.algorithm.Definitions
   Semiring.algorithm.Listprop
@@ -1093,47 +1093,39 @@ Section Matrix_proofs.
     Qed.
 
   
-    Lemma binnat_odd : forall (p : positive) (n : nat), 
-      N.pos (xI p) = N.of_nat n -> 
-      exists k,  n = (2 * k + 1)%nat /\  (N.pos p) = (N.of_nat k).
-    Proof using lenN.
-      intros p n Hp.
-      destruct (Even.even_or_odd n) as [H | H].
-      apply Even.even_equiv in H. 
-      destruct H as [k Hk].
-      (* Even (impossible) Case *)
-      rewrite Hk in Hp; lia.
-      (* Odd (possible) case *)
-      apply Even.odd_equiv in H. 
-      destruct H as [k Hk].
-      rewrite Hk in Hp. 
-      exists k.
-      split. 
-      exact Hk. 
-      lia.
-    Qed.
+    Lemma binnat_odd : 
+    forall (p : positive) (n : nat), 
+    N.pos (xI p) = N.of_nat n -> 
+    exists k,  n = (2 * k + 1)%nat /\  (N.pos p) = (N.of_nat k).
+  Proof.
+    intros p n Hp.
+    destruct (Nat.Even_or_Odd  n) as [H | H].
+    destruct H as [k Hk]. 
+    (* Even (impossible) Case *)
+    rewrite Hk in Hp; lia.
+    (* Odd (possible) case *)
+    destruct H as [k Hk].
+    rewrite Hk in Hp. exists k.
+    split. exact Hk. lia.
+  Qed.
 
     
 
 
     Lemma binnat_even : forall (p : positive) (n : nat), 
-      N.pos (xO p) = N.of_nat n :> N -> 
-      exists k, n = (Nat.mul 2 k) /\  (N.pos p) = (N.of_nat k).
-    Proof using lenN.
-      intros p n Hp.
-      destruct (Even.even_or_odd n) as [H | H].
-      apply Even.even_equiv in H. 
-      destruct H as [k Hk].
-      (* Even (possible) case*)
-      rewrite Hk in Hp. 
-      exists k.
-      split. 
-      exact Hk. lia.
-      (* Odd (impossible) case *)
-      apply Even.odd_equiv in H. 
-      destruct H as [k Hk].
-      rewrite Hk in Hp. lia.
-    Qed.
+    N.pos (xO p) = N.of_nat n :> N -> 
+    exists k, n = (Nat.mul 2 k) /\  (N.pos p) = (N.of_nat k).
+  Proof.
+    intros p n Hp.
+    destruct (Nat.Even_or_Odd n) as [H | H].
+    destruct H as [k Hk].
+    (* Even (possible) case*)
+    rewrite Hk in Hp. exists k.
+    split. exact Hk. lia.
+    (* Odd (impossible) case *)
+    destruct H as [k Hk].
+    rewrite Hk in Hp. lia.
+  Qed.
 
     (* end of generic nat lemma *)
 
