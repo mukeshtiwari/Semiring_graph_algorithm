@@ -1,8 +1,8 @@
 
 From Coq Require Import Extraction.
 From Examples Require Import Schulze WidestShortestPath.
-(* 
-Set Extraction Output Directory "./extraction/schulzecode". *)
+
+Set Extraction Output Directory "_build/schulze". 
 Recursive Extraction Library Schulze.
 
 (* 
