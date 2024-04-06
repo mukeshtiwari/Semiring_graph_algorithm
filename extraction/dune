@@ -1,0 +1,4 @@
+(coq.extraction
+ (prelude Extraction)
+ (extracted_modules Schulze WidestShortestPath)
+ (theories Semiring Examples))
