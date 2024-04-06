@@ -5,8 +5,6 @@ From Examples Require Import Schulze WidestShortestPath.
 Set Extraction Output Directory "_build/schulze". 
 Recursive Extraction Library Schulze.
 
-(* 
-Set Extraction Output Directory "./extraction/widestpathcode".
-Recursive Extraction Library WidestShortestPath.
 
-*)
+Set Extraction Output Directory "_build/widestpathcode".
+Recursive Extraction Library WidestShortestPath.
