@@ -1,9 +1,8 @@
 
 From Coq Require Import List Utf8
   Lia.
-Require Import 
-  Semiring.algorithm.Definitions
-  Semiring.algorithm.Listprop.
+From Semiring Require Import 
+  Definitions Listprop.
 Import ListNotations.
 
 Section Def.

@@ -1,5 +1,5 @@
-Require Import Semiring.algorithm.Mat List BinNatDef
-  Semiring.algorithm.Definitions Semiring.algorithm.Listprop
+Require Import Semiring.Mat List BinNatDef
+  Semiring.Definitions Semiring.Listprop
   Psatz Utf8 Coq.Arith.EqNat.
 Import ListNotations.
 

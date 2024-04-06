@@ -1,10 +1,8 @@
 From Coq Require Import List Utf8
   FunctionalExtensionality BinNatDef 
   Lia.
-Require Import
-  Semiring.algorithm.Definitions
-  Semiring.algorithm.Listprop 
-  Semiring.algorithm.Orel.
+From Semiring Require Import
+  Definitions Listprop Orel.
 Import ListNotations.
 
 

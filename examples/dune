@@ -1,0 +1,6 @@
+(include_subdirs qualified)
+(coq.theory
+ (name Examples)
+ (theories Semiring)
+ (synopsis "Formalisation of semirings")
+ (modules (:standard)))

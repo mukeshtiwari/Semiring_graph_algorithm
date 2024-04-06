@@ -1,5 +1,5 @@
-Require Import Semiring.algorithm.Mat List BinNatDef
-  Semiring.algorithm.Definitions Semiring.algorithm.Listprop
+Require Import Semiring.Mat List BinNatDef
+  Semiring.Definitions Semiring.Listprop
   Psatz Utf8 Coq.Arith.EqNat.
 Import ListNotations.
 
@@ -58,7 +58,10 @@ Section Comp.
   Definition schulze (m : Path.Matrix Node R) : Path.Matrix Node R :=
     matrix_exp_binary Node eqN finN R zeroR oneR plusR mulR m 2%N.
 
+ 
+
 End Comp.
+
 
 (* We establish in this section that we all the requirements of 
 an idempotent and bounded semiring *)
@@ -302,3 +305,4 @@ Section Proofs.
 
 
 End Proofs.
+
