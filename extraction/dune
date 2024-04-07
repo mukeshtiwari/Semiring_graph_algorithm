@@ -1,4 +1,11 @@
-(coq.extraction
- (prelude Extraction)
- (extracted_modules Schulze WidestShortestPath)
- (theories Semiring Examples))
+(subdir schulze
+ (coq.extraction
+  (prelude Extraction)
+  (extracted_modules Schulze)
+  (theories Semiring Examples)))
+
+(subdir widestshortestpath
+ (coq.extraction
+  (prelude Extraction)
+  (extracted_modules WidestShortestPath)
+  (theories Semiring Examples)))
