@@ -1,0 +1,3 @@
+(executable
+ (name widestpath)
+ (libraries BinNums Datatypes Mat Nat Path))
