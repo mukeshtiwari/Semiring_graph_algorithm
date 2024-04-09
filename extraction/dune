@@ -1,11 +1,15 @@
 (subdir schulze
  (coq.extraction
   (prelude Extraction)
-  (extracted_modules Schulze)
-  (theories Semiring Examples)))
+  (extracted_modules BinNums Datatypes Decimal Definitions Hexadecimal List Listprop Logic Mat Nat Number Path Specif Schulze)
+  (theories Semiring Examples))
+  (library 
+    (name schulze)))
 
 (subdir widestshortestpath
  (coq.extraction
   (prelude Extraction)
-  (extracted_modules WidestShortestPath)
-  (theories Semiring Examples)))
+  (extracted_modules BinNums Datatypes Decimal Definitions Hexadecimal List Listprop Logic Mat Nat Number Path Specif WidestShortestPath)
+  (theories Semiring Examples))
+  (library
+    (name widestshortestpath)))

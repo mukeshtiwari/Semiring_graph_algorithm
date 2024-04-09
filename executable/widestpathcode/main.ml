@@ -1,4 +1,4 @@
-open BinNums Datatypes Mat Nat Path
+open Widestshortestpath
 
 
 let _ = print_endline "Hello, world!"
