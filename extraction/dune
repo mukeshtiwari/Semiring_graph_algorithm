@@ -13,3 +13,12 @@
   (theories Semiring Examples))
   (library
     (name widestshortestpath)))
+
+
+(subdir shortestpath
+ (coq.extraction
+  (prelude Extraction)
+  (extracted_modules BinNums Datatypes Decimal Definitions Hexadecimal List Listprop Logic Mat Nat Number Path Specif ShortestPath)
+  (theories Semiring Examples))
+  (library
+    (name shortestpath)))

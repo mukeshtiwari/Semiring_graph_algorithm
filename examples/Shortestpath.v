@@ -55,7 +55,7 @@ Section Comp.
   Definition finN : list Node := [A; B; C].
 
   (* Now, configure the matrix *)
-  Definition schulze (m : Path.Matrix Node R) : Path.Matrix Node R :=
+  Definition shortestpath (m : Path.Matrix Node R) : Path.Matrix Node R :=
     matrix_exp_binary Node eqN finN R zeroR oneR plusR mulR m 2%N.
 
 End Comp.

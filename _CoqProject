@@ -8,4 +8,7 @@ _build/default/algorithm/Path.v
 _build/default/algorithm/Mat.v
 _build/default/examples/Schulze.v
 _build/default/examples/WidestShortestPath.v
-_build/default/extraction/Extraction.v
+_build/default/examples/Shortestpath.v
+_build/default/extraction/schulze/Extraction.v
+_build/default/extraction/shortestpath/Extraction.v
+_build/default/extraction/widesthshortestpath/Extraction.v
