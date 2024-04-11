@@ -1,2 +1,4 @@
 # Semiring_graph_algorithm
-Run `make` in this directory to compile the project. 
+Run `dune build` in this directory to compile the project. It will compile the Coq code and generate OCaml code 
+from it (see _CoqProject file). Run `dune exec _build/default/executable/schulzecode/main.exe` to run the 
+Schulze method, run `dune exec _build/default/executable/shortestpath/main.exe` to run the shortest path code, etc.
