@@ -861,8 +861,25 @@ Section Proofs.
           pose proof (ltr_transitive _ _ _ Ha Hb) as He.
           eapply ltr_false in He.
           rewrite He; simpl.
-          admit.
-  Admitted.
+          pose proof (ltr_transitive _ _ _ Ha Hb) as Hf.
+          eapply ltr_true_eqr_false in Hf.
+          case (eqR xa xc) eqn:Hg.
+          eapply eqr_symmetric in Hg;
+          rewrite Hg in Hf; 
+          congruence.
+          simpl.
+          eapply ltr_true_eqr_false in Hb.
+          case (eqR xa xb) eqn:Hi.
+          eapply eqr_symmetric in Hi;
+          rewrite Hi in Hb; congruence.
+          simpl.
+          assert (Hj : ltR xb xc = false).
+          eapply ltr_false in Ha;
+          rewrite Ha; reflexivity.
+          rewrite Hj; simpl.
+          rewrite Hc; simpl.
+          now (repeat rewrite eqr_reflexive).
+  Qed.
 
 
 
