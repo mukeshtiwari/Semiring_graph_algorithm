@@ -982,15 +982,62 @@ Section Proofs.
     repeat rewrite PeanoNat.Nat.eqb_refl;
     reflexivity.
   Qed.
+
+  Theorem mul_associative : forall a b c : RR, a * (b * c) =r= (a * b) * c = true.
+  Proof.
+    intros ([al|], [ar|]) ([bl|], [br|])  ([cl|], [cr|]);
+    simpl;
+    try (repeat rewrite PeanoNat.Nat.eqb_refl);
+    try reflexivity;
+    try rewrite Bool.andb_true_r;
+    simpl;
+    try (repeat rewrite PeanoNat.Nat.add_assoc);
+    try (repeat rewrite PeanoNat.Nat.eqb_refl);
+    simpl; try reflexivity;
+    try (repeat rewrite PeanoNat.Nat.min_assoc);
+    try (repeat rewrite PeanoNat.Nat.eqb_refl);
+    simpl; try reflexivity.
+  Qed.
+
+  Theorem left_distributive_mul_over_plus : forall a b c : RR, 
+    a * (b + c) =r= a * b + a * c = true.
+  Proof.
+    intros (al, ar) (bl, br) (cl, cr); simpl.
+  Admitted.
+
+  Theorem right_distributive_mul_over_plus : forall a b c : RR, 
+    (a + b) * c =r= a * c + b * c = true.
+  Proof.
+     intros (al, ar) (bl, br) (cl, cr); simpl.
+  Admitted.
+
+  Theorem zero_left_anhilator_mul : 
+    forall a : RR, 0 * a =r= 0 = true.
+  Proof.
+    intros ([al|], [ar|]); simpl;
+    reflexivity.
+  Qed.
+
+  Theorem zero_right_anhilator_mul : 
+    forall a : RR, a * 0 =r= 0 = true.
+  Proof.
+    intros ([al|], [ar|]); simpl;
+    try (repeat rewrite PeanoNat.Nat.min_0_r);
+    try reflexivity.
+  Qed.
     
+   Theorem zero_stable : forall a : RR, 1 + a =r= 1 = true.
+  Proof.
+    intros ([[|x]|], [y|]); try reflexivity;
+    simpl.
+  Qed. 
 
-
-
-
-    
-    
-
-
+  Theorem plus_idempotence : forall a : RR, a + a =r= a = true.
+  Proof.
+    intros (x, y); simpl.
+    destruct (ltR x x || eqR x x && ltR y y)%bool;
+    eapply eqrr_reflexive.
+  Qed.
 
 End Proofs.
   
