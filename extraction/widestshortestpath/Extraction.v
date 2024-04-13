@@ -7,5 +7,6 @@ Extract Inductive nat => int [ "0" "Stdlib.Int.succ" ]
 
 Extract Inductive list => "list" [ "[]" "(::)" ].
 Extract Inductive bool => "bool" [ "true" "false" ].
+Extract Inductive prod => "(*)"  [ "(,)" ].
 
 Recursive Extraction Library WidestShortestPath.
