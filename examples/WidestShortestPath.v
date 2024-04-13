@@ -320,10 +320,23 @@ Section Proofs.
     nia.
   Qed.
 
+
   Theorem ltr_eqr_gen : forall (ya yb yc yd : R) (b : bool) , 
     eqR yc yb = true -> eqR ya yd = true -> ltR yc ya = b -> ltR yb yd = b.
   Proof. 
-  Admitted.
+    intros [ya | ] [yb | ] [yc | ] [yd | ] [|]; 
+    simpl; intros Ha Hb Hc;
+    try congruence.
+    +
+      eapply PeanoNat.Nat.eqb_eq in Ha, Hb.
+      rewrite PeanoNat.Nat.ltb_lt in Hc |- *.
+      nia.
+    +
+      eapply PeanoNat.Nat.eqb_eq in Ha, Hb.
+      rewrite PeanoNat.Nat.ltb_ge in Hc |- *.
+      nia.
+  Qed.
+      
 
   Theorem ltr_eqr : forall (ya yb yc yd : R), 
     eqR yc yb = true -> eqR ya yd = true -> ltR yc ya = true -> ltR yb yd = true.
@@ -955,8 +968,21 @@ Section Proofs.
         now (repeat rewrite eqr_reflexive).
   Qed.
 
-  
+  Theorem one_left_identity_mul  : forall r : RR, 1 * r =r= r = true.
+  Proof.
+    intros ([x |], [y |]); simpl;
+    repeat rewrite PeanoNat.Nat.eqb_refl;
+    reflexivity.
+  Qed.
 
+  Theorem one_right_identity_mul : forall r : RR, r * 1 =r= r = true.
+  Proof.
+    intros ([x |], [y |]); simpl;
+    try rewrite PeanoNat.Nat.add_0_r;
+    repeat rewrite PeanoNat.Nat.eqb_refl;
+    reflexivity.
+  Qed.
+    
 
 
 
