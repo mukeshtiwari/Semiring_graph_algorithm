@@ -882,98 +882,80 @@ Section Proofs.
   Qed.
 
 
-
-
-              
-
-            
-            
-
-
-
-
-
-
-
-
-
-              
-
-
-              
-
-
-
-            
-
-
-            
-            
-          
-
-
-            
-            
-
-
-
-
-
-
-            
-
-
-
-              
-
-
-
-
-
-
-
-
-
-
-    
-
-
-
-
-
-        
-
-      
-
-
-
-
-             
-            
-
-
-
-
-
-
-      
-
-
-        
-
-
-
-
-
-              
-
-  Admitted.  
-          
-
-
-
-
-
+  Theorem eqr_general : forall x y u v : R, eqR x u = true -> 
+    eqR y v = true -> eqRR (x, y) (u, v) = true.
+  Proof.
+    intros [x | ] [y | ] [u | ] [v |]; 
+    simpl; intros Ha Hb;
+    try congruence;
+    rewrite Ha; simpl;
+    [assumption | reflexivity].
+  Qed. 
+
+  Theorem plus_commutative  : forall a b : RR, a + b =r= b + a = true.
+  Proof.
+    intros (xa, ya) (xb, yb); simpl.
+    case (ltR xa xb) eqn:Ha; simpl.
+    +
+      assert (Hb : ltR xb xa = false).
+      eapply ltr_false; exact Ha.
+      rewrite Hb; simpl.
+      eapply ltr_true_eqr_false in Ha.
+      case (eqR xb xa) eqn:Hc.
+      ++
+        eapply eqr_symmetric in Hc;
+        rewrite Hc in Ha;
+        congruence.
+      ++
+        simpl; now (repeat rewrite eqr_reflexive).
+    +
+      eapply ltr_total in Ha.
+      destruct Ha as [Ha | Ha].
+      ++
+        rewrite Ha; simpl.
+        assert (Hb : ltR xb xa = false).
+        eapply eqr_symmetric in Ha.
+        eapply ltr_eqr_false in Ha.
+        exact Ha.
+        rewrite Hb; simpl.
+        eapply eqr_symmetric in Ha;
+        rewrite Ha; simpl.
+        case (ltR yb ya) eqn:Hc.
+        +++
+          eapply ltr_false in Hc;
+          rewrite Hc.
+          eapply eqrr_reflexive.
+        +++
+          eapply ltr_total in Hc.
+          destruct Hc as [Hc | Hc].
+          *
+            eapply eqr_symmetric in Hc.
+            assert (Hd : ltR ya yb = false).
+            eapply ltr_eqr_false in Hc.
+            exact Hc. 
+            rewrite Hd.
+            eapply eqr_general;
+            try assumption.
+            eapply eqr_symmetric; 
+            try assumption.
+          *
+            rewrite Hc.
+            eapply eqrr_reflexive.
+      ++
+        assert (Hb : eqR xb xa = false).
+        eapply ltr_true_eqr_false in Ha.
+        exact Ha.
+        assert (Hc : eqR xa xb = false).
+        case (eqR xa xb) eqn:Hc.
+        eapply eqr_symmetric in Hc.
+        rewrite Hc in Hb; congruence.
+        reflexivity.
+        rewrite Hc; simpl.
+        rewrite Ha, Hb. simpl.
+        now (repeat rewrite eqr_reflexive).
+  Qed.
+
+  
 
 
 
