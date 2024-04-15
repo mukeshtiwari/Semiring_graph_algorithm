@@ -1,13 +1,14 @@
 # Semiring_graph_algorithm
-Run `dune build` in this directory to compile the project. It will compile the Coq code and generate OCaml code 
-from it (see _CoqProject file). Run `dune exec _build/default/executable/schulzecode/main.exe` to run the 
-Schulze method, run `dune exec _build/default/executable/shortestpath/main.exe` to run the shortest path code, 
+Run `dune build` (ignore the warinings) in this directory to compile the project. It will compile the Coq code and 
+generate OCaml code from it (see _CoqProject file). Run `dune exec _build/default/executable/schulzecode/main.exe` to 
+run the Schulze method, run `dune exec _build/default/executable/shortestpath/main.exe` to run the shortest path code, 
 run `dune exec executable/widestpathcode/main.exe` to run the shortest-widest path algorithm, etc.
 
 
 If you want to verify that your algebra is a semiring, do the following:
-1. Define your `Set`, `plus`, `mul`, `0`, and `1`. 
-2. Discharge all the axioms of semiring.
+1. Define your `Set`, `plus`, `mul`, `0`, and `1` and configure your matrix of semiring values.
+2. Call the function `matrix_exp_binary` with your configured matrix.
+3. Discharge all the axioms of semiring.
   ```
     (* semiring axiom on R *)
     (zero_left_identity_plus  : forall r : R, 0 + r =r= r = true)
@@ -28,12 +29,12 @@ If you want to verify that your algebra is a semiring, do the following:
     (* end of semiring axioms *)
 
   ```
-3. Moreover, this formalisation assumes bounded and idempotent semiring to compute a fixed-point.
+4. Moreover, this formalisation assumes bounded and idempotent semiring to compute a fixed-point.
   ```
    (zero_stable : forall a : R, 1 + a =r= 1 = true) 
    (plus_idempotence : forall a, a + a =r= a = true)
   ``` 
-4. See the Coq files in [examples](./examples/) directory for more information.
+5. See the Coq files in [examples](./examples/) directory for more information.
 
 
 
