@@ -3,7 +3,7 @@ Run `dune build` (ignore the warinings) in this directory to compile the project
 generate OCaml code from it (see _CoqProject file). 
 1. Run `dune exec _build/default/executable/schulzecode/main.exe` to run the Schulze method 
 2. Run `dune exec _build/default/executable/shortestpath/main.exe` to run the shortest path code 
-3. Run `dune exec executable/widestpathcode/main.exe` to run the shortest-widest path algorithm. 
+3. Run `dune exec _build/default/executable/widestpathcode/main.exe` to run the shortest-widest path algorithm. 
     
 We have compiled this project with Coq 8.19.1 but if you want to use it with any other Coq version, please let us know. 
 
