@@ -2,7 +2,8 @@
 Run `dune build` (ignore the warinings) in this directory to compile the project. It will compile the Coq code and 
 generate OCaml code from it (see _CoqProject file). Run `dune exec _build/default/executable/schulzecode/main.exe` to 
 run the Schulze method, run `dune exec _build/default/executable/shortestpath/main.exe` to run the shortest path code, 
-run `dune exec executable/widestpathcode/main.exe` to run the shortest-widest path algorithm, etc.
+run `dune exec executable/widestpathcode/main.exe` to run the shortest-widest path algorithm, etc. We have compiled 
+this project with Coq 8.19.1 but if you want to use it any other Coq version, please let us know. 
 
 
 If you want to verify that your algebra is a semiring, do the following:
