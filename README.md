@@ -9,7 +9,7 @@ If you want to verify that your algebra is a semiring, do the following:
 1. Define your `Set`, `plus`, `mul`, `0`, and `1`. 
 2. Discharge all the axioms of semiring.
   ```
-  (* semiring axiom on R *)
+    (* semiring axiom on R *)
     (zero_left_identity_plus  : forall r : R, 0 + r =r= r = true)
     (zero_right_identity_plus : forall r : R, r + 0 =r= r = true)
     (plus_associative : forall a b c : R, a + (b + c) =r= 
@@ -33,7 +33,7 @@ If you want to verify that your algebra is a semiring, do the following:
    (zero_stable : forall a : R, 1 + a =r= 1 = true) 
    (plus_idempotence : forall a, a + a =r= a = true)
   ``` 
-4. See the Coq files in example directory.
+4. See the Coq files in [examples](./examples/) directory for more information.
 
 
 
