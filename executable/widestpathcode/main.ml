@@ -24,8 +24,8 @@ let rec cross_product (la : 'a list) (lb : 'b list) : ('a * 'b) list =
   | [] -> [] 
   | h :: t -> List.append (List.map (fun x -> (h, x)) lb) (cross_product t lb)
 
+  
 (* configure the matrix. *)
-
 let mat (x : coq_Node) (y : coq_Node) : coq_RR = 
   match x, y with
   | A, A -> oneRR
@@ -44,10 +44,3 @@ let _ =
     let ret = List.map (fun (x, y) -> (string_candidates x, string_candidates y, 
       string_pair (comp x y))) (cross_product finN finN) in 
   print_endline (string_list ret)
-
-
-
-
-
-
-let _ = print_endline "Hello, world!"
