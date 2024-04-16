@@ -36,8 +36,18 @@ let mat (x : coq_Node) (y : coq_Node) : coq_R =
   | C, C -> oneR  
 
 
+
+let listmat : (coq_Node * ((coq_Node * coq_R) list)) list =
+  [(A, [(A, oneR); (B, Left 3); (C, Left 3)]);
+   (B, [(A, zeroR); (B, oneR); (C,  Left 3)]);
+   (C, [(A, zeroR); (B, zeroR); (C, oneR)])
+  ]
+
+let fnmat : coq_Node -> coq_Node -> coq_R = 
+  fun (x : coq_Node) -> fun (y : coq_Node) -> List.assoc y (List.assoc x listmat)  
+
 let _ = 
-  let comp = shortestpath mat in 
+  let comp = shortestpath fnmat in 
   let ret = List.map (fun (x, y) -> (string_candidates x, string_candidates y, string_values (comp x y))) 
     (cross_product finN finN) in 
   print_endline (string_list ret)
