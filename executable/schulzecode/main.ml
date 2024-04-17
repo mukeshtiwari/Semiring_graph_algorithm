@@ -47,8 +47,24 @@ let listmat : (coq_Node * ((coq_Node * coq_R) list)) list =
 let fnmat : coq_Node -> coq_Node -> coq_R = 
   fun (x : coq_Node) -> fun (y : coq_Node) -> List.assoc y (List.assoc x listmat)  
 
+(* Solution suggested by Xavier Leroy and the fast one if the matrix is big.
+  Also, if your matrix is big then read it from a file then hardcoding it. *)
+
+let rank (n : coq_Node) : int =
+  match n with A -> 0 | B -> 1 | C -> 2 
+
+let matrix : coq_R array array = 
+  [|
+    [| oneR; Left 3; Left 3 |];
+    [| zeroR; oneR; Left 3 |];
+    [| zeroR; zeroR; oneR |]
+  |]
+
+let arraymat (x : coq_Node) (y : coq_Node) : coq_R = 
+  matrix.(rank y).(rank x)
+
 let _ = 
-  let comp = schulze fnmat in 
+  let comp = schulze arraymat in 
   let ret = List.map (fun (x, y) -> (string_candidates x, string_candidates y, string_values (comp x y))) 
     (cross_product finN finN) in 
   print_endline (string_list ret)

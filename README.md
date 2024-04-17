@@ -72,5 +72,22 @@ let fnmat : coq_Node -> coq_Node -> coq_RR =
   fun (x : coq_Node) -> fun (y : coq_Node) -> List.assoc y (List.assoc x listmat)  
 ```
 
+Another solution suggested by Xavier Leroy on Coq mailing and the fast one if the matrix is big 
+because memory access is now O(1). Also, if your matrix is big then read it from a file then hard-coding it 
+OCaml file.  
 
+```
+let rank (n : coq_Node) : int =
+  match n with A -> 0 | B -> 1 | C -> 2 
 
+let matrix : coq_R array array = 
+  [|
+    [| oneR; Left 3; Left 3 |];
+    [| zeroR; oneR; Left 3 |];
+    [| zeroR; zeroR; oneR |]
+  |]
+
+let arraymat (x : coq_Node) (y : coq_Node) : coq_R = 
+  matrix.(rank y).(rank x)
+
+```
