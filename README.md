@@ -72,8 +72,8 @@ let fnmat : coq_Node -> coq_Node -> coq_RR =
   fun (x : coq_Node) -> fun (y : coq_Node) -> List.assoc y (List.assoc x listmat)  
 ```
 
-Another solution suggested by Xavier Leroy on Coq mailing and the fast one if the matrix is big 
-because memory access is now O(1). Also, if your matrix is big then read it from a file then hard-coding it 
+Another solution suggested by Xavier Leroy on Coq mailing and the fastest one amongst all three if the matrix is big 
+because memory access is O(1). Also, if your matrix is big then read it from a file then hard-coding it 
 OCaml file.  
 
 ```
