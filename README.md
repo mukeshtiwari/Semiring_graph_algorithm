@@ -40,7 +40,7 @@ If you want to verify that your algebra is a semiring, do the following:
 5. See the Coq files in [examples](./examples/) directory for more information.
 
 
-Some design decisions: we have used function type (A -> B -> C) to model a matrix datatype but this may not be an efficient if your matrix size is large. 
+Some design decisions: we have used function type (A -> B -> C) to model a matrix datatype but this may not be efficient if your matrix size is large. 
 If you are in this situation then you should encode your matrix datatype as a list, or a map, and write a simple search function to look for the values. 
 See the OCaml code below. In this code, the matrix datatype `mat` and `fnmat` are same but from the execution point of view --I believe-- 
 `fnmat` is much better. We hopefully would move this code from OCaml to Coq with some proofs so that it is more trustworthy. 
