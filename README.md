@@ -72,9 +72,10 @@ let fnmat : coq_Node -> coq_Node -> coq_RR =
   fun (x : coq_Node) -> fun (y : coq_Node) -> List.assoc y (List.assoc x listmat)  
 ```
 
-Another solution suggested by Xavier Leroy on Coq mailing and the fastest one amongst all three if the matrix is big 
-because memory access is O(1). Also, if your matrix is big then read it from a file then hard-coding it 
-OCaml file.  
+Another solution, suggested by Xavier Leroy, is to use array of arrays 
+to encode the matrix (see the code below) than list of lists.  It is the fastest one amongst 
+all three because the memory access is O(1). Also, if your matrix is big then read it from a file 
+than hard-coding it OCaml file. 
 
 ```
 let rank (n : coq_Node) : int =
