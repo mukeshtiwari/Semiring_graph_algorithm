@@ -64,7 +64,7 @@ let matrix : coq_RR array array =
   |]
 
 let arraymat (x : coq_Node) (y : coq_Node) : coq_RR = 
-  matrix.(rank y).(rank x)
+  matrix.(rank x).(rank y)
 
 
 

@@ -61,7 +61,7 @@ let matrix : coq_R array array =
   |]
 
 let arraymat (x : coq_Node) (y : coq_Node) : coq_R = 
-  matrix.(rank y).(rank x)
+  matrix.(rank x).(rank y)
 
 let _ = 
   let comp = schulze arraymat in 
