@@ -22,3 +22,12 @@
   (theories Semiring Examples))
   (library
     (name shortestpath)))
+
+
+(subdir wikimedia
+ (coq.extraction
+  (prelude Extraction)
+  (extracted_modules BinNums Datatypes Decimal Definitions Hexadecimal List Listprop Logic Mat Nat Number Path Specif Wikimedia)
+  (theories Semiring Examples))
+  (library
+    (name wikimedia)))

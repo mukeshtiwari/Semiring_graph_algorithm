@@ -75,6 +75,9 @@ Section Matrix_def.
     List.fold_right (fun x y => f x + y) 0 l.
 
 
+  (* sum of the elements of a matrix *)
+
+
   (* generalised matrix multiplication *)
   Definition matrix_mul_gen (m₁ m₂ : Matrix Node R) 
     (l : list Node) : Matrix Node R :=
@@ -101,8 +104,10 @@ Section Matrix_def.
     match n with
     | xH => e
     | xO p => let ret := repeat_op_ntimes_rec e p in matrix_mul ret ret
-    | xI p => let ret := repeat_op_ntimes_rec e p in 
-      matrix_mul e (matrix_mul ret ret)
+    | xI p => 
+      let reta := repeat_op_ntimes_rec e p in 
+      let retb := matrix_mul reta reta in
+      matrix_mul e retb
     end.
 
   Definition matrix_exp_binary (e : Matrix Node R) (n : N) :=
@@ -137,9 +142,6 @@ Section Matrix_def.
     | S n' => (partial_sum_mat m n') +M (matrix_exp_unary m n)
     end.
 
- 
-
-  
 
   (* f is congruent wrt =n= *)
   Definition fncong (f : Node -> R) : Prop :=
