@@ -2284,7 +2284,59 @@ Section Matrix_proofs.
       eapply zero_stable_partial_sum_path; try assumption.
     Qed.
 
+    Theorem zero_stable_implies_idempotence : 
+      (forall a : R, 1 + a =r= 1 = true) -> 
+      (forall a : R, a + a =r= a = true).
+    Proof.
+      intros * Ht a.
+      specialize (Ht 1).
+      assert (Ha : (1 * a + 1 * a =r= a) = ((1 + 1) * a =r= a)).
+      apply congrR.
+      apply symR.
+      apply right_distributive_mul_over_plus.
+      apply refR.
+      assert (Hb : (a + a =r= a) = (1 * a + 1 * a =r= a)).
+      apply congrR.
+      eapply congrP.
+      apply symR.
+      apply one_left_identity_mul.
+      apply symR.
+      apply one_left_identity_mul.
+      apply refR.
+      rewrite Ha in Hb.
+      rewrite Hb.
+      clear Ha Hb. 
+      assert (Ha : ((1 + 1) * a =r= a) = (1 * a =r= a)).
+      apply congrR.
+      apply congrM.
+      exact Ht.
+      apply refR.
+      apply refR.
+      rewrite Ha.
+      apply one_left_identity_mul.
+    Qed.
 
+
+    Lemma matrix_fixpoint_general 
+      (zero_stable : forall a : R, 1 + a =r= 1 = true) :
+      forall (n : nat) (m : Matrix Node R) c d,
+       (∀ u v : Node, (u =n= v) = true → (m u v =r= 1) = true) ->
+      mat_cong Node eqN R eqR m ->  
+      matrix_exp_unary Node eqN finN R 0 1 plusR mulR 
+      (m +M I Node eqN R 0 1) (List.length finN - 1) c d =r= 
+      matrix_exp_unary Node eqN finN R 0 1 plusR mulR 
+      (m +M I Node eqN R 0 1) (n + List.length finN - 1) c d = true.
+    Proof.
+      intros * Ha Hb. 
+      apply matrix_fixpoint; 
+      try assumption.
+      apply zero_stable_implies_idempotence; 
+      try assumption.
+    Qed. 
+
+     
+
+      
 
       
       
