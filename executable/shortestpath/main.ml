@@ -22,29 +22,7 @@ let rec cross_product (la : 'a list) (lb : 'b list) : ('a * 'b) list =
   | h :: t -> List.append (List.map (fun x -> (h, x)) lb) (cross_product t lb)
 
 (* configure the matrix.
-*)
-let mat (x : coq_Node) (y : coq_Node) : coq_R = 
-  match x, y with
-  | A, A -> oneR
-  | A, B -> Left 3 
-  | B, A -> zeroR 
-  | A, C -> Left 3
-  | C, A -> zeroR 
-  | B, B -> oneR
-  | B, C -> Left 3 
-  | C, B -> zeroR 
-  | C, C -> oneR  
-
-
-
-let listmat : (coq_Node * ((coq_Node * coq_R) list)) list =
-  [(A, [(A, oneR); (B, Left 3); (C, Left 3)]);
-   (B, [(A, zeroR); (B, oneR); (C,  Left 3)]);
-   (C, [(A, zeroR); (B, zeroR); (C, oneR)])
-  ]
-
-let fnmat : coq_Node -> coq_Node -> coq_R = 
-  fun (x : coq_Node) -> fun (y : coq_Node) -> List.assoc y (List.assoc x listmat)  
+*) 
 
 (* Solution suggested by Xavier Leroy and the fast one if the matrix is big.
     Also, if your matrix is big then read it from a file then hardcoding it in OCaml file. *)
