@@ -3,10 +3,19 @@ Require Import Semiring.Mat List BinNatDef
   Psatz Utf8 Coq.Arith.EqNat.
 Import ListNotations.
 
+(* Take from Schulze's paper https://link.springer.com/content/pdf/10.1007/s00355-010-0475-4.pdf *)
 Section Comp.
 
+  (* 
+  8 voters a ≻v c ≻v d ≻v b
+  2 voters b ≻v a ≻v d ≻v c
+  4 voters c ≻v d ≻v b ≻v a
+  4 voters d ≻v b ≻v a ≻v c
+  3 voters d ≻v c ≻v b ≻v a
+  
+  *)
   (* Define Candidates *)
-  Inductive Node := A | B | C. 
+  Inductive Node := A | B | C | D.
   
   (* Equality on Candidate *)
   Definition eqN (x y : Node) : bool :=
@@ -14,6 +23,7 @@ Section Comp.
   | A, A => true 
   | B, B => true 
   | C, C => true 
+  | D, D => true
   | _, _ => false
   end. 
 
@@ -52,11 +62,11 @@ Section Comp.
   end. 
 
  
-  Definition finN : list Node := [A; B; C].
+  Definition finN : list Node := [A; B; C; D].
 
   (* Now, configure the matrix *)
   Definition schulze (m : Path.Matrix Node R) : Path.Matrix Node R :=
-    matrix_exp_binary Node eqN finN R zeroR oneR plusR mulR m 2%N.
+    matrix_exp_binary Node eqN finN R zeroR oneR plusR mulR m 3%N.
 
  
 
@@ -71,21 +81,21 @@ Section Proofs.
   Theorem refN : brel_reflexive Node eqN. 
   Proof.
     unfold brel_reflexive;
-    intros [| | ]; simpl;
+    intros [| | | ]; simpl;
     reflexivity.
   Qed.
 
   Theorem symN : brel_symmetric Node eqN.
   Proof.
     unfold brel_symmetric;
-    intros [| | ] [| | ]; simpl;
+    intros [| | | ] [| | | ]; simpl;
     try reflexivity; try congruence.
   Qed.
 
   Theorem trnN : brel_transitive Node eqN.
   Proof.
     unfold brel_transitive;
-    intros [| | ] [| | ] [| | ];
+    intros [| | | ] [| | | ] [| | |];
     simpl; intros Ha Hb;
     try firstorder. 
   Qed. 
@@ -103,7 +113,7 @@ Section Proofs.
 
   Theorem memN : ∀ x : Node, in_list eqN finN x = true. 
   Proof.
-    intros [| | ];
+    intros [| | |];
     cbn; reflexivity.
   Qed.
 

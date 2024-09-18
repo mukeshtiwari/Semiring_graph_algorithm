@@ -4,6 +4,7 @@ let string_candidates : coq_Node -> string = function
 | A -> "A"
 | B -> "B"
 | C -> "C"
+| D -> "D"
 
 
 let string_values : coq_R -> string = function
@@ -24,7 +25,7 @@ let rec cross_product (la : 'a list) (lb : 'b list) : ('a * 'b) list =
    constructed from the ballots cast in an election
 
    We have three ballots 3 : A > B > C 
-*)
+
 let mat (x : coq_Node) (y : coq_Node) : coq_R = 
   match x, y with
   | A, A -> oneR
@@ -46,18 +47,19 @@ let listmat : (coq_Node * ((coq_Node * coq_R) list)) list =
 
 let fnmat : coq_Node -> coq_Node -> coq_R = 
   fun (x : coq_Node) -> fun (y : coq_Node) -> List.assoc y (List.assoc x listmat)  
-
+*)
 (* Solution suggested by Xavier Leroy and the fast one if the matrix is big.
   Also, if your matrix is big then read it from a file then hardcoding it. *)
 
 let rank (n : coq_Node) : int =
-  match n with A -> 0 | B -> 1 | C -> 2 
+  match n with A -> 0 | B -> 1 | C -> 2 | D -> 3
 
 let matrix : coq_R array array = 
   [|
-    [| oneR; Left 3; Left 3 |];
-    [| zeroR; oneR; Left 3 |];
-    [| zeroR; zeroR; oneR |]
+    [| oneR; Left 8; Left 14; Left 10|];
+    [| Left 13; oneR; Left 6; Left 2|];
+    [| Left 7; Left 15; oneR; Left 12 |];
+    [| Left 11; Left 19; Left 9; oneR |]
   |]
 
 let arraymat (x : coq_Node) (y : coq_Node) : coq_R = 
