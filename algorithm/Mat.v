@@ -2334,18 +2334,34 @@ Section Matrix_proofs.
       try assumption.
     Qed. 
 
-     
 
-      
+    Lemma matrix_ppath_equation_gen : forall n m c d,
+      mat_cong Node eqN R eqR m -> 
+      partial_sum_paths Node eqN R 0 1 plusR mulR finN m n c d =r=
+       sum_all_rvalues R 0 plusR 
+        (get_all_rvalues Node R 1 mulR 
+          (enum_all_paths_flat Node eqN R oneR finN m n c d)) = true.
+    Proof.
+      intros * Ha.
+      eapply trnR.
+      eapply flat_map_path_partial_sum; try assumption.
+      eapply symR.
+      eapply fold_right_sum_all_flat_paths; try assumption.
+    Qed.
 
-      
-      
+    Lemma matrix_ppath_equation : forall n m c d,
+      mat_cong Node eqN R eqR m ->
+      partial_sum_mat Node eqN finN R 0 1 plusR mulR m n c d =r= 
+      sum_all_rvalues R 0 plusR 
+        (get_all_rvalues Node R 1 mulR 
+          (enum_all_paths_flat Node eqN R oneR finN m n c d)) = true.
+    Proof.
+      intros * Ha.
+      eapply trnR.
+      eapply connect_partial_sum_mat_paths;
+      try assumption.
+      eapply matrix_ppath_equation_gen;
+      try assumption.
+    Qed.
 
 End Matrix_proofs.
-
-
-
-
-      
-
-    
