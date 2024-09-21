@@ -383,6 +383,8 @@ Section Pathprops.
         simpl; apply IHl.
   Qed.
 
+
+  
   
   Lemma append_node_in_paths_eq : 
     ∀ (l : list (list (Node * Node * R))) 
@@ -4949,6 +4951,17 @@ Section Pathprops.
       specialize (Hsu Htt).
       apply symR.
       exact Hsu.
+  Qed.
+
+  Lemma measure_of_path_fold_right : 
+    forall (ys : list (Node * Node * R)),
+    measure_of_path Node R 1 mulR ys =r= 
+    fold_right (fun '(_, _, b) a => b * a) 1 ys = true.
+  Proof.
+    induction ys as [|((u, v), w) ys IHys]; cbn.
+    + apply refR.
+    + eapply congrM;
+      [eapply refR | eapply IHys].
   Qed.
 
 
