@@ -3999,6 +3999,59 @@ Section Pathprops.
   Qed.
   
 
+  (* if along the diagonals 1 + a = 1 *)
+  Lemma cycle_path_dup_remove_ins : 
+    forall ll lm lr,
+    (1 + measure_of_path Node R oneR mulR lm =r= 1 = true) ->
+    Orel R plusR eqR
+      (measure_of_path Node R oneR mulR (ll ++ lr))
+      (measure_of_path Node R oneR mulR (ll ++ lm ++ lr)). 
+  Proof using congrM congrP congrR left_distributive_mul_over_plus
+    mul_associative one_left_identity_mul refN refR
+    right_distributive_mul_over_plus symR.
+    intros *.
+    unfold Orel.
+    assert (Ht : (measure_of_path Node R oneR mulR (ll ++ lr) + 
+      measure_of_path Node R oneR mulR (ll ++ lm ++ lr) =r=
+      measure_of_path Node R oneR mulR (ll ++ lr)) = 
+      ((measure_of_path Node R oneR mulR ll * measure_of_path Node R oneR mulR lr) + 
+        (measure_of_path Node R oneR mulR ll * 
+        (measure_of_path Node R oneR mulR lm * measure_of_path Node R oneR mulR lr)) =r= 
+        (measure_of_path Node R oneR mulR ll * measure_of_path Node R oneR mulR lr))).
+    apply congrR.
+    apply congrP.
+    apply path_split_measure;
+    apply triple_elem_eq_list_refl;
+    try assumption.
+    rewrite <- (path_split_measure (ll ++ lm ++ lr)
+      ll (lm ++ lr) (triple_elem_eq_list_refl _ _ _ eqN eqN eqR refN refN refR (ll ++ lm ++ lr))). 
+    apply congrR.
+    apply refR.
+    apply congrM.
+    apply refR.
+    apply symR.
+    apply path_split_measure;
+    apply triple_elem_eq_list_refl;
+    try assumption.
+    apply path_split_measure;
+    apply triple_elem_eq_list_refl;
+    try assumption.
+    rewrite Ht; clear Ht.
+    remember (measure_of_path Node R oneR mulR ll) as a.
+    remember (measure_of_path Node R oneR mulR lm) as b.
+    remember (measure_of_path Node R oneR mulR lr) as c.
+    assert (Ht : (a * c + a * (b * c) =r= a * c) = 
+      (a * c + a * b * c =r= a * c)).
+    apply congrR.
+    apply congrP.
+    apply refR.
+    apply mul_associative.
+    apply refR.
+    rewrite Ht; clear Ht.
+    eapply path_weight_rel_ins;
+      try assumption.
+  Qed.
+
   Lemma orel_rewrite :
     forall l lm lr,  
     triple_elem_list Node Node R eqN eqN eqR
@@ -4132,6 +4185,8 @@ Section Pathprops.
     exact Horel.
     exact Hcp.
   Qed.
+
+
 
 
   

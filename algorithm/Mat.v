@@ -1532,8 +1532,9 @@ Section Matrix_proofs.
       unfold matrix_add; intros *.
       apply plus_idempotence.
     Qed.
+    
 
-
+    
   
     Lemma exp_r_pow_add : 
       forall (n m : nat) (a : R), 
@@ -1560,10 +1561,10 @@ Section Matrix_proofs.
         apply IHn.
     Qed.
 
-
+  
   
 
-     
+    (* 0-stable implies *)
     Lemma astar_aide_zero_stable 
       (zero_stable : forall a : R, 1 + a =r= 1 = true) :
       forall (t : nat) (a : R),
@@ -1620,31 +1621,10 @@ Section Matrix_proofs.
       apply zero_stable.
       apply refR.
     Qed.
+    
 
 
-
-    (* special case q := 0 *)
-    Lemma astar_exists_zero_stable 
-      (zero_stable : forall a : R, 1 + a =r= 1 = true) : 
-      forall (t : nat) (a : R), 
-      partial_sum_r R 1 plusR mulR a t =r= partial_sum_r R 1 plusR mulR a 0 = true.
-    Proof using congrM congrP congrR one_left_identity_mul one_right_identity_mul
-      plus_associative refR right_distributive_mul_over_plus symR.
-      induction t.
-      - simpl; intros ?.
-        apply refR.
-      - simpl; intros ?.
-        rewrite <-(astar_aide_zero_stable zero_stable t a).
-        apply congrR.
-        apply refR.
-        simpl in IHt.
-        apply symR.
-        exact (IHt a).
-    Qed.
-
-
-
-
+    
     Lemma astar_aide_gen_q_stable :
       forall (t : nat) (a : R),
       (partial_sum_r R 1 plusR mulR a (S t)) =r= 
@@ -1681,12 +1661,10 @@ Section Matrix_proofs.
     Qed.
     
 
-   
-
-
-    
-     Lemma astar_exists_gen_q_stable : 
-      forall (q : nat),
+    (* 
+      Lemma 4 https://cs.nyu.edu/~mohri/pub/jalc.pdf
+    *)
+     Lemma astar_exists_gen_q_stable (q : nat) :
       (forall w : R, partial_sum_r R 1 plusR mulR w q =r= 
         partial_sum_r R 1 plusR mulR w (S q) = true) -> 
       forall (t : nat) (a : R), 
@@ -1694,7 +1672,7 @@ Section Matrix_proofs.
       partial_sum_r R 1 plusR mulR a q = true.
      Proof using congrM congrP congrR left_distributive_mul_over_plus
        plus_associative refR symR.
-       intros * q_stable.
+       intros * k_closed.
        induction t as [|t Iht];
          intro a.
        +
@@ -1706,12 +1684,15 @@ Section Matrix_proofs.
           apply congrR; [eapply refR |].
           pose proof (astar_aide_gen_q_stable q a) as Ht.
           rewrite <-Ht; clear Ht.
-          apply congrR; [eapply q_stable |].
+          apply congrR; [eapply k_closed |].
           eapply congrP; [eapply refR | ].
           eapply congrM; [eapply refR | eapply Iht].
      Qed.
 
+     
 
+    (* 0-stable implies q-stable *)
+    
      Lemma astar_aide_zero_stable_q_stable :
       forall (t : nat) (a : R) (zero_stable : forall a : R, 1 + a =r= 1 = true),
       partial_sum_r R 1 plusR mulR a t =r= partial_sum_r R 1 plusR mulR a (S t) = true. 
@@ -1721,8 +1702,8 @@ Section Matrix_proofs.
        eapply symR, astar_aide_zero_stable;
          try assumption.
      Qed.
-
-          
+    
+        
     Lemma astar_exists_gen_zero_stable : 
       forall (q : nat),
       (forall w : R, 1 + w =r= 1 = true) -> 
@@ -1737,6 +1718,7 @@ Section Matrix_proofs.
       intros; eapply astar_aide_zero_stable_q_stable.
       assumption.      
     Qed.
+    
     
 
     
@@ -1841,8 +1823,8 @@ Section Matrix_proofs.
     Qed.
       
 
-
-
+  
+    
     Lemma astar_aide_gen_q_stable_matrix :
       forall (t : nat) (m : Matrix Node R) (c d : Node),
       (partial_sum_mat Node eqN finN R 0 1 plusR mulR m (S t) c d) =r= 
@@ -1886,13 +1868,11 @@ Section Matrix_proofs.
         apply symR.
         apply left_distributive_mat_mul_over_plus.
     Qed.
+    
 
-     
-   
-
-
-    Lemma astar_exists_gen_q_stable_matrix : 
-      forall (q : nat) (m : Matrix Node R),
+  
+    Lemma astar_exists_gen_q_stable_matrix (q : nat) : 
+      forall (m : Matrix Node R),
       (forall (c d : Node), 
         partial_sum_mat Node eqN finN R 0 1 plusR mulR m q c d =r= 
         partial_sum_mat Node eqN finN R 0 1 plusR mulR m (S q) c d = true) -> 
@@ -1913,7 +1893,8 @@ Section Matrix_proofs.
         apply refR.
         pose proof (astar_aide_gen_q_stable_matrix q m u v) as Ht.
         rewrite <-Ht; clear Ht.
-        apply congrR. apply q_stable.
+        apply congrR. 
+        apply q_stable.
         apply mat_add_cong_gen.
         unfold two_mat_congr; intros a b.
         apply refR.
@@ -1923,7 +1904,6 @@ Section Matrix_proofs.
         specialize (IHt ut vt).
         exact IHt.
     Qed.
-
 
 
     
@@ -2283,6 +2263,7 @@ Section Matrix_proofs.
       eapply refR.
       eapply zero_stable_partial_sum_path; try assumption.
     Qed.
+
 
     Theorem zero_stable_implies_idempotence : 
       (forall a : R, 1 + a =r= 1 = true) -> 

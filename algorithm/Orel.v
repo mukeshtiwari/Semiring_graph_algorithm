@@ -224,7 +224,7 @@ Section Proofs.
 
 
   (* This proof relies on 0-stable *)
-  Lemma path_weight_rel  (zero_stable : forall a, 1 + a =r= 1 = true) : 
+  Lemma path_weight_rel  (zero_stable : forall u, 1 + u =r= 1 = true) : 
     forall a b c : R,
     Orel R plusR eqR (a * c) (a * b * c).
   Proof using congrM congrP congrR left_distributive_mul_over_plus
@@ -275,6 +275,61 @@ Section Proofs.
     apply symR.
     apply one_left_identity_mul.
   Qed.
+
+  Lemma path_weight_rel_ins : 
+    forall a b c : R, (1 + b =r= 1 = true) ->
+    Orel R plusR eqR (a * c) (a * b * c).
+  Proof using congrM congrP congrR left_distributive_mul_over_plus
+    mul_associative one_left_identity_mul refR right_distributive_mul_over_plus
+    symR.
+    unfold Orel; intros ? ? ? zero_stable.
+    assert (Ht : a * c + a * b * c =r= 
+      a * c + a * (b * c) = true).
+    apply congrP. 
+    apply refR.
+    apply symR. 
+    apply mul_associative.
+    rewrite <-Ht; 
+    clear Ht. 
+    apply congrR.
+    apply refR.
+    apply symR.
+    assert (Ht : a * c + a * (b * c) =r= 
+      a * (c + b * c) = true).
+    apply symR.
+    apply left_distributive_mul_over_plus.
+    rewrite <-Ht; clear Ht.
+    apply congrR. 
+    apply refR.
+    apply symR. 
+    apply congrM.
+    apply refR.
+    assert (Ht : (1 * c + b * c) =r= 
+      (1 + b) * c = true).
+    apply symR.
+    apply right_distributive_mul_over_plus.
+    rewrite <-Ht; clear Ht.
+    apply congrR.
+    apply congrP.
+    apply symR.
+    apply one_left_identity_mul.
+    apply refR.
+    (* Now, I need 0-stable  *)
+    apply symR.
+    assert (Ht : (1 + b) * c =r= 
+      1 * c = true).
+    apply congrM.
+    apply zero_stable.
+    apply refR.
+    rewrite <-Ht; clear Ht.
+    apply congrR. 
+    apply refR.
+    apply symR.
+    apply one_left_identity_mul.
+  Qed.
+
+    
+
 
 End Proofs.
 
