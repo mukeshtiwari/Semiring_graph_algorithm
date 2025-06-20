@@ -1,9 +1,7 @@
-
-From Coq Require Import List Utf8
+From Stdlib Require Import List Utf8
   FunctionalExtensionality BinNatDef 
   Lia.
 From Semiring Require Import Definitions.
-
 Import ListNotations.
 
 
@@ -529,10 +527,10 @@ Section Listsingleprops.
         pose proof length_le_Sn  
           _ _ _ Hb Hlt as Hwt.
         simpl in Hwt.
-        rewrite app_length in Hwt.
+        rewrite length_app in Hwt.
         simpl in Hwt.
         rewrite PeanoNat.Nat.add_succ_r in Hwt.
-        rewrite <-app_length in Hwt.
+        rewrite <-length_app in Hwt.
         assert (Hvt : (length (l₁ ++ l₂) < length l)%nat).
         nia.
         destruct (IHl Hvt) as

@@ -1,16 +1,16 @@
 (subdir schulze
  (coq.extraction
   (prelude Extraction)
-  (extracted_modules BinNums Datatypes Decimal Definitions Hexadecimal List Listprop Logic Mat Nat Number Path Specif Schulze)
-  (theories Semiring Examples))
+  (extracted_modules ListDef BinNums Datatypes Decimal Definitions Hexadecimal List Listprop Logic Mat Nat Number Path Specif Schulze)
+  (theories Stdlib Semiring Examples))
   (library 
     (name schulze)))
 
 (subdir widestshortestpath
  (coq.extraction
   (prelude Extraction)
-  (extracted_modules BinNums Datatypes Decimal Definitions Hexadecimal List Listprop Logic Mat Nat Number Path Specif WidestShortestPath)
-  (theories Semiring Examples))
+  (extracted_modules ListDef BinNums Datatypes Decimal Definitions Hexadecimal List Listprop Logic Mat Nat Number Path Specif WidestShortestPath)
+  (theories Stdlib Semiring Examples))
   (library
     (name widestshortestpath)))
 
@@ -18,8 +18,8 @@
 (subdir shortestpath
  (coq.extraction
   (prelude Extraction)
-  (extracted_modules BinNums Datatypes Decimal Definitions Hexadecimal List Listprop Logic Mat Nat Number Path Specif ShortestPath)
-  (theories Semiring Examples))
+  (extracted_modules ListDef BinNums Datatypes Decimal Definitions Hexadecimal List Listprop Logic Mat Nat Number Path Specif ShortestPath)
+  (theories Stdlib Semiring Examples))
   (library
     (name shortestpath)))
 
@@ -27,7 +27,7 @@
 (subdir wikimedia
  (coq.extraction
   (prelude Extraction)
-  (extracted_modules BinNums Datatypes Decimal Definitions Hexadecimal List Listprop Logic Mat Nat Number Path Specif Wikimedia)
-  (theories Semiring Examples))
+  (extracted_modules ListDef BinNums Datatypes Decimal Definitions Hexadecimal List Listprop Logic Mat Nat Number Path Specif Wikimedia)
+  (theories Stdlib Semiring Examples))
   (library
     (name wikimedia)))

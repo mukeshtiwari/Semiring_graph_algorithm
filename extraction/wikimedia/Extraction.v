@@ -1,8 +1,8 @@
 
-From Coq Require Import Extraction.
+From Stdlib Require Import Extraction.
 From Examples Require Import Wikimedia.
-Require Import ZArith NArith.
-Require Import ExtrOcamlBasic.
+From Stdlib Require Import ZArith NArith.
+From Stdlib Require Import ExtrOcamlBasic.
 Set Extraction Output Directory ".".
 Extract Inductive nat => int [ "0" "Stdlib.Int.succ" ]
  "(fun fO fS n -> if n=0 then fO () else fS (n-1))".

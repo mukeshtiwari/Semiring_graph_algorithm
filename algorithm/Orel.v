@@ -1,5 +1,5 @@
 
-From Coq Require Import List Utf8
+From Stdlib Require Import List Utf8
   Lia.
 From Semiring Require Import 
   Definitions Listprop.

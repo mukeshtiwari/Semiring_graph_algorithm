@@ -1,17 +1,12 @@
-From Coq Require Import List Utf8
+From Stdlib Require Import List Utf8
   Lia.
 Import ListNotations.
 
 Section Definitions.
 
-  (* Am I infected by Haskell ;) *)
-  Definition Bool := bool.
-  Definition List := list. 
-  Definition Nat := nat. 
-
 
   (* Binary relation *)
-  Definition brel (A : Type) := A -> A -> Bool.
+  Definition brel (A : Type) := A -> A -> bool.
   
   (* reflexivie *)
   Definition brel_reflexive 
@@ -42,7 +37,7 @@ Section Definitions.
 
   (* Equality of List *)
   Definition brel_list {A : Type} 
-    (eqA : brel A) : List A -> List A -> Bool.
+    (eqA : brel A) : list A -> list A -> bool.
   Proof.
     refine(fix Fn xs {struct xs} := 
       match xs with 
@@ -60,7 +55,7 @@ Section Definitions.
   Defined.
 
   Definition in_list {A : Type} 
-    (eqA : brel A) : List A -> A -> Bool.
+    (eqA : brel A) : list A -> A -> bool.
   Proof.
     refine(fix Fn xs {struct xs} := 
       match xs with 

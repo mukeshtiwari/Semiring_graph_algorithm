@@ -1,4 +1,4 @@
-From Coq Require Import List Utf8
+From Stdlib Require Import List Utf8
   FunctionalExtensionality BinNatDef 
   Lia PeanoNat.
 From Semiring Require Import Definitions

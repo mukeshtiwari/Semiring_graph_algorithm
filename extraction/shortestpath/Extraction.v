@@ -1,5 +1,5 @@
 
-From Coq Require Import Extraction.
+From Stdlib Require Import Extraction.
 From Examples Require Import Shortestpath.
 Set Extraction Output Directory ".".
 

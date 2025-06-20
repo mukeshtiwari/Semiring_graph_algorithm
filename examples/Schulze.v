@@ -1,6 +1,7 @@
-Require Import Semiring.Mat List BinNatDef
-  Semiring.Definitions Semiring.Listprop
-  Psatz Utf8 Coq.Arith.EqNat.
+From Stdlib Require Import List BinNatDef
+  Psatz Utf8 EqNat. 
+From Semiring Require Import Mat  Definitions
+  Listprop.
 Import ListNotations.
 
 (* Take from Schulze's paper https://link.springer.com/content/pdf/10.1007/s00355-010-0475-4.pdf *)

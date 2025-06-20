@@ -1,4 +1,4 @@
-From Coq Require Import List Utf8
+From Stdlib Require Import List Utf8
   FunctionalExtensionality BinNatDef 
   Lia.
 From Semiring Require Import
@@ -4125,10 +4125,10 @@ Section Pathprops.
     pose proof (length_rewrite _ _ _ eqN eqN eqR _ _ Hte) as Hlf.
     rewrite Hlf. 
     simpl.
-    rewrite app_length.
-    rewrite app_length.
+    rewrite length_app.
+    rewrite length_app.
     simpl.
-    rewrite app_length.
+    rewrite length_app.
     nia.
     assert (Hdisj : (length (ll ++ lr) < length finN)%nat ∨ 
       (length finN <= length (ll ++ lr))%nat).
@@ -4281,7 +4281,7 @@ Section Pathprops.
     (Hxs & Hsn & Htn & Hw & Hl & xs' & Hxs').
     pose proof reduce_path_into_simpl_path zero_stable xs' m c d as Hpath.
     pose proof length_rewrite _ _ _ eqN eqN eqR _ _ Hxs' as Hlen.
-    rewrite app_length in Hlen.
+    rewrite length_app in Hlen.
     simpl in Hlen.
     assert (Hxsp : length xs' = n).
     nia.

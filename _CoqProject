@@ -1,14 +1,14 @@
--R _build/default/algorithm Semiring
--R _build/default/examples Examples
+-R algorithm Semiring
+-R examples Examples
 
-_build/default/algorithm/Definitions.v
-_build/default/algorithm/Listprop.v
-_build/default/algorithm/Orel.v
-_build/default/algorithm/Path.v
-_build/default/algorithm/Mat.v
-_build/default/examples/Schulze.v
-_build/default/examples/WidestShortestPath.v
-_build/default/examples/Shortestpath.v
-_build/default/extraction/schulze/Extraction.v
-_build/default/extraction/shortestpath/Extraction.v
-_build/default/extraction/widesthshortestpath/Extraction.v
+algorithm/Definitions.v
+algorithm/Listprop.v
+algorithm/Orel.v
+algorithm/Path.v
+algorithm/Mat.v
+examples/Schulze.v
+examples/WidestShortestPath.v
+examples/Shortestpath.v
+extraction/schulze/Extraction.v
+extraction/shortestpath/Extraction.v
+extraction/widesthshortestpath/Extraction.v
