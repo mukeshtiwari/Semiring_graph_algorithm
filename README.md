@@ -6,7 +6,7 @@ generate OCaml code from it (see _CoqProject file).
 3. Run `dune exec _build/default/executable/widestpathcode/main.exe` to run the shortest-widest path algorithm
 4. Run `dune exec _build/default/executable/wikimedia/main.exe` to run the [wikipedia Schulze method](https://en.wikipedia.org/wiki/Schulze_method) example. In output you should see the `Strengths of the strongest paths` matrix 
     
-We have compiled this project with Coq 8.20.0 but if you want to use it with any other Coq version, please let us know. 
+We have compiled this project with Rocq 9.0.0 but if you want to use it with any other Coq version, please let us know. 
 
 
 If you want to verify that your algebra is a semiring, do the following:
