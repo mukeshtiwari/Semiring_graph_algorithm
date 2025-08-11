@@ -7,7 +7,6 @@ Import ListNotations.
 
 
 
-
 Section Matrix_def.
 
   Variables 
@@ -177,10 +176,10 @@ Section Matrix_def.
     | _, _ => []
     end.
 
-  Fixpoint transpose_eff (xs : list (list R)) : list (list R) :=
-    match xs with
-    | x :: [] => map (fun y => [y]) x
-    | x :: xs => zip_with List.cons x (transpose_eff xs)
+  Fixpoint transpose_eff (xss : list (list R)) : list (list R) :=
+    match xss with
+    | xs :: [] => map (fun y => [y]) xs
+    | xs :: xss => zip_with List.cons xs (transpose_eff xss)
     | [] => []
     end.
 
@@ -202,13 +201,47 @@ Section Matrix_def.
       mat_mul_eff e retb
     end.
 
-  Definition matrix_exp_binary_eff (e : list (list R)) (n : N) :=
+  Definition matrix_exp_binary_eff (e : list (list R)) (n : N) : list (list R) :=
     match n with
-    | N0 => []
+    | N0 => List.map (fun r => List.map (fun c => I r c) finN) finN 
     | Npos p => repeat_op_ntimes_rec_eff e p
     end.
-
   
+  
+  Fixpoint mapi_aux {A B : Type} (f : nat -> A -> B) (l : list A) (i : nat) : list B :=
+    match l with
+    | [] => []
+    | x :: xs => f i x :: mapi_aux f xs (S i)
+    end.
+
+  Definition mapi {A B : Type} (f : nat -> A -> B) (l : list A) : list B :=
+    mapi_aux f l 0.
+
+  (* Build a lookup table from Node to its index in finN *)
+  Definition index_map : Node -> nat :=
+    let tbl := mapi (fun i n => (n, i)) finN in
+    fun x => match List.find (fun '(n, _) => eqN n x) tbl with
+      | Some (_, i) => i
+      | None => 0%nat (* default case, shouldn't happen if x ∈ finN *)
+      end.
+
+  Definition mat_mul_eff_fun (m₁ m₂ : Node -> Node -> R) : Node -> Node -> R :=
+    let la := List.map (fun r => List.map (fun c => m₁ r c) finN) finN in 
+    let lb := List.map (fun r => List.map (fun c => m₂ r c) finN) finN in 
+    let me := mat_mul_eff la lb in 
+    let idx := index_map in 
+    fun c d => let row := idx c in
+        let col := idx d in
+        List.nth col (List.nth row me []) zeroR.
+
+  Definition matrix_exp_binary_eff_fun (m : Node -> Node -> R) (n : N) : 
+    Node -> Node -> R := 
+    let la := List.map (fun r => List.map (fun c => m r c) finN) finN in 
+    let me := matrix_exp_binary_eff la n in 
+    let idx := index_map in
+    fun c d => let row := idx c in
+      let col := idx d in
+      List.nth col (List.nth row me []) zeroR.
 
 End Matrix_def.
 
