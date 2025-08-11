@@ -163,11 +163,54 @@ Section Matrix_def.
     forall a b c d, a =n= c = true -> b =n= d = true -> 
     m₁ a b =r= m₂ c d = true. 
 
+  
+  
+  (* Dot product of two lists *)
+  Definition dot_product (v1 v2 : list R) : R :=
+    fold_left plusR (map (fun '(x, y) => mulR x y) 
+    (combine v1 v2)) zeroR.
+    
+  Fixpoint zip_with {A B C : Type} 
+    (f : A -> B -> C) (xs : list A) (ys : list B) : list C :=
+    match xs, ys with
+    | x :: xs, y :: ys => f x y :: zip_with f xs ys
+    | _, _ => []
+    end.
+
+  Fixpoint transpose_eff (xs : list (list R)) : list (list R) :=
+    match xs with
+    | x :: [] => map (fun y => [y]) x
+    | x :: xs => zip_with List.cons x (transpose_eff xs)
+    | [] => []
+    end.
+
+
+  (* Matrix multiplication *)
+  Definition mat_mul_eff (la lb : list (list R)) : list (list R) :=
+    let lbT := transpose_eff lb in
+    map (fun row =>
+      map (fun col => dot_product row col) lbT) la.
+
+  Fixpoint repeat_op_ntimes_rec_eff (e : list (list R)) 
+    (n : positive) : list (list R) :=
+    match n with
+    | xH => e
+    | xO p => let ret := repeat_op_ntimes_rec_eff e p in 
+      mat_mul_eff ret ret
+    | xI p => let reta := repeat_op_ntimes_rec_eff e p in
+      let retb := mat_mul_eff reta reta in
+      mat_mul_eff e retb
+    end.
+
+  Definition matrix_exp_binary_eff (e : list (list R)) (n : N) :=
+    match n with
+    | N0 => []
+    | Npos p => repeat_op_ntimes_rec_eff e p
+    end.
 
   
+
 End Matrix_def.
-
-
 
 Section Matrix_proofs.
 
