@@ -185,20 +185,29 @@ Section Matrix_def.
 
 
   (* Matrix multiplication *)
-  Definition mat_mul_eff (la lb : list (list R)) : list (list R) :=
+  Definition matrix_mul_eff (la lb : list (list R)) : list (list R) :=
     let lbT := transpose_eff lb in
     map (fun row =>
       map (fun col => dot_product row col) lbT) la.
+
+
+  Fixpoint matrix_exp_unary_eff (m : list (list R)) 
+    (n : nat) : list (list R) :=
+    match n with 
+    | 0%nat =>  List.map (fun r => List.map (fun c => I r c) finN) finN 
+    | S n' => matrix_mul_eff m (matrix_exp_unary_eff m n')
+    end.
+
 
   Fixpoint repeat_op_ntimes_rec_eff (e : list (list R)) 
     (n : positive) : list (list R) :=
     match n with
     | xH => e
     | xO p => let ret := repeat_op_ntimes_rec_eff e p in 
-      mat_mul_eff ret ret
+      matrix_mul_eff ret ret
     | xI p => let reta := repeat_op_ntimes_rec_eff e p in
-      let retb := mat_mul_eff reta reta in
-      mat_mul_eff e retb
+      let retb := matrix_mul_eff reta reta in
+      matrix_mul_eff e retb
     end.
 
   Definition matrix_exp_binary_eff (e : list (list R)) (n : N) : list (list R) :=
@@ -228,18 +237,30 @@ Section Matrix_def.
   Definition mat_mul_eff_fun (m₁ m₂ : Node -> Node -> R) : Node -> Node -> R :=
     let la := List.map (fun r => List.map (fun c => m₁ r c) finN) finN in 
     let lb := List.map (fun r => List.map (fun c => m₂ r c) finN) finN in 
-    let me := mat_mul_eff la lb in 
+    let me := matrix_mul_eff la lb in 
     let idx := index_map in 
-    fun c d => let row := idx c in
-        let col := idx d in
-        List.nth col (List.nth row me []) zeroR.
+    fun c d => 
+      let row := idx c in
+      let col := idx d in
+      List.nth col (List.nth row me []) zeroR.
+
+  Definition matrix_exp_unary_eff_fun (m : Node -> Node -> R) (n : nat) 
+    : Node -> Node -> R := 
+    let la := List.map (fun r => List.map (fun c => m r c) finN) finN in 
+    let me := matrix_exp_unary_eff la n in 
+    let idx := index_map in 
+    fun c d => 
+      let row := idx c in
+      let col := idx d in
+      List.nth col (List.nth row me []) zeroR.
 
   Definition matrix_exp_binary_eff_fun (m : Node -> Node -> R) (n : N) : 
     Node -> Node -> R := 
     let la := List.map (fun r => List.map (fun c => m r c) finN) finN in 
     let me := matrix_exp_binary_eff la n in 
     let idx := index_map in
-    fun c d => let row := idx c in
+    fun c d => 
+      let row := idx c in
       let col := idx d in
       List.nth col (List.nth row me []) zeroR.
 
@@ -1187,7 +1208,7 @@ Section Matrix_proofs.
     
 
 
-    Lemma binnat_even : forall (p : positive) (n : nat), 
+  Lemma binnat_even : forall (p : positive) (n : nat), 
     N.pos (xO p) = N.of_nat n :> N -> 
     exists k, n = (Nat.mul 2 k) /\  (N.pos p) = (N.of_nat k).
   Proof.
@@ -1705,7 +1726,8 @@ Section Matrix_proofs.
       forall (t : nat) (a : R),
       (partial_sum_r R 1 plusR mulR a (S t)) =r= 
       (1 + a * partial_sum_r R 1 plusR mulR a t) = true.
-    Proof using congrP congrR left_distributive_mul_over_plus plus_associative refR symR.
+    Proof using congrP congrR left_distributive_mul_over_plus 
+    plus_associative refR symR.
       induction t.
       - simpl; intros ?.
         apply refR.
@@ -2420,5 +2442,51 @@ Section Matrix_proofs.
       eapply matrix_ppath_equation_gen;
       try assumption.
     Qed.
+
+    Lemma matrix_exp_unary_eff_fun_matrix_unary_eqv : 
+      forall (n : nat) (m : Matrix Node R) c d,
+      mat_cong Node eqN R eqR m -> 
+      matrix_exp_unary Node eqN finN R 0 1 plusR mulR m n c d  =r= 
+      matrix_exp_unary_eff_fun Node eqN finN R 0 1 plusR mulR m n c d = true.
+    Proof.
+      induction n as [| n ihn].
+      +
+        intros * ha.
+        cbn. 
+    Admitted.
+
+    Lemma matrix_exp_unary_eff_fun_binary_eqv : 
+      forall (n : N) (m : Matrix Node R) c d,
+      mat_cong Node eqN R eqR m -> 
+      matrix_exp_unary_eff_fun Node eqN finN R 0 1 plusR mulR m (N.to_nat n) c d =r= 
+      matrix_exp_binary_eff_fun Node eqN finN R 0 1 plusR mulR m n c d = true.
+    Proof.
+    Admitted.
+
+
+    (* This theorem allows us to swap matrix_exp_binary with 
+      matrix_exp_binary_eff_fun *)
+    Lemma matrix_exp_binary_eff_fun_binary_eqv : 
+      forall (n : N) (m : Matrix Node R) c d,
+      mat_cong Node eqN R eqR m -> 
+      matrix_exp_binary Node eqN finN R 0 1 plusR mulR m n c d =r= 
+      matrix_exp_binary_eff_fun Node eqN finN R 0 1 plusR mulR m n c d = true.
+    Proof.
+      intros * ha.
+      eapply trnR.
+      +
+        eapply symR, matrix_exp_unary_binary_eqv.
+        exact ha.
+      +
+        eapply trnR.
+        eapply matrix_exp_unary_eff_fun_matrix_unary_eqv. 
+        exact ha.
+        eapply matrix_exp_unary_eff_fun_binary_eqv.
+        exact ha.
+    Qed.
+
+
+
+
 
 End Matrix_proofs.
