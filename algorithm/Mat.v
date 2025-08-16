@@ -176,11 +176,14 @@ Section Matrix_def.
     | _, _ => []
     end.
 
-  Fixpoint transpose_eff (xss : list (list R)) : list (list R) :=
+  Fixpoint transpose_eff {A : Type} (xss : list (list A)) : list (list A) :=
     match xss with
-    | xs :: [] => map (fun y => [y]) xs
-    | xs :: xss => zip_with List.cons xs (transpose_eff xss)
     | [] => []
+    | xssh :: xsst => 
+      match xsst with 
+      | [] =>  map (fun y => [y]) xssh 
+      | _ :: _ => zip_with List.cons xssh (transpose_eff xsst)
+      end 
     end.
 
 
@@ -265,6 +268,357 @@ Section Matrix_def.
       List.nth col (List.nth row me []) zeroR.
 
 End Matrix_def.
+
+
+
+Section GenProofs.
+
+
+  Theorem zip_with_length {A B C : Type} 
+    (f : A -> B -> C) : ∀ (xs : list A) (ys : list B), 
+    List.length (zip_with f xs ys) = 
+    Nat.min (List.length xs) (List.length ys).
+  Proof.
+    induction xs as [|xsh xst ih].
+    +
+      intros ys; reflexivity. 
+    +
+      intros *.
+      destruct ys as [|ysh yst].
+      ++
+        cbn; reflexivity.
+      ++
+        cbn. f_equal.
+        eapply ih.
+  Qed.
+
+  
+  Theorem transpose_map {A : Type} : ∀ (xs : list A ), 
+    xs <> [] -> transpose_eff (map (λ y : A, [y]) xs) = [xs].
+  Proof.
+    induction xs as [|xsh xst ih].
+    + 
+      intro ha.
+      congruence.
+    +
+      intro ha.
+      destruct xst as [|xsth xstt].
+      ++
+        cbn; reflexivity.
+      ++
+        remember (xsth :: xstt) as xst.
+        cbn.
+        assert(hb : map (λ y : A, [y]) xst = [xsth] :: map (λ y : A, [y]) xstt).
+        rewrite Heqxst. cbn. reflexivity.
+        rewrite hb; clear hb.
+        assert (hb : xst <> []). rewrite Heqxst. 
+        intro hb. congruence.
+        specialize(ih hb).
+        rewrite Heqxst in ih.
+        assert (hc : map (λ y : A, [y]) (xsth :: xstt) = [xsth] :: 
+          map (λ y : A, [y]) xstt).
+        cbn. reflexivity. rewrite hc in ih; clear hc.
+        rewrite ih. subst. reflexivity.
+  Qed.
+
+  
+  
+  Theorem transpose_zip {A : Type} : ∀ (xss : list (list A)) (xs : list A),
+    xss <> [] -> length xs = length xss -> 
+    transpose_eff (zip_with cons xs xss) = xs :: transpose_eff xss.
+  Proof. 
+    induction xss as [|xssh xsst ih].
+    +
+      intros * ha hb.
+      congruence.
+    +
+      intros * ha hb.
+      destruct xsst as [|xssth xsttt].
+      ++
+        cbn in hb |- *.
+        assert (hc : ∃ y : A, xs = [y]).
+        {
+          destruct xs as [|xsh xst]; 
+          cbn in hb; try nia.
+          exists xsh.
+          destruct xst. cbn in hb.
+          reflexivity.
+          cbn in hb. nia.
+        }
+        destruct hc as (y & hc).
+        subst. cbn.
+        reflexivity.
+      ++
+        remember (xssth :: xsttt) as xst.
+        cbn in hb |- *.
+        rewrite Heqxst.
+        rewrite <- Heqxst.
+        destruct xs as [|xsa xsb]; 
+        [cbn in hb; nia | ].
+        assert (hc : zip_with cons (xsa :: xsb) (xssh :: xst) = 
+          cons xsa xssh :: zip_with cons xsb xst). reflexivity.
+        rewrite hc; clear hc.
+        inversion hb as [hbb]; clear hb.
+        rewrite Heqxst in hbb |- * .
+        assert (hb : transpose_eff ((xsa :: xssh) :: 
+          zip_with cons xsb (xssth :: xsttt)) = 
+          zip_with cons (xsa :: xssh) 
+          (transpose_eff (zip_with cons xsb (xssth :: xsttt)))). 
+        {
+           destruct xsb as [|xsbh xsbt];
+          [cbn in hbb; try nia | reflexivity].
+        }
+        rewrite hb; clear hb.
+        assert (hb : xst <> []). subst. 
+        intro hb; congruence.
+        rewrite <-Heqxst in hbb |- *.
+        pose proof (ih xsb hb hbb) as hc.
+        rewrite hc. cbn; reflexivity.
+  Qed.
+
+  Theorem zip_non_empty {A : Type} :
+    ∀ (xss : list (list A)) (xs : list A), 
+    xss <> [] -> xs <> [] ->
+    zip_with cons xs xss ≠ [].
+  Proof.
+    destruct xss as [|xssh xsst].
+    +
+      intros * ha hb.
+      congruence.
+    +
+      intros [|xsh xst] ha hb.
+      ++
+        congruence.
+      ++
+        intro hc. cbn in hc.
+        congruence.
+  Qed.
+
+
+  Theorem transpose_eff_non_empty {A : Type} : 
+    ∀ (xss : list (list A)), xss <> [] -> 
+    (forall (xs : list A), In xs xss -> ∀ (ys : list A), 
+      In ys xss -> List.length xs = List.length ys ∧ 0 < List.length xs) -> 
+     transpose_eff xss ≠ [].
+  Proof.
+    induction xss as [|xssh xsst ih].
+    +
+      intros ha hb; try congruence.
+    +
+      destruct xsst as [|xssth xsstt].
+      ++
+        intros ha hb.
+        cbn. intro hc.
+        specialize (hb xssh (or_introl eq_refl)
+          xssh (or_introl eq_refl)).
+        destruct hb as (_ & hbr).
+        assert(hb : xssh <> []).
+        { 
+          destruct xssh as [|xsshh xssht];
+          cbn in hbr; try nia.
+          intro hb. congruence.
+        }
+        eapply hb.
+        eapply map_eq_nil; exact hc.
+      ++
+        (* inductive case *)
+        remember (xssth :: xsstt) as xst.
+        intros * ha hb.
+        assert(hc : xst <> []).
+        {
+          subst; intro hc; congruence.
+        }
+        assert(hd : ∀ xs : list A, In xs xst → ∀ ys : list A, In ys xst →
+          length xs = length ys ∧ 0 < length xs).
+        {
+          intros * he * hf.
+          eapply hb; cbn; right; 
+          assumption.
+        }
+        (* i know that  transpose_eff xst ≠ [] 
+        and xssh <> [] *)
+        specialize(ih hc hd).
+        pose proof (hb xssh (or_introl eq_refl) xssh 
+        (or_introl eq_refl)) as he.
+        destruct he as (_ & her).
+        assert (he : xssh <> []).
+        {
+          destruct xssh as [|xsshh xssht];
+          cbn in her; try nia.
+          intro he; congruence.
+        }
+        assert (hf : transpose_eff (xssh :: xst) = 
+        zip_with List.cons xssh (transpose_eff xst)).
+        { 
+          rewrite Heqxst; reflexivity.
+        }
+        rewrite hf; clear hf.
+        eapply zip_non_empty; assumption.
+  Qed.
+
+  Theorem zip_map_length {A : Type} : 
+    forall (ys zs : list A), 
+    List.length ys = List.length zs -> 
+    length (zip_with cons ys (map (λ y : A, [y]) zs)) = length ys.
+  Proof.
+    induction ys as [|ysh yst ih].
+    +
+      intros * ha. cbn; reflexivity.
+    +
+      intros [|zsh zst] ha.
+      ++
+        cbn in ha; nia.
+      ++
+        cbn. rewrite ih.
+        reflexivity.
+        cbn in ha. inversion ha; subst;
+        reflexivity.
+  Qed.
+
+  Theorem zip_transpose_length {A : Type} : 
+    forall (xs ys : list A) zs,
+    List.length xs = List.length ys -> 
+    List.length ys = List.length zs -> 
+    length xs = length (zip_with cons ys zs).
+  Proof.
+    induction xs as [|xsh xst ih].
+    +
+      intros [|ysh yst] [|zsh zst] ha hb;
+      cbn in ha, hb; try congruence; 
+      try reflexivity.
+    +
+      intros [|ysh yst] [|zsh zst] ha hb;
+      cbn in ha, hb; try congruence.
+      cbn. erewrite <-ih.
+      reflexivity.
+      inversion ha; 
+      reflexivity.
+      inversion hb; reflexivity.
+  Qed.
+
+
+  Theorem transpose_length {A : Type} : 
+    ∀ (xst : list (list A)) (xsh : list A),
+    0 < List.length xst -> 0 < List.length xsh -> 
+    (∀ xs : list A, In xs (xsh :: xst) → ∀ ys : list A, 
+    In ys (xsh :: xst) → length xs = length ys ∧ 0 < length xs) ->
+    (* transpose_eff (transpose_eff xst) = xst -> *)
+    length xsh = length (transpose_eff xst).
+  Proof.
+    induction xst as [|xsth xstt ih].
+    +
+      intros * ha hb hc.
+      cbn in ha; nia.
+    +
+      destruct xstt as [|xsstth xssttt].
+      ++
+        intros [|xshh xsht] ha hb hc.
+        *
+          cbn in hb; nia.
+        *
+          pose proof (hc (xshh :: xsht)  (or_introl eq_refl)
+            xsth (or_intror (or_introl eq_refl))) as he.
+          destruct he as (hel & her).
+          cbn. rewrite length_map, <-hel;
+          reflexivity.
+      ++
+        (* induction case *)
+        assert (hd : transpose_eff (xsth :: xsstth :: xssttt) = 
+          zip_with List.cons xsth (transpose_eff (xsstth :: xssttt))).
+        cbn. reflexivity.
+        remember (xsstth :: xssttt) as xst.
+        intros * ha hb hc.
+        rewrite hd.
+        destruct (hc xsh (or_introl eq_refl) xsth 
+          (or_intror (or_introl eq_refl))) as (hel & her).
+        rewrite Heqxst in hc.
+        destruct (hc xsth (or_intror (or_introl eq_refl)) 
+          xsstth (or_intror (or_intror (or_introl eq_refl)))) as 
+          (hfl & hfr).
+        assert (hg : 0 < length xst). subst; cbn; nia.
+        assert(hf : (∀ xs : list A, In xs (xsh :: xst) → ∀ ys : list A, 
+          In ys (xsh :: xst) → length xs = length ys ∧ 0 < length xs)).
+        {
+          intros * hf * hi.
+          apply hc.
+          rewrite <- Heqxst.
+          firstorder.
+          rewrite <-Heqxst.
+          firstorder. 
+        }
+        specialize (ih xsh hg hb hf).
+        rewrite Heqxst.
+        eapply zip_transpose_length.
+        assumption.
+        rewrite <-Heqxst.
+        nia.
+  Qed.
+   
+
+
+  Theorem transpose_eff_involutive {A : Type} :
+    forall (xss : list (list A)), 
+    (forall (xs : list A), In xs xss -> ∀ (ys : list A), 
+      In ys xss -> List.length xs = List.length ys ∧ 0 < List.length xs) -> 
+    transpose_eff (transpose_eff xss) = xss.
+  Proof.
+    induction xss as [| xsh xsst ih].
+    +
+      intro ha. reflexivity.
+    +
+      destruct xsst as [|xssth xsstt].
+      ++
+        intro ha. cbn.
+        eapply transpose_map.
+        specialize (ha xsh (or_introl eq_refl)).
+        intro hb. subst. simpl in ha.
+        specialize (ha [] (or_introl eq_refl)). 
+        nia.
+      ++
+        intro ha.
+        assert (hb : transpose_eff (xsh :: xssth :: xsstt) = 
+          zip_with List.cons xsh (transpose_eff (xssth :: xsstt))).
+        cbn. reflexivity.
+        rewrite hb; clear hb.
+        (* induction part *)
+        remember (xssth :: xsstt) as xst.
+        rewrite transpose_zip.
+        *
+          rewrite ih;
+          [reflexivity | intros * hb * hc].
+          eapply ha; cbn; right; assumption.
+        *
+          eapply transpose_eff_non_empty;
+          [intro hb; congruence | intros * hb * hc].
+          eapply ha; cbn; right; assumption.
+        *
+
+
+          assert(hb : (∀ xs : list A, In xs xst → ∀ ys : list A, 
+          In ys xst → length xs = length ys ∧ 0 < length xs)).
+          {
+            intros * hb * hc.
+            eapply ha; cbn; right;
+            assumption.
+          }
+          specialize(ih hb).
+          assert(hc : 0 < List.length xsh).
+          {
+            destruct (ha xsh (or_introl eq_refl) 
+            xsh (or_introl eq_refl)) as (hal & har);
+            assumption.
+          }
+          assert(hd : 0 < List.length xst).
+          {
+            subst; cbn; nia.
+          }
+          eapply transpose_length; assumption.
+  Qed.
+
+
+
+Section GenProofs.
+
 
 Section Matrix_proofs.
 
@@ -2449,10 +2803,6 @@ Section Matrix_proofs.
       matrix_exp_unary Node eqN finN R 0 1 plusR mulR m n c d  =r= 
       matrix_exp_unary_eff_fun Node eqN finN R 0 1 plusR mulR m n c d = true.
     Proof.
-      induction n as [| n ihn].
-      +
-        intros * ha.
-        cbn. 
     Admitted.
 
     Lemma matrix_exp_unary_eff_fun_binary_eqv : 
