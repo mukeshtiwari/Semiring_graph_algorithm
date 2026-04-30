@@ -1,6 +1,6 @@
 From Stdlib Require Import List Utf8
   FunctionalExtensionality BinNatDef 
-  Lia PeanoNat.
+  Lia PeanoNat Ring_theory.
 From Semiring Require Import Definitions
   Listprop Orel Path.
 Import ListNotations.
@@ -376,6 +376,7 @@ Section GenProofs.
         rewrite hc. cbn; reflexivity.
   Qed.
 
+
   Theorem zip_non_empty {A : Type} :
     ∀ (xss : list (list A)) (xs : list A), 
     xss <> [] -> xs <> [] ->
@@ -397,7 +398,7 @@ Section GenProofs.
 
   Theorem transpose_eff_non_empty {A : Type} : 
     ∀ (xss : list (list A)), xss <> [] -> 
-    (forall (xs : list A), In xs xss -> ∀ (ys : list A), 
+    (∀ (xs : list A), In xs xss -> ∀ (ys : list A), 
       In ys xss -> List.length xs = List.length ys ∧ 0 < List.length xs) -> 
      transpose_eff xss ≠ [].
   Proof.
@@ -456,8 +457,9 @@ Section GenProofs.
         eapply zip_non_empty; assumption.
   Qed.
 
+
   Theorem zip_map_length {A : Type} : 
-    forall (ys zs : list A), 
+    ∀ (ys zs : list A), 
     List.length ys = List.length zs -> 
     length (zip_with cons ys (map (λ y : A, [y]) zs)) = length ys.
   Proof.
@@ -476,7 +478,7 @@ Section GenProofs.
   Qed.
 
   Theorem zip_transpose_length {A : Type} : 
-    forall (xs ys : list A) zs,
+    ∀ (xs ys : list A) zs,
     List.length xs = List.length ys -> 
     List.length ys = List.length zs -> 
     length xs = length (zip_with cons ys zs).
@@ -557,7 +559,7 @@ Section GenProofs.
 
 
   Theorem transpose_eff_involutive {A : Type} :
-    forall (xss : list (list A)), 
+    ∀ (xss : list (list A)), 
     (forall (xs : list A), In xs xss -> ∀ (ys : list A), 
       In ys xss -> List.length xs = List.length ys ∧ 0 < List.length xs) -> 
     transpose_eff (transpose_eff xss) = xss.
@@ -592,8 +594,6 @@ Section GenProofs.
           [intro hb; congruence | intros * hb * hc].
           eapply ha; cbn; right; assumption.
         *
-
-
           assert(hb : (∀ xs : list A, In xs xst → ∀ ys : list A, 
           In ys xst → length xs = length ys ∧ 0 < length xs)).
           {
@@ -612,12 +612,11 @@ Section GenProofs.
           {
             subst; cbn; nia.
           }
-          eapply transpose_length; assumption.
+          eapply transpose_length; 
+          assumption.
   Qed.
 
-
-
-Section GenProofs.
+End GenProofs.
 
 
 Section Matrix_proofs.
@@ -687,7 +686,11 @@ Section Matrix_proofs.
     (congrR : brel_congruence R eqR eqR).
     (* end of congruence *)
 
-    
+
+
+
+      
+
     Lemma zero_add_left : forall c d m,
       matrix_add Node R plusR (zero_matrix Node R zeroR) m c d =r= 
       m c d = true.

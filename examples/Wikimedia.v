@@ -2,73 +2,125 @@ From Stdlib Require Import List BinNatDef
   Psatz Utf8 EqNat. 
 From Semiring Require Import Mat  Definitions
   Listprop.
+
+  
 Import ListNotations.
 
-Section Comp. 
+  Section Comp. 
 
-  Inductive Node := A | B | C | D | E. 
+    
+    Inductive Node := A | B | C | D | E. 
+    (* 
+    Inductive Node :=
+    | TC
+    | SK
+    | KW
+    | MR
+    | LG
+    | CB
+    | HC
+    | JSR
+    | PL
+    | JG
+    | JF
+    | FSS
+    | GM
+    | MP
+    | EZ
+    | WHD
+    | UW
+    | TM.
+  *)
+  (*
+  https://en.wikipedia.org/wiki/Schulze_method
+    Number of voters 	Order of preference
+    5 	ACBED
+    5 	ADECB
+    8 	BEDAC
+    3 	CABED
+    7 	CAEBD
+    2 	CBADE
+    7 	DCEBA
+    8 	EBADC  
 
-(*
-https://en.wikipedia.org/wiki/Schulze_method
-  Number of voters 	Order of preference
-  5 	ACBED
-  5 	ADECB
-  8 	BEDAC
-  3 	CABED
-  7 	CAEBD
-  2 	CBADE
-  7 	DCEBA
-  8 	EBADC  
-
-*)
-
-  Definition eqN (x y : Node) : bool := 
-    match x, y with 
-    | A, A => true 
-    | B, B => true
-    | C, C => true
-    | D, D => true
-    | E, E => true
+  *)
+    
+    Definition eqN (x y : Node) : bool := 
+      match x, y with 
+      | A, A => true 
+      | B, B => true
+      | C, C => true
+      | D, D => true
+      | E, E => true
+      | _, _ => false
+      end.
+    
+    (* 
+    Definition eqN (x y : Node) : bool :=
+    match x, y with
+    | TC, TC => true
+    | SK, SK => true
+    | KW, KW => true
+    | MR, MR => true
+    | LG, LG => true
+    | CB, CB => true
+    | HC, HC => true
+    | JSR, JSR => true
+    | PL, PL => true
+    | JG, JG => true
+    | JF, JF => true
+    | FSS, FSS => true
+    | GM, GM => true
+    | MP, MP => true
+    | EZ, EZ => true
+    | WHD, WHD => true
+    | UW, UW => true
+    | TM, TM => true
     | _, _ => false
     end.
+    *)
 
 
-  Inductive R :=
-  | Left : nat -> R
-  | Infinity : R.
+    Inductive R :=
+    | Left : nat -> R
+    | Infinity : R.
 
-  Definition eqR (u v : R) : bool :=
-    match u, v with 
-    | Left x, Left y => Nat.eqb x y 
-    | Infinity, Infinity => true 
-    | _, _ => false 
-    end.
+    Definition eqR (u v : R) : bool :=
+      match u, v with 
+      | Left x, Left y => Nat.eqb x y 
+      | Infinity, Infinity => true 
+      | _, _ => false 
+      end.
 
-  Definition zeroR : R := Left 0.
+    Definition zeroR : R := Left 0.
 
-  Definition oneR : R := Infinity.
+    Definition oneR : R := Infinity.
 
-  Definition plusR (u v : R) : R :=
-    match u, v with 
-    | Left x, Left y => Left (Nat.max x y) 
-    | _, _ => Infinity
-    end.
+    Definition plusR (u v : R) : R :=
+      match u, v with 
+      | Left x, Left y => Left (Nat.max x y) 
+      | _, _ => Infinity
+      end.
 
-  Definition mulR (u v : R) : R :=
-    match u, v with 
-    | Left x, Left y => Left (Nat.min x y)
-    | Left x, Infinity => Left x 
-    | Infinity, Left y => Left y 
-    | _, _ => Infinity 
-    end.
+    Definition mulR (u v : R) : R :=
+      match u, v with 
+      | Left x, Left y => Left (Nat.min x y)
+      | Left x, Infinity => Left x 
+      | Infinity, Left y => Left y 
+      | _, _ => Infinity 
+      end.
+    
+    Definition finN : list Node :=
+      [A; B; C; D; E].
+    
+    (* 
+    Definition finN : list Node :=
+    [TC; SK; KW; MR; LG; CB; HC; JSR; PL; JG; JF; FSS; GM; MP; EZ; WHD; UW; TM].
+    *)
+    Definition wikimedia (m : Path.Matrix Node R) : Path.Matrix Node R :=
+      matrix_exp_binary_eff_fun Node eqN finN R zeroR oneR plusR mulR m 4%N.
 
-  Definition finN : list Node :=
-    [A; B; C; D; E].
-
-  Definition wikimedia (m : Path.Matrix Node R) : Path.Matrix Node R :=
-    matrix_exp_binary Node eqN finN R zeroR oneR plusR mulR m 4%N.
-
-End Comp.
+  End Comp.
 
 
 Section Proofs. 
