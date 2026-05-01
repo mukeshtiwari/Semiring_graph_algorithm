@@ -9,8 +9,8 @@ Import ListNotations.
   Section Comp. 
 
     
-    Inductive Node := A | B | C | D | E. 
-    (* 
+    (* Inductive Node := A | B | C | D | E.  *)
+    
     Inductive Node :=
     | TC
     | SK
@@ -30,7 +30,7 @@ Import ListNotations.
     | WHD
     | UW
     | TM.
-  *)
+  
   (*
   https://en.wikipedia.org/wiki/Schulze_method
     Number of voters 	Order of preference
@@ -44,7 +44,7 @@ Import ListNotations.
     8 	EBADC  
 
   *)
-    
+    (* 
     Definition eqN (x y : Node) : bool := 
       match x, y with 
       | A, A => true 
@@ -54,8 +54,8 @@ Import ListNotations.
       | E, E => true
       | _, _ => false
       end.
-    
-    (* 
+    *)
+     
     Definition eqN (x y : Node) : bool :=
     match x, y with
     | TC, TC => true
@@ -78,7 +78,7 @@ Import ListNotations.
     | TM, TM => true
     | _, _ => false
     end.
-    *)
+    
 
 
     Inductive R :=
@@ -110,15 +110,16 @@ Import ListNotations.
       | _, _ => Infinity 
       end.
     
-    Definition finN : list Node :=
-      [A; B; C; D; E].
-    
     (* 
     Definition finN : list Node :=
-    [TC; SK; KW; MR; LG; CB; HC; JSR; PL; JG; JF; FSS; GM; MP; EZ; WHD; UW; TM].
+      [A; B; C; D; E].
     *)
+     
+    Definition finN : list Node :=
+    [TC; SK; KW; MR; LG; CB; HC; JSR; PL; JG; JF; FSS; GM; MP; EZ; WHD; UW; TM].
+    
     Definition wikimedia (m : Path.Matrix Node R) : Path.Matrix Node R :=
-      matrix_exp_binary_eff_fun Node eqN finN R zeroR oneR plusR mulR m 4%N.
+      matrix_exp_binary_eff_fun Node eqN finN R zeroR oneR plusR mulR m 17%N.
 
   End Comp.
 

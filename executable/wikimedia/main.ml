@@ -1,14 +1,14 @@
 open Wikimedia
 
- 
+(*  
 let string_candidates : coq_Node -> string = function
 | A -> "A"
 | B -> "B"
 | C -> "C"
 | D -> "D"
 | E -> "E"
+*)
 
-(* 
 let string_candidates : coq_Node -> string = function
   | TC  -> "Ting Chen (Wing)"
   | SK  -> "Samuel Klein"
@@ -28,7 +28,7 @@ let string_candidates : coq_Node -> string = function
   | WHD -> "William H. DuBay"
   | UW  -> "Urs Wäfler"
   | TM  -> "Tom Morton"
-*)
+
 
 let string_values : coq_R -> string = function
 | Infinity -> "Infinity"
@@ -49,6 +49,7 @@ let rec cross_product (la : 'a list) (lb : 'b list) : ('a * 'b) list =
 (* https://en.wikipedia.org/wiki/Schulze_method 
 Matrix of pairwise preferences *)
 
+(* 
 let matrix : coq_R array array = 
 [|
   [| oneR; Left 20; Left 26; Left 30; Left 22|];
@@ -57,9 +58,10 @@ let matrix : coq_R array array =
   [| Left 15; Left 12; Left 28; oneR; Left 14|];
   [| Left 23; Left 27; Left 21; Left 31; oneR |]
 |]
+  *)
 
 
-(* 
+
 let matrix : coq_R array array = 
 [|
   [| oneR; Left 1010; Left 1052; Left 1132; Left 1180; Left 1229; Left 1198; Left 1222; Left 1218; Left 1231; Left 1176; Left 1226; Left 1274; Left 1289; Left 1328; Left 1352; Left 1315; Left 1345 |];
@@ -81,13 +83,13 @@ let matrix : coq_R array array =
   [| Left 413; Left 465; Left 528; Left 487; Left 521; Left 536; Left 515; Left 546; Left 527; Left 510; Left 544; Left 482; Left 592; Left 554; Left 575; Left 599; oneR; Left 635 |];
   [| Left 458; Left 403; Left 423; Left 449; Left 489; Left 515; Left 458; Left 486; Left 484; Left 493; Left 455; Left 482; Left 543; Left 500; Left 535; Left 573; Left 585; oneR |]
 |]
-*)
-  
+
+(*   
 let rank (n : coq_Node) : int =
   match n with 
   | A -> 0 | B -> 1 | C -> 2 | D -> 3 | E -> 4
-
-(*  
+*)
+  
 let rank (n : coq_Node) : int =
   match n with 
   | TC  -> 0
@@ -108,7 +110,7 @@ let rank (n : coq_Node) : int =
   | WHD -> 15
   | UW  -> 16
   | TM  -> 17
-*)
+
 
 
 let arraymat (x : coq_Node) (y : coq_Node) : coq_R = 

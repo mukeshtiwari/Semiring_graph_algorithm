@@ -2800,12 +2800,19 @@ Section Matrix_proofs.
       try assumption.
     Qed.
 
+  
+
     Lemma matrix_exp_unary_eff_fun_matrix_unary_eqv : 
       forall (n : nat) (m : Matrix Node R) c d,
       mat_cong Node eqN R eqR m -> 
       matrix_exp_unary Node eqN finN R 0 1 plusR mulR m n c d  =r= 
       matrix_exp_unary_eff_fun Node eqN finN R 0 1 plusR mulR m n c d = true.
-    Proof.
+    Proof.  
+      induction n as [|n ihn].
+      +
+        intros * ha.
+        cbn. unfold I.
+        
     Admitted.
 
     Lemma matrix_exp_unary_eff_fun_binary_eqv : 
