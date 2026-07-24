@@ -2802,18 +2802,125 @@ Section Matrix_proofs.
 
   
 
+    (* ----------------------------------------------------------------- *)
+    (* Helper lemmas for matrix_exp_unary_eff_fun_matrix_unary_eqv       *)
+    (* ----------------------------------------------------------------- *)
+
+    (* Custom accessors to avoid List.nth type inference issues           *)
+    Definition nthR (l : list R) (n : nat) : R := List.nth n l zeroR.
+    Definition nthRL (ll : list (list R)) (i : nat) : list R := List.nth i ll [].
+    Definition nthRR (ll : list (list R)) (i j : nat) : R :=
+      nthR (nthRL ll i) j.
+
+    (* Helper: accessing the list-of-lists encoding via index_map gives   *)
+    (* back the original matrix value, assuming mat_cong.                 *)
+    Lemma list_encode_access : 
+      forall (m : Matrix Node R) c d,
+      mat_cong Node eqN R eqR m ->
+      nthRR (List.map (fun r => List.map (fun c' => m r c') finN) finN)
+        (index_map Node eqN finN c) (index_map Node eqN finN d) =r= m c d = true.
+    Proof.
+    Admitted.
+
+    (* Helper: fold_right and fold_left coincide for commutative plus.   *)
+    Lemma fold_right_plus_comm : 
+      forall (l : list R),
+      List.fold_right plusR zeroR l =r= 
+      List.fold_left plusR l zeroR = true.
+    Proof.
+    Admitted.
+
+    (* Helper: sum_fn f finN equals fold_right plusR 0 (map f finN).     *)
+    Lemma sum_fn_eq_map_fold : 
+      forall (f : Node -> R),
+      sum_fn Node R zeroR plusR f finN =r=
+      List.fold_right plusR zeroR (List.map f finN) = true.
+    Proof.
+    Admitted.
+
+   
+    (* Helper: dot_product of row i of la and col j of lb                *)
+    (* equals sum_fn (fun y => m₁ (node_i) y * m₂ y (node_j)) finN.      *)
+    Lemma dot_product_row_col_eqv :
+      forall (la lb : list (list R)) (m₁ m₂ : Matrix Node R) (c d : Node),
+      (forall u v, nthRR la (index_map Node eqN finN u) (index_map Node eqN finN v) =r= m₁ u v = true) ->
+      (forall u v, nthRR lb (index_map Node eqN finN u) (index_map Node eqN finN v) =r= m₂ u v = true) ->
+      (forall (xs : list R), In xs la -> List.length xs = List.length finN) ->
+      (forall (xs : list R), In xs lb -> List.length xs = List.length finN) ->
+      (fold_left plusR 
+        (map (fun '(x, y) => mulR x y) 
+          (combine (nthRL la (index_map Node eqN finN c))
+                   (nthRL (transpose_eff lb) (index_map Node eqN finN d)))) zeroR) =r=
+      sum_fn Node R zeroR plusR (fun y : Node => m₁ c y * m₂ y d) finN = true.
+    Proof.
+    Admitted.
+
+    (* Helper: nth j (nth i (map (dot_product) la) [])                   *)
+    Lemma nth_map_nth_access :
+      forall (la : list (list R)) (lbT : list (list R)) (i j : nat),
+      nthRR (map (fun row : list R => 
+        map (fun col : list R => 
+          fold_left plusR (map (fun '(x, y) => mulR x y) (combine row col)) zeroR) lbT) la) i j =r=
+      (fold_left plusR (map (fun '(x, y) => mulR x y) (combine (nthRL la i) (nthRL lbT j))) zeroR) = true.
+    Proof.
+    Admitted.
+
+    (* KEY LEMMA: matrix_mul_eff on list-of-lists (accessed via          *)
+    (* index_map) coincides with the mathematical matrix_mul.             *)
+    Lemma matrix_mul_eff_fun_eqv_matrix_mul :
+      forall (m₁ m₂ : Matrix Node R) (c d : Node),
+      mat_cong Node eqN R eqR m₁ ->
+      mat_cong Node eqN R eqR m₂ ->
+      mat_mul_eff_fun Node eqN finN R zeroR plusR mulR m₁ m₂ c d =r=
+      matrix_mul Node finN R zeroR plusR mulR m₁ m₂ c d = true.
+    Proof.
+    Admitted.
+
+  
+    (* Local wrapper for matrix_mul_eff                                     *)
+    Let mul_eff (la lb : list (list R)) : list (list R) :=
+      matrix_mul_eff R zeroR plusR mulR la lb.
+
+    (* Local wrapper for matrix_exp_unary_eff                               *)
+    Let exp_eff (la : list (list R)) (n : nat) : list (list R) :=
+      matrix_exp_unary_eff Node eqN finN R zeroR oneR plusR mulR la n.
+
+    (* Helper: matrix_mul_eff applied to la and a list encoding of m_exp *)
+    Lemma matrix_mul_eff_list_vs_fun :
+      forall (m : Matrix Node R) (n : nat) (c d : Node),
+      mat_cong Node eqN R eqR m ->
+      let la := List.map (fun r => List.map (fun c' => m r c') finN) finN in
+      let idx := index_map Node eqN finN in
+      nthRR (mul_eff la (exp_eff la n)) (idx c) (idx d) =r=
+      matrix_mul Node finN R zeroR plusR mulR m 
+        (matrix_exp_unary Node eqN finN R zeroR oneR plusR mulR m n) c d = true.
+    Proof.
+    Admitted.
+
     Lemma matrix_exp_unary_eff_fun_matrix_unary_eqv : 
       forall (n : nat) (m : Matrix Node R) c d,
       mat_cong Node eqN R eqR m -> 
       matrix_exp_unary Node eqN finN R 0 1 plusR mulR m n c d  =r= 
       matrix_exp_unary_eff_fun Node eqN finN R 0 1 plusR mulR m n c d = true.
-    Proof.  
-      induction n as [|n ihn].
-      +
-        intros * ha.
-        cbn. unfold I.
-        
-    Admitted.
+    Proof.
+      induction n as [|n ihn]; intros m c d Hm.
+      - (* n = 0 *)
+        simpl (matrix_exp_unary Node eqN finN R 0 1 plusR mulR m 0 c d).
+        unfold matrix_exp_unary_eff_fun.
+        unfold exp_eff, nthRR, nthR, nthRL.
+        simpl (matrix_exp_unary_eff Node eqN finN R zeroR oneR plusR mulR
+          (List.map (fun r => List.map (fun c' => m r c') finN) finN) 0).
+        apply symR.
+        assert (Hid_cong : mat_cong Node eqN R eqR (I Node eqN R zeroR oneR)).
+        { unfold mat_cong. intros a b u v Ha Hb. apply identity_cong; assumption. }
+        apply (list_encode_access (I Node eqN R zeroR oneR) c d Hid_cong).
+      - (* n = S n *)
+        simpl (matrix_exp_unary Node eqN finN R 0 1 plusR mulR m (S n) c d).
+        unfold matrix_exp_unary_eff_fun.
+        cbn.
+        apply symR.
+        apply matrix_mul_eff_list_vs_fun with (m := m) (n := n); assumption.
+    Qed.
 
     Lemma matrix_exp_unary_eff_fun_binary_eqv : 
       forall (n : N) (m : Matrix Node R) c d,
