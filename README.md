@@ -1,12 +1,12 @@
 # Semiring_graph_algorithm
-Run `dune build` (ignore the warinings) in this directory to compile the project. It will compile the Coq code and 
-generate OCaml code from it (see _CoqProject file). 
+Run `dune build` (ignore the warinings) in this directory to compile the project. It will compile the Rocq code and 
+generate OCaml code from it (see _RocqProject file). 
 1. Run `dune exec _build/default/executable/schulzecode/main.exe` to run the Schulze method on the example used by Markus Schulze in his [paper](https://link.springer.com/content/pdf/10.1007/s00355-010-0475-4.pdf) 
 2. Run `dune exec _build/default/executable/shortestpath/main.exe` to run the shortest path code 
 3. Run `dune exec _build/default/executable/widestpathcode/main.exe` to run the shortest-widest path algorithm
 4. Run `dune exec _build/default/executable/wikimedia/main.exe` to run the [wikipedia Schulze method](https://en.wikipedia.org/wiki/Schulze_method) example. In output you should see the `Strengths of the strongest paths` matrix 
     
-We have compiled this project with Rocq 9.0.0 but if you want to use it with any other Coq version, please let us know. 
+We have compiled this project with Rocq 9.1.1 but if you want to use it with any other Rocq version, please let us know. 
 
 
 If you want to verify that your algebra is a semiring, do the following:
@@ -38,7 +38,7 @@ If you want to verify that your algebra is a semiring, do the following:
    (zero_stable : forall a : R, 1 + a =r= 1 = true) 
    (plus_idempotence : forall a, a + a =r= a = true)
   ``` 
-5. See the Coq files in [examples](./examples/) directory for more information.
+5. See the Rocq files in [examples](./examples/) directory for more information.
 
 
 Some design decisions: we have used function type (A -> B -> C) to model a matrix datatype but this may not be efficient if your matrix size is large. However, we use [refinement](https://link.springer.com/chapter/10.1007/978-3-642-32347-8_7) approach to make it efficient (it is in the pipeline).
