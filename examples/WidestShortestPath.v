@@ -5,9 +5,9 @@ From Semiring Require Import Mat  Definitions
 Import ListNotations.
 
 
-(* It should be shortest widest path. Most of the literature *)
-(* treat the widest-shortest path below but it is not entirely  *)
-(* correct becasue the distributive laws (left_distributive_mul_over_plus, *)
+  (* It should be shortest widest path. Most of the literature    *)
+  (* treat the widest-shortest path below but it is not entirely  *)
+  (* correct becasue the distributive laws (left_distributive_mul_over_plus, *)
   (* right_distributive_mul_over_plus) do NOT hold for this semiring.    *)
   (* Counterexample: a = (Infinity, Left 5), b = (Left 1, Left 10),     *)
   (* c = (Left 2, Left 3). Then a*(b+c) = (Infinity, Left 5) but        *)
