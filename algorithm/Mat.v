@@ -3668,6 +3668,10 @@ Section Matrix_proofs.
     Let exp_eff (la : list (list R)) (n : nat) : list (list R) :=
       matrix_exp_unary_eff Node eqN finN R zeroR oneR plusR mulR la n.
 
+    (* Local wrapper for repeat_op_ntimes_rec_eff                            *)
+    Let rep_eff (e : list (list R)) (p : positive) : list (list R) :=
+      repeat_op_ntimes_rec_eff R zeroR plusR mulR e p.
+
     (* Helper: matrix_mul_eff applied to la and a list encoding of m_exp *)
 
     (* Structural lemma: exp_eff preserves well-formedness                 *)
@@ -3799,13 +3803,131 @@ Section Matrix_proofs.
         apply matrix_mul_eff_list_vs_fun with (m := m) (n := n); assumption.
     Qed.
 
+    (* Structural lemma: rep_eff preserves well-formedness                  *)
+    Lemma rep_eff_preserves_wf :
+      forall (e : list (list R)) (p : positive),
+      List.length e = List.length finN ->
+      (forall xs, In xs e -> List.length xs = List.length finN) ->
+      List.length (rep_eff e p) = List.length finN /\
+      (forall xs, In xs (rep_eff e p) -> List.length xs = List.length finN).
+    Proof.
+      intros ee p Hlen_ee Hrows_ee.
+      induction p as [p IHp | p IHp |]; simpl.
+      - (* xI p *)
+        destruct IHp as [Hlen_reta Hrows_reta].
+        assert (Hlen_retb : List.length (matrix_mul_eff R zeroR plusR mulR (rep_eff ee p) (rep_eff ee p)) = List.length finN).
+        { unfold matrix_mul_eff. rewrite length_map. exact Hlen_reta. }
+        assert (Hrows_retb : forall xs, In xs (matrix_mul_eff R zeroR plusR mulR (rep_eff ee p) (rep_eff ee p)) -> List.length xs = List.length finN).
+        { intros xs Hin. unfold matrix_mul_eff in Hin. apply in_map_iff in Hin. destruct Hin as [row [Hxs Hin_reta]]. subst xs. rewrite length_map.
+          destruct (transpose_eff_square (rep_eff ee p) Hlen_reta Hrows_reta) as [Ht_len _]. exact Ht_len. }
+        split.
+        + unfold matrix_mul_eff. rewrite length_map. exact Hlen_ee.
+        + intros xs Hin. unfold matrix_mul_eff in Hin. apply in_map_iff in Hin. destruct Hin as [row [Hxs Hin_ee]]. subst xs. rewrite length_map.
+          destruct (transpose_eff_square (matrix_mul_eff R zeroR plusR mulR (rep_eff ee p) (rep_eff ee p)) Hlen_retb Hrows_retb) as [Ht_len _]. exact Ht_len.
+      - (* xO p *)
+        destruct IHp as [Hlen_ret Hrows_ret].
+        split.
+        + unfold matrix_mul_eff. rewrite length_map. exact Hlen_ret.
+        + intros xs Hin. unfold matrix_mul_eff in Hin. apply in_map_iff in Hin. destruct Hin as [row [Hxs Hin_ret]]. subst xs. rewrite length_map.
+          destruct (transpose_eff_square (rep_eff ee p) Hlen_ret Hrows_ret) as [Ht_len _]. exact Ht_len.
+      - (* xH *)
+        split; [exact Hlen_ee | exact Hrows_ee].
+    Qed.
+
+    (* Key lemma: efficient binary exponentiation encodes the mathematical *)
+    (* binary exponentiation when accessed via nthRR/index_map.            *)
+    Lemma rep_eff_encodes_repeat_op_ntimes_rec :
+      forall (m : Matrix Node R) (p : positive) (c d : Node),
+      mat_cong Node eqN R eqR m ->
+      nthRR (rep_eff
+        (List.map (fun r : Node => List.map (fun c' : Node => m r c') finN) finN) p)
+        (index_map Node eqN finN c) (index_map Node eqN finN d) =r=
+      repeat_op_ntimes_rec Node finN R 0 plusR mulR m p c d = true.
+    Proof.
+      intros m p c d Hm.
+      set (la := List.map (fun r : Node => List.map (fun c' : Node => m r c') finN) finN).
+      set (idx := index_map Node eqN finN).
+      (* la is well-formed *)
+      assert (Hlen_la : List.length la = List.length finN).
+      { subst la; apply length_map. }
+      assert (Hrows_la : forall xs, In xs la -> List.length xs = List.length finN).
+      { subst la. intros xs Hin. apply in_map_iff in Hin. destruct Hin as [? [Hinmem Hxs]]. subst xs. apply length_map. }
+      revert c d.
+      induction p as [p IHp | p IHp |]; intros c d; simpl.
+      - (* xI p *)
+        set (reta_eff := rep_eff la p).
+        set (retb_eff := matrix_mul_eff R zeroR plusR mulR reta_eff reta_eff).
+        set (reta_mat := repeat_op_ntimes_rec Node finN R 0 plusR mulR m p).
+        set (retb_mat := matrix_mul Node finN R zeroR plusR mulR reta_mat reta_mat).
+        (* WF of reta_eff *)
+        assert (Hlen_reta : List.length reta_eff = List.length finN).
+        { subst reta_eff. destruct (rep_eff_preserves_wf la p Hlen_la Hrows_la) as [Hl _]; exact Hl. }
+        assert (Hrows_reta : forall xs, In xs reta_eff -> List.length xs = List.length finN).
+        { subst reta_eff. destruct (rep_eff_preserves_wf la p Hlen_la Hrows_la) as [_ Hr]; exact Hr. }
+        (* WF of retb_eff *)
+        assert (Hlen_retb : List.length retb_eff = List.length finN).
+        { subst retb_eff reta_eff. unfold matrix_mul_eff. rewrite length_map. exact Hlen_reta. }
+        assert (Hrows_retb : forall xs, In xs retb_eff -> List.length xs = List.length finN).
+        {
+          intros xs Hin. subst retb_eff. unfold matrix_mul_eff in Hin. apply in_map_iff in Hin. destruct Hin as [row [Hxs Hin_reta]]. subst xs.
+          rewrite length_map. subst reta_eff.
+          destruct (transpose_eff_square (rep_eff la p) Hlen_reta Hrows_reta) as [Ht_len _]. exact Ht_len.
+        }
+        (* Apply generalized lemma for outer matrix_mul *)
+        apply (matrix_mul_eff_access_general la retb_eff m retb_mat c d Hlen_la Hlen_retb).
+        + (* nthRR la =r= m *) intros u v. subst la. apply list_encode_access. exact Hm.
+        + (* nthRR retb_eff =r= retb_mat *)
+          intros u v. subst retb_mat.
+          apply (matrix_mul_eff_access_general reta_eff reta_eff reta_mat reta_mat u v Hlen_reta Hlen_reta).
+          * (* nthRR reta_eff =r= reta_mat *) intros. subst reta_mat reta_eff. apply IHp.
+          * (* nthRR reta_eff =r= reta_mat *) intros. subst reta_mat reta_eff. apply IHp.
+          * exact Hrows_reta.
+          * exact Hrows_reta.
+        + exact Hrows_la.
+        + exact Hrows_retb.
+      - (* xO p *)
+        set (ret_eff := rep_eff la p).
+        set (ret_mat := repeat_op_ntimes_rec Node finN R 0 plusR mulR m p).
+        (* WF of ret_eff *)
+        assert (Hlen_ret : List.length ret_eff = List.length finN).
+        { subst ret_eff. destruct (rep_eff_preserves_wf la p Hlen_la Hrows_la) as [Hl _]; exact Hl. }
+        assert (Hrows_ret : forall xs, In xs ret_eff -> List.length xs = List.length finN).
+        { subst ret_eff. destruct (rep_eff_preserves_wf la p Hlen_la Hrows_la) as [_ Hr]; exact Hr. }
+        apply (matrix_mul_eff_access_general ret_eff ret_eff ret_mat ret_mat c d Hlen_ret Hlen_ret).
+        + intros u v. subst ret_mat ret_eff. apply IHp.
+        + intros u v. subst ret_mat ret_eff. apply IHp.
+        + exact Hrows_ret.
+        + exact Hrows_ret.
+      - (* xH *)
+        subst la.
+        apply list_encode_access. exact Hm.
+    Qed.
+
     Lemma matrix_exp_unary_eff_fun_binary_eqv : 
       forall (n : N) (m : Matrix Node R) c d,
       mat_cong Node eqN R eqR m -> 
       matrix_exp_unary_eff_fun Node eqN finN R 0 1 plusR mulR m (N.to_nat n) c d =r= 
       matrix_exp_binary_eff_fun Node eqN finN R 0 1 plusR mulR m n c d = true.
     Proof.
-    Admitted.
+      intros n m c d Hm.
+      eapply trnR.
+      - (* efficient-unary = mathematical-unary *)
+        apply symR. apply matrix_exp_unary_eff_fun_matrix_unary_eqv. exact Hm.
+      - (* mathematical-unary = mathematical-binary *)
+        eapply trnR.
+        + apply matrix_exp_unary_binary_eqv. exact Hm.
+        + (* mathematical-binary = efficient-binary *)
+          destruct n as [|p].
+          * (* N0 *)
+            unfold matrix_exp_binary_eff_fun. cbv beta.
+            assert (Hid_cong : mat_cong Node eqN R eqR (I Node eqN R zeroR oneR)).
+            { unfold mat_cong. intros a b u v Ha Hb. apply identity_cong; assumption. }
+            apply symR. apply list_encode_access. exact Hid_cong.
+          * (* Npos p *)
+            unfold matrix_exp_binary_eff_fun. cbv beta. simpl.
+            apply symR.
+            apply rep_eff_encodes_repeat_op_ntimes_rec with (m := m) (p := p); exact Hm.
+    Qed.
 
 
     (* This theorem allows us to swap matrix_exp_binary with 
