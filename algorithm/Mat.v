@@ -3548,15 +3548,6 @@ Section Matrix_proofs.
         Hlen_row Hlen_col Hrow_elem Hcol_elem).
     Qed.
 
-    (* Helper: nth j (nth i (map (dot_product) la) [])                   *)
-    Lemma nth_map_nth_access :
-      forall (la : list (list R)) (lbT : list (list R)) (i j : nat),
-      nthRR (map (fun row : list R => 
-        map (fun col : list R => 
-          fold_left plusR (map (fun '(x, y) => mulR x y) (combine row col)) zeroR) lbT) la) i j =r=
-      (fold_left plusR (map (fun '(x, y) => mulR x y) (combine (nthRL la i) (nthRL lbT j))) zeroR) = true.
-    Proof.
-    Admitted.
 
     (* KEY LEMMA: matrix_mul_eff on list-of-lists (accessed via          *)
     (* index_map) coincides with the mathematical matrix_mul.             *)
@@ -3567,7 +3558,70 @@ Section Matrix_proofs.
       mat_mul_eff_fun Node eqN finN R zeroR plusR mulR m₁ m₂ c d =r=
       matrix_mul Node finN R zeroR plusR mulR m₁ m₂ c d = true.
     Proof.
-    Admitted.
+      intros m₁ m₂ c d Hm₁ Hm₂.
+      unfold mat_mul_eff_fun, matrix_mul.
+      set (idx := index_map Node eqN finN).
+      set (la := List.map (fun r : Node => List.map (fun c' : Node => m₁ r c') finN) finN).
+      set (lb := List.map (fun r : Node => List.map (fun c' : Node => m₂ r c') finN) finN).
+      (* Length properties *)
+      assert (Hlen_la : List.length la = List.length finN).
+      { subst la. apply length_map. }
+      assert (Hlen_lb : List.length lb = List.length finN).
+      { subst lb. apply length_map. }
+      assert (Hrows_la : forall (xs : list R), In xs la -> List.length xs = List.length finN).
+      { subst la. intros xs Hin. apply in_map_iff in Hin. destruct Hin as [? [Hinmem Hxs]]. subst xs. apply length_map. }
+      assert (Hrows_lb : forall (xs : list R), In xs lb -> List.length xs = List.length finN).
+      { subst lb. intros xs Hin. apply in_map_iff in Hin. destruct Hin as [? [Hinmem Hxs]]. subst xs. apply length_map. }
+      (* Element-wise correspondence *)
+      assert (Hla_correspond : forall u v, nthRR la (idx u) (idx v) =r= m₁ u v = true).
+      { intros u v. subst la idx. apply list_encode_access. exact Hm₁. }
+      assert (Hlb_correspond : forall u v, nthRR lb (idx u) (idx v) =r= m₂ u v = true).
+      { intros u v. subst lb idx. apply list_encode_access. exact Hm₂. }
+      (* Bounds for index_map *)
+      assert (Hbound_c : (idx c < List.length la)%nat).
+      { subst la idx. rewrite length_map. destruct (index_map_correct c (memN c)) as [Hbound _]; exact Hbound. }
+      assert (Hbound_d : (idx d < List.length (transpose_eff lb))%nat).
+      {
+        destruct (transpose_eff_square lb Hlen_lb Hrows_lb) as [Ht_len _].
+        rewrite Ht_len.
+        subst idx.
+        destruct (index_map_correct d (memN d)) as [Hbound _]; exact Hbound.
+      }
+      (* Expand the efficient multiplication *)
+      subst la lb idx.
+      unfold matrix_mul_eff, nthRR, nthR, nthRL.
+      cbv beta.
+      rewrite (nth_map_any_default (list R) (list R)
+        (fun (row : list R) => List.map (fun col : list R => dot_product R zeroR plusR mulR row col) (transpose_eff (List.map (fun r : Node => List.map (fun c' : Node => m₂ r c') finN) finN)))
+        (List.map (fun r : Node => List.map (fun c' : Node => m₁ r c') finN) finN)
+        (index_map Node eqN finN c)
+        ([] : list R) ([] : list R) Hbound_c).
+      cbv beta.
+      rewrite (nth_map_any_default (list R) R
+        (fun col : list R => dot_product R zeroR plusR mulR
+          (List.nth (index_map Node eqN finN c) (List.map (fun r : Node => List.map (fun c' : Node => m₁ r c') finN) finN) ([] : list R)) col)
+        (transpose_eff (List.map (fun r : Node => List.map (fun c' : Node => m₂ r c') finN) finN))
+        (index_map Node eqN finN d)
+        zeroR ([] : list R) Hbound_d).
+      cbv beta.
+      unfold dot_product.
+      apply (dot_product_row_col_eqv
+        (List.map (fun r : Node => List.map (fun c' : Node => m₁ r c') finN) finN)
+        (List.map (fun r : Node => List.map (fun c' : Node => m₂ r c') finN) finN)
+        m₁ m₂ c d).
+      - (* length la = length finN *)
+        apply length_map.
+      - (* length lb = length finN *)
+        apply length_map.
+      - (* element-wise correspondence for la *)
+        intros u v. apply list_encode_access. exact Hm₁.
+      - (* element-wise correspondence for lb *)
+        intros u v. apply list_encode_access. exact Hm₂.
+      - (* rows of la have correct length *)
+        intros xs Hin. apply in_map_iff in Hin. destruct Hin as [? [Hinmem Hxs]]. subst xs. apply length_map.
+      - (* rows of lb have correct length *)
+        intros xs Hin. apply in_map_iff in Hin. destruct Hin as [? [Hinmem Hxs]]. subst xs. apply length_map.
+    Qed.
 
   
     (* Local wrapper for matrix_mul_eff                                     *)
