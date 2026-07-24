@@ -3623,6 +3623,42 @@ Section Matrix_proofs.
         intros xs Hin. apply in_map_iff in Hin. destruct Hin as [? [Hinmem Hxs]]. subst xs. apply length_map.
     Qed.
 
+    (* Generalized version: works for ANY la, lb that encode congruent    *)
+    (* matrices (not just enc(m₁), enc(m₂)).                              *)
+    Lemma matrix_mul_eff_access_general :
+      forall (la lb : list (list R)) (m₁ m₂ : Matrix Node R) (c d : Node),
+      List.length la = List.length finN ->
+      List.length lb = List.length finN ->
+      (forall u v, nthRR la (index_map Node eqN finN u) (index_map Node eqN finN v) =r= m₁ u v = true) ->
+      (forall u v, nthRR lb (index_map Node eqN finN u) (index_map Node eqN finN v) =r= m₂ u v = true) ->
+      (forall xs, In xs la -> List.length xs = List.length finN) ->
+      (forall xs, In xs lb -> List.length xs = List.length finN) ->
+      nthRR (matrix_mul_eff R zeroR plusR mulR la lb) 
+        (index_map Node eqN finN c) (index_map Node eqN finN d) =r=
+      matrix_mul Node finN R zeroR plusR mulR m₁ m₂ c d = true.
+    Proof.
+      intros la lb m₁ m₂ c d Hlen_la Hlen_lb Hla Hlb Hrows_la Hrows_lb.
+      set (idx := index_map Node eqN finN).
+      assert (Hbound_c : (idx c < List.length la)%nat).
+      { rewrite Hlen_la. destruct (index_map_correct c (memN c)) as [Hb _]; exact Hb. }
+      assert (Hbound_d : (idx d < List.length (transpose_eff lb))%nat).
+      { destruct (transpose_eff_square lb Hlen_lb Hrows_lb) as [Ht_len _].
+        rewrite Ht_len. destruct (index_map_correct d (memN d)) as [Hb _]; exact Hb. }
+      unfold matrix_mul_eff, nthRR, nthR, nthRL.
+      cbv beta.
+      rewrite (nth_map_any_default (list R) (list R)
+        (fun (row : list R) => List.map (fun col : list R => dot_product R zeroR plusR mulR row col) (transpose_eff lb))
+        la (idx c) ([] : list R) ([] : list R) Hbound_c).
+      cbv beta.
+      rewrite (nth_map_any_default (list R) R
+        (fun col : list R => dot_product R zeroR plusR mulR
+          (List.nth (idx c) la ([] : list R)) col)
+        (transpose_eff lb) (idx d) zeroR ([] : list R) Hbound_d).
+      cbv beta.
+      unfold dot_product.
+      apply (dot_product_row_col_eqv la lb m₁ m₂ c d Hlen_la Hlen_lb Hla Hlb Hrows_la Hrows_lb).
+    Qed.
+
   
     (* Local wrapper for matrix_mul_eff                                     *)
     Let mul_eff (la lb : list (list R)) : list (list R) :=
@@ -3633,6 +3669,34 @@ Section Matrix_proofs.
       matrix_exp_unary_eff Node eqN finN R zeroR oneR plusR mulR la n.
 
     (* Helper: matrix_mul_eff applied to la and a list encoding of m_exp *)
+
+    (* Structural lemma: exp_eff preserves well-formedness                 *)
+    Lemma exp_eff_preserves_wf :
+      forall (la : list (list R)) (n : nat),
+      List.length la = List.length finN ->
+      (forall xs, In xs la -> List.length xs = List.length finN) ->
+      List.length (exp_eff la n) = List.length finN /\
+      (forall xs, In xs (exp_eff la n) -> List.length xs = List.length finN).
+    Proof.
+      intros ll n Hlen_ll Hrows_ll.
+      induction n as [|n' IHn].
+      - (* n = 0 *)
+        unfold exp_eff. simpl.
+        split.
+        + apply length_map.
+        + intros xs Hin. apply in_map_iff in Hin. destruct Hin as [? [Hinmem Hxs]]. subst xs. apply length_map.
+      - (* n = S n' *)
+        unfold exp_eff. simpl.
+        destruct IHn as [Hlen_exp Hrows_exp].
+        split.
+        + (* length *) unfold matrix_mul_eff. rewrite length_map. exact Hlen_ll.
+        + (* rows *) intros xs Hin. unfold matrix_mul_eff in Hin.
+          apply in_map_iff in Hin. destruct Hin as [row [Hxs Hin_ll]].
+          subst xs. rewrite length_map.
+          destruct (transpose_eff_square (exp_eff ll n') Hlen_exp Hrows_exp) as [Ht_len _].
+          exact Ht_len.
+    Qed.
+
     Lemma matrix_mul_eff_list_vs_fun :
       forall (m : Matrix Node R) (n : nat) (c d : Node),
       mat_cong Node eqN R eqR m ->
@@ -3642,7 +3706,73 @@ Section Matrix_proofs.
       matrix_mul Node finN R zeroR plusR mulR m 
         (matrix_exp_unary Node eqN finN R zeroR oneR plusR mulR m n) c d = true.
     Proof.
-    Admitted.
+      intros m n c d Hm.
+      cbv beta.
+      set (la := List.map (fun r : Node => List.map (fun c' : Node => m r c') finN) finN).
+      set (idx := index_map Node eqN finN).
+      revert c d.
+      induction n as [|n' IHn]; intros c d.
+      - (* n = 0 *)
+        unfold exp_eff, mul_eff.
+        simpl (matrix_exp_unary_eff Node eqN finN R zeroR oneR plusR mulR la 0).
+        (* exp_eff la 0 = enc(I) *)
+        assert (Hid_cong : mat_cong Node eqN R eqR (I Node eqN R zeroR oneR)).
+        { unfold mat_cong. intros a b u v Ha Hb. apply identity_cong; assumption. }
+        apply (matrix_mul_eff_access_general la
+          (List.map (fun r => List.map (fun c' => I Node eqN R zeroR oneR r c') finN) finN)
+          m (I Node eqN R zeroR oneR) c d).
+        + (* length la = length finN *) subst la; apply length_map.
+        + (* length enc(I) = length finN *) apply length_map.
+        + (* nthRR la ... =r= m ... *) intros u v. subst la. apply list_encode_access. exact Hm.
+        + (* nthRR enc(I) ... =r= I ... *) intros u v. apply list_encode_access. exact Hid_cong.
+        + (* rows of la *) subst la. intros xs Hin. apply in_map_iff in Hin. destruct Hin as [? [Hinmem Hxs]]. subst xs. apply length_map.
+        + (* rows of enc(I) *) intros xs Hin. apply in_map_iff in Hin. destruct Hin as [? [Hinmem Hxs]]. subst xs. apply length_map.
+      - (* n = S n' *)
+        unfold exp_eff, mul_eff.
+        simpl (matrix_exp_unary_eff Node eqN finN R zeroR oneR plusR mulR la (S n')).
+        (* Goal: nthRR (matrix_mul_eff la (matrix_mul_eff la (exp_eff la n'))) (idx c) (idx d) =r=
+                 matrix_mul m (matrix_exp_unary m (S n')) c d *)
+        set (lb_inner := matrix_mul_eff R zeroR plusR mulR la (exp_eff la n')).
+        (* Well-formedness of la *)
+        assert (Hlen_la : List.length la = List.length finN).
+        { subst la; apply length_map. }
+        assert (Hrows_la : forall xs, In xs la -> List.length xs = List.length finN).
+        { subst la. intros xs Hin. apply in_map_iff in Hin. destruct Hin as [? [Hinmem Hxs]]. subst xs. apply length_map. }
+        (* Well-formedness of exp_eff la n' *)
+        assert (Hwf_exp : List.length (exp_eff la n') = List.length finN /\
+          (forall xs, In xs (exp_eff la n') -> List.length xs = List.length finN)).
+        { apply (exp_eff_preserves_wf la n' Hlen_la Hrows_la). }
+        destruct Hwf_exp as [Hlen_exp Hrows_exp].
+        (* Well-formedness of lb_inner *)
+        assert (Hlen_lb : List.length lb_inner = List.length finN).
+        { unfold lb_inner, matrix_mul_eff. rewrite length_map. exact Hlen_la. }
+        assert (Hrows_lb : forall xs, In xs lb_inner -> List.length xs = List.length finN).
+        {
+          intros xs Hin.
+          unfold lb_inner, matrix_mul_eff in Hin.
+          apply in_map_iff in Hin. destruct Hin as [row [Hxs Hin_la]].
+          subst xs. rewrite length_map.
+          destruct (transpose_eff_square (exp_eff la n') Hlen_exp Hrows_exp) as [Ht_len _].
+          exact Ht_len.
+        }
+        (* Encoding: lb_inner encodes matrix_exp_unary m (S n') via IH *)
+        assert (Hlb_encodes : forall u v, nthRR lb_inner (idx u) (idx v) =r=
+          matrix_exp_unary Node eqN finN R zeroR oneR plusR mulR m (S n') u v = true).
+        {
+          intros u v.
+          specialize (IHn u v).
+          unfold lb_inner, mul_eff in *.
+          exact IHn.
+        }
+        (* Apply the generalized lemma *)
+        apply (matrix_mul_eff_access_general la lb_inner m
+          (matrix_exp_unary Node eqN finN R zeroR oneR plusR mulR m (S n')) c d
+          Hlen_la Hlen_lb).
+        + (* nthRR la ... =r= m ... *) intros u v. subst la. apply list_encode_access. exact Hm.
+        + (* nthRR lb_inner ... =r= matrix_exp_unary m (S n') ... *) exact Hlb_encodes.
+        + (* rows of la *) exact Hrows_la.
+        + (* rows of lb_inner *) exact Hrows_lb.
+    Qed.
 
     Lemma matrix_exp_unary_eff_fun_matrix_unary_eqv : 
       forall (n : nat) (m : Matrix Node R) c d,
