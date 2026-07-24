@@ -616,7 +616,116 @@ Section GenProofs.
           assumption.
   Qed.
 
+
+  (* Generalized lemma: dot_product of two lists equals the sum over a   *)
+  (* node list of pointwise products, for any semiring-like structure.   *)
+  Lemma dot_product_sum_fn_equiv_gen :
+    forall (Node R : Type)
+      (eqR : brel R) (refR : brel_reflexive R eqR) (symR : brel_symmetric R eqR) (trnR : brel_transitive R eqR)
+      (zeroR : R) (plusR mulR : binary_op R)
+      (congrP : bop_congruence R eqR plusR) (congrM : bop_congruence R eqR mulR)
+      (zero_left_id : forall r : R, eqR (plusR zeroR r) r = true)
+      (zero_right_id : forall r : R, eqR (plusR r zeroR) r = true)
+      (flpa : forall (l : list R) (a b : R),
+        eqR (fold_left plusR l (plusR a b)) (plusR a (fold_left plusR l b)) = true)
+      (flca : forall (l : list R) (a b : R),
+        eqR a b = true -> eqR (fold_left plusR l a) (fold_left plusR l b) = true)
+      (f g : Node -> R) (l1 l2 : list R) (ln : list Node) (def : Node),
+    List.length l1 = List.length ln ->
+    List.length l2 = List.length ln ->
+    (forall (i : nat), (i < List.length ln)%nat ->
+      eqR (List.nth i l1 zeroR) (f (List.nth i ln def)) = true) ->
+    (forall (i : nat), (i < List.length ln)%nat ->
+      eqR (List.nth i l2 zeroR) (g (List.nth i ln def)) = true) ->
+    eqR (fold_left plusR (map (fun '(x, y) => mulR x y) (combine l1 l2)) zeroR)
+      (List.fold_right (fun y acc => plusR (mulR (f y) (g y)) acc) zeroR ln) = true.
+  Proof.
+    intros Node R eqR refR symR trnR zeroR plusR mulR congrP congrM
+      zero_left_id zero_right_id flpa flca f g l1 l2 ln def
+      Hlen1 Hlen2 Hl1 Hl2.
+    revert l2 ln Hlen1 Hlen2 Hl1 Hl2.
+    induction l1 as [|a1 l1' IH]; intros l2 ln Hlen1 Hlen2 Hl1 Hl2.
+    - (* l1 = [] *)
+      simpl in Hlen1. symmetry in Hlen1. apply length_zero_iff_nil in Hlen1. subst ln.
+      destruct l2; [| simpl in Hlen2; lia].
+      simpl. apply refR.
+    - (* l1 = a1 :: l1' *)
+      simpl in Hlen1, Hlen2.
+      destruct l2 as [|a2 l2']; [simpl in Hlen2; lia|].
+      destruct ln as [|n ln']; [simpl in Hlen1; lia|].
+      simpl in Hlen1, Hlen2.
+      inversion Hlen1 as [Hlen1']; inversion Hlen2 as [Hlen2'].
+      (* Head element-wise hypotheses *)
+      assert (Ha1 : eqR a1 (f n) = true).
+      { specialize (Hl1 0%nat). simpl in Hl1. apply Hl1. lia. }
+      assert (Ha2 : eqR a2 (g n) = true).
+      { specialize (Hl2 0%nat). simpl in Hl2. apply Hl2. lia. }
+      (* Tail element-wise hypotheses *)
+      assert (Hl1' : forall i, (i < List.length ln')%nat ->
+        eqR (List.nth i l1' zeroR) (f (List.nth i ln' def)) = true).
+      { intros i Hi. specialize (Hl1 (S i)). simpl in Hl1. apply Hl1. lia. }
+      assert (Hl2' : forall i, (i < List.length ln')%nat ->
+        eqR (List.nth i l2' zeroR) (g (List.nth i ln' def)) = true).
+      { intros i Hi. specialize (Hl2 (S i)). simpl in Hl2. apply Hl2. lia. }
+      (* Simplify the goal *)
+      simpl (combine (a1 :: l1') (a2 :: l2')).
+      simpl (map (fun '(x, y) => mulR x y) _).
+      simpl (fold_left plusR _ zeroR).
+      (* Goal: eqR (fold_left plusR (map ... (combine l1' l2')) (plusR zeroR (mulR a1 a2)))
+                 (plusR (mulR (f n) (g n)) (fold_right ... ln')) *)
+      eapply trnR with (y := fold_left plusR (map (fun '(x, y) => mulR x y) (combine l1' l2')) (mulR a1 a2)).
+      { apply flca. apply zero_left_id. }
+      { eapply trnR with (y := plusR (mulR a1 a2) (fold_left plusR (map (fun '(x, y) => mulR x y) (combine l1' l2')) zeroR)).
+        { eapply trnR with (y := fold_left plusR (map (fun '(x, y) => mulR x y) (combine l1' l2')) (plusR (mulR a1 a2) zeroR)).
+          { apply flca. apply symR. apply zero_right_id. }
+          { apply flpa. } }
+        { apply (congrP (mulR a1 a2) (fold_left plusR (map (fun '(x, y) => mulR x y) (combine l1' l2')) zeroR)
+            (mulR (f n) (g n)) (fold_right (fun y acc => plusR (mulR (f y) (g y)) acc) zeroR ln')).
+          { apply (congrM a1 a2 (f n) (g n) Ha1 Ha2). }
+          { apply (IH l2' ln' Hlen1' Hlen2' Hl1' Hl2'). } } }
+  Qed.
+
+  
+  (* Helper: nth does not depend on default when index is in bounds.    *)
+  Lemma nth_default_indep :
+    forall (A : Type) (idx : nat) (l : list A) (d1 d2 : A),
+    (idx < List.length l)%nat -> List.nth idx l d1 = List.nth idx l d2.
+  Proof.
+    intros A idx l d1 d2 Hlt.
+    generalize dependent idx.
+    induction l as [|a l' IH]; intros idx Hlt.
+    - inversion Hlt.
+    - destruct idx as [|idx'].
+      + reflexivity.
+      + simpl in Hlt. cbn. 
+        eapply IH. nia.
+  Qed.
+
+  (* Lemma: transpose swaps indices under nth, as a plain equality.      *)
+  Lemma nth_nil (A : Type) (n : nat) (d : A) : List.nth n [] d = d.
+  Proof.
+    induction n; simpl; reflexivity.
+  Qed.
+
+  Lemma nth_singleton_nil (A : Type) (n : nat) : List.nth n [ [] ] ([] : list A) = [].
+  Proof.
+    induction n; simpl; [reflexivity | destruct n; reflexivity].
+  Qed.
+
+  (* Helper lemma: nth 0 of nth i on map singletons = nth i on original *)
+  Lemma nth_0_map_singleton :
+    forall (A : Type) (l : list A) (i : nat) (d : A),
+    List.nth 0 (List.nth i (List.map (fun y => [y]) l) ([] : list A)) d =
+    List.nth i l d.
+  Proof.
+    intros A l i d. revert i.
+    induction l as [|x l' IHl]; intros i; simpl.
+    - destruct i; reflexivity.
+    - destruct i as [|i']; simpl; [reflexivity | apply IHl].
+  Qed.
+
 End GenProofs.
+         
 
 
 Section Matrix_proofs.
@@ -3041,25 +3150,314 @@ Section Matrix_proofs.
       fold_left plusR (map (fun '(x, y) => mulR x y) (combine l1 l2)) zeroR =r=
       sum_fn Node R zeroR plusR (fun y : Node => f y * g y) finN = true.
     Proof.
-    Admitted.
+      intros f g l1 l2 def Hlen1 Hlen2 Hl1 Hl2.
+      unfold sum_fn.
+      apply (dot_product_sum_fn_equiv_gen Node R eqR refR symR trnR
+        zeroR plusR mulR congrP congrM
+        zero_left_identity_plus zero_right_identity_plus
+        fold_left_plus_add fold_left_congr_acc
+        f g l1 l2 finN def Hlen1 Hlen2 Hl1 Hl2).
+    Qed.
 
-    (* Lemma: index_map of nth i finN returns i (for i in bounds).        *)
-    Lemma index_map_nth :
-      forall (i : nat) (def : Node),
-      (i < List.length finN)%nat ->
-      index_map Node eqN finN (List.nth i finN def) = i.
+    (* Helper: if eqN a (nth n l d) and n < length l, then a ∈ in_list.  *)
+    Lemma nth_in_list :
+      forall (l : list Node) (n : nat) (d a : Node),
+      (n < List.length l)%nat ->
+      eqN a (List.nth n l d) = true ->
+      in_list eqN l a = true.
     Proof.
-    Admitted.
+      induction l as [|x l' IH]; intros n d a Hn Heq.
+      - simpl in Hn; lia.
+      - destruct n as [|n'].
+        + simpl in Heq. simpl.
+          rewrite Heq. reflexivity.
+        + simpl in Hn.
+          simpl. apply Bool.orb_true_iff. right.
+          apply (IH n' d a).
+          * lia.
+          * exact Heq.
+    Qed.
+
+    (* Helper: in a no_dup list, if two positions have eqN-equivalent     *)
+    (* elements, then the positions are equal.                            *)
+    Lemma nth_no_dup_inj :
+      forall (l : list Node) (i j : nat) (d : Node),
+      no_dup Node eqN l = true ->
+      (i < List.length l)%nat -> (j < List.length l)%nat ->
+      eqN (List.nth i l d) (List.nth j l d) = true -> i = j.
+    Proof.
+      induction l as [|a l' IH]; intros i j d Hdup Hi Hj Heq.
+      - simpl in Hi; lia.
+      - simpl in Hdup.
+        apply Bool.andb_true_iff in Hdup. destruct Hdup as [Hnotin Hdup_l'].
+        assert (Hin_false : in_list eqN l' a = false).
+        { destruct (in_list eqN l' a); [discriminate | reflexivity]. }
+        destruct i as [|i']; destruct j as [|j'].
+        + (* i=0, j=0 *) reflexivity.
+        + (* i=0, j=S j' *)
+          simpl in Heq.
+          (* Heq: eqN a (nth j' l' d) = true,
+             but in_list l' a = false, contradiction via nth_in_list *)
+          apply nth_in_list with (n := j') (d := d) in Heq.
+          * rewrite Heq in Hin_false. discriminate.
+          * simpl in Hj; lia.
+        + (* i=S i', j=0 *)
+          simpl in Heq.
+          apply symN in Heq.
+          apply nth_in_list with (n := i') (d := d) in Heq.
+          * rewrite Heq in Hin_false. discriminate.
+          * simpl in Hi; lia.
+        + (* i=S i', j=S j' *)
+          simpl in Heq. simpl in Hi, Hj.
+          f_equal.
+          apply (IH i' j' d Hdup_l'); [lia | lia | exact Heq].
+    Qed.
+
+    Lemma index_map_nth :
+      forall (i : nat) (default_n : Node),
+      (i < List.length finN)%nat ->
+      index_map Node eqN finN (List.nth i finN default_n) = i.
+    Proof.
+      intros i default_n Hi.
+      set (x := List.nth i finN default_n).
+      assert (Hin : in_list eqN finN x = true).
+      { apply nth_in_list with (n := i) (d := default_n); [exact Hi | apply refN]. }
+      destruct (find_mapi_aux_correct finN x 0 Hin dupN) as [j [Hj_bound [Hfind Heq]]].
+      unfold index_map, mapi.
+      rewrite Hfind. simpl.
+      assert (Heq' : eqN (List.nth j finN default_n) (List.nth i finN default_n) = true).
+      {
+        subst x.
+        assert (Htmp := nth_default_indep Node j finN (nth i finN default_n) default_n Hj_bound).
+        rewrite Htmp in Heq. exact Heq.
+      }
+      apply (nth_no_dup_inj finN j i default_n dupN Hj_bound Hi Heq').
+    Qed.
 
     (* Lemma: transpose_eff swaps nthRR indices.                          *)
+
+    (* ----------------------------------------------------------------- *)
+    (* Helper: inversion lemma for In (zip_with cons xs yss)             *)
+    Lemma in_zip_with_cons_inv {A : Type} (xs : list A) (yss : list (list A)) (zs : list A) :
+      In zs (zip_with cons xs yss) ->
+      exists x ys, zs = x :: ys /\ In x xs /\ In ys yss.
+    Proof.
+      revert xs yss.
+      induction xs as [|x xs IH]; intros yss Hin.
+      - simpl in Hin. inversion Hin.
+      - destruct yss as [|ys yss]; [simpl in Hin; inversion Hin|].
+        simpl in Hin. destruct Hin as [Heq | Hin_tl].
+        subst. exists x, ys.
+        split; [reflexivity | split; [left; reflexivity | left; reflexivity]].
+        apply IH in Hin_tl.
+        destruct Hin_tl as [x' [ys' [Heq [Hx' Hys']]]].
+        subst. exists x', ys'.
+        split; [reflexivity | split; [right; exact Hx' | right; exact Hys']].
+    Qed.
+
+    (* ----------------------------------------------------------------- *)
+    (* General fact: for an M×N matrix, transpose_eff gives an N×M matrix. *)
+
+    (* Helper: all rows of a non-empty list have the same length          *)
+    Definition all_rows_same_length {A : Type} (lb : list (list A)) (L : nat) : Prop :=
+      forall (xs : list A), In xs lb -> List.length xs = L.
+
+    (* If lb has M rows of length L (M>0, L>0), then transpose_eff lb   *)
+    (* has L rows of length M.                                            *)
+    Lemma transpose_eff_rows_cols {A : Type} (lb : list (list A)) (M L : nat) :
+      List.length lb = M ->
+      all_rows_same_length lb L ->
+      0 < M -> 0 < L ->
+      List.length (transpose_eff lb) = L /\
+      all_rows_same_length (transpose_eff lb) M.
+    Proof.
+      revert M L.
+      induction lb as [|r1 lb' IH]; intros M L HlenM Hrows HposM HposL.
+      - (* lb = [], M = 0 contradicts HposM *)
+        simpl in HlenM. lia.
+      - (* lb = r1 :: lb' *)
+        simpl in HlenM.
+        assert (Hlen_r1 : List.length r1 = L).
+        { apply Hrows. simpl; auto. }
+        destruct lb' as [|r2 lb''].
+        + (* lb = [r1], M = 1 *)
+          simpl in HlenM. subst M.
+          assert (Hpos_r1 : 0 < List.length r1) by lia.
+          split.
+          { (* length (transpose_eff [r1]) = L *)
+            simpl (transpose_eff [r1]).
+            rewrite length_map. exact Hlen_r1. }
+          { (* all rows of transpose_eff [r1] have length 1 *)
+            unfold all_rows_same_length.
+            intros xs Hin.
+            apply in_map_iff in Hin.
+            destruct Hin as [y [Hy Hin_r1]].
+            subst xs. simpl. reflexivity. }
+        + (* lb = r1 :: r2 :: lb'', M >= 2 *)
+          simpl (transpose_eff (r1 :: r2 :: lb'')).
+          assert (Hpos_M' : 0 < List.length (r2 :: lb'')).
+          { simpl. pose proof HlenM. simpl in H. lia. }
+          assert (Hrows_tail : all_rows_same_length (r2 :: lb'') L).
+          { intros xs Hin. apply Hrows. simpl; auto. }
+          assert (Hlen_tail : List.length (r2 :: lb'') = M - 1).
+          { simpl. rewrite <-HlenM. cbn. lia. }
+          (* Note: M-1 could be 0 when M=1, but M>=2, so M-1 >= 1 > 0 *)
+          assert (Hpos_M'_gt0 : 0 < M - 1) by lia.
+          (* Apply IH to the tail *)
+          assert (Htrans := IH (M-1) L Hlen_tail Hrows_tail Hpos_M'_gt0 HposL).
+          destruct Htrans as [Hlen_trans Hrows_trans].
+          (* Part 1: length of zip_with *)
+          split.
+          * (* length (zip_with cons r1 (transpose_eff (r2 :: lb''))) = L *)
+            rewrite zip_with_length.
+            rewrite Hlen_r1.
+            rewrite <- Hlen_trans.
+            rewrite PeanoNat.Nat.min_id.
+            reflexivity.
+          * (* all rows of zip_with have length M *)
+            unfold all_rows_same_length.
+            intros xs Hin.
+            apply in_zip_with_cons_inv in Hin.
+            destruct Hin as [x [ys [Heq [Hin_r1 Hin_trans]]]].
+            subst xs.
+            simpl.
+            assert (Hlen_ys : List.length ys = M - 1).
+            { apply Hrows_trans. exact Hin_trans. }
+            lia.
+    Qed.
+
+    (* Helper: nth on zip_with cons when i is in bounds of both lists    *)
+    Lemma nth_zip_with_cons_in_bounds {A : Type} (xs : list A) (yss : list (list A)) (i : nat) :
+      forall (ndv : A),
+      (i < List.length xs)%nat -> (i < List.length yss)%nat ->
+      List.nth i (zip_with cons xs yss) [] =
+      List.cons (List.nth i xs ndv) (List.nth i yss []).
+    Proof.
+      revert xs yss.
+      induction i as [|i IH]; intros xs yss ndv Hxs Hyss.
+      - (* i = 0 *)
+        destruct xs as [|x xs]; [simpl in Hxs; lia |].
+        destruct yss as [|ys yss]; [simpl in Hyss; lia |].
+        simpl. reflexivity.
+      - (* i = S i *)
+        destruct xs as [|x xs]; [simpl in Hxs; lia |].
+        destruct yss as [|ys yss]; [simpl in Hyss; lia |].
+        simpl. apply IH; simpl in Hxs, Hyss; lia.
+    Qed.
+
+    (* Helper: nth on zip_with cons when i is out of bounds              *)
+    Lemma nth_zip_with_cons_overflow {A : Type} (xs : list A) (yss : list (list A)) (i : nat) :
+      (List.length xs <= i \/ List.length yss <= i)%nat ->
+      List.nth i (zip_with cons xs yss) [] = [].
+    Proof.
+      intros Hle.
+      apply nth_overflow.
+      rewrite zip_with_length.
+      destruct Hle as [Hle | Hle].
+      - refine (Nat.le_trans _ _ _ (Nat.le_min_l _ _) Hle).
+      - refine (Nat.le_trans _ _ _ (Nat.le_min_r _ _) Hle).
+    Qed.
+
+    (* Helper: plain equality for nth on transpose_eff                    *)
+    Lemma nth_transpose_eff_eq :
+      forall (lb : list (list R)) (i j : nat),
+      (forall (xs : list R), In xs lb -> List.length xs = List.length finN) ->
+      List.nth j (List.nth i (transpose_eff lb) []) zeroR =
+      List.nth i (List.nth j lb []) zeroR.
+    Proof.
+      induction lb as [|r lb' IH]; intros i j Hrows.
+      - simpl. destruct i, j; reflexivity.
+      - assert (Hlen_r : List.length r = List.length finN).
+        { apply Hrows. simpl; auto. }
+        destruct lb' as [|r' lb''].
+        + (* single row [r] *)
+          simpl.
+          destruct (i <? List.length r)%nat eqn:Hi.
+          * apply Nat.ltb_lt in Hi.
+            rewrite (nth_map_any_default R (list R) (fun y => [y]) r i [] zeroR Hi).
+            destruct j; simpl; [reflexivity |].
+            destruct j; simpl; [destruct i; reflexivity |].
+            destruct i; reflexivity.
+          * apply Nat.ltb_ge in Hi.
+            rewrite (nth_overflow (List.map (fun y : R => [y]) r) ([] : list R)).
+            { destruct j; simpl.
+              - rewrite (nth_overflow r zeroR); [reflexivity | exact Hi].
+              - destruct j; simpl; [destruct i; reflexivity | destruct i; reflexivity]. }
+            { rewrite length_map. exact Hi. }
+        + (* multiple rows r :: r' :: lb'' *)
+          simpl.
+          assert (Hrows_rest : forall xs, In xs (r' :: lb'') -> List.length xs = List.length finN).
+          { intros xs Hin. apply Hrows. simpl; auto. }
+          assert (Hlen_rest : List.length (transpose_eff (r' :: lb'')) = List.length finN).
+          {
+            set (M := List.length (r' :: lb'')). set (L := List.length finN).
+            assert (HlenM : List.length (r' :: lb'') = M) by reflexivity.
+            assert (HposM : 0 < M).
+            { subst M; simpl. pose proof Hlen_r. assert (2 <= List.length finN)%nat by apply lenN. lia. }
+            assert (HposL : 0 < L).
+            { subst L. assert (2 <= List.length finN)%nat by apply lenN. lia. }
+            pose proof (transpose_eff_rows_cols (r' :: lb'') M L HlenM Hrows_rest HposM HposL)
+              as [Hlen_t' _].
+            exact Hlen_t'.
+          }
+          destruct (i <? List.length finN)%nat eqn:Hi.
+          * apply Nat.ltb_lt in Hi.
+            assert (Hi_r : (i < List.length r)%nat) by lia.
+            assert (Hi_t : (i < List.length (transpose_eff (r' :: lb'')))%nat) by lia.
+            (* Directly use nth_zip_with_cons_in_bounds by matching the goal *)
+            match goal with
+            | [ |- context [ List.nth ?j (List.nth ?i (zip_with ?c ?x ?y) []) ?d ] ] =>
+              pose proof (nth_zip_with_cons_in_bounds x y i zeroR Hi_r Hi_t) as Hzip;
+              rewrite Hzip
+            end.
+            destruct j; simpl; [reflexivity |].
+            apply (IH i j Hrows_rest).
+          * apply Nat.ltb_ge in Hi.
+            assert (Hr_le_i : List.length r <= i) by (rewrite Hlen_r; exact Hi).
+            match goal with
+            | [ |- context [ List.nth ?j (List.nth ?i (zip_with ?c ?x ?y) []) ?d ] ] =>
+              rewrite (nth_zip_with_cons_overflow x y i (or_introl Hr_le_i))
+            end.
+            destruct j as [|j'].
+            -- simpl. apply eq_sym. apply (nth_overflow r zeroR). rewrite Hlen_r. exact Hi.
+            -- simpl.
+               destruct j' as [|j''].
+               ++ (* j' = 0 *)
+                  destruct (0 <? List.length (r' :: lb''))%nat eqn:Hj.
+                  { apply Nat.ltb_lt in Hj.
+                    apply (nth_In (A:=list R) (n:=0) (r' :: lb'') ([] : list R)) in Hj.
+                    apply Hrows_rest in Hj. simpl in Hj.
+                    apply eq_sym. apply nth_overflow. rewrite Hj. exact Hi. }
+                  { apply Nat.ltb_ge in Hj.
+                    apply eq_sym.
+                    assert (Hlen_r' : List.length r' = List.length finN).
+                    { apply Hrows_rest. simpl; auto. }
+                    apply (nth_overflow r' zeroR). rewrite Hlen_r'. exact Hi. }
+               ++ (* j' = S j'' *)
+                  destruct (S j'' <? List.length (r' :: lb''))%nat eqn:Hj.
+                  { apply Nat.ltb_lt in Hj.
+                    apply (nth_In (A:=list R) (n:=S j'') (r' :: lb'') ([] : list R)) in Hj.
+                    apply Hrows_rest in Hj. simpl in Hj.
+                    apply eq_sym. apply nth_overflow. rewrite Hj. exact Hi. }
+                  { apply Nat.ltb_ge in Hj.
+                    apply eq_sym.
+                    simpl. rewrite (nth_overflow lb'' (n:=j'') ([] : list R)).
+                    - simpl. apply (nth_overflow ([] : list R) (n:=i)). apply Nat.le_0_l.
+                    - simpl in Hj. cbn in Hj. nia. }
+    Qed.
+
     Lemma transpose_eff_nthRR :
       forall (lb : list (list R)) (i j : nat),
       (forall (xs : list R), In xs lb -> List.length xs = List.length finN) ->
       nthRR (transpose_eff lb) i j =r= nthRR lb j i = true.
     Proof.
-    Admitted.
+      intros lb i j Hrows.
+      unfold nthRR, nthR, nthRL.
+      rewrite nth_transpose_eff_eq.
+      eapply refR.
+      exact Hrows.
+    Qed.
 
-    (* Lemma: transpose_eff of an N×N square matrix is also N×N.          *)
     Lemma transpose_eff_square :
       forall (lb : list (list R)),
       List.length lb = List.length finN ->
@@ -3067,7 +3465,12 @@ Section Matrix_proofs.
       List.length (transpose_eff lb) = List.length finN /\
       (forall (xs : list R), In xs (transpose_eff lb) -> List.length xs = List.length finN).
     Proof.
-    Admitted.
+      intros lb Hlen Hrows.
+      set (N := List.length finN).
+      assert (HposN : 0 < N).
+      { subst N. assert (2 <= List.length finN)%nat by apply lenN. lia. }
+      apply (transpose_eff_rows_cols lb N N Hlen Hrows HposN HposN).
+    Qed.
 
     Lemma dot_product_row_col_eqv :
       forall (la lb : list (list R)) (m₁ m₂ : Matrix Node R) (c d : Node),
