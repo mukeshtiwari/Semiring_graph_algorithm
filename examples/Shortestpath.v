@@ -57,7 +57,7 @@ Section Comp.
 
   (* Now, configure the matrix *)
   Definition shortestpath (m : Path.Matrix Node R) : Path.Matrix Node R :=
-    matrix_exp_binary Node eqN finN R zeroR oneR plusR mulR m 2%N.
+   matrix_exp_binary_eff_fun Node eqN finN R zeroR oneR plusR mulR m 2%N.
 
 End Comp.
 

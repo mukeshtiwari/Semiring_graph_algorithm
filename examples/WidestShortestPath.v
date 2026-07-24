@@ -131,7 +131,7 @@ Section Comp.
 
   (* Now, configure the matrix *)
   Definition widest_shortest_path (m : Path.Matrix Node RR) : Path.Matrix Node RR :=
-    matrix_exp_binary Node eqN finN RR zeroRR oneRR lex_plusRR direct_mulRR m 2%N.
+    matrix_exp_binary_eff_fun Node eqN finN RR zeroRR oneRR lex_plusRR direct_mulRR m 2%N.
 
 End Comp. 
 

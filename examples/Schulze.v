@@ -67,7 +67,7 @@ Section Comp.
 
   (* Now, configure the matrix *)
   Definition schulze (m : Path.Matrix Node R) : Path.Matrix Node R :=
-    matrix_exp_binary Node eqN finN R zeroR oneR plusR mulR m 3%N.
+    matrix_exp_binary_eff_fun Node eqN finN R zeroR oneR plusR mulR m 3%N.
 
  
 
