@@ -2814,21 +2814,188 @@ Section Matrix_proofs.
 
     (* Helper: accessing the list-of-lists encoding via index_map gives   *)
     (* back the original matrix value, assuming mat_cong.                 *)
+
+    (* Lemma: List.nth n (List.map f l) d1 = f (List.nth n l d2) when    *)
+    (* n is within bounds.                                                *)
+    Lemma nth_map_any_default :
+      forall (A B : Type) (f : A -> B) (l : list A) (n : nat) (d1 : B) (d2 : A),
+      (n < List.length l)%nat ->
+      List.nth n (List.map f l) d1 = f (List.nth n l d2).
+    Proof.
+      induction l as [|x l IH]; intros n d1 d2 Hn.
+      - simpl in Hn. inversion Hn.
+      - simpl.
+        destruct n as [|n'].
+        + reflexivity.
+        + simpl in Hn.
+          apply IH.
+          nia.
+    Qed.
+
+    (* Lemma: index_map returns a valid index into finN, and the node at  *)
+    (* that index is eqN-equivalent to the input.                         *)
+
+    (* General lemma: for any list l with no_dup and x in l,             *)
+    (* List.find on mapi_aux returns the matching element and its index.  *)
+    Lemma find_mapi_aux_correct :
+      forall (l : list Node) (x : Node) (start : nat),
+      in_list eqN l x = true ->
+      no_dup Node eqN l = true ->
+      exists (j : nat),
+      (j < List.length l)%nat /\
+      List.find (fun '(n, _) => eqN n x) (mapi_aux (fun i n => (n, i)) l start) =
+      Some (List.nth j l x, (start + j)%nat) /\
+      eqN (List.nth j l x) x = true.
+    Proof.
+      induction l as [|a rest IH]; intros x start Hin Hdup.
+      - simpl in Hin. discriminate.
+      - simpl in Hin.
+        destruct (eqN x a) eqn:Heq_xa.
+        + (* eqN x a = true, so eqN a x = true by symN *)
+          assert (Heq_ax : eqN a x = true) by (apply symN; exact Heq_xa).
+          simpl in Hdup.
+          apply Bool.andb_true_iff in Hdup. destruct Hdup as [Hnotin Hdup_rest].
+          exists 0%nat.
+          split.
+          { simpl; nia. }
+          split.
+          { simpl. rewrite Heq_ax. rewrite Nat.add_0_r. reflexivity. }
+          { simpl. exact Heq_ax. }
+        + (* eqN x a = false, search in rest *)
+          simpl in Hin.
+          simpl in Hdup.
+          apply Bool.andb_true_iff in Hdup. destruct Hdup as [Hnotin Hdup_rest].
+          simpl (mapi_aux _ (a :: rest) start).
+          case_eq (eqN a x); intro Heq_ax.
+          * (* eqN a x = true: but then eqN x a = true by symN, contradiction *)
+            apply symN in Heq_ax.
+            rewrite Heq_xa in Heq_ax. discriminate.
+          * (* eqN a x = false: skip this element *)
+            cbn.
+            rewrite Heq_ax.
+            destruct (IH x (S start) Hin Hdup_rest) as [j [Hj_len [Hfind Heq_nx]]].
+            exists (S j).
+            split.
+            { simpl; nia. }
+            split.
+            { simpl. rewrite Hfind. f_equal.  f_equal.  nia. }
+            { simpl. exact Heq_nx. }
+    Qed.
+
+    Lemma index_map_correct :
+      forall (x : Node),
+      in_list eqN finN x = true ->
+      (index_map Node eqN finN x < List.length finN)%nat /\
+      eqN (List.nth (index_map Node eqN finN x) finN x) x = true.
+    Proof.
+      intros x Hin.
+      unfold index_map.
+      destruct (find_mapi_aux_correct finN x 0 Hin dupN) as [j [Hj_len [Hfind Heq]]].
+      (* Hfind: List.find ... (mapi_aux ... finN 0) = Some (List.nth j finN x, (0 + j)%nat) *)
+      (* The goal contains: match List.find ... (mapi ... finN) ... with ... end *)
+      (* Note: mapi f finN = mapi_aux f finN 0 *)
+      unfold mapi.
+      rewrite Hfind.
+      simpl.
+      split.
+      - exact Hj_len.
+      - exact Heq.
+    Qed.
+
     Lemma list_encode_access : 
       forall (m : Matrix Node R) c d,
       mat_cong Node eqN R eqR m ->
       nthRR (List.map (fun r => List.map (fun c' => m r c') finN) finN)
         (index_map Node eqN finN c) (index_map Node eqN finN d) =r= m c d = true.
     Proof.
-    Admitted.
+      intros m c d Hm.
+      unfold nthRR, nthR, nthRL.
+      assert (Hc_correct := index_map_correct c (memN c)).
+      assert (Hd_correct := index_map_correct d (memN d)).
+      destruct Hc_correct as [Hc_bound Hc_eqN].
+      destruct Hd_correct as [Hd_bound Hd_eqN].
+      rewrite (nth_map_any_default Node (list R)
+        (fun r : Node => List.map (fun c' : Node => m r c') finN)
+        finN (index_map Node eqN finN c) ([] : list R) c Hc_bound).
+      rewrite (nth_map_any_default Node R
+        (fun c' : Node => m (List.nth (index_map Node eqN finN c) finN c) c')
+        finN (index_map Node eqN finN d) zeroR d Hd_bound).
+      apply (Hm (List.nth (index_map Node eqN finN c) finN c)
+                (List.nth (index_map Node eqN finN d) finN d) c d).
+      - exact Hc_eqN.
+      - exact Hd_eqN.
+    Qed.
 
     (* Helper: fold_right and fold_left coincide for commutative plus.   *)
+
+    (* Lemma: fold_left plusR l (a + b) =r= a + fold_left plusR l b.       *)
+    Lemma fold_left_plus_add :
+      forall (l : list R) (a b : R),
+      fold_left plusR l (a + b) =r= a + fold_left plusR l b = true.
+    Proof.
+      induction l as [|h t IH]; intros a b.
+      - simpl. apply refR.
+      - simpl.
+        pose proof (IH (a + b) h) as IH1.
+        pose proof (IH b h) as IH2.
+        eapply trnR with (y := (a + b) + fold_left plusR t h).
+        + exact IH1.
+        + eapply trnR with (y := a + (b + fold_left plusR t h)).
+          * apply symR; apply plus_associative.
+          * apply (congrP a (b + fold_left plusR t h) a (fold_left plusR t (b + h))).
+            -- apply refR.
+            -- apply symR; exact IH2.
+    Qed.
+
+    (* Lemma: fold_left respects =r= on the accumulator.                   *)
+    Lemma fold_left_congr_acc :
+      forall (l : list R) (a b : R),
+      a =r= b = true ->
+      fold_left plusR l a =r= fold_left plusR l b = true.
+    Proof.
+      induction l as [|h t IH]; intros a b Heq.
+      - simpl. exact Heq.
+      - simpl. apply IH. apply congrP; [exact Heq | apply refR].
+    Qed.
+
     Lemma fold_right_plus_comm : 
       forall (l : list R),
       List.fold_right plusR zeroR l =r= 
       List.fold_left plusR l zeroR = true.
     Proof.
-    Admitted.
+      induction l as [|h t IH].
+      - (* l = [] *)
+        simpl. apply refR.
+      - (* l = h :: t *)
+        simpl (List.fold_right plusR zeroR (h :: t)).
+        simpl (List.fold_left plusR (h :: t) zeroR).
+        (* Goal: h + fold_right plusR 0 t =r= fold_left plusR t (0 + h) *)
+        eapply trnR with (y := h + List.fold_left plusR t zeroR).
+        + (* h + fold_right ... t =r= h + fold_left ... t 0 *)
+          apply (congrP h (List.fold_right plusR zeroR t)
+            h (List.fold_left plusR t zeroR)).
+          * apply refR.
+          * exact IH.
+        + (* Goal: h + fold_left plusR t 0 =r= fold_left plusR t (0 + h) *)
+          eapply trnR with (y := List.fold_left plusR t h).
+          * (* h + fold_left plusR t 0 =r= fold_left plusR t h *)
+            apply symR.
+            eapply trnR with (y := List.fold_left plusR t (h + 0)).
+            -- apply (fold_left_congr_acc t h (h + 0)).
+               apply symR; apply zero_right_identity_plus.
+            -- apply fold_left_plus_add.
+          * (* fold_left ... t h =r= fold_left ... t (0 + h) *)
+            apply (fold_left_congr_acc t h (0 + h)).
+            apply symR; apply zero_left_identity_plus.
+    Qed.
+
+    (* Helper: if b =r= c then a + b =r= a + c *)
+    Lemma plus_congr_right : forall a b c, b =r= c = true -> a + b =r= a + c = true.
+    Proof using congrP refR.
+      intros a b c H.
+      unfold bop_congruence in congrP.
+      apply (congrP a b a c (refR a) H).
+    Qed.
 
     (* Helper: sum_fn f finN equals fold_right plusR 0 (map f finN).     *)
     Lemma sum_fn_eq_map_fold : 
@@ -2836,13 +3003,76 @@ Section Matrix_proofs.
       sum_fn Node R zeroR plusR f finN =r=
       List.fold_right plusR zeroR (List.map f finN) = true.
     Proof.
-    Admitted.
+      intros f.
+      unfold sum_fn.
+      (* Generalize: prove over any list l *)
+      assert (H : forall (l : list Node),
+        List.fold_right (fun x y => f x + y) zeroR l =r=
+        List.fold_right plusR zeroR (List.map f l) = true).
+      {
+        induction l as [|a l' IHl].
+        - simpl. apply refR.
+        - simpl.
+          (* Goal: f a + fold_right (...) 0 l' =r= f a + fold_right plusR 0 (map f l') *)
+          (* IHl: fold_right (...) 0 l' =r= fold_right plusR 0 (map f l') *)
+          assert (Hr := refR (f a)).
+          pose proof (congrP (f a) (List.fold_right (fun x y => f x + y) zeroR l')
+            (f a) (List.fold_right plusR zeroR (List.map f l')) Hr IHl) as Hgoal.
+          exact Hgoal.
+      }
+      apply H.
+    Qed.
 
    
     (* Helper: dot_product of row i of la and col j of lb                *)
     (* equals sum_fn (fun y => m₁ (node_i) y * m₂ y (node_j)) finN.      *)
+
+    (* Lemma: if two lists l1, l2 (of length = length finN) element-wise  *)
+    (* encode functions f, g over finN, then dot_product l1 l2 equals     *)
+    (* sum_fn (fun y => f y * g y) finN.                                   *)
+    Lemma dot_product_sum_fn_equiv :
+      forall (f g : Node -> R) (l1 l2 : list R) (def : Node),
+      List.length l1 = List.length finN ->
+      List.length l2 = List.length finN ->
+      (forall (i : nat), (i < List.length finN)%nat ->
+        List.nth i l1 zeroR =r= f (List.nth i finN def) = true) ->
+      (forall (i : nat), (i < List.length finN)%nat ->
+        List.nth i l2 zeroR =r= g (List.nth i finN def) = true) ->
+      fold_left plusR (map (fun '(x, y) => mulR x y) (combine l1 l2)) zeroR =r=
+      sum_fn Node R zeroR plusR (fun y : Node => f y * g y) finN = true.
+    Proof.
+    Admitted.
+
+    (* Lemma: index_map of nth i finN returns i (for i in bounds).        *)
+    Lemma index_map_nth :
+      forall (i : nat) (def : Node),
+      (i < List.length finN)%nat ->
+      index_map Node eqN finN (List.nth i finN def) = i.
+    Proof.
+    Admitted.
+
+    (* Lemma: transpose_eff swaps nthRR indices.                          *)
+    Lemma transpose_eff_nthRR :
+      forall (lb : list (list R)) (i j : nat),
+      (forall (xs : list R), In xs lb -> List.length xs = List.length finN) ->
+      nthRR (transpose_eff lb) i j =r= nthRR lb j i = true.
+    Proof.
+    Admitted.
+
+    (* Lemma: transpose_eff of an N×N square matrix is also N×N.          *)
+    Lemma transpose_eff_square :
+      forall (lb : list (list R)),
+      List.length lb = List.length finN ->
+      (forall (xs : list R), In xs lb -> List.length xs = List.length finN) ->
+      List.length (transpose_eff lb) = List.length finN /\
+      (forall (xs : list R), In xs (transpose_eff lb) -> List.length xs = List.length finN).
+    Proof.
+    Admitted.
+
     Lemma dot_product_row_col_eqv :
       forall (la lb : list (list R)) (m₁ m₂ : Matrix Node R) (c d : Node),
+      List.length la = List.length finN ->
+      List.length lb = List.length finN ->
       (forall u v, nthRR la (index_map Node eqN finN u) (index_map Node eqN finN v) =r= m₁ u v = true) ->
       (forall u v, nthRR lb (index_map Node eqN finN u) (index_map Node eqN finN v) =r= m₂ u v = true) ->
       (forall (xs : list R), In xs la -> List.length xs = List.length finN) ->
@@ -2853,7 +3083,67 @@ Section Matrix_proofs.
                    (nthRL (transpose_eff lb) (index_map Node eqN finN d)))) zeroR) =r=
       sum_fn Node R zeroR plusR (fun y : Node => m₁ c y * m₂ y d) finN = true.
     Proof.
-    Admitted.
+      intros la lb m₁ m₂ c d Hla_rows Hlb_rows Hla Hlb Hla_len Hlb_len.
+      set (idx := index_map Node eqN finN).
+      set (row := nthRL la (idx c)).
+      set (col := nthRL (transpose_eff lb) (idx d)).
+      (* Establish that row has length = length finN *)
+      assert (Hlen_row : List.length row = List.length finN).
+      {
+        unfold row, idx, nthRL.
+        assert (Hbound : (index_map Node eqN finN c < List.length la)%nat).
+        { rewrite Hla_rows. destruct (index_map_correct c (memN c)) as [Hidx_bound _]; exact Hidx_bound. }
+        pose proof (@nth_In (list R) (index_map Node eqN finN c) la ([] : list R) Hbound) as Hin.
+        apply Hla_len in Hin.
+        exact Hin.
+      }
+      (* Establish that col has length = length finN *)
+      assert (Hlen_col : List.length col = List.length finN).
+      {
+        unfold col, idx, nthRL.
+        destruct (transpose_eff_square lb Hlb_rows Hlb_len) as [Ht_len Ht_rows].
+        assert (Hbound : (index_map Node eqN finN d < List.length (transpose_eff lb))%nat).
+        { rewrite Ht_len. destruct (index_map_correct d (memN d)) as [Hidx_bound _]; exact Hidx_bound. }
+        pose proof (@nth_In (list R) (index_map Node eqN finN d) (transpose_eff lb) ([] : list R) Hbound) as Hin.
+        apply Ht_rows in Hin.
+        exact Hin.
+      }
+      (* Element-wise correspondence for row *)
+      assert (Hrow_elem : forall (i : nat), (i < List.length finN)%nat ->
+        List.nth i row zeroR =r= m₁ c (List.nth i finN c) = true).
+      {
+        intros i Hi.
+        unfold row, idx, nthRL, nthRR, nthR.
+        pose proof (index_map_nth i c Hi) as Hidx_nth.
+        pose proof (Hla c (List.nth i finN c)) as Hrow_val.
+        rewrite Hidx_nth in Hrow_val.
+        unfold nthRR, nthR, nthRL in Hrow_val.
+        exact Hrow_val.
+      }
+      (* Element-wise correspondence for col *)
+      assert (Hcol_elem : forall (i : nat), (i < List.length finN)%nat ->
+        List.nth i col zeroR =r= (fun y => m₂ y d) (List.nth i finN c) = true).
+      {
+        intros i Hi.
+        unfold col, idx, nthRL, nthRR, nthR.
+        pose proof (index_map_nth i c Hi) as Hidx_nth.
+        pose proof (transpose_eff_nthRR lb (idx d) i Hlb_len) as Htrans.
+        unfold nthRR, nthR, nthRL in Htrans.
+        (* Htrans : nth i (nth (idx d) (transpose_eff lb) []) zeroR =r=
+                    nth (idx d) (nth i lb []) zeroR *)
+        pose proof (Hlb (List.nth i finN c) d) as Hcol_val.
+        rewrite Hidx_nth in Hcol_val.
+        unfold nthRR, nthR, nthRL in Hcol_val.
+        (* Hcol_val : nth (idx d) (nth i lb []) zeroR =r= m₂ (nth i finN c) d *)
+        (* Goal: nth i (nth (idx d) (transpose_eff lb) []) zeroR =r= m₂ (nth i finN c) d *)
+        eapply trnR.
+        - exact Htrans.
+        - exact Hcol_val.
+      }
+      (* Now apply the main equivalence lemma *)
+      apply (dot_product_sum_fn_equiv (fun y => m₁ c y) (fun y => m₂ y d) row col c
+        Hlen_row Hlen_col Hrow_elem Hcol_elem).
+    Qed.
 
     (* Helper: nth j (nth i (map (dot_product) la) [])                   *)
     Lemma nth_map_nth_access :
