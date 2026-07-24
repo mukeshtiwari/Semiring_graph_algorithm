@@ -4,9 +4,10 @@ From Examples Require Import Wikimedia.
 From Stdlib Require Import ZArith NArith.
 From Stdlib Require Import ExtrOcamlBasic.
 Set Extraction Output Directory ".".
+
 Extract Inductive nat => int [ "0" "Stdlib.Int.succ" ]
  "(fun fO fS n -> if n=0 then fO () else fS (n-1))".
-
 Extract Inductive list => "list" [ "[]" "(::)" ].
 Extract Inductive bool => "bool" [ "true" "false" ].
-Recursive Extraction Library Wikimedia.
+
+Separate Extraction Wikimedia.

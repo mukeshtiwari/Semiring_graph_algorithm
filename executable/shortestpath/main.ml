@@ -1,4 +1,4 @@
-open Shortestpath.ShortestPath
+open Shortestpath
 
 
 let string_candidates : coq_Node -> string = function
@@ -13,13 +13,13 @@ let string_values : coq_R -> string = function
 
 
 let string_list : (string * string * string) list -> string = 
-  List.fold_left (fun acc (a, b, h) -> acc ^ "(" ^ a ^ ", " ^ b ^ ", " ^ h ^ ")") ""
+  Stdlib.List.fold_left (fun acc (a, b, h) -> acc ^ "(" ^ a ^ ", " ^ b ^ ", " ^ h ^ ")") ""
   
 
 let rec cross_product (la : 'a list) (lb : 'b list) : ('a * 'b) list =
   match la with 
   | [] -> [] 
-  | h :: t -> List.append (List.map (fun x -> (h, x)) lb) (cross_product t lb)
+  | h :: t -> Stdlib.List.append (Stdlib.List.map (fun x -> (h, x)) lb) (cross_product t lb)
 
 (* configure the matrix.
 *) 
@@ -42,6 +42,6 @@ let arraymat (x : coq_Node) (y : coq_Node) : coq_R =
 
 let _ = 
   let comp = shortestpath arraymat in 
-  let ret = List.map (fun (x, y) -> (string_candidates x, string_candidates y, string_values (comp x y))) 
+  let ret = Stdlib.List.map (fun (x, y) -> (string_candidates x, string_candidates y, string_values (comp x y))) 
     (cross_product finN finN) in 
   print_endline (string_list ret)

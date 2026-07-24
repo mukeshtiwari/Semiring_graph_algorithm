@@ -1,33 +1,73 @@
 (subdir schulze
- (coq.extraction
+ (rocq.extraction
   (prelude Extraction)
-  (extracted_modules ListDef BinNums Datatypes Decimal Definitions Hexadecimal List Listprop Logic Mat Nat Number Path Specif Schulze)
+  (extracted_files
+    BinNums.ml BinNums.mli
+    Datatypes.ml Datatypes.mli
+    Definitions.ml Definitions.mli
+    List.ml List.mli
+    ListDef.ml ListDef.mli
+    Mat.ml Mat.mli
+    Nat.ml Nat.mli
+    Path.ml Path.mli
+    Schulze.ml Schulze.mli)
   (theories Stdlib Semiring Examples))
   (library 
-    (name schulze)))
+    (name schulze)
+    (wrapped false)))
 
 (subdir widestshortestpath
- (coq.extraction
+ (rocq.extraction
   (prelude Extraction)
-  (extracted_modules ListDef BinNums Datatypes Decimal Definitions Hexadecimal List Listprop Logic Mat Nat Number Path Specif WidestShortestPath)
+  (extracted_files
+    BinNums.ml BinNums.mli
+    Datatypes.ml Datatypes.mli
+    Definitions.ml Definitions.mli
+    List.ml List.mli
+    ListDef.ml ListDef.mli
+    Mat.ml Mat.mli
+    Nat.ml Nat.mli
+    Path.ml Path.mli
+    WidestShortestPath.ml WidestShortestPath.mli)
   (theories Stdlib Semiring Examples))
   (library
-    (name widestshortestpath)))
+    (name widestshortestpath)
+    (wrapped false)))
 
 
 (subdir shortestpath
- (coq.extraction
+ (rocq.extraction
   (prelude Extraction)
-  (extracted_modules ListDef BinNums Datatypes Decimal Definitions Hexadecimal List Listprop Logic Mat Nat Number Path Specif ShortestPath)
+  (extracted_files
+    BinNums.ml BinNums.mli
+    Datatypes.ml Datatypes.mli
+    Definitions.ml Definitions.mli
+    List.ml List.mli
+    ListDef.ml ListDef.mli
+    Mat.ml Mat.mli
+    Nat.ml Nat.mli
+    Path.ml Path.mli
+    Shortestpath.ml Shortestpath.mli)
   (theories Stdlib Semiring Examples))
   (library
-    (name shortestpath)))
+    (name shortestpath)
+    (wrapped false)))
 
 
 (subdir wikimedia
- (coq.extraction
+ (rocq.extraction
   (prelude Extraction)
-  (extracted_modules ListDef BinNums Datatypes Decimal Definitions Hexadecimal List Listprop Logic Mat Nat Number Path Specif Wikimedia)
+  (extracted_files
+    BinNums.ml BinNums.mli
+    Datatypes.ml Datatypes.mli
+    Definitions.ml Definitions.mli
+    List.ml List.mli
+    ListDef.ml ListDef.mli
+    Mat.ml Mat.mli
+    Nat.ml Nat.mli
+    Path.ml Path.mli
+    Wikimedia.ml Wikimedia.mli)
   (theories Stdlib Semiring Examples))
   (library
-    (name wikimedia)))
+    (name wikimedia)
+    (wrapped false)))

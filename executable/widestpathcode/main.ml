@@ -1,4 +1,4 @@
-open Widestshortestpath.WidestShortestPath
+open WidestShortestPath
 
 
 let string_candidates : coq_Node -> string = function
@@ -16,13 +16,13 @@ let string_pair : coq_R * coq_R -> string = function
 
 
 let string_list : (string * string * string) list -> string = 
-  List.fold_left (fun acc (a, b, h) -> acc ^ "(" ^ a ^ ", " ^ b ^ ", " ^ h ^ ")") ""
+  Stdlib.List.fold_left (fun acc (a, b, h) -> acc ^ "(" ^ a ^ ", " ^ b ^ ", " ^ h ^ ")") ""
   
 
 let rec cross_product (la : 'a list) (lb : 'b list) : ('a * 'b) list =
   match la with 
   | [] -> [] 
-  | h :: t -> List.append (List.map (fun x -> (h, x)) lb) (cross_product t lb)
+  | h :: t -> Stdlib.List.append (Stdlib.List.map (fun x -> (h, x)) lb) (cross_product t lb)
 
 
 
@@ -46,6 +46,6 @@ let arraymat (x : coq_Node) (y : coq_Node) : coq_RR =
 
 let _ = 
     let comp = widest_shortest_path arraymat (* mat and fnmat are same *) in 
-    let ret = List.map (fun (x, y) -> (string_candidates x, string_candidates y, 
+    let ret = Stdlib.List.map (fun (x, y) -> (string_candidates x, string_candidates y, 
       string_pair (comp x y))) (cross_product finN finN) in 
   print_endline (string_list ret)
