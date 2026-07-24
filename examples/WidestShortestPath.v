@@ -5,8 +5,17 @@ From Semiring Require Import Mat  Definitions
 Import ListNotations.
 
 
+(* It should be shortest widest path. Most of the literature *)
+(* treat the widest-shortest path below but it is not entirely  *)
+(* correct becasue the distributive laws (left_distributive_mul_over_plus, *)
+  (* right_distributive_mul_over_plus) do NOT hold for this semiring.    *)
+  (* Counterexample: a = (Infinity, Left 5), b = (Left 1, Left 10),     *)
+  (* c = (Left 2, Left 3). Then a*(b+c) = (Infinity, Left 5) but        *)
+  (* a*b + a*c = (Infinity, Left 3). The failure occurs because when     *)
+  (* mulf saturates to Infinity, the tiebreaker on second components     *)
+  (* does not respect the lexicographic order established by the first   *)
+  (* components.                                                         *)
 
-(* It should be shortest widest path *)
 Section Comp.
 
   (* Define Candidates *)
@@ -1029,6 +1038,187 @@ Section Proofs.
     eapply eqrr_reflexive.
   Qed.
 
+  (* ----------------------------------------------------------------- *)
+  (* Congruence lemmas: these ARE provable.                             *)
+
+  Theorem congrR : brel_congruence R eqR eqR.
+  Proof.
+    unfold brel_congruence.
+    intros s t u v Hsu Htv.
+    destruct (eqR s t) eqn:Hst.
+    - (* eqR s t = true. Goal: true = eqR u v *)
+      apply eqr_symmetric in Hsu.
+      assert (Huv : eqR u v = true).
+      { apply (eqr_transitive u s v Hsu). apply (eqr_transitive s t v Hst Htv). }
+      rewrite Huv. reflexivity.
+    - (* eqR s t = false. Goal: false = eqR u v *)
+      symmetry. apply Bool.not_true_is_false. intro Huv.
+      assert (Hsv : eqR s v = true).
+      { apply (eqr_transitive s u v Hsu Huv). }
+      apply eqr_symmetric in Htv.
+      pose proof (eqr_transitive s v t Hsv Htv) as Hst'.
+      rewrite Hst in Hst'. inversion Hst'.
+  Qed.
+
+  Lemma mulf_congr : forall a1 b1 c1 d1 : R,
+    eqR a1 c1 = true -> eqR b1 d1 = true ->
+    eqR (mulf a1 b1) (mulf c1 d1) = true.
+  Proof.
+    intros a1 b1 c1 d1 Ha Hb.
+    destruct a1 as [x|], c1 as [z|]; try (simpl in Ha; congruence);
+    destruct b1 as [y|], d1 as [w|]; try (simpl in Hb; congruence).
+    - (* all Left *)
+      simpl in Ha, Hb.
+      apply PeanoNat.Nat.eqb_eq in Ha, Hb.
+      subst z w. simpl.
+      apply PeanoNat.Nat.eqb_refl.
+    - (* a1=Left _, c1=Left _, b1=Infinity, d1=Infinity *)
+      simpl. reflexivity.
+    - (* a1=Infinity, c1=Infinity, b1=Left, d1=Left *)
+      simpl. reflexivity.
+    - (* a1=Infinity, c1=Infinity, b1=Infinity, d1=Infinity *)
+      simpl. reflexivity.
+  Qed.
+
+  Lemma muls_congr : forall a2 b2 c2 d2 : R,
+    eqR a2 c2 = true -> eqR b2 d2 = true ->
+    eqR (muls a2 b2) (muls c2 d2) = true.
+  Proof.
+    intros a2 b2 c2 d2 Ha Hb.
+    destruct a2 as [x|], c2 as [z|]; try (simpl in Ha; congruence);
+    destruct b2 as [y|], d2 as [w|]; try (simpl in Hb; congruence).
+    - (* all Left *)
+      simpl in Ha, Hb.
+      apply PeanoNat.Nat.eqb_eq in Ha, Hb.
+      subst z w. simpl.
+      apply PeanoNat.Nat.eqb_refl.
+    - (* a2=Left, c2=Left, b2=Inf, d2=Inf *)
+      simpl in Ha. apply PeanoNat.Nat.eqb_eq in Ha. subst z. simpl. apply PeanoNat.Nat.eqb_refl.
+    - (* a2=Inf, c2=Inf, b2=Left, d2=Left *)
+      simpl. exact Hb.
+    - (* a2=Inf, c2=Inf, b2=Inf, d2=Inf *)
+      simpl. reflexivity.
+  Qed.
+
+  Theorem congrM : bop_congruence RR eqRR direct_mulRR.
+  Proof.
+    unfold bop_congruence, direct_mulRR.
+    intros (a1,a2) (b1,b2) (c1,c2) (d1,d2) Hs Ht.
+    unfold eqRR in Hs, Ht.
+    apply Bool.andb_true_iff in Hs. destruct Hs as [Ha1 Ha2].
+    apply Bool.andb_true_iff in Ht. destruct Ht as [Hb1 Hb2].
+    unfold eqRR. simpl.
+    apply Bool.andb_true_iff.
+    split.
+    - apply (mulf_congr a1 b1 c1 d1 Ha1 Hb1).
+    - apply (muls_congr a2 b2 c2 d2 Ha2 Hb2).
+  Qed.
+
+  Theorem congrP : bop_congruence RR eqRR lex_plusRR.
+  Proof.
+    unfold bop_congruence, lex_plusRR.
+    intros (a1,a2) (b1,b2) (c1,c2) (d1,d2) Hs Ht.
+    unfold eqRR in Hs, Ht.
+    apply Bool.andb_true_iff in Hs. destruct Hs as [Ha1 Ha2].
+    apply Bool.andb_true_iff in Ht. destruct Ht as [Hb1 Hb2].
+    (* Use ltr_eqr_gen to show ltR respects eqR *)
+    assert (Hlt1 : ltR a1 b1 = ltR c1 d1).
+    { symmetry. apply ltr_eqr_gen with (yc:=a1)(ya:=b1); [exact Ha1 | exact Hb1 | reflexivity]. }
+    assert (Heq1 : eqR a1 b1 = eqR c1 d1).
+    { apply congrR; [exact Ha1 | exact Hb1]. }
+    assert (Hlt2 : ltR b2 a2 = ltR d2 c2).
+    { symmetry. apply ltr_eqr_gen with (yc:=b2)(ya:=a2); [exact Hb2 | exact Ha2 | reflexivity]. }
+    rewrite <- Hlt1, Heq1, <- Hlt2.
+    case_eq (orb (ltR a1 b1) (eqR c1 d1 && ltR b2 a2))%bool; intro Hb; simpl.
+    - (* both pick first arguments: (a1,a2) and (c1,c2) *)
+      apply Bool.andb_true_iff; split; [exact Ha1 | exact Ha2].
+    - (* both pick second arguments: (b1,b2) and (d1,d2) *)
+      apply Bool.andb_true_iff; split; [exact Hb1 | exact Hb2].
+  Qed.
+
+  
 End Proofs.
+
+(* ========================================================================= *)
+(*  WIDEST-SHORTEST PATH SEMIRING: layered construction (OCaml Cas)           *)
+(*                                                                           *)
+(*  This file implements a DIRECT encoding of the widest-shortest path       *)
+(*  problem as an R × R pair with a lexicographic tiebreaker. The            *)
+(*  distributive laws do NOT hold for this direct encoding (see NOTE above). *)
+(*                                                                           *)
+(*  The CORRECT distributive semiring is built in OCaml using Cas functors:  *)
+(*                                                                           *)
+(*    let widest_shortest_paths =                                            *)
+(*      mcas_bs_add_zero                                                     *)
+(*        (mcas_bs_llex_product                                              *)
+(*           mcas_min_plus                                                   *)
+(*           (mcas_bs_add_one                                                *)
+(*              mcas_max_min                                                 *)
+(*              infinity))                                                   *)
+(*        infinity;;                                                         *)
+(*                                                                           *)
+(*  Layer-by-layer construction:                                             *)
+(*                                                                           *)
+(*    Layer 0 (min_plus):     (nat, + = min, * = +, 0 = ∞, 1 = 0)            *)
+(*      The primary criterion: minimize path length (shortest path).         *)
+(*                                                                           *)
+(*    Layer 1 (max_min):      (nat, + = max, * = min, 0 = 0, 1 = ∞)          *)
+(*      The secondary criterion: maximize bottleneck bandwidth (widest).     *)
+(*                                                                           *)
+(*    Layer 2 (bs_add_one):   wraps max_min with ∞ as *-identity AND         *)
+(*      +-absorber. The "winning" element ∞ represents "infinite bandwidth"  *)
+(*      and dominates in the additive order (max).                           *)
+(*                                                                           *)
+(*    Layer 3 (bs_llex_product): LEFT-lexicographic product of min_plus      *)
+(*      and the wrapped max_min. Here (a,b) + (c,d) compares first           *)
+(*      components via min_plus (shorter path wins); when a = c, the         *)
+(*      second component breaks ties via max_min (wider path wins). The      *)
+(*      product * is component-wise: (a,b) * (c,d) = (a*c, b*d).            *)
+(*                                                                           *)
+(*      CRITICAL: The tiebreaker only fires when first components are        *)
+(*      EQUAL. Since * distributes over + component-wise AND equality on     *)
+(*      the first component masks the tiebreaker, both distributive laws     *)
+(*      hold for this layer.                                                 *)
+(*                                                                           *)
+(*    Layer 4 (bs_add_zero):  wraps the product with ∞ as additive           *)
+(*      identity (+-id) AND multiplicative annihilator ( * -0). The outer    *)
+(*      ∞ represents no path exists.                                        *)
+(*                                                                           *)
+(*  LAYERED TYPE STRUCTURE (each layer is a semiring transformer):           *)
+(*                                                                           *)
+(*      ∞  (outer, additive identity)                                        *)
+(*       |                                                                   *)
+(*       v                                                                   *)
+(*      (a, b) where a : nat (min_plus), b : bs_add_one(max_min)             *)
+(*       |         |                                                         *)
+(*       |         +---> ∞ (inner-tiebreaker, *-identity)                    *)
+(*       |                |                                                  *)
+(*       |                v                                                  *)
+(*       |               Finite n  (nat, max-min)                            *)
+(*       |                                                                   *)
+(*       +---> Finite n  (nat, min-plus, primary criterion)                  *)
+(*                                                                           *)
+(*  ADDITIVE PROPERTIES:                                                     *)
+(*    Identity = ∞ (outer)            Annihilator = (0, ∞_inner)             *)
+(*    Idempotent, Commutative, Selective                                     *)
+(*                                                                           *)
+(*  MULTIPLICATIVE PROPERTIES:                                               *)
+(*    Identity = (0, ∞_inner)         Annihilator = ∞ (outer)                *)
+(*    Commutative                                                             *)
+(*                                                                           *)
+(*  ALGEBRAIC LAWS (from Cas describe output):                                *)
+(*    Left Distributive, Right Distributive                                   *)
+(*    Left-Left Absorptive, Left-Right Absorptive                             *)
+(*    Right-Left Absorptive, Right-Right Absorptive                           *)
+(*                                                                           *)
+(*  WHY DISTRIBUTIVE LAWS HOLD:                                              *)
+(*    The key insight is that bs_llex_product only uses the second component *)
+(*    for tiebreaking when first components are EQUAL. Since the product *   *)
+(*    is component-wise, and equality is preserved across components, the    *)
+(*    tiebreaker logic commutes with multiplication. This is in contrast to  *)
+(*    the direct lexicographic encoding in this file, where the tiebreaker   *)
+(*    uses ltR comparisons that do NOT commute with the saturation behavior  *)
+(*    of mulf (which maps anything involving Infinity to Infinity).           *)
+(* ========================================================================= *)
   
 
