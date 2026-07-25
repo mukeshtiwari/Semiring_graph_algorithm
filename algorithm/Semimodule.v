@@ -39,7 +39,7 @@ Section Semimodule_def.
   (* We use RIGHT scalar: (v ⊙ a).  This avoids requiring commutativity of   *)
   (* mulR in the function-space instantiation where (v ⊙ a)_n := v_n ⊗ a.    *)
 
-  Variable scale : V -> R -> V.
+  Variable scale : R -> V -> V.
 
   Variables 
     (Node : Type)
@@ -52,13 +52,13 @@ Section Semimodule_def.
 
   Definition vec_zero : Vector := fun _ => zeroV.
   Definition vec_add  (x y : Vector) : Vector := fun i => plusV (x i) (y i).
-  Definition vec_scale (v : Vector) (a : R) : Vector := fun i => scale (v i) a.
+  Definition vec_scale (a : R) (v : Vector) : Vector := fun i => scale a (v i).
 
   (* (m · v)_i  :=  Σ_{j ∈ finN}  (v_j) ⊙ m_{i,j}                            *)
   Definition matrix_vector_action (m : Matrix Node R) (v : Vector) : Vector := 
     fun (i : Node) =>
       List.fold_right
-        (fun j acc => plusV (scale (v j) (m i j)) acc)
+        (fun j acc => plusV (scale (m i j) (v j)) acc)
         zeroV
         finN.
 
@@ -66,7 +66,7 @@ Section Semimodule_def.
   Definition matrix_vector_action_eff (m : list (list R)) (v : list V) : list V :=
     List.map (fun row =>
       List.fold_right plusV zeroV
-        (List.map (fun '(r_elem, v_elem) => scale v_elem r_elem)
+        (List.map (fun '(r_elem, v_elem) => scale r_elem v_elem)
           (List.combine row v))) m.
 
   (* Look up a node in parallel with a value list ordered by finN             *)
@@ -180,14 +180,14 @@ Section Semimodule_proofs.
     (* congruence for plusV *)
     (congrPV : bop_congruence V eqV plusV).
 
-  Variable (scale : V -> R -> V).
+  Variable (scale : R -> V -> V).
 
   (* instantiate with types *)
   Let Vector : Type := Vector V Node.
   Let vec_zero : Vector := vec_zero V zeroV Node.
   Let vec_add : Vector -> Vector -> Vector :=
     vec_add V plusV Node.
-  Let vec_scale : Vector -> R -> Vector :=
+  Let vec_scale : R -> Vector -> Vector :=
     vec_scale R V scale Node.
   Let matrix_vector_action : Matrix Node R -> Vector -> Vector :=
     matrix_vector_action R V zeroV plusV scale Node finN.
@@ -200,16 +200,16 @@ Section Semimodule_proofs.
   
   (* Semimodule axioms *)
   Variables
-    (scale_distr_v : forall x y a, eqV (scale (plusV x y) a)
-      (plusV (scale x a) (scale y a)) = true)
-    (scale_distr_r : forall x a b, eqV (scale x (plusR a b))
-      (plusV (scale x a) (scale x b)) = true)
-    (scale_assoc : forall x a b, eqV (scale (scale x a) b)
-      (scale x (mulR a b)) = true)
-    (scale_one : forall x, eqV (scale x oneR) x = true)
-    (scale_zero_r : forall x, eqV (scale x zeroR) zeroV = true)
-    (scale_zero_v : forall a, eqV (scale zeroV a) zeroV = true)
-    (congrS : forall s1 s2 t1 t2, eqV s1 t1 = true -> eqR s2 t2 = true ->
+    (scale_distr_v : forall a x y, eqV (scale a (plusV x y))
+      (plusV (scale a x) (scale a y)) = true)
+    (scale_distr_r : forall a b x, eqV (scale (plusR a b) x)
+      (plusV (scale a x) (scale b x)) = true)
+    (scale_assoc : forall a b x, eqV (scale a (scale b x))
+      (scale (mulR a b) x) = true)
+    (scale_one : forall x, eqV (scale oneR x) x = true)
+    (scale_zero_r : forall x, eqV (scale zeroR x) zeroV = true)
+    (scale_zero_v : forall a, eqV (scale a zeroV) zeroV = true)
+    (congrS : forall s1 s2 t1 t2, eqR s1 t1 = true -> eqV s2 t2 = true ->
                eqV (scale s1 s2) (scale t1 t2) = true).
 
 
@@ -256,8 +256,8 @@ Section Semimodule_proofs.
   (* ----------------------------------------------------------------------- *)
 
   Theorem vec_scale_distr_v : forall (x y : Vector) (a : R),
-    (forall i : Node, eqV (vec_scale (vec_add x y) a i)
-                          (vec_add (vec_scale x a) (vec_scale y a) i) = true).
+    (forall i : Node, eqV (vec_scale a (vec_add x y) i)
+                          (vec_add (vec_scale a x) (vec_scale a y) i) = true).
   Proof.
     intros x y a i.
     unfold vec_scale, vec_add; simpl.
@@ -265,8 +265,8 @@ Section Semimodule_proofs.
   Qed.
 
   Theorem vec_scale_distr_r : forall (x : Vector) (a b : R),
-    (forall i : Node, eqV (vec_scale x (a + b) i)
-                          (vec_add (vec_scale x a) (vec_scale x b) i) = true).
+    (forall i : Node, eqV (vec_scale (a + b) x i)
+                          (vec_add (vec_scale a x) (vec_scale b x) i) = true).
   Proof.
     intros x a b i.
     unfold vec_scale, vec_add; simpl.
@@ -274,8 +274,8 @@ Section Semimodule_proofs.
   Qed.
 
   Theorem vec_scale_assoc : forall (x : Vector) (a b : R),
-    (forall i : Node, eqV (vec_scale (vec_scale x a) b i)
-                          (vec_scale x (a * b) i) = true).
+    (forall i : Node, eqV (vec_scale a (vec_scale b x) i)
+                          (vec_scale (a * b) x i) = true).
   Proof.
     intros x a b i.
     unfold vec_scale; simpl.
@@ -283,7 +283,7 @@ Section Semimodule_proofs.
   Qed.
 
   Theorem vec_scale_one : forall (x : Vector),
-    (forall i : Node, eqV (vec_scale x 1 i) (x i) = true).
+    (forall i : Node, eqV (vec_scale 1 x i) (x i) = true).
   Proof.
     intros x i.
     unfold vec_scale; simpl.
@@ -291,7 +291,7 @@ Section Semimodule_proofs.
   Qed.
 
   Theorem vec_scale_zero_r : forall (x : Vector),
-    (forall i : Node, eqV (vec_scale x 0 i) (vec_zero i) = true).
+    (forall i : Node, eqV (vec_scale 0 x i) (vec_zero i) = true).
   Proof.
     intros x i.
     unfold vec_scale, vec_zero; simpl.
@@ -299,7 +299,7 @@ Section Semimodule_proofs.
   Qed.
 
   Theorem vec_scale_zero_v : forall (a : R),
-    (forall i : Node, eqV (vec_scale vec_zero a i) (vec_zero i) = true).
+    (forall i : Node, eqV (vec_scale a vec_zero i) (vec_zero i) = true).
   Proof.
     intros a i.
     unfold vec_scale, vec_zero; simpl.
@@ -353,30 +353,63 @@ Section Semimodule_proofs.
     - refine (symV _ _ (zeroV_right_identity _)).
     - refine (trnV _ _ _
         (congrPV
-          (scale (plusV (x j) (y j)) (A i j))
-          (List.fold_right (fun k acc => plusV (scale (plusV (x k) (y k)) (A i k)) acc) zeroV js)
-          (plusV (scale (x j) (A i j)) (scale (y j) (A i j)))
-          (List.fold_right (fun k acc => plusV (scale (plusV (x k) (y k)) (A i k)) acc) zeroV js)
-          (scale_distr_v (x j) (y j) (A i j))
+          (scale (A i j) (plusV (x j) (y j)))
+          (List.fold_right (fun k acc => plusV (scale (A i k) (plusV (x k) (y k))) acc) zeroV js)
+          (plusV (scale (A i j) (x j)) (scale (A i j) (y j)))
+          (List.fold_right (fun k acc => plusV (scale (A i k) (plusV (x k) (y k))) acc) zeroV js)
+          (scale_distr_v (A i j) (x j) (y j))
           (refV _))
         (trnV _ _ _
           (congrPV
-            (plusV (scale (x j) (A i j)) (scale (y j) (A i j)))
-            (List.fold_right (fun k acc => plusV (scale (plusV (x k) (y k)) (A i k)) acc) zeroV js)
-            (plusV (scale (x j) (A i j)) (scale (y j) (A i j)))
-            (plusV (List.fold_right (fun k acc => plusV (scale (x k) (A i k)) acc) zeroV js)
-                   (List.fold_right (fun k acc => plusV (scale (y k) (A i k)) acc) zeroV js))
+            (plusV (scale (A i j) (x j)) (scale (A i j) (y j)))
+            (List.fold_right (fun k acc => plusV (scale (A i k) (plusV (x k) (y k))) acc) zeroV js)
+            (plusV (scale (A i j) (x j)) (scale (A i j) (y j)))
+            (plusV (List.fold_right (fun k acc => plusV (scale (A i k) (x k)) acc) zeroV js)
+                   (List.fold_right (fun k acc => plusV (scale (A i k) (y k)) acc) zeroV js))
             (refV _)
             IH)
-          (plusV_shuffle (scale (x j) (A i j)) (scale (y j) (A i j))
-            (List.fold_right (fun k acc => plusV (scale (x k) (A i k)) acc) zeroV js)
-            (List.fold_right (fun k acc => plusV (scale (y k) (A i k)) acc) zeroV js)))).
+          (plusV_shuffle (scale (A i j) (x j)) (scale (A i j) (y j))
+            (List.fold_right (fun k acc => plusV (scale (A i k) (x k)) acc) zeroV js)
+            (List.fold_right (fun k acc => plusV (scale (A i k) (y k)) acc) zeroV js)))).
   Qed.
 
+  (* Helper: scale distributes over fold_right of plusV                        *)
+  Lemma fold_right_scale_distr : forall (f : Node -> V) (l : list Node) (a : R),
+    (scale a (List.fold_right (fun j acc => plusV (f j) acc) zeroV l) =v=
+     List.fold_right (fun j acc => plusV (scale a (f j)) acc) zeroV l) = true.
+  Proof.
+    intros f l a. induction l as [|j js IH]; simpl.
+    - apply scale_zero_v.
+    - refine (trnV _ _ _
+        (scale_distr_v a (f j)
+          (List.fold_right (fun k acc => plusV (f k) acc) zeroV js))
+        (congrPV (scale a (f j))
+          (scale a (List.fold_right (fun k acc => plusV (f k) acc) zeroV js))
+          (scale a (f j))
+          (List.fold_right (fun k acc => plusV (scale a (f k)) acc) zeroV js)
+          (refV _) IH)).
+  Qed.
+
+  (* Hypothesis: scalars in the first argument of scale commute.              *)
+  (*   a ⊙ (b ⊙ x)  =v=  b ⊙ (a ⊙ x)                                         *)
+  (*                                                                           *)
+  (* With left scalar scale : R → V → V, this says two scalars a,b applied    *)
+  (* in sequence can be swapped.  It is equivalent to requiring that the      *)
+  (* action of R on V factors through the center of R.                         *)
   Theorem matrix_vector_action_scale : forall (A : Matrix Node R) (x : Vector) (a : R),
-    (forall i : Node, eqV (vec_scale (matrix_vector_action A x) a i)
-      (matrix_vector_action A (vec_scale x a) i) = true).
-  Proof. Admitted.
+    (forall a b x, eqV (scale a (scale b x)) (scale b (scale a x)) = true) ->
+    (forall i : Node, (vec_scale a (matrix_vector_action A x) i =v=
+      matrix_vector_action A (vec_scale a x) i) = true).
+  Proof.
+    intros A x a H_comm i.
+    unfold matrix_vector_action, vec_scale.
+    refine (trnV _ _ _ (fold_right_scale_distr
+      (fun j => scale (A i j) (x j)) finN a) _).
+    clear dupN lenN memN.
+    induction finN as [|j js IH]; simpl.
+    - apply refV.
+    - apply (congrPV _ _ _ _ (H_comm a (A i j) (x j)) IH).
+  Qed.
 
 
   (* ----------------------------------------------------------------------- *)
