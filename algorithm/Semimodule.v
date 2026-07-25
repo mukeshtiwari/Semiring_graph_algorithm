@@ -1305,18 +1305,288 @@ Section Semimodule_proofs.
     apply (fold_right_mul_assoc finN Astar A b i).
   Qed.
 
-  (* Uniqueness: x = A.x + b  =>  x = A*.b  (under bounded semiring).      *)
-  Theorem kleene_fixed_point_unique :
+  (* ===================================================================== *)
+  (* Helper lemmas for leastness: x = A·x + b  ⇒  x + A*·b = x              *)
+  (* ===================================================================== *)
+
+  (* Helper: vec_add is pointwise plusV                                       *)
+  Lemma vec_add_pointwise : forall u v i,
+    eqV (vec_add u v i) (plusV (u i) (v i)) = true.
+  Proof.
+    intros u v i. unfold vec_add, Semimodule.vec_add. apply refV.
+  Qed.
+
+  (* From x = A·x + b and idempotence, derive x + b = x.                    *)
+  Lemma absorb_b_fixpoint : forall (A : Matrix Node R) (b x : Vector)
+    (H_bounded : forall a : R, 1 + a =r= 1 = true)
+    (Hfp : forall i, eqV (x i) (vec_add (matrix_vector_action A x) b i) = true),
+    forall i, (plusV (x i) (b i) =v= x i) = true.
+  Proof.
+    intros A b x H_bounded Hfp i.
+    pose proof (Hfp i) as Hxi.
+    pose proof (vec_add_pointwise (matrix_vector_action A x) b i) as H_add.
+    apply (trnV _ _ _ Hxi) in H_add.
+    (* H_add: x i =v= plusV ((A·x) i) (b i), since vec_add expands pointwise *)
+    clear Hxi.
+    (* Goal: plusV (x i) (b i) =v= x i *)
+    (* Proof: x+b = (A·x+b)+b = A·x+(b+b) = A·x+b = x *)
+    apply (trnV (plusV (x i) (b i)) (plusV (plusV ((matrix_vector_action A x) i) (b i)) (b i)) (x i)).
+    - apply (congrPV (x i) (b i) (plusV ((matrix_vector_action A x) i) (b i)) (b i)
+        H_add (refV (b i))).
+    - apply (trnV (plusV (plusV ((matrix_vector_action A x) i) (b i)) (b i))
+        (plusV ((matrix_vector_action A x) i) (plusV (b i) (b i))) (x i)).
+      + apply (symV _ _ (plusV_associative ((matrix_vector_action A x) i) (b i) (b i))).
+      + apply (trnV (plusV ((matrix_vector_action A x) i) (plusV (b i) (b i)))
+          (plusV ((matrix_vector_action A x) i) (b i)) (x i)).
+        * apply (congrPV ((matrix_vector_action A x) i) (plusV (b i) (b i))
+            ((matrix_vector_action A x) i) (b i) (refV _)
+            (plusV_idempotent H_bounded (b i))).
+        * apply (symV _ _ H_add).
+  Qed.
+
+  (* From x = A·x + b and idempotence, derive x + A·x = x.                   *)
+  Lemma absorb_Ax_fixpoint : forall (A : Matrix Node R) (b x : Vector)
+    (H_bounded : forall a : R, 1 + a =r= 1 = true)
+    (Hfp : forall i, eqV (x i) (vec_add (matrix_vector_action A x) b i) = true),
+    forall i, (plusV (x i) ((matrix_vector_action A x) i) =v= x i) = true.
+  Proof.
+    intros A b x H_bounded Hfp i.
+    pose proof (Hfp i) as Hxi.
+    pose proof (vec_add_pointwise (matrix_vector_action A x) b i) as H_add.
+    apply (trnV _ _ _ Hxi) in H_add. clear Hxi.
+    (* H_add: x i =v= plusV ((A·x) i) (b i).  Goal: plusV (x i) ((A·x)i) =v= x i *)
+    (* Proof: x+(A·x) = ((A·x)+b)+(A·x) = (A·x)+(b+(A·x)) = (A·x)+((A·x)+b) *)
+    (*        = ((A·x)+(A·x))+b = (A·x)+b = x *)
+    apply (trnV (plusV (x i) ((matrix_vector_action A x) i))
+      (plusV (plusV ((matrix_vector_action A x) i) (b i)) ((matrix_vector_action A x) i)) (x i)).
+    - apply (congrPV (x i) ((matrix_vector_action A x) i)
+        (plusV ((matrix_vector_action A x) i) (b i)) ((matrix_vector_action A x) i)
+        H_add (refV ((matrix_vector_action A x) i))).
+    - apply (trnV (plusV (plusV ((matrix_vector_action A x) i) (b i)) ((matrix_vector_action A x) i))
+        (plusV ((matrix_vector_action A x) i) (plusV (b i) ((matrix_vector_action A x) i))) (x i)).
+      + apply (symV _ _ (plusV_associative ((matrix_vector_action A x) i) (b i) ((matrix_vector_action A x) i))).
+      + apply (trnV (plusV ((matrix_vector_action A x) i) (plusV (b i) ((matrix_vector_action A x) i)))
+          (plusV ((matrix_vector_action A x) i) (plusV ((matrix_vector_action A x) i) (b i))) (x i)).
+        * apply (congrPV ((matrix_vector_action A x) i) (plusV (b i) ((matrix_vector_action A x) i))
+            ((matrix_vector_action A x) i) (plusV ((matrix_vector_action A x) i) (b i))
+            (refV ((matrix_vector_action A x) i))
+            (plusV_commutative (b i) ((matrix_vector_action A x) i))).
+        * apply (trnV (plusV ((matrix_vector_action A x) i) (plusV ((matrix_vector_action A x) i) (b i)))
+            (plusV (plusV ((matrix_vector_action A x) i) ((matrix_vector_action A x) i)) (b i)) (x i)).
+          -- apply (plusV_associative ((matrix_vector_action A x) i) ((matrix_vector_action A x) i) (b i)).
+          -- apply (trnV (plusV (plusV ((matrix_vector_action A x) i) ((matrix_vector_action A x) i)) (b i))
+              (plusV ((matrix_vector_action A x) i) (b i)) (x i)).
+            ++ apply (congrPV (plusV ((matrix_vector_action A x) i) ((matrix_vector_action A x) i)) (b i)
+                ((matrix_vector_action A x) i) (b i)
+                (plusV_idempotent H_bounded ((matrix_vector_action A x) i)) (refV (b i))).
+            ++ apply (symV _ _ H_add).
+  Qed.
+
+  (* Matrix-vector action preserves the Orel order (monotonicity).           *)
+  (*  If  plusV u v =v= u  pointwise, then  plusV (A·u) (A·v) =v= A·u.      *)
+  Lemma mva_monotone_Orel : forall (A : Matrix Node R) (u v : Vector),
+    mat_cong Node eqN R eqR A ->
+    (forall j, (plusV (u j) (v j) =v= u j) = true) ->
+    forall i, (plusV (matrix_vector_action A u i)
+                       (matrix_vector_action A v i)
+               =v= matrix_vector_action A u i) = true.
+  Proof.
+    intros A u v H_cong H_uv i.
+    unfold matrix_vector_action.
+    (* Goal: (Σ_j A_{i,j}⊙u_j) + (Σ_j A_{i,j}⊙v_j) =v= Σ_j A_{i,j}⊙u_j      *)
+    (* Step 1: combine sums via fold_right_split.                            *)
+    apply (trnV
+      (plusV
+        (List.fold_right (fun j acc => plusV (scale (A i j) (u j)) acc) zeroV finN)
+        (List.fold_right (fun j acc => plusV (scale (A i j) (v j)) acc) zeroV finN))
+      (List.fold_right (fun j acc => plusV
+          (plusV (scale (A i j) (u j)) (scale (A i j) (v j))) acc) zeroV finN)
+      (List.fold_right (fun j acc => plusV (scale (A i j) (u j)) acc) zeroV finN)).
+    - apply (symV _ _ (fold_right_split finN
+        (fun j => scale (A i j) (u j))
+        (fun j => scale (A i j) (v j)))).
+    - (* Step 2: each term  A_{i,j}⊙u_j + A_{i,j}⊙v_j  =v=  A_{i,j}⊙u_j     *)
+      apply (fold_right_congr finN
+        (fun j => plusV (scale (A i j) (u j)) (scale (A i j) (v j)))
+        (fun j => scale (A i j) (u j))).
+      intro j.
+      apply (trnV
+        (plusV (scale (A i j) (u j)) (scale (A i j) (v j)))
+        (scale (A i j) (plusV (u j) (v j)))
+        (scale (A i j) (u j))).
+      + apply (symV _ _ (scale_distr_v (A i j) (u j) (v j))).
+      + apply (congrS _ _ _ _ (refR (A i j)) (H_uv j)).
+  Qed.
+
+  (* Absorption lifts through matrix powers:  plusV x (A^k·b) =v= x.        *)
+  Lemma matrix_pow_absorb : forall (A : Matrix Node R) (x b : Vector) (k : nat),
+    mat_cong Node eqN R eqR A ->
+    (forall u v, eqN u v = true -> eqV (b u) (b v) = true) ->
+    (forall i, (plusV (x i) (b i) =v= x i) = true) ->
+    (forall i, (plusV (x i) ((matrix_vector_action A x) i) =v= x i) = true) ->
+    forall i, (plusV (x i)
+      ((matrix_vector_action (matrix_exp_unary Node eqN finN R 0 1 plusR mulR A k) b) i)
+      =v= x i) = true.
+  Proof.
+    intros A x b k H_cong H_cong_b H_absorb_b H_absorb_Ax.
+    induction k as [|k IH]; simpl.
+    - (* k = 0: A^0 = I,  I·b = b *)
+      intro i.
+      assert (H_Ib : eqV
+        ((matrix_vector_action (I Node eqN R 0 1) b) i) (b i) = true).
+      { apply (fold_right_identity finN b i H_cong_b dupN (memN i)). }
+      apply (trnV (plusV (x i) ((matrix_vector_action (I Node eqN R 0 1) b) i))
+        (plusV (x i) (b i)) (x i)).
+      + apply (congrPV (x i) ((matrix_vector_action (I Node eqN R 0 1) b) i)
+          (x i) (b i) (refV (x i)) H_Ib).
+      + apply H_absorb_b.
+    - (* k → S k:  A^{S k}·b = A·(A^k·b) *)
+      intro i.
+      assert (H_mul_assoc : eqV
+        ((matrix_vector_action (matrix_mul Node finN R 0 plusR mulR A
+           (matrix_exp_unary Node eqN finN R 0 1 plusR mulR A k)) b) i)
+        ((matrix_vector_action A
+           (matrix_vector_action (matrix_exp_unary Node eqN finN R 0 1 plusR mulR A k) b)) i)
+        = true).
+      { apply (fold_right_mul_assoc finN A
+          (matrix_exp_unary Node eqN finN R 0 1 plusR mulR A k) b i). }
+      (* IH:  x + A^k·b = x  →  Orel x (A^k·b) *)
+      (* monotonicity:  Orel (A·x) (A·(A^k·b)) *)
+      assert (H_mono : (plusV ((matrix_vector_action A x) i)
+        ((matrix_vector_action A
+           (matrix_vector_action (matrix_exp_unary Node eqN finN R 0 1 plusR mulR A k) b)) i)
+        =v= (matrix_vector_action A x) i) = true).
+      { apply (mva_monotone_Orel A x
+          (matrix_vector_action (matrix_exp_unary Node eqN finN R 0 1 plusR mulR A k) b)
+          H_cong IH i). }
+      (* Chain:  x + A^{S k}·b  =  x + A·(A^k·b)                              *)
+      apply (trnV
+        (plusV (x i) ((matrix_vector_action
+           (matrix_exp_unary Node eqN finN R 0 1 plusR mulR A (S k)) b) i))
+        (plusV (x i)
+           ((matrix_vector_action A
+              (matrix_vector_action (matrix_exp_unary Node eqN finN R 0 1 plusR mulR A k) b)) i))
+        (x i)).
+      + apply (congrPV (x i) _ (x i) _ (refV (x i)) H_mul_assoc).
+      + (*  x + A·(A^k·b)  =  (x + A·x) + A·(A^k·b)                          *)
+        apply (trnV _ (plusV (plusV (x i) ((matrix_vector_action A x) i))
+          ((matrix_vector_action A
+             (matrix_vector_action (matrix_exp_unary Node eqN finN R 0 1 plusR mulR A k) b)) i))
+          (x i)).
+        * apply (congrPV (x i) _ (plusV (x i) ((matrix_vector_action A x) i)) _
+            (symV _ _ (H_absorb_Ax i)) (refV _)).
+        * (*  (x + A·x) + A·(A^k·b)  =  x + (A·x + A·(A^k·b))                 *)
+          apply (trnV _ (plusV (x i)
+            (plusV ((matrix_vector_action A x) i)
+              ((matrix_vector_action A
+                 (matrix_vector_action (matrix_exp_unary Node eqN finN R 0 1 plusR mulR A k) b)) i)))
+            (x i)).
+          -- apply (symV _ _ (plusV_associative (x i)
+              ((matrix_vector_action A x) i) _)).
+          -- apply (trnV _ (plusV (x i) ((matrix_vector_action A x) i)) (x i)).
+            ++ apply (congrPV (x i) _ (x i) ((matrix_vector_action A x) i)
+                (refV (x i)) H_mono).
+            ++ apply H_absorb_Ax.
+  Qed.
+
+  (* Leastness:  x = A·x + b  ⇒  plusV x (A*·b) =v= x                      *)
+  (* i.e., A*·b is below every solution in the idempotent order.             *)
+  Theorem kleene_fixed_point_least :
     forall (A : Matrix Node R) (b x : Vector),
       mat_cong Node eqN R eqR A ->
-      (forall u v : Node, eqN u v = true -> eqR (A u v) 1 = true) ->
       (forall a : R, 1 + a =r= 1 = true) ->
+      (forall u v : Node, eqN u v = true -> eqV (b u) (b v) = true) ->
       (forall i : Node, eqV (x i) (vec_add (matrix_vector_action A x) b i) = true) ->
-      (forall i : Node, eqV (x i)
+      (forall i : Node, eqV (vec_add x
         (matrix_vector_action (partial_sum_mat Node eqN finN R 0 1 plusR mulR A
-          kleene_exp) b i) = true).
+          kleene_exp) b) i) (x i) = true).
   Proof.
-    (* Informal proof: see sketch above. TODO. *)
-  Admitted.
+    intros A b x H_cong H_bounded H_cong_b Hfp i.
+    (* Goal: vec_add x (A*·b) i =v= x i.  Use vec_add_pointwise to rewrite. *)
+    pose proof (vec_add_pointwise x
+      (matrix_vector_action (partial_sum_mat Node eqN finN R 0 1 plusR mulR A kleene_exp) b) i)
+      as H_goal.
+    (* H_goal: vec_add x (A*·b) i =v= plusV (x i) ((A*·b) i) *)
+    apply (trnV _ _ _ H_goal).
+    (* New goal: plusV (x i) ((A*·b) i) =v= x i *)
+
+    (* Step 1:  plusV x b =v= x  and  plusV x (A·x) =v= x                   *)
+    pose proof (absorb_b_fixpoint A b x H_bounded Hfp) as H_absorb_b_all.
+    pose proof (absorb_Ax_fixpoint A b x H_bounded Hfp) as H_absorb_Ax_all.
+    pose proof (H_absorb_b_all i) as H_absorb_b.
+    pose proof (H_absorb_Ax_all i) as H_absorb_Ax.
+
+    (* Step 2: prove by induction on n that                                    *)
+    (*   plusV x ((partial_sum_mat A n)·b) =v= x  for any n.                 *)
+    set (Astar_n := fun n : nat =>
+      partial_sum_mat Node eqN finN R 0 1 plusR mulR A n).
+
+    (* Need to generalize: for all i, plusV (x i) ((Astar_n n · b) i) = x i *)
+    cut ((plusV (x i)
+      ((matrix_vector_action (Astar_n kleene_exp) b) i) =v= x i) = true).
+    { intro H. exact H. }
+
+    (* Induction on n.  But we only need n = kleene_exp.                      *)
+    (* Instead, prove the stronger statement for all n by induction.          *)
+    assert (forall n : nat,
+      (plusV (x i) ((matrix_vector_action (Astar_n n) b) i) =v= x i) = true)
+      as H_all.
+    { induction n as [|n IH]; simpl.
+      - (* n = 0: A*_0 = I, I·b = b *)
+        assert (H_Ib : eqV ((matrix_vector_action (I Node eqN R 0 1) b) i) (b i) = true).
+        { apply (fold_right_identity finN b i H_cong_b dupN (memN i)). }
+        apply (trnV (plusV (x i) ((matrix_vector_action (I Node eqN R 0 1) b) i))
+          (plusV (x i) (b i)) (x i)).
+        + apply (congrPV (x i) _ (x i) (b i) (refV (x i)) H_Ib).
+        + exact H_absorb_b.
+      - (* n → S n:  A*_{Sn} = A*_n + A^{Sn}                                 *)
+        (* (A*_n + A^{Sn})·b = A*_n·b + A^{Sn}·b                             *)
+        assert (H_add : eqV
+          ((matrix_vector_action (matrix_add Node R plusR (Astar_n n)
+             (matrix_exp_unary Node eqN finN R 0 1 plusR mulR A (S n))) b) i)
+          (plusV ((matrix_vector_action (Astar_n n) b) i)
+             ((matrix_vector_action (matrix_exp_unary Node eqN finN R 0 1 plusR mulR A (S n)) b) i))
+          = true).
+        { unfold matrix_vector_action.
+          apply (fold_right_scale_add finN
+            (fun j => (Astar_n n) i j)
+            (fun j => matrix_exp_unary Node eqN finN R 0 1 plusR mulR A (S n) i j)
+            (fun j => b j)).
+        }
+        apply (trnV (plusV (x i)
+          ((matrix_vector_action
+             (matrix_add Node R plusR (Astar_n n)
+                (matrix_exp_unary Node eqN finN R 0 1 plusR mulR A (S n))) b) i))
+          (plusV (x i)
+            (plusV ((matrix_vector_action (Astar_n n) b) i)
+               ((matrix_vector_action
+                  (matrix_exp_unary Node eqN finN R 0 1 plusR mulR A (S n)) b) i)))
+          (x i)).
+        + apply (congrPV (x i) _ (x i) _ (refV (x i)) H_add).
+        + (* plusV x (plusV (A*_n·b) A^{Sn}·b) =v= plusV (plusV x A*_n·b) A^{Sn}·b *)
+          apply (trnV _
+            (plusV (plusV (x i) ((matrix_vector_action (Astar_n n) b) i))
+               ((matrix_vector_action
+                  (matrix_exp_unary Node eqN finN R 0 1 plusR mulR A (S n)) b) i))
+            (x i)).
+          * apply (plusV_associative (x i)
+              ((matrix_vector_action (Astar_n n) b) i)
+              ((matrix_vector_action (matrix_exp_unary Node eqN finN R 0 1 plusR mulR A (S n)) b) i)).
+          * (* plusV (plusV x A*_n·b) A^{Sn}·b =v= plusV x A^{Sn}·b (by IH) *)
+            apply (trnV _
+              (plusV (x i)
+                 ((matrix_vector_action
+                    (matrix_exp_unary Node eqN finN R 0 1 plusR mulR A (S n)) b) i))
+              (x i)).
+            -- apply (congrPV (plusV (x i) ((matrix_vector_action (Astar_n n) b) i)) _
+                (x i) _ IH (refV _)).
+            -- (* plusV x A^{Sn}·b =v= x  by matrix_pow_absorb *)
+              apply (matrix_pow_absorb A x b (S n) H_cong H_cong_b
+                H_absorb_b_all H_absorb_Ax_all i).
+    }
+    apply (H_all kleene_exp).
+  Qed.
+
+
 
 End Semimodule_proofs.
