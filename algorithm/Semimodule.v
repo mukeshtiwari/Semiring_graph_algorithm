@@ -737,12 +737,165 @@ Section Semimodule_proofs.
         (fun j => scale (g j) (v j)))).
   Qed.
 
+  (* Helper: if eqN i k = false for all k in l, fold_right gives zeroV    *)
+  Lemma fold_right_identity_zero : forall (l : list Node) (v : Vector) (i : Node),
+    in_list eqN l i = false ->
+    eqV (List.fold_right (fun j acc => plusV (scale ((I Node eqN R 0 1) i j) (v j)) acc) zeroV l)
+        zeroV = true.
+  Proof.
+    induction l as [|j js IH]; simpl; intros v i H_not.
+    - apply refV.
+    - apply Bool.orb_false_iff in H_not.
+      destruct H_not as [H_ij H_js].
+      unfold I at 1.
+      rewrite H_ij.  (* eqN i j = false, so I i j = 0 *)
+      simpl.
+      apply (trnV _ _ _
+        (congrPV _ _ _ _ (scale_zero_r (v j)) (IH v i H_js))
+        (zeroV_left_identity zeroV)).
+  Qed.
+
   Lemma fold_right_identity : forall (l : list Node) (v : Vector) (i : Node),
+    (forall x y, eqN x y = true -> eqV (v x) (v y) = true) ->
     no_dup Node eqN l = true ->
     in_list eqN l i = true ->
     eqV (List.fold_right (fun j acc => plusV (scale ((I Node eqN R 0 1) i j) (v j)) acc) zeroV l)
         (v i) = true.
-  Proof. Admitted.
+  Proof.
+    induction l as [|j js IH]; simpl; intros v i H_cong H_dup H_in.
+    - discriminate H_in.
+    - simpl in H_dup.
+      apply Bool.andb_true_iff in H_dup.
+      destruct H_dup as [H_notin H_dup'].
+      case_eq (eqN i j); intros Heq_ij.
+      + (* eqN i j = true: I i j = 1 *)
+        unfold I at 1. rewrite Heq_ij. simpl.
+        apply (trnV _ (plusV (v j) zeroV) _).
+        * (* Head becomes v j, tail is zeroV since in_list js i = false *)
+          apply (congrPV _ _ _ _ (scale_one (v j))
+            (fold_right_identity_zero js v i
+              (list_mem_not Node eqN symN trnN js i j Heq_ij
+                (proj1 (Bool.negb_true_iff _) H_notin)))).
+        * (* v j =v= v i, then v i + 0 =v= v i *)
+          refine (trnV (plusV (v j) zeroV) (plusV (v i) zeroV) (v i)
+            (congrPV (v j) zeroV (v i) zeroV
+              (H_cong j i (symN _ _ Heq_ij)) (refV zeroV)) _).
+          apply (trnV (plusV (v i) zeroV) (plusV zeroV (v i)) (v i)
+            (plusV_commutative (v i) zeroV)
+            (zeroV_left_identity (v i))).
+      + (* eqN i j = false: I i j = 0 *)
+        unfold I at 1. rewrite Heq_ij. simpl.
+        apply Bool.orb_true_iff in H_in.
+        destruct H_in as [Heq | H_in_js].
+        * rewrite Heq in Heq_ij. discriminate Heq_ij.
+        * apply (trnV _ _ _
+            (congrPV _ _ _ _ (scale_zero_r (v j)) (IH v i H_cong H_dup' H_in_js))
+            (zeroV_left_identity (v i))).
+  Qed.
+
+  Lemma fold_right_scale_r_sum : forall (l : list Node) (f : Node -> R) (x : V),
+    eqV (scale (List.fold_right (fun k acc => f k + acc) zeroR l) x)
+        (List.fold_right (fun k acc => plusV (scale (f k) x) acc) zeroV l) = true.
+  Proof.
+    induction l as [|h t IH]; simpl; intros f x.
+    - apply scale_zero_r.
+    - apply (trnV _ _ _
+        (scale_distr_r (f h) (List.fold_right (fun k acc => f k + acc) zeroR t) x)).
+      apply (congrPV _ _ _ _ (refV (scale (f h) x)) (IH f x)).
+  Qed.
+
+  Lemma fold_right_double_commute : forall (l : list Node) (f : Node -> Node -> V),
+    eqV (List.fold_right
+           (fun j acc =>
+             plusV (List.fold_right (fun k acc' => plusV (f j k) acc') zeroV l) acc)
+           zeroV l)
+        (List.fold_right
+           (fun k acc =>
+             plusV (List.fold_right (fun j acc' => plusV (f j k) acc') zeroV l) acc)
+           zeroV l) = true.
+  Proof.
+    induction l as [|h t IH]; simpl; intros f.
+    - apply refV.
+    - (* Name the sub-expressions for clarity *)
+      set (A := f h h).
+      set (B := List.fold_right (fun k acc' => plusV (f h k) acc') zeroV t).
+      set (C := List.fold_right (fun j acc' => plusV (f j h) acc') zeroV t).
+      set (D := List.fold_right
+                 (fun j acc =>
+                    plusV (List.fold_right (fun k acc' => plusV (f j k) acc') zeroV t) acc)
+                 zeroV t).
+      (* LHS = plusV (A + B) (plusV C D) via fold_right_split *)
+      assert (HL : eqV
+        (List.fold_right (fun j acc =>
+           plusV (List.fold_right (fun k acc' => plusV (f j k) acc') zeroV (h :: t)) acc)
+           zeroV (h :: t))
+        (plusV (plusV A B) (plusV C D)) = true).
+      { simpl.
+        apply (congrPV _ _ _ _
+          (trnV _ _ _
+            (congrPV _ _ _ _ (refV A) (refV B))
+            (refV _))).
+        simpl.
+        apply (trnV _ _ _
+          (fold_right_split t
+            (fun j => f j h)
+            (fun j => List.fold_right (fun k acc' => plusV (f j k) acc') zeroV t))
+          (refV _)).
+      }
+      (* RHS = plusV (A + C) (plusV B D) via fold_right_split *)
+      assert (HR : eqV
+        (List.fold_right (fun k acc =>
+           plusV (List.fold_right (fun j acc' => plusV (f j k) acc') zeroV (h :: t)) acc)
+           zeroV (h :: t))
+        (plusV (plusV A C) (plusV B D)) = true).
+      { simpl.
+        apply (congrPV _ _ _ _
+          (trnV _ _ _
+            (congrPV _ _ _ _ (refV A) (refV C))
+            (refV _))).
+        simpl.
+        apply (trnV _ _ _
+          (fold_right_split t
+            (fun k => f h k)
+            (fun k => List.fold_right (fun j acc' => plusV (f j k) acc') zeroV t))).
+        (* Now: plusV B D_swapped =v= plusV B D *)
+        apply (congrPV _ _ _ _ (refV B)
+          (symV _ _ (IH (fun j k : Node => f j k)))).
+      }
+      (* Now: plusV (A+B) (C+D) =v= plusV (A+C) (B+D) by comm/assoc *)
+      assert (H_mid : eqV (plusV (plusV A B) (plusV C D))
+                          (plusV (plusV A C) (plusV B D)) = true).
+      { assert (H1 : eqV (plusV (plusV A B) (plusV C D))
+                         (plusV A (plusV B (plusV C D))) = true).
+        { apply (symV _ _ (plusV_associative A B (plusV C D))). }
+        assert (H2 : eqV (plusV A (plusV B (plusV C D)))
+                         (plusV A (plusV (plusV B C) D)) = true).
+        { refine (congrPV A (plusV B (plusV C D)) A (plusV (plusV B C) D)
+            (refV A) _).
+          apply (plusV_associative B C D). }
+        assert (H3 : eqV (plusV A (plusV (plusV B C) D))
+                         (plusV A (plusV (plusV C B) D)) = true).
+        { refine (congrPV A (plusV (plusV B C) D) A (plusV (plusV C B) D)
+            (refV A) _).
+          refine (congrPV (plusV B C) D (plusV C B) D
+            (plusV_commutative B C) (refV D)). }
+        assert (H4 : eqV (plusV A (plusV (plusV C B) D))
+                         (plusV A (plusV C (plusV B D))) = true).
+        { refine (congrPV A (plusV (plusV C B) D) A (plusV C (plusV B D))
+            (refV A) _).
+          apply (symV _ _ (plusV_associative C B D)). }
+        assert (H5 : eqV (plusV A (plusV C (plusV B D)))
+                         (plusV (plusV A C) (plusV B D)) = true).
+        { apply (plusV_associative A C (plusV B D)). }
+        apply (trnV _ _ _ H1
+          (trnV _ _ _ H2
+            (trnV _ _ _ H3
+              (trnV _ _ _ H4 H5)))).
+      }
+      apply (trnV _ _ _ HL).
+      apply (trnV _ _ _ H_mid).
+      apply (symV _ _ HR).
+  Qed.
 
   Lemma fold_right_mul_assoc : forall (l : list Node) (M1 M2 : Matrix Node R) (v : Vector) (i : Node),
     eqV (List.fold_right (fun j acc => plusV (scale
@@ -751,7 +904,105 @@ Section Semimodule_proofs.
         (List.fold_right (fun j acc => plusV (scale (M1 i j)
            (List.fold_right (fun k acc2 => plusV (scale (M2 j k) (v k)) acc2) zeroV l)) acc)
            zeroV l) = true.
-  Proof. Admitted.
+  Proof.
+    intros l M1 M2 v i.
+    (* f(j,k) := scale (M1 i k) (scale (M2 k j) (v j)) *)
+    set (f := fun (j k : Node) => scale (M1 i k) (scale (M2 k j) (v j))).
+    (* g(j,k) := scale (M1 i j) (scale (M2 j k) (v k)) *)
+    set (g := fun (j k : Node) => scale (M1 i j) (scale (M2 j k) (v k))).
+
+    (* Step 1: LHS = sum_j sum_k f(j,k) *)
+    assert (HL : eqV
+      (List.fold_right (fun j acc => plusV (scale
+         (List.fold_right (fun k acc2 => M1 i k * M2 k j + acc2) 0 l) (v j)) acc)
+         zeroV l)
+      (List.fold_right (fun j acc =>
+         plusV (List.fold_right (fun k acc' => plusV (f j k) acc') zeroV l) acc)
+         zeroV l) = true).
+    { apply (fold_right_congr l
+        (fun j => scale (List.fold_right (fun k acc2 => M1 i k * M2 k j + acc2) 0 l) (v j))
+        (fun j => List.fold_right (fun k acc' => plusV (f j k) acc') zeroV l)).
+      intro j.
+      apply (trnV _ _ _
+        (fold_right_scale_r_sum l (fun k => M1 i k * M2 k j) (v j))).
+      apply (fold_right_congr l
+        (fun k => scale (M1 i k * M2 k j) (v j))
+        (fun k => f j k)).
+      intro k. unfold f. apply (symV _ _ (scale_assoc (M1 i k) (M2 k j) (v j))).
+    }
+
+    (* Step 2: RHS = sum_j sum_k g(j,k) *)
+    assert (HR : eqV
+      (List.fold_right (fun j acc => plusV (scale (M1 i j)
+         (List.fold_right (fun k acc2 => plusV (scale (M2 j k) (v k)) acc2) zeroV l)) acc)
+         zeroV l)
+      (List.fold_right (fun j acc =>
+         plusV (List.fold_right (fun k acc' => plusV (g j k) acc') zeroV l) acc)
+         zeroV l) = true).
+    { apply (fold_right_congr l
+        (fun j => scale (M1 i j)
+          (List.fold_right (fun k acc2 => plusV (scale (M2 j k) (v k)) acc2) zeroV l))
+        (fun j => List.fold_right (fun k acc' => plusV (g j k) acc') zeroV l)).
+      intro j.
+      refine (trnV _ _ _
+        (fold_right_scale_distr (fun k => scale (M2 j k) (v k)) l (M1 i j)) _).
+      apply (fold_right_congr l
+        (fun k => scale (M1 i j) (scale (M2 j k) (v k)))
+        (fun k => g j k)).
+      intro k. unfold g. apply refV.
+    }
+
+    (* Step 3: sum_j sum_k g(j,k) = sum_k sum_j g(j,k) via double commute *)
+    assert (Hcomm : eqV
+      (List.fold_right (fun j acc =>
+         plusV (List.fold_right (fun k acc' => plusV (g j k) acc') zeroV l) acc)
+         zeroV l)
+      (List.fold_right (fun k acc =>
+         plusV (List.fold_right (fun j acc' => plusV (g j k) acc') zeroV l) acc)
+         zeroV l) = true).
+    { apply (fold_right_double_commute l g). }
+
+    (* Step 4: sum_k sum_j g(j,k) = sum_j sum_k g(k,j) via alpha-equivalence *)
+    (* These are identical up to bound variable renaming *)
+    assert (H_alpha : eqV
+      (List.fold_right (fun k acc =>
+         plusV (List.fold_right (fun j acc' => plusV (g j k) acc') zeroV l) acc)
+         zeroV l)
+      (List.fold_right (fun j acc =>
+         plusV (List.fold_right (fun k acc' => plusV (g k j) acc') zeroV l) acc)
+         zeroV l) = true).
+    { apply refV. }
+
+    (* Step 5: g(k,j) = f(j,k), so sum_j sum_k g(k,j) = sum_j sum_k f(j,k) *)
+    assert (Hgf : eqV
+      (List.fold_right (fun j acc =>
+         plusV (List.fold_right (fun k acc' => plusV (g k j) acc') zeroV l) acc)
+         zeroV l)
+      (List.fold_right (fun j acc =>
+         plusV (List.fold_right (fun k acc' => plusV (f j k) acc') zeroV l) acc)
+         zeroV l) = true).
+    { apply (fold_right_congr l
+        (fun j => List.fold_right (fun k acc' => plusV (g k j) acc') zeroV l)
+        (fun j => List.fold_right (fun k acc' => plusV (f j k) acc') zeroV l)).
+      intro j. apply (fold_right_congr l
+        (fun k => g k j) (fun k => f j k)).
+      intro k. unfold g, f. apply refV.
+    }
+
+    (* Chain: LHS = sum_j sum_k f(j,k) = sum_j sum_k g(k,j) = sum_k sum_j g(j,k) = sum_j sum_k g(j,k) = RHS *)
+    refine (trnV
+      (List.fold_right (fun j acc => plusV (scale
+         (List.fold_right (fun k acc2 => M1 i k * M2 k j + acc2) 0 l) (v j)) acc) zeroV l)
+      (List.fold_right (fun j acc =>
+         plusV (List.fold_right (fun k acc' => plusV (f j k) acc') zeroV l) acc) zeroV l)
+      (List.fold_right (fun j acc => plusV (scale (M1 i j)
+         (List.fold_right (fun k acc2 => plusV (scale (M2 j k) (v k)) acc2) zeroV l)) acc) zeroV l)
+      HL _).
+    refine (trnV _ _ _ (symV _ _ Hgf) _).
+    refine (trnV _ _ _ (symV _ _ H_alpha) _).
+    refine (trnV _ _ _ (symV _ _ Hcomm) _).
+    apply (symV _ _ HR).
+  Qed.
 
   (* Matrix-level Kleene fixpoint: A* = I + A *M A*                         *)
   Lemma partial_sum_mat_fixpoint :
@@ -816,12 +1067,13 @@ Section Semimodule_proofs.
       mat_cong Node eqN R eqR A ->
       (forall u v : Node, eqN u v = true -> eqR (A u v) 1 = true) ->
       (forall a : R, 1 + a =r= 1 = true) ->
+      (forall x y : Node, eqN x y = true -> eqV (b x) (b y) = true) ->
       (forall i : Node, eqV (x i)
         (matrix_vector_action (partial_sum_mat Node eqN finN R 0 1 plusR mulR A
           kleene_exp) b i) = true) ->
       (forall i : Node, eqV (x i) (vec_add (matrix_vector_action A x) b i) = true).
   Proof.
-    intros A b x H_cong H_diag H_bounded Hx_all i.
+    intros A b x H_cong H_diag H_bounded H_cong_b Hx_all i.
     (* Hx_all : forall i : Node, x i =v= (A*·b) i *)
     unfold matrix_vector_action, vec_add.
 
@@ -882,7 +1134,7 @@ Section Semimodule_proofs.
         (List.fold_right (fun j acc => plusV (scale (A i j) (x j)) acc) zeroV finN)
         (b i))
       (congrPV _ _ _ _
-        (fold_right_identity finN b i dupN (memN i))
+        (fold_right_identity finN b i H_cong_b dupN (memN i))
         (refV (List.fold_right (fun j acc => plusV (scale (matrix_mul Node finN R 0 plusR mulR A Astar i j) (b j)) acc) zeroV finN)))
       ).
 
