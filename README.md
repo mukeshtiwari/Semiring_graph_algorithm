@@ -42,4 +42,4 @@ If you want to verify that your algebra is a semiring, do the following:
 5. See the Rocq files in [examples](./examples/) directory for more information.
 
 
-Some design decisions: we have used function type (A -> B -> C) to model a matrix datatype but this may not be efficient if your matrix size is large. However, we use [refinement](https://link.springer.com/chapter/10.1007/978-3-642-32347-8_7) approach to make it efficient (it is in the pipeline).
+Some design decisions: we have used function type (A -> B -> C) to model a matrix datatype but this may not be efficient if your matrix size is large. However, we use [refinement](https://link.springer.com/chapter/10.1007/978-3-642-32347-8_7) approach to make it efficient ([see matrix_exp_binary_eff_fun_binary_eqv](/algorithm/Mat.v)).
