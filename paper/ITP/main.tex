@@ -99,7 +99,7 @@
 
 %\ccsdesc[100]{\textcolor{red}{Replace ccsdesc macro with valid one}} %TODO mandatory: Please choose ACM 2012 classifications from https://dl.acm.org/ccs/ccs_flat.cfm 
 
-\keywords{Semiring, Kleene Star, Fixed Point, Formal Verification, Coq, Voting, Optimisation, Semimodule} %TODO mandatory; please add comma-separated list of keywords
+\keywords{Semiring, Kleene Star, Fixed Point, Formal Verification, Rocq, Voting, Optimisation, Semimodule} %TODO mandatory; please add comma-separated list of keywords
 
 \category{} %optional, e.g. invited paper
 
@@ -139,7 +139,7 @@
 %TODO mandatory: add short abstract of the document
 \begin{abstract}
 We present the first mechanically verified framework for computing fixed points (Kleene star) 
-in bounded semirings, formalised in the Coq theorem prover. Our central result establishes 
+in bounded semirings, formalised in the Rocq theorem prover. Our central result establishes 
 that the formal power series $A^*$ of any $n \times n$ matrix over a bounded semiring 
 converges after exactly $n-1$ iterations: $A^* = A^{\langle n - 1 \rangle}$. This unifies 
 a wide class of graph algorithms---including shortest path, widest path, most reliable path, 
@@ -187,7 +187,7 @@ key condition that guarantees convergence after exactly $n-1$ iterations.
 
 \textbf{Contributions.} We present the first mechanically verified
 framework for Kleene star computation over bounded semirings,
-formalised in the Coq theorem prover and extracted to executable OCaml.
+formalised in the Rocq theorem prover and extracted to executable OCaml.
 Specifically:
 
 \begin{enumerate}
@@ -202,8 +202,8 @@ In an idempotent semiring, we further show
 $A^{\langle k \rangle} = (A \oplus I)^{k}$, enabling $O(n^3 \log n)$
 computation via repeated squaring (Theorem~\ref{thm:thm5}).
 
-\item \textbf{Generic Coq framework} (Section~\ref{sec:formalisation}):
-We provide a Coq library where users instantiate a semiring by
+\item \textbf{Generic Rocq framework} (Section~\ref{sec:formalisation}):
+We provide a Rocq library where users instantiate a semiring by
 supplying a type $R$ with operations $\oplus$, $\otimes$,
 $\overline{0}$, $\overline{1}$, proofs of the semiring axioms, and a
 proof of boundedness ($\overline{1} \oplus a = \overline{1}$).
@@ -240,7 +240,7 @@ matrix semirings. Section~\ref{sec:kleene} presents the Kleene star
 fixed-point theorems. Section~\ref{sec:graph} gives the path-based
 proof. Section~\ref{sec:semimodules} introduces semimodules.
 Section~\ref{sec:applications} presents the four instantiations.
-Section~\ref{sec:formalisation} describes the Coq library.
+Section~\ref{sec:formalisation} describes the Rocq library.
 Section~\ref{sec:extraction} covers extraction.
 Section~\ref{sec:related} discusses related work.
 Section~\ref{sec:conclusion} concludes.
@@ -342,7 +342,7 @@ Boundedness is a key property in our setting, and we want to illustrate its impo
 
 \noindent
 The path capacity from $a$ to $b$ is $u$, from $b$ to $c$ is $v$, and there is a loop at $b$ with capacity $w$. The set of all possible path capacities from $a$ to $c$ is $S = \{ u \otimes v, u \otimes w \otimes v, u \otimes w \otimes w \otimes v, \dots \}$. Our claim is that summing all the elements of $S$,  namely $u \otimes v \oplus u \otimes w \otimes v \oplus u \otimes w \otimes w \otimes v \oplus \dots$, simplifies to $u \otimes v$. In other words, in the presence of boundedness traversing the loop repeatedly does not add any value. Below we show two-elements set $\{ u \otimes v, u \otimes w \otimes v\}$ calculation but we establish it for a general 
-setting in the Coq theorem prover.
+setting in the Rocq theorem prover.
 \begin{align*}
     u \otimes v \oplus u \otimes w \otimes v  
     &= u \otimes (\overline{1} \otimes v \oplus \overline{1} \otimes w \otimes v)\\
@@ -361,7 +361,7 @@ setting in the Coq theorem prover.
 \begin{definition}\label{def:expo}
 Let  \( (\mathbb{R}, \oplus, \otimes, \overline{0}, \overline{1}) \) be a semiring. 
 We define two operations for $a \in R$ and $k \in \mathbb{N}$: exponentiation ($a^k$) and 
-summation-over-$k$-terms ($a^{\langle k \rangle}$), along with their Coq encodings as:
+summation-over-$k$-terms ($a^{\langle k \rangle}$), along with their Rocq encodings as:
 \end{definition}
 
 \begin{minipage}{0.45\linewidth} 
@@ -411,7 +411,7 @@ boundedness. In this formalisation, we have assumed  $0$-closed semiring for fix
     Let  \( (\mathbb{R}, \oplus, \otimes, \overline{0}, \overline{1}) \)  be a \textit{k-closed} semiring then we have:  $a^{\langle k + q \rangle} = a^{\langle k \rangle}$ for ever $a \in R$ and for every $q \in \mathbb{N}$. 
     
 \end{theorem}
-We encode Theorem \ref{bnd} in Coq as \textcolor{blue}{$astar\_exists\_gen\_q\_stable$}. The proof is by induction on $q$ 
+We encode Theorem \ref{bnd} in Rocq as \textcolor{blue}{$astar\_exists\_gen\_q\_stable$}. The proof is by induction on $q$ 
 and using the fact that it is a $k$-closed semiring. 
 \begin{lstlisting}[language=Coq]
 Lemma astar_exists_gen_q_stable (k : nat) : (forall w : R, 
@@ -438,14 +438,14 @@ $true \lor a = true$ ($\overline{1} \oplus a =\overline{1}$ for all $a \in \{fal
 
 
 \subsection{Matrix Semiring}\label{sec:matrix}
-We extend the definition of a semiring to a matrix semiring. For a given semiring $(R, \oplus, \otimes, \overline{0}, \overline{1})$ and a natural number $n$, we consider the set of matrices $M_{n}(R)$ of size $n \times n$ with elements in $R$. We define matrix addition, matrix multiplication, and matrix exponentiation (Figure \ref{fig:definitions}), along with their respective Coq encoding (Figure \ref{fig:coq_definitions}).
+We extend the definition of a semiring to a matrix semiring. For a given semiring $(R, \oplus, \otimes, \overline{0}, \overline{1})$ and a natural number $n$, we consider the set of matrices $M_{n}(R)$ of size $n \times n$ with elements in $R$. We define matrix addition, matrix multiplication, and matrix exponentiation (Figure \ref{fig:definitions}), along with their respective Rocq encoding (Figure \ref{fig:coq_definitions}).
 We define the zero matrix $J$ as a matrix 
 with all the entries are $\overline{0}$, and the one matrix (identity matrix) 
 $I$ as a matrix with all entries along the diagonal are $\overline{1}$ 
 and the rest are $\overline{0}$. The underlying carrier semiring elements and 
 their operators induce a 
 matrix semiring, i.e., $(M_{n}(R), \oplus_{m}, \otimes_{m}, J, I)$ is a semiring.
-We encode the set of matrices $M_{n}(R)$ in Coq as a function type from a finite type to a finite type to \(R\), 
+We encode the set of matrices $M_{n}(R)$ in Rocq as a function type from a finite type to a finite type to \(R\), 
 where the finite type is a enumerated list  $finN$, i.e., $finN = \{0, 1, \dots, n-1\}$.
 \vspace{-2mm}
 \begin{center}
@@ -495,7 +495,7 @@ Fixpoint matrix_exp_unary (A : Matrix)
 \end{minipage}
 \end{center}
 
- \captionof{figure}{Coq Encoding of Matrix Addition, Multiplication, and  Exponentiation}
+ \captionof{figure}{Rocq Encoding of Matrix Addition, Multiplication, and  Exponentiation}
 \label{fig:coq_definitions}
 \vspace{2mm}
 
@@ -536,7 +536,7 @@ However, when the underlying carrier set \(R\) is a bounded semiring, the induce
 \begin{definition}
    Let   \((M_{n}(R),  \oplus_{m}, \otimes_{m}, J, I)\) is a semiring.
    For every $A \in M_{n}(R)$ and for every $k \in \mathbb{N}$, we define the formal power series $A^{\langle k \rangle}$, 
-   along with its Coq encoding: $A^{\langle k \rangle} = I \oplus_{m} A \oplus_{m} A^2 \oplus_{m} \ldots \oplus_{m} A^k$.
+   along with its Rocq encoding: $A^{\langle k \rangle} = I \oplus_{m} A \oplus_{m} A^2 \oplus_{m} \ldots \oplus_{m} A^k$.
 \end{definition}
 \begin{lstlisting}[language=Coq]
 Fixpoint partial_sum_mat (A : Matrix) (k : nat) : Matrix := 
@@ -575,7 +575,7 @@ $\quad A^{*} = \lim_{k\to\infty} A^{\langle k \rangle}$.
 \end{definition}
 
 
-This is the closure of $A$. We have not encoded $A^{*}$ in Coq because we do not want to compute it. In many cases, computing $A^{*}$ is a diverging process; for example, with regular languages endowed with the concatenation and union operators, it never reaches a fixed point. We are only interested in cases where $A^{*}$ is well-defined and does reach a fixed point. Therefore, we express $A^{*}$ as 
+This is the closure of $A$. We have not encoded $A^{*}$ in Rocq because we do not want to compute it. In many cases, computing $A^{*}$ is a diverging process; for example, with regular languages endowed with the concatenation and union operators, it never reaches a fixed point. We are only interested in cases where $A^{*}$ is well-defined and does reach a fixed point. Therefore, we express $A^{*}$ as 
 $A^{\langle k + n - 1 \rangle}$ in proofs, where  $k$  is an arbitrary natural number and $n$ is the dimension of $A$. Ideally, we could have encoded $A^{*}$ as a coinductive definition and demonstrated that it reaches a fixed point using a mix of inductive and coinductive reasoning \cite{Nakata_2010}. However, this would have complicated our reasoning without significant benefit.
 
 
@@ -603,7 +603,7 @@ Let \( (\mathbb{R}, \oplus, \otimes, \overline{0}, \overline{1}) \) be a bounded
 
 \end{theorem}
 
-We encode Theorem \ref{thm:thm4} in Coq as \textcolor{blue}{$zero\_stable\_partial$}, assuming a bounded semiring which is represented by \textcolor{blue}{$zero\_stable$}. Essentially, we reduce this fixed-point proof to another fixed-point proof, \textcolor{blue}{$sum\_all\_flat\_paths\_fixpoint$}, as it provides additional information and structure. A detailed explanation of \textcolor{blue}{$sum\_all\_flat\_paths\_fixpoint$} is given in Section \ref{sec:graph}.
+We encode Theorem \ref{thm:thm4} in Rocq as \textcolor{blue}{$zero\_stable\_partial$}, assuming a bounded semiring which is represented by \textcolor{blue}{$zero\_stable$}. Essentially, we reduce this fixed-point proof to another fixed-point proof, \textcolor{blue}{$sum\_all\_flat\_paths\_fixpoint$}, as it provides additional information and structure. A detailed explanation of \textcolor{blue}{$sum\_all\_flat\_paths\_fixpoint$} is given in Section \ref{sec:graph}.
 
 
 
@@ -624,7 +624,7 @@ Proof. eapply sum_all_flat_paths_fixpoint.(* other terms omitted *) Qed.
     then we have  $A^{\langle k \rangle} = (A \oplus I)^k$.
 \end{theorem}
 
-We encode Theorem \ref{thm:thm3} in Coq as \textcolor{blue}{$matrix\_pow\_idempotence$}, which connects matrix exponentiation to the formal power series. The proof for this theorem is by induction on \(k\). We can compute \(A^{\langle k \rangle}\) in \(O(n^3 \times \log{k})\) using matrix exponentiation --compared to \(O(n^3 \times (\log{k})^2)\)-- under the assumption of idempotence. 
+We encode Theorem \ref{thm:thm3} in Rocq as \textcolor{blue}{$matrix\_pow\_idempotence$}, which connects matrix exponentiation to the formal power series. The proof for this theorem is by induction on \(k\). We can compute \(A^{\langle k \rangle}\) in \(O(n^3 \times \log{k})\) using matrix exponentiation --compared to \(O(n^3 \times (\log{k})^2)\)-- under the assumption of idempotence. 
 This efficiency stems from the connection between idempotent semirings and dynamic programming, where idempotency ensures that only optimal substructures contribute to the final solution \cite{10.5555/639508.639512}.
 Mohri \cite{10.5555/639508.639512} explains the connection between the optimal substructure property of dynamic programming algorithms and the monotonicity property of semirings. Idempotency introduces a partial order, which in turn makes a semiring monotonic.
 
@@ -644,7 +644,7 @@ Proof. induction k. (* other terms omitted *) Qed.
 \end{theorem}    
 
 It is a consequence of Theorems \ref{thm:thm4} and \ref{thm:thm3}.
-We encode Theorem \ref{thm:thm5} in Coq as \textcolor{blue}{$matrix\_fixpoint$}. Note 
+We encode Theorem \ref{thm:thm5} in Rocq as \textcolor{blue}{$matrix\_fixpoint$}. Note 
 that boundeness implies idempotence. 
 
 \begin{lstlisting}[language=Coq]
@@ -665,7 +665,7 @@ In this section, we present the proof of \textcolor{blue}{$sum\_all\_flat\_paths
 expressed as Theorem \ref{thm:thm8}. 
 We interpret a square matrix $A \in M_{n}(R)$ as a graph \( G = (V, E) \), where the set of vertices is \( V \) = \{1, \ldots, $n$\} and the set of edges is \( E = \{x \in V \times V\}\). Each entry $A_{ij}$ corresponds to the weight of the edge from vertex $i$ to vertex $j$. The cost of a path \(\pi = (v_0, \ldots, v_k)\) in $G$ is defined as $A(v_0, v_1)\otimes A(v_1, v_2) \otimes \ldots \otimes A(v_{k-1}, v_{k})$. More generally, we express this as $\textcolor{blue}{measure\_of\_path}(\pi) = \bigotimes_{e \in \pi} \text{ }A(e)$, where the product is taken over all edges $e$ in the path $\pi$.
 Similarly, the cost of a set of paths $P$ is defined as the sum of the costs of all individual paths in $P$ and  expressed as: $ \textcolor{blue}{sum\_all\_rvalues} (P) = 
-  \bigoplus_{\pi \in P} \text{ } \textcolor{blue}{measure\_of\_path} (\pi)$. The Coq encodings of these definitions are shown below, where the cost of an empty path (\(\epsilon\)) is represented by \(\overline{1}\), and the cost of an empty set (\(\{\}\)) is denoted by \(\overline{0}\).
+  \bigoplus_{\pi \in P} \text{ } \textcolor{blue}{measure\_of\_path} (\pi)$. The Rocq encodings of these definitions are shown below, where the cost of an empty path (\(\epsilon\)) is represented by \(\overline{1}\), and the cost of an empty set (\(\{\}\)) is denoted by \(\overline{0}\).
 
 \vspace{2mm}
 \begin{minipage}[t]{0.48\linewidth}
@@ -700,12 +700,12 @@ and the value $A^{\langle k \rangle}_{ij}$ represents the cost of the set of pat
 from $i$ to $j$ with \textit{at most} $k$ arcs. 
 We make this observation more formal and define a recursive function $P^{k}(i, j)$
 that computes the set of paths from $i$ to $j$ with exactly $k$ arcs.
-This formalisation is illustrated on the left side and its corresponding Coq encoding is presented on 
+This formalisation is illustrated on the left side and its corresponding Rocq encoding is presented on 
 the right side of Figure \ref{fig:definitionofpaths}. 
-The Coq encoding takes two 
+The Rocq encoding takes two 
 extra argument the adjacency matrix $A$ and its size $n$, 
 enumerated in a list $finN$, i.e., $finN = \{0, 1, \dots, n-1\}$. 
-This is because we encode a path $(c, c_1, c_2 \dots )$ in Coq as a list 
+This is because we encode a path $(c, c_1, c_2 \dots )$ in Rocq as a list 
 $[(c, c_1, A(c, c_1)); (c_1, c_2, A(c_1, c_2)); \dots ]$.
 This representation allows us to easily calculate the path weight by traversing the path. 
 
@@ -743,7 +743,7 @@ Fixpoint all_paths_klength
     \end{lstlisting}
 \end{minipage}
 
-\captionof{figure}{Definition of Path Set (left) and its Coq Encoding (right)}
+\captionof{figure}{Definition of Path Set (left) and its Rocq Encoding (right)}
 \label{fig:definitionofpaths}
 \end{center}
 
@@ -769,7 +769,7 @@ Fixpoint enum_all_paths_flat (finN : list Node) (A : Matrix Node R)
 
 More concretely, \textcolor{blue}{$all\_paths\_klength$}  $finN$ $A$ $k$  $i$  $j$ constructs the set $P^{k}(i, j)$
 and \textcolor{blue}{$enum\_all\_paths\_flat$} $finN$ $A$ $k$  $i$  $j$ constructs the set $P^{\langle k \rangle}(i, j)$.
-We formally establish in Coq that $A^{k}(i, j) = \bigoplus_{p \in P^{k}(i, j)} \, \textcolor{blue}{measure\_of\_path}(p)$, expressed 
+We formally establish in Rocq that $A^{k}(i, j) = \bigoplus_{p \in P^{k}(i, j)} \, \textcolor{blue}{measure\_of\_path}(p)$, expressed 
  as  \textcolor{blue}{$matrix\_path\_equation$}, and  
  $A^{\langle k \rangle}(i, j) = \bigoplus_{p \in P^{\langle k \rangle}(i, j)} \text{ } \textcolor{blue}{measure\_of\_path}(p)$, expressed as \textcolor{blue}{$matrix\_ppath\_equation$}. 
  While the proof follows a straightforward induction on $k$, these equations offer a more detailed and structured way to reason about matrix exponentiation and formal power series in terms of paths. This interpretation precisely allows us 
@@ -820,7 +820,7 @@ Given that there are $n$ nodes, we establish that every path $p \in P^{k + n - 1
 these loops can be reduced, allowing the paths to be subsumed into the set $P^{\langle k + n - 1 \rangle}(i, j)$.
 More precisely, $\bigoplus_{p \in P^{\langle k + n - 1 \rangle}(i, j)} \ \textcolor{blue}{measure\_of\_path}(p) \oplus \bigoplus_{p \in P^{ k + n - 1 + 1}(i, j)} \ \textcolor{blue}{measure\_of\_path}(p)$
 simplifies to $\bigoplus_{p \in P^{\langle k + n - 1 \rangle}(i, j)} \ \textcolor{blue}{measure\_of\_path}(p)$ and this is precisely the induction hypothesis. 
-We encode Theorem \ref{thm:thm8} in Coq as below and in the inductive case, 
+We encode Theorem \ref{thm:thm8} in Rocq as below and in the inductive case, 
 it relies on \textcolor{blue}{$sum\_all\_flat\_paths\_idempotence$} which mimics the 
 $\bigoplus_{p \in P^{\langle k + n - 1 \rangle}(i, j)} \ \textcolor{blue}{measure\_of\_path}(p) \oplus \bigoplus_{p \in P^{k + n - 1 + 1}(i, j)} \ \textcolor{blue}{measure\_of\_path}(p)$
 simplifies to $\bigoplus_{p \in P^{\langle k + n - 1 \rangle}(i, j)} \ \textcolor{blue}{measure\_of\_path}(p)$ (\emph{Orel a b} is defined as $a + b = a$).
@@ -851,13 +851,13 @@ Proof.  (* proof terms omitted *) Qed.
 %\vspace{-1.5cm}
 We demonstrate the usability of our formalisation by verifying the Schulze elections as explained on its 
 Wikipedia page \cite{schulze-wikipedia} and in the original paper \cite{schulze2011new}, 
-but we show here only the Coq encoding of the Wikipedia example. This choice is intentional because the Wikipedia page has been scrutinised by many experts, including Markus Schulze himself, making it a reliable example. We define the candidates
+but we show here only the Rocq encoding of the Wikipedia example. This choice is intentional because the Wikipedia page has been scrutinised by many experts, including Markus Schulze himself, making it a reliable example. We define the candidates
 as an inductive datatype $Node$.  For pairwise preferences, we define an inductive datatype \(R\) with two constructors: \(Left\) and \(Infinity\). \(Left\) takes a natural number representing the pairwise preferences between two candidates, 
 while \(Infinity\) is used when no preference exists between the candidates (a candidate is not preferred over itself so 
 preference over itself is \(Infinity\)).
 Next, we define $zero$, $one$, $plus$, and $mul$ and use them to construct an election \textcolor{blue}{$wikipedia$} that calls $\textcolor{blue}{matrix\_exp\_binary}$ (Figure \ref{fig:coq}). Since 
 we have 5 candidates, the fixed point will reach in 4 iterations; hence the number 4 in $\textcolor{blue}{matrix\_exp\_binary}$. We discharge --not 
-shown here-- all the axioms of semiring, including boundedness. In order to get an executable machine code, we extract the \textcolor{blue}{$wikipedia$} function into an OCaml code using the Coq's extraction facility and call it from 
+shown here-- all the axioms of semiring, including boundedness. In order to get an executable machine code, we extract the \textcolor{blue}{$wikipedia$} function into an OCaml code using the Rocq's extraction facility and call it from 
 the main OCaml file with the (margin) matrix that represents the pairwise preferences of voters (Figure \ref{fig:ocaml}). 
 
 \begin{minipage}{0.45\linewidth}{\vspace{5mm}}
@@ -907,7 +907,7 @@ Definition wikipedia
  
 \end{lstlisting}
 \end{minipage}
-\captionof{figure}{Coq Encoding of the Schulze Election from Wikipedia}
+\captionof{figure}{Rocq Encoding of the Schulze Election from Wikipedia}
 \label{fig:coq}
 \begin{center}
 \begin{minipage}[t]{0.7\linewidth}{\vspace{- 3.9mm}}
@@ -1014,8 +1014,8 @@ $(0, 0)$, and $\overline{1}$ is defined $(1, 0)$.
 
 \section{Related Work}
 \label{sec:related}
-Semirings have found their place in almost every part of computer science, including networking \cite{10.1145/3387514.3405864,10.1145/3332466.3374533,10.1145/3230543.3230561}, optimization \cite{manger2020algebraic}, parsing \cite{10.5555/973226.973230,opedal-et-al-2023,10.5555/1609067.1609126}, social networks \cite{10.1145/2959100.2959148}, social choice \cite{Rossi2011,pini2013resistance}, logic \cite{10.1145/3531130.3533358}, databases \cite{10.1145/1265530.1265535,10.1145/2448496.2448516,10.5555/3319379.3319390,10.14778/3236187.3236200,10.14778/2140436.2140445,10.1145/3477314.3507687}, program analysis \cite{esparza2010newtonian,kincaid2021algebraic,10.1145/3453483.3454079,10.1145/3591280,10.1145/3341644}, runtime verification \cite{jakvsic2018algebraic}, reversible programming \cite{10.1007/978-3-662-49498-1_6}, and machine learning \cite{pmlr-v162-sanmarti-n22a,7888519,10.1145/3583133.3590747,10.1162/COLI_a_00198,roark2011lexicographic}. Given their wide usage, there are a few open-source implementations, e.g., C++ \cite{10.1007/978-3-319-08846-4_1,10.1007/978-3-642-45221-5_48,10.1145/3322125,10.1007/978-3-540-76336-9_3} and Haskell \cite{10.1145/2544174.2500613,erwig2021explainable}. None of these implementations, however, have been proven correct and offer no formal guarantees. There are existing works that formalise Kleene Algebra \cite{10.1007/978-3-642-14052-5_13,MOREIRA2015377} in Coq 
-for developing a tactic for deciding the equational theory of Kleene algebras. Kleene algebras are idempotent semirings that include the Kleene star operator.  In contrast, we assume a bounded semiring and prove that the Kleene star (formal power series) always reaches a fixed point. The Schulze method has been formalised by Pattinson et al. \cite{pattinson2017schulze} using the Coq theorem prover. From this formalisation, they extracted Haskell code capable of counting 100,000 ballots with 4 candidates. 
+Semirings have found their place in almost every part of computer science, including networking \cite{10.1145/3387514.3405864,10.1145/3332466.3374533,10.1145/3230543.3230561}, optimization \cite{manger2020algebraic}, parsing \cite{10.5555/973226.973230,opedal-et-al-2023,10.5555/1609067.1609126}, social networks \cite{10.1145/2959100.2959148}, social choice \cite{Rossi2011,pini2013resistance}, logic \cite{10.1145/3531130.3533358}, databases \cite{10.1145/1265530.1265535,10.1145/2448496.2448516,10.5555/3319379.3319390,10.14778/3236187.3236200,10.14778/2140436.2140445,10.1145/3477314.3507687}, program analysis \cite{esparza2010newtonian,kincaid2021algebraic,10.1145/3453483.3454079,10.1145/3591280,10.1145/3341644}, runtime verification \cite{jakvsic2018algebraic}, reversible programming \cite{10.1007/978-3-662-49498-1_6}, and machine learning \cite{pmlr-v162-sanmarti-n22a,7888519,10.1145/3583133.3590747,10.1162/COLI_a_00198,roark2011lexicographic}. Given their wide usage, there are a few open-source implementations, e.g., C++ \cite{10.1007/978-3-319-08846-4_1,10.1007/978-3-642-45221-5_48,10.1145/3322125,10.1007/978-3-540-76336-9_3} and Haskell \cite{10.1145/2544174.2500613,erwig2021explainable}. None of these implementations, however, have been proven correct and offer no formal guarantees. There are existing works that formalise Kleene Algebra \cite{10.1007/978-3-642-14052-5_13,MOREIRA2015377} in Rocq 
+for developing a tactic for deciding the equational theory of Kleene algebras. Kleene algebras are idempotent semirings that include the Kleene star operator.  In contrast, we assume a bounded semiring and prove that the Kleene star (formal power series) always reaches a fixed point. The Schulze method has been formalised by Pattinson et al. \cite{pattinson2017schulze} using the Rocq theorem prover. From this formalisation, they extracted Haskell code capable of counting 100,000 ballots with 4 candidates. 
 In a subsequent paper, Moses et al. \cite{10.1007/978-3-319-68687-5_5} improved the runtime of this implementation, capable of counting 8 million ballots with 4 candidates.
 Both formalisations involve the concrete $maximum$ and $minimum$ function of the Schulze method and 
 therefore  require a lot of reasoning about these functions. On the contrary, we do not formalise the 
@@ -1041,7 +1041,7 @@ preferences \cite{10.5555/3304415.3304442}, meanwhile
 matrix multiplication can be parallelised easily by using 
 GPU \cite{chang2022revisiting}.
 A further limitation of our work is that it assumes the knowledge 
-of the Coq theorem prover to use our library,  specifically discharging the 
+of the Rocq theorem prover to use our library,  specifically discharging the 
 axioms of semiring after instantiating the $\oplus$ and $\otimes$. 
 This, however, could be challenging with the semirings that has been 
 obtained by combining multiple semirings 
@@ -1059,7 +1059,7 @@ multi-objective optimisation \cite{manger2020algebraic}, etc.
 \vspace{2mm}
 In future work, we aim to formally verify that our formalisation possesses all key social choice properties, such as the Condorcet winner criterion, monotonicity, 
 reversal symmetry, pareto, etc.,  
-established by Schulze \cite{schulze2011new} using the Coq theorem prover.
+established by Schulze \cite{schulze2011new} using the Rocq theorem prover.
 There is some effort by Tiwari et al. \cite{Tiwari2021b} to 
 establish Condorcet winner and reversal symmetry about their implementation \cite{pattinson2017schulze},
 but it is not complete. Moreover, their approach is more complicated 
@@ -1067,7 +1067,7 @@ because they need to deal with details of \emph{maximum} and
 \emph{minimum} function 
 over integers, meanwhile our formalisation has abstracted all the details into 
 semiring and therefore most of the social choice proofs 
-can easily be established in Coq. Another future 
+can easily be established in Rocq. Another future 
 work we would like to extend our matrix multiplication 
 to parallelisation using the SyDPaCC \cite{10.1145/3605156.3606450} library 
 and use this library for computing the Schulze winner for 
@@ -1127,10 +1127,10 @@ Other applications of semimodules include discrete event systems~\cite{baccelli1
 Markov decision processes (value iteration in the max-plus semimodule), and
 provenance tracking in databases~\cite{10.1145/1265530.1265535}.
 
-\section{Coq Formalisation}
+\section{Rocq Formalisation}
 \label{sec:formalisation}
 
-Our Coq development consists of approximately 5,000 lines of code organised
+Our Rocq development consists of approximately 5,000 lines of code organised
 into three layers:
 
 \textbf{Layer 1: Semiring definitions} (\texttt{Definitions.v}).
@@ -1165,8 +1165,8 @@ The generic framework then provides the fixed-point computation.
 \section{Extraction to OCaml}
 \label{sec:extraction}
 
-We use Coq's extraction mechanism to produce executable OCaml code from
-each verified instantiation. The extraction process translates Coq
+We use Rocq's extraction mechanism to produce executable OCaml code from
+each verified instantiation. The extraction process translates Rocq
 inductive types and functions into OCaml equivalents:
 \texttt{nat} becomes \texttt{int}, \texttt{list} becomes native OCaml
 lists, and \texttt{bool} becomes native OCaml booleans.
@@ -1215,7 +1215,7 @@ monotonicity, reversal symmetry) using our semiring abstraction.
 \appendix
 
 \section{Appendix}\label{appendix}
-We can combine two semirings to construct a new, more complex semiring by leveraging the abstract nature of our formalisation. For example, the Coq code shown below defines a shortest-widest path semiring, where we aim to find paths that are both the shortest in terms of distance and the widest in terms of capacity. The semiring is built by combining two algebraic structures: one for the shortest path problem (using the min-plus algebra) and one for the widest path problem (using the max-min algebra).  The graph is constructed with three nodes $A$, $B$, and $C$, and 
+We can combine two semirings to construct a new, more complex semiring by leveraging the abstract nature of our formalisation. For example, the Rocq code shown below defines a shortest-widest path semiring, where we aim to find paths that are both the shortest in terms of distance and the widest in terms of capacity. The semiring is built by combining two algebraic structures: one for the shortest path problem (using the min-plus algebra) and one for the widest path problem (using the max-min algebra).  The graph is constructed with three nodes $A$, $B$, and $C$, and 
 the type $R$ extends natural numbers with a concept of infinity, which helps in dealing with unreachable paths.  In the min-plus algebra, the addition operation is defined as taking the minimum ( \textcolor{blue}{$plusf$}), while multiplication corresponds to summing the path lengths ( \textcolor{blue}{$mulf$}). This structure allows us to compute the shortest path by minimising the distance.
 Similarly, the max-min algebra is used for computing the widest path. The addition operation ( \textcolor{blue}{$pluss$}) takes the maximum, representing the widest path, while the multiplication ( \textcolor{blue}{$muls$}) takes the minimum, ensuring the narrowest part of the path is considered. The \textcolor{blue}{$lex\_plusRR$} function defines a lexicographic ordering to combine the two semirings. It ensures that the shortest path is prioritised, but in the case of equal lengths, the widest path is selected, and  \textcolor{blue}{$direct\_mulRR$} defines how to combine the multiplication from both semirings. Finally, the  \textcolor{blue}{$widest\_shortest\_path$} function applies matrix exponentiation using the defined semiring structure to calculate the shortest-widest paths in a graph.
 
