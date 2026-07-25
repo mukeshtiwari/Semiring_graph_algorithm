@@ -2432,9 +2432,8 @@ Section Matrix_proofs.
         apply symR.
         apply left_distributive_mat_mul_over_plus.
     Qed.
-    
 
-  
+    (* A * A^k = A^k * A : powers of a matrix commute with the matrix     *)
     Lemma astar_exists_gen_q_stable_matrix (q : nat) : 
       forall (m : Matrix Node R),
       (forall (c d : Node), 
@@ -2538,6 +2537,106 @@ Section Matrix_proofs.
       matrix_add.
       apply sum_fn_mul_distribute_over_plus_right.
     Qed.
+
+    Lemma matrix_exp_unary_comm_A :
+      forall (k : nat) (m : Matrix Node R) (c d : Node),
+      mat_cong Node eqN R eqR m ->
+      (matrix_mul Node finN R 0 plusR mulR m
+         (matrix_exp_unary Node eqN finN R 0 1 plusR mulR m k)) c d =r=
+      (matrix_mul Node finN R 0 plusR mulR
+         (matrix_exp_unary Node eqN finN R 0 1 plusR mulR m k) m) c d = true.
+    Proof.
+      induction k as [|k IH]; intros m c d Hm.
+      - (* k=0: A*I = I*A *)
+        simpl.
+        apply (trnR _ _ _
+          (matrix_mul_right_identity m c d Hm)).
+        apply (symR _ _ (matrix_mul_left_identity m c d Hm)).
+      - (* k = S k': A * A^{k+1} = A * (A * A^k) = A * (A^k * A) = (A * A^k) * A *)
+        simpl matrix_exp_unary at 1.
+        (* Goal: (m *M (m *M A^k)) c d =r= ((m *M A^k) *M m) c d *)
+        (* Step 1: m *M (m *M A^k) = m *M (A^k *M m) via IH & mat_mul_cong_diff *)
+        apply (trnR _ _ _
+          (mat_mul_cong_diff m (m *M (matrix_exp_unary Node eqN finN R 0 1 plusR mulR m k))
+            (matrix_exp_unary Node eqN finN R 0 1 plusR mulR m k *M m) c d
+            (fun u v => IH m u v Hm))).
+        (* Step 2: m *M (A^k *M m) = (m *M A^k) *M m via matrix_mul_assoc *)
+        apply (matrix_mul_assoc m
+          (matrix_exp_unary Node eqN finN R 0 1 plusR mulR m k) m c d).
+    Qed.
+
+    (* Right-sided version: A*(S t) = I + A*t *M A                        *)
+    Lemma astar_aide_gen_q_stable_matrix_right :
+      forall (t : nat) (m : Matrix Node R) (c d : Node),
+      mat_cong Node eqN R eqR m ->
+      (partial_sum_mat Node eqN finN R 0 1 plusR mulR m (S t) c d) =r= 
+      (I Node eqN R 0 1 +M 
+      partial_sum_mat Node eqN finN R 0 1 plusR mulR m t *M m) c d = true.
+    Proof.
+      induction t.
+      - simpl; intros ? ? ? Hm.
+        (* t=0: I + m*I = I + I*m.  Both equal I+m via identity lemmas *)
+        unfold matrix_add.
+        apply (congrP (I Node eqN R 0 1 c d) ((m *M I Node eqN R 0 1) c d)
+          (I Node eqN R 0 1 c d) ((I Node eqN R 0 1 *M m) c d)
+          (refR _)
+          (trnR _ _ _ (matrix_mul_right_identity m c d Hm)
+            (symR _ _ (matrix_mul_left_identity m c d Hm)))).
+      - simpl; intros ? ? ? Hm.
+        remember (partial_sum_mat Node eqN finN R 0 1 plusR mulR m t) as pmt.
+        remember (matrix_exp_unary Node eqN finN R 0 1 plusR mulR m t) as umt.
+        (* LHS = (pmt +M m *M umt) +M m *M (m *M umt) *)
+        assert (Ht : ((pmt +M m *M umt) +M m *M (m *M umt)) c d =r=
+          ((I Node eqN R 0 1 +M pmt *M m) +M m *M (m *M umt)) c d = true).
+        { apply mat_add_cong_gen.
+          - unfold two_mat_congr; intros u v.
+            simpl in IHt.
+            pose proof (IHt m u v Hm) as IHs.
+            rewrite <-Heqpmt in IHs.
+            rewrite <-Hequmt in IHs.
+            exact IHs.
+          - unfold two_mat_congr; intros a b.
+            apply refR. }
+        rewrite <-Ht; clear Ht.
+        apply congrR.
+        apply refR.
+        apply symR.
+        assert (Ht : ((I Node eqN R 0 1 +M pmt *M m) +M m *M (m *M umt)) c d =r= 
+          (I Node eqN R 0 1 +M (pmt *M m +M m *M (m *M umt))) c d = true).
+        { apply symR. apply matrix_add_assoc. }
+        rewrite <-Ht; clear Ht.
+        apply congrR.
+        apply refR.
+        apply symR.
+        apply mat_add_cong_gen.
+        { unfold two_mat_congr; intros a b. apply refR. }
+        { unfold two_mat_congr; intros a b.
+          (* Goal: (pmt*m + m*(m*umt)) a b =r= ((pmt + m*umt)*m) a b *)
+          (* Use matrix-level reasoning to avoid entry-level unfold issues *)
+          assert (Hcomm : two_mat_congr Node R eqR (m *M (m *M umt)) ((m *M umt) *M m)).
+          { unfold two_mat_congr; intros u v.
+            subst umt.
+            apply (matrix_exp_unary_comm_A (S t) m u v Hm). }
+          assert (Hmid : two_mat_congr Node R eqR
+            (pmt *M m +M m *M (m *M umt))
+            (pmt *M m +M (m *M umt) *M m)).
+          { unfold two_mat_congr; intros u v.
+            apply (mat_add_cong_gen (pmt *M m) (m *M (m *M umt))
+              (pmt *M m) ((m *M umt) *M m) u v).
+            - unfold two_mat_congr; intros x y. apply refR.
+            - exact Hcomm. }
+          assert (Hfinal : two_mat_congr Node R eqR
+            (pmt *M m +M (m *M umt) *M m)
+            ((pmt +M m *M umt) *M m)).
+          { unfold two_mat_congr; intros u v.
+            apply (symR _ _ (right_distributive_mat_mul_over_plus m pmt
+              (m *M umt) u v)). }
+          apply (trnR _ _ _ (Hmid a b) (Hfinal a b)). }
+    Qed.
+    
+
+  
+
 
 
   
