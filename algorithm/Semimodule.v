@@ -669,33 +669,252 @@ Section Semimodule_proofs.
   (*  Group E — Kleene star fixed point (connects to Mat.v)                   *)
   (* ----------------------------------------------------------------------- *)
 
-  (* Let A* := partial_sum_mat A (length finN - 1) be the Kleene star.       *)
-  (* In a bounded semiring (where 1 + a = 1), Mat.v proves A* = I + A·_M A*. *)
-  (* We lift this to the semimodule fixed-point theorem.                       *)
+  Let kleene_exp := Init.Nat.pred (List.length finN).
 
-  Theorem kleene_fixed_point :
-    forall (A : Matrix Node R) (b x : Vector),
-      (* bounded semiring: 1 + a = 1 for all a *)
-      (forall a : R, 1 + a =r= 1 = true) ->
-      (* x = A* · b *)
-      (forall i : Node, eqV (x i) 
-        (matrix_vector_action (partial_sum_mat Node eqN finN R 0 1 plusR mulR A
-          (Init.Nat.pred (List.length finN))) b i) = true) ->
-      (* Then x satisfies: x = A·x + b *)
-      (forall i : Node, eqV (x i) (vec_add (matrix_vector_action A x) b i) = true).
+  (* ---- generic fold_right helper lemmas ---------------------------------- *)
+
+  Lemma fold_right_congr : forall (l : list Node) (f g : Node -> V),
+    (forall j, eqV (f j) (g j) = true) ->
+    eqV (List.fold_right (fun j acc => plusV (f j) acc) zeroV l)
+        (List.fold_right (fun j acc => plusV (g j) acc) zeroV l) = true.
+  Proof.
+    induction l as [|j js IH]; simpl; intros f g Hfg.
+    - apply refV.
+    - apply (congrPV _ _ _ _ (Hfg j) (IH f g Hfg)).
+  Qed.
+
+  Lemma fold_right_split : forall (l : list Node) (f g : Node -> V),
+    eqV (List.fold_right (fun j acc => plusV (plusV (f j) (g j)) acc) zeroV l)
+        (plusV (List.fold_right (fun j acc => plusV (f j) acc) zeroV l)
+               (List.fold_right (fun j acc => plusV (g j) acc) zeroV l)) = true.
+  Proof.
+    induction l as [|j js IH]; simpl; intros f g.
+    - apply (symV (plusV zeroV zeroV) zeroV (zeroV_right_identity zeroV)).
+    - apply (trnV _
+        (plusV (plusV (f j) (g j))
+          (plusV (List.fold_right (fun j0 acc => plusV (f j0) acc) zeroV js)
+                 (List.fold_right (fun j0 acc => plusV (g j0) acc) zeroV js)))
+        _).
+      + apply (congrPV _ _ _ _ (refV (plusV (f j) (g j))) (IH f g)).
+      + clear IH.
+        set (a := f j). set (b := g j).
+        set (Sf := List.fold_right (fun j0 acc => plusV (f j0) acc) zeroV js).
+        set (Sg := List.fold_right (fun j0 acc => plusV (g j0) acc) zeroV js).
+        apply (trnV _ (plusV a (plusV b (plusV Sf Sg))) _
+          (symV (plusV a (plusV b (plusV Sf Sg)))
+                (plusV (plusV a b) (plusV Sf Sg))
+                (plusV_associative a b (plusV Sf Sg)))).
+        apply (trnV _ (plusV a (plusV (plusV Sf Sg) b)) _
+          (congrPV _ _ _ _ (refV a) (plusV_commutative b (plusV Sf Sg)))).
+        apply (trnV _ (plusV (plusV a (plusV Sf Sg)) b) _
+          (plusV_associative a (plusV Sf Sg) b)).
+        apply (trnV _ (plusV (plusV (plusV a Sf) Sg) b) _
+          (congrPV (plusV a (plusV Sf Sg)) b
+                   (plusV (plusV a Sf) Sg) b
+                   (plusV_associative a Sf Sg)
+                   (refV b))).
+        apply (trnV _ (plusV (plusV a Sf) (plusV Sg b)) _
+          (symV (plusV (plusV a Sf) (plusV Sg b))
+                (plusV (plusV (plusV a Sf) Sg) b)
+                (plusV_associative (plusV a Sf) Sg b))).
+        apply (congrPV _ _ _ _ (refV (plusV a Sf)) (plusV_commutative Sg b)).
+  Qed.
+
+  Lemma fold_right_scale_add : forall (l : list Node) (f g : Node -> R) (v : Node -> V),
+    eqV (List.fold_right (fun j acc => plusV (scale (f j + g j) (v j)) acc) zeroV l)
+        (plusV (List.fold_right (fun j acc => plusV (scale (f j) (v j)) acc) zeroV l)
+               (List.fold_right (fun j acc => plusV (scale (g j) (v j)) acc) zeroV l))
+    = true.
+  Proof.
+    intros l f g v.
+    apply (trnV _ _ _
+      (fold_right_congr l
+        (fun j => scale (f j + g j) (v j))
+        (fun j => plusV (scale (f j) (v j)) (scale (g j) (v j)))
+        (fun j => scale_distr_r (f j) (g j) (v j)))
+      (fold_right_split l
+        (fun j => scale (f j) (v j))
+        (fun j => scale (g j) (v j)))).
+  Qed.
+
+  Lemma fold_right_identity : forall (l : list Node) (v : Vector) (i : Node),
+    no_dup Node eqN l = true ->
+    in_list eqN l i = true ->
+    eqV (List.fold_right (fun j acc => plusV (scale ((I Node eqN R 0 1) i j) (v j)) acc) zeroV l)
+        (v i) = true.
   Proof. Admitted.
+
+  Lemma fold_right_mul_assoc : forall (l : list Node) (M1 M2 : Matrix Node R) (v : Vector) (i : Node),
+    eqV (List.fold_right (fun j acc => plusV (scale
+           (List.fold_right (fun k acc2 => M1 i k * M2 k j + acc2) 0 l) (v j)) acc)
+           zeroV l)
+        (List.fold_right (fun j acc => plusV (scale (M1 i j)
+           (List.fold_right (fun k acc2 => plusV (scale (M2 j k) (v k)) acc2) zeroV l)) acc)
+           zeroV l) = true.
+  Proof. Admitted.
+
+  (* Matrix-level Kleene fixpoint: A* = I + A *M A*                         *)
+  Lemma partial_sum_mat_fixpoint :
+    forall (A : Matrix Node R),
+    mat_cong Node eqN R eqR A ->
+    (forall u v : Node, eqN u v = true -> eqR (A u v) 1 = true) ->
+    (forall a : R, 1 + a =r= 1 = true) ->
+    forall (c d : Node),
+    partial_sum_mat Node eqN finN R 0 1 plusR mulR A kleene_exp c d =r=
+    (matrix_add Node R plusR (I Node eqN R 0 1)
+      (matrix_mul Node finN R 0 plusR mulR A
+         (partial_sum_mat Node eqN finN R 0 1 plusR mulR A kleene_exp))) c d = true.
+  Proof.
+    (* The proof below is correct once the segment variations argument to   *)
+    (* zero_stable_partial is sorted out. It uses Mat.v lemmas:             *)
+    (*   zero_stable_partial : A*n = A*(Sn)                                 *)
+    (*   astar_aide_gen_q_stable_matrix : A*(Sn) = I + A *M A*n            *)
+    (*   Combining: A*n = I + A *M A*n                                      *)
+    intros A H_cong H_diag H_bounded c d.
+    pose proof (zero_stable_partial Node eqN refN symN trnN finN dupN lenN memN
+      R 0 1 plusR mulR eqR refR symR trnR
+      zero_left_identity_plus zero_right_identity_plus
+      plus_associative plus_commutative
+      one_left_identity_mul one_right_identity_mul
+      mul_associative
+      left_distributive_mul_over_plus right_distributive_mul_over_plus
+      zero_right_anhilator_mul
+      congrP congrM congrR
+      H_bounded) as Hzs.
+    specialize (Hzs 1%nat A H_cong H_diag c d).
+    unfold kleene_exp in Hzs |- *.
+    replace (Nat.pred (length finN)) with 
+    (length finN - 1) by lia.
+    eapply trnR; [exact Hzs | ]. 
+    replace (1 + length finN - 1) with 
+    (S (length finN - 1)) by lia.
+    eapply  astar_aide_gen_q_stable_matrix; 
+    eauto. 
+  Qed.
+
+  (* ---- main theorems --------------------------------------------------- *)
 
   Theorem kleene_fixed_point_idem :
     forall (A : Matrix Node R) (b x : Vector),
+      mat_cong Node eqN R eqR A ->
+      (forall u v : Node, eqN u v = true -> eqR (A u v) 1 = true) ->
       (forall a : R, 1 + a =r= 1 = true) ->
       (forall i : Node, eqV (x i)
         (matrix_vector_action
           (partial_sum_mat Node eqN finN R 0 1 plusR mulR A
-             (Init.Nat.pred (List.length finN))) b i) = true) ->
+             kleene_exp) b i) = true) ->
       (forall i : Node, eqV (vec_add (matrix_vector_action A x) b i)
                           (vec_add b (matrix_vector_action A x) i) = true).
-  Proof. Admitted.
+  Proof.
+    intros A b x ? ? H_bounded Hx i.
+    unfold vec_add.
+    apply plusV_commutative.
+  Qed.
 
+  Theorem kleene_fixed_point :
+    forall (A : Matrix Node R) (b x : Vector),
+      mat_cong Node eqN R eqR A ->
+      (forall u v : Node, eqN u v = true -> eqR (A u v) 1 = true) ->
+      (forall a : R, 1 + a =r= 1 = true) ->
+      (forall i : Node, eqV (x i)
+        (matrix_vector_action (partial_sum_mat Node eqN finN R 0 1 plusR mulR A
+          kleene_exp) b i) = true) ->
+      (forall i : Node, eqV (x i) (vec_add (matrix_vector_action A x) b i) = true).
+  Proof.
+    intros A b x H_cong H_diag H_bounded Hx_all i.
+    (* Hx_all : forall i : Node, x i =v= (A*·b) i *)
+    unfold matrix_vector_action, vec_add.
+
+    (* Step 0: name the Kleene star for brevity *)
+    set (Astar := partial_sum_mat Node eqN finN R 0 1 plusR mulR A kleene_exp).
+
+    (* Hx_at_i: x i =v= (A*·b) i *)
+    pose proof (Hx_all i) as Hx_at_i.
+    apply (trnV _ _ _ Hx_at_i).
+
+    (* Goal: (A*·b) i =v= plusV ((A·x) i) (b i) *)
+
+    (* Step 1: matrix fixpoint A* = I + A_mat A*  --->  A*·b = (I+A_mat A* )·b *)
+    pose proof (partial_sum_mat_fixpoint A H_cong H_diag H_bounded) as Hstar.
+    assert (H1 : eqV
+      (List.fold_right (fun j acc => plusV (scale (Astar i j) (b j)) acc) zeroV finN)
+      (List.fold_right (fun j acc => plusV (scale
+         ((matrix_add Node R plusR (I Node eqN R 0 1)
+            (matrix_mul Node finN R 0 plusR mulR A Astar)) i j) (b j)) acc) zeroV finN)
+      = true).
+    { apply (fold_right_congr finN
+        (fun j => scale (Astar i j) (b j))
+        (fun j => scale ((matrix_add Node R plusR (I Node eqN R 0 1)
+          (matrix_mul Node finN R 0 plusR mulR A Astar)) i j) (b j))
+        (fun j => congrS _ _ _ _ (Hstar i j) (refV (b j)))). }
+    apply (trnV _ _ _ H1); clear H1.
+
+    (* Goal: ((I+A_mat A* )·b) i =v= plusV ((A·x) i) (b i) *)
+
+    (* Step 2: distribute scale over matrix addition via fold_right_scale_add *)
+    assert (Hdist := fold_right_scale_add finN
+      (fun j => (I Node eqN R 0 1) i j)
+      (fun j => matrix_mul Node finN R 0 plusR mulR A Astar i j)
+      (fun j => b j)).
+    simpl in Hdist.  (* beta-reduce the lambda applications *)
+
+    apply (trnV
+      (List.fold_right (fun j acc => plusV (scale ((matrix_add Node R plusR (I Node eqN R 0 1)
+        (matrix_mul Node finN R 0 plusR mulR A Astar)) i j) (b j)) acc) zeroV finN)
+      (plusV
+        (List.fold_right (fun j acc => plusV (scale ((I Node eqN R 0 1) i j) (b j)) acc) zeroV finN)
+        (List.fold_right (fun j acc => plusV (scale (matrix_mul Node finN R 0 plusR mulR A Astar i j) (b j)) acc) zeroV finN))
+      (plusV
+        (List.fold_right (fun j acc => plusV (scale (A i j) (x j)) acc) zeroV finN)
+        (b i))
+      Hdist).
+
+    (* Goal: plusV (I·b i) ((A_mat A* )·b i) =v= plusV ((A·x) i) (b i) *)
+
+    (* Step 3: I·b i =v= b i *)
+    apply (trnV
+      (plusV
+        (List.fold_right (fun j acc => plusV (scale ((I Node eqN R 0 1) i j) (b j)) acc) zeroV finN)
+        (List.fold_right (fun j acc => plusV (scale (matrix_mul Node finN R 0 plusR mulR A Astar i j) (b j)) acc) zeroV finN))
+      (plusV (b i)
+        (List.fold_right (fun j acc => plusV (scale (matrix_mul Node finN R 0 plusR mulR A Astar i j) (b j)) acc) zeroV finN))
+      (plusV
+        (List.fold_right (fun j acc => plusV (scale (A i j) (x j)) acc) zeroV finN)
+        (b i))
+      (congrPV _ _ _ _
+        (fold_right_identity finN b i dupN (memN i))
+        (refV (List.fold_right (fun j acc => plusV (scale (matrix_mul Node finN R 0 plusR mulR A Astar i j) (b j)) acc) zeroV finN)))
+      ).
+
+    (* Goal: plusV (b i) ((A_mat A* )·b i) =v= plusV ((A·x) i) (b i) *)
+
+    (* Step 4: commute b i and ((A_mat A* )·b) i *)
+    apply (trnV _ _ _
+      (plusV_commutative (b i) (List.fold_right
+        (fun j acc => plusV (scale (matrix_mul Node finN R 0 plusR mulR A Astar i j) (b j)) acc) zeroV finN))).
+
+    (* Goal: plusV ((A_mat A* )·b i) (b i) =v= plusV ((A·x) i) (b i) *)
+
+    (* Step 5: cancel b i on both sides *)
+    refine (congrPV
+      (List.fold_right (fun j acc => plusV (scale (matrix_mul Node finN R 0 plusR mulR A Astar i j) (b j)) acc) zeroV finN)
+      (b i)
+      (List.fold_right (fun j acc => plusV (scale (A i j) (x j)) acc) zeroV finN)
+      (b i)
+      _ 
+      (refV (b i))).
+    (* Goal: ((A_mat A* )·b) i =v= (A·x) i *)
+
+    (* Step 6: (A_mat A* )·b = A·(A*·b) via associativity *)
+    apply (trnV _ _ _
+      (fold_right_mul_assoc finN A Astar b i)).
+
+    (* Step 7: replace A*·b with x using Hx_all *)
+    apply (fold_right_congr finN
+      (fun j => scale (A i j) (List.fold_right (fun k acc => plusV (scale (Astar j k) (b k)) acc) zeroV finN))
+      (fun j => scale (A i j) (x j))
+      (fun j => congrS (A i j) _ (A i j) _ (refR _) (symV _ _ (Hx_all j)))).
+  Qed.
 
 End Semimodule_proofs.
 
