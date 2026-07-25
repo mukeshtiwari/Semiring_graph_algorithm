@@ -85,10 +85,140 @@ Section Semimodule_def.
 
 End Semimodule_def.
 
-(* Here goes the generic proof *)
-Section Generic_proof. 
+(* ========================================================================= *)
+(*  SECTION 2 — Generic list lemmas (parameterized by any node list l)       *)
+(* ========================================================================= *)
 
-End Generic_proof.
+Section GenProofs.
+
+  Variables
+    (Node V R : Type)
+    (eqN : brel Node) (refN : brel_reflexive Node eqN)
+    (symN : brel_symmetric Node eqN)
+    (eqR : brel R) (refR : brel_reflexive R eqR)
+    (zeroV : V) (plusV : binary_op V) (eqV : brel V)
+    (refV : brel_reflexive V eqV) (trnV : brel_transitive V eqV)
+    (congrPV : bop_congruence V eqV plusV)
+    (scale : R -> V -> V)
+    (congrS : forall s1 s2 t1 t2, eqR s1 t1 = true -> eqV s2 t2 = true ->
+               eqV (scale s1 s2) (scale t1 t2) = true).
+
+  (* Generic list_lookup_map: works for any list l                           *)
+  Lemma list_lookup_map_gen : forall (f : Node -> V) (l : list Node),
+    (forall x y, eqN x y = true -> eqV (f x) (f y) = true) ->
+    forall (i : Node),
+    no_dup Node eqN l = true ->
+    in_list eqN l i = true ->
+    eqV (list_lookup V zeroV Node eqN l (List.map f l) i) (f i) = true.
+  Proof.
+    intros f l H_cong i H_dup H_in.
+    revert i H_in.
+    induction l as [|j js IH]; simpl; intros i H_in.
+    - discriminate H_in.
+    - simpl in H_dup.
+      apply Bool.andb_true_iff in H_dup.
+      destruct H_dup as [H_notin H_dup_t].
+      case_eq (eqN i j); intros Heq.
+      + apply (H_cong j i). apply symN. apply Heq.
+      + simpl in H_in. apply Bool.orb_true_iff in H_in.
+        destruct H_in as [H_eq | H_in_js].
+        * rewrite Heq in H_eq. inversion H_eq.
+        * apply (IH H_dup_t i H_in_js).
+  Qed.
+
+  (* Generic: the efficient computation looked up equals the functional one   *)
+
+  (* combine + map + fold_right = direct fold_right over the same list         *)
+  Lemma combine_fold_eq : forall (l : list Node) (A : Node -> Node -> R) (x : Node -> V) (r : Node),
+    eqV
+      (List.fold_right plusV zeroV
+         (List.map (fun '(re, ve) => scale re ve)
+            (List.combine (List.map (fun c : Node => A r c) l)
+                          (List.map (fun n : Node => x n) l))))
+      (List.fold_right (fun j acc => plusV (scale (A r j) (x j)) acc) zeroV l)
+    = true.
+  Proof.
+    intros l A x r.
+    induction l as [|j js IH]; simpl.
+    - apply refV.
+    - apply (congrPV _ _ _ _
+        (congrS (A r j) (x j) (A r j) (x j) (refR _) (refV _)) IH).
+  Qed.
+
+  (* Row congruence: if A j = A i pointwise, fold_right results are equal     *)
+  Lemma fold_right_row_congr : forall (l : list Node) (A : Node -> Node -> R)
+      (x : Node -> V) (j i : Node),
+    (forall k, eqR (A j k) (A i k) = true) ->
+    eqV (List.fold_right (fun k acc => plusV (scale (A j k) (x k)) acc) zeroV l)
+        (List.fold_right (fun k acc => plusV (scale (A i k) (x k)) acc) zeroV l)
+    = true.
+  Proof.
+    intros l A x j i H_col.
+    induction l as [|k ks IH]; simpl.
+    - apply refV.
+    - apply (congrPV _ _ _ _
+        (congrS (A j k) (x k) (A i k) (x k) (H_col k) (refV (x k))) IH).
+  Qed.
+
+  (* eff_row is congruent: eqN u v = true → eff_row u = eff_row v            *)
+  Lemma eff_row_congr : forall (l : list Node) (A : Node -> Node -> R) (x : Node -> V) (u v : Node),
+    eqN u v = true ->
+    (forall i j k, eqN i j = true -> eqR (A i k) (A j k) = true) ->
+    eqV
+      (List.fold_right plusV zeroV
+         (List.map (fun '(re, ve) => scale re ve)
+            (List.combine (List.map (fun c : Node => A u c) l)
+                          (List.map (fun n : Node => x n) l))))
+      (List.fold_right plusV zeroV
+         (List.map (fun '(re, ve) => scale re ve)
+            (List.combine (List.map (fun c : Node => A v c) l)
+                          (List.map (fun n : Node => x n) l))))
+    = true.
+  Proof.
+    intros l A x u v H_eq H_row.
+    induction l as [|j js IH]; simpl.
+    - apply refV.
+    - apply (congrPV _ _ _ _
+        (congrS (A u j) (x j) (A v j) (x j) (H_row u v j H_eq) (refV (x j))) IH).
+  Qed.
+
+  Lemma list_lookup_eff_gen :
+    forall (A : Node -> Node -> R) (x : Node -> V) (l : list Node),
+    (forall i j k, eqN i j = true -> eqR (A i k) (A j k) = true) ->
+    forall (i : Node),
+    no_dup Node eqN l = true ->
+    in_list eqN l i = true ->
+    eqV (list_lookup V zeroV Node eqN l
+           (matrix_vector_action_eff R V zeroV plusV scale
+             (List.map (fun r => List.map (fun c => A r c) l) l)
+             (List.map (fun r => x r) l))
+           i)
+        (List.fold_right (fun j acc => plusV (scale (A i j) (x j)) acc) zeroV l)
+        = true.
+  Proof.
+    intros A x l H_row i H_dup H_in.
+    apply (trnV _
+      (List.fold_right plusV zeroV
+         (List.map (fun '(re, ve) => scale re ve)
+            (List.combine (List.map (fun c : Node => A i c) l)
+                          (List.map (fun n : Node => x n) l))))
+      (List.fold_right (fun j acc => plusV (scale (A i j) (x j)) acc) zeroV l)).
+    - (* eff lookup = eff_row i, via list_lookup_map_gen *)
+      unfold matrix_vector_action_eff.
+      rewrite List.map_map.
+      exact (list_lookup_map_gen
+        (fun r => List.fold_right plusV zeroV
+                   (List.map (fun '(re, ve) => scale re ve)
+                      (List.combine (List.map (fun c : Node => A r c) l)
+                                    (List.map (fun n : Node => x n) l))))
+        l
+        (fun u v H_eq => eff_row_congr l A x u v H_eq H_row)
+        i H_dup H_in).
+    - (* eff_row i = functional i, via combine_fold_eq *)
+      apply (combine_fold_eq l A x i).
+  Qed.
+
+End GenProofs.
 
 
 Section Semimodule_proofs.
@@ -416,16 +546,123 @@ Section Semimodule_proofs.
   (*  Group D — Functional ↔ efficient equivalence                            *)
   (* ----------------------------------------------------------------------- *)
 
-  Theorem matrix_vector_action_eff_fun_eq :
+  (* Proof sketch:                                                            *)
+  (*   matrix_vector_action_eff maps each row r to Σ_c scale (A r c) (x c)    *)
+  (*   which equals matrix_vector_action A x r by definition.                 *)
+  (*   Then list_lookup finN result i returns result at position i.           *)
+  (*   With dupN (no duplicates) and memN (i ∈ finN), the lookup returns      *)
+  (*   exactly matrix_vector_action A x i.                                     *)
+
+  (* Helper: combine of two maps equals map of pairs                           *)
+  Lemma combine_map_map : forall (X Y : Type) (f : Node -> X) (g : Node -> Y),
+    List.combine (List.map f finN) (List.map g finN) =
+    List.map (fun c => (f c, g c)) finN.
+  Proof.
+    intros X Y f g.
+    clear dupN lenN memN.
+    induction finN as [|j js IH]; simpl; auto.
+    rewrite IH. reflexivity.
+  Qed.
+
+  (* For each row r, the efficient row sum equals the functional action        *)
+  Lemma matrix_vector_action_eff_row :
+    forall (A : Matrix Node R) (x : Vector) (r : Node),
+    eqV (List.fold_right plusV zeroV
+          (List.map (fun '(r_elem, v_elem) => scale r_elem v_elem)
+            (List.combine (List.map (fun c => A r c) finN)
+                          (List.map (fun c => x c) finN))))
+        (Semimodule.matrix_vector_action R V zeroV plusV scale Node finN A x r) = true.
+  Proof.
+    intros A x r.
+    unfold matrix_vector_action.
+    clear dupN lenN memN.
+    induction finN as [|j js IH]; simpl.
+    - apply refV.
+    - apply (congrPV _ _ _ _ (refV _) IH).
+  Qed.
+
+  (* lookup in a mapped list returns f i (requires congruence of f w.r.t eqN) *)
+  Lemma list_lookup_map : forall (f : Node -> V),
+    (forall x y, eqN x y = true -> eqV (f x) (f y) = true) ->
+    forall (i : Node),
+    no_dup Node eqN finN = true ->
+    in_list eqN finN i = true ->
+    eqV (list_lookup finN (List.map f finN) i) (f i) = true.
+  Proof.
+    intros f H_cong i H_dup H_in.
+    clear dupN lenN memN.
+    revert i H_in.
+    induction finN as [|j js IH]; simpl; intros i H_in.
+    - (* finN = []: in_list [] i = false, contradiction *)
+      discriminate H_in.
+    - (* finN = j :: js *)
+      simpl in H_dup.
+      apply Bool.andb_true_iff in H_dup.
+      destruct H_dup as [H_notin H_dup_t].
+      case_eq (eqN i j); intros Heq.
+      + (* eqN i j = true: lookup returns f j *)
+        apply (H_cong j i). apply symN. apply Heq.
+      + (* eqN i j = false: lookup recurses on js *)
+        simpl in H_in. apply Bool.orb_true_iff in H_in.
+        destruct H_in as [H_eq | H_in_js].
+        * rewrite Heq in H_eq. inversion H_eq.
+        * apply (IH H_dup_t i H_in_js).
+  Qed.
+
+  (* matrix_vector_action respects eqN in the row index when A does           *)
+  Lemma matrix_vector_action_congr : forall (A : Matrix Node R) (x : Vector),
+    (forall i j k, eqN i j = true -> eqR (A i k) (A j k) = true) ->
+    forall i j, eqN i j = true ->
+    eqV (Semimodule.matrix_vector_action R V zeroV plusV scale Node finN A x i)
+        (Semimodule.matrix_vector_action R V zeroV plusV scale Node finN A x j) = true.
+  Proof.
+    intros A x H_congr i j Heq.
+    unfold matrix_vector_action.
+    clear dupN lenN memN.
+    induction finN as [|k ks IH]; simpl.
+    - apply refV.
+    - apply (congrPV _ _ _ _
+        (congrS _ _ _ _ (H_congr i j k Heq) (refV _))
+        IH).
+  Qed.
+
+  (* The efficient computation, when looked up, equals the functional action   *)
+  Lemma list_lookup_eff :
     forall (A : Matrix Node R) (x : Vector),
+    (forall i j k, eqN i j = true -> eqR (A i k) (A j k) = true) ->
+    forall (i : Node),
+    eqV (list_lookup finN
+           (matrix_vector_action_eff
+             (List.map (fun r => List.map (fun c => A r c) finN) finN)
+             (List.map (fun r => x r) finN))
+           i)
+        (matrix_vector_action A x i) = true.
+  Proof.
+    intros A x H_row i.
+    unfold matrix_vector_action.
+    apply (list_lookup_eff_gen Node V R eqN symN eqR refR zeroV plusV eqV refV trnV
+      congrPV scale congrS A x finN H_row i dupN (memN i)).
+  Qed.
+
+  Theorem matrix_vector_action_eff_fun_eq :
+    forall (A : Matrix Node R),
+    (forall i j k, eqN i j = true -> eqR (A i k) (A j k) = true) ->
+    forall (x : Vector),
     (forall i : Node, eqV (matrix_vector_action_eff_fun A x i)
     (matrix_vector_action A x i) = true).
-  Proof. Admitted.
+  Proof.
+    intros A H_row x i.
+    unfold matrix_vector_action_eff_fun.
+    apply list_lookup_eff; auto.
+  Qed.
 
-  Theorem list_lookup_correct : forall (keys : list Node) (vals : list V) (k : Node) (v : V),
-    no_dup Node eqN keys = true -> in_list eqN keys k = true ->
-    eqV (list_lookup keys vals k) v = true.
-  Proof. Admitted.
+  Theorem list_lookup_correct : forall (k : Node) (v : V) (keys : list Node) (vals : list V),
+    no_dup Node eqN (k :: keys) = true ->
+    eqV (list_lookup (k :: keys) (v :: vals) k) v = true.
+  Proof.
+    intros k v keys vals Hdup.
+    simpl. rewrite (refN k). apply refV.
+  Qed.
 
 
   (* ----------------------------------------------------------------------- *)
