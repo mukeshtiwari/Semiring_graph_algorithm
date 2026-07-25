@@ -1168,5 +1168,155 @@ Section Semimodule_proofs.
       (fun j => congrS (A i j) _ (A i j) _ (refR _) (symV _ _ (Hx_all j)))).
   Qed.
 
-End Semimodule_proofs.
+  (* ---- right Kleene star & uniqueness ----------------------------------- *)
 
+  (* Helper: idempotence of plusV follows from bounded semiring (1+1=1)     *)
+  Lemma plusV_idempotent (H_bounded : forall a : R, 1 + a =r= 1 = true) :
+    forall (v : V), plusV v v =v= v = true.
+  Proof.
+    intros v.
+    (* v + v = scale 1 v + scale 1 v = scale (1+1) v = scale 1 v = v *)
+    pose proof (scale_one v) as H1.            (* scale 1 v =v= v *)
+    pose proof (congrPV v v (scale 1 v) (scale 1 v)
+      (symV _ _ H1) (symV _ _ H1)) as H2.     (* v+v =v= scale 1 v + scale 1 v *)
+    pose proof (scale_distr_r oneR oneR v) as H3. (* scale (1+1) v =v= ... *)
+    (* H3: scale (1+1) v =v= scale 1 v + scale 1 v *)
+    (* We need: scale 1 v + scale 1 v =v= scale (1+1) v *)
+    pose proof (congrS (oneR + oneR) v oneR v (H_bounded oneR) (refV v)) as H4.
+    (* H4: scale (1+1) v =v= scale 1 v *)
+    refine (trnV (plusV v v) (plusV (scale 1 v) (scale 1 v)) v H2 _).
+    refine (trnV (plusV (scale 1 v) (scale 1 v)) (scale (oneR + oneR) v) v _ _).
+    { apply (symV (scale (oneR + oneR) v) (plusV (scale 1 v) (scale 1 v)) H3). }
+    refine (trnV (scale (oneR + oneR) v) (scale 1 v) v H4 H1).
+  Qed.
+
+
+  (* Right matrix fixpoint: A* = I + A* *M A.                                *)
+  (* Mirrors partial_sum_mat_fixpoint but with multiplication on the right.  *)
+  (* A full proof requires a right-sided version of                           *)
+  (* astar_aide_gen_q_stable_matrix from Mat.v.                              *)
+
+  (* Right matrix fixpoint: A* = I + A* *M A.                                *)
+  Theorem partial_sum_mat_fixpoint_right :
+    forall (A : Matrix Node R),
+    mat_cong Node eqN R eqR A ->
+    (forall u v : Node, eqN u v = true -> eqR (A u v) 1 = true) ->
+    (forall a : R, 1 + a =r= 1 = true) ->
+    forall (c d : Node),
+    partial_sum_mat Node eqN finN R 0 1 plusR mulR A kleene_exp c d =r=
+    (matrix_add Node R plusR (I Node eqN R 0 1)
+      (matrix_mul Node finN R 0 plusR mulR
+         (partial_sum_mat Node eqN finN R 0 1 plusR mulR A kleene_exp) A)) c d = true.
+  Proof.
+    intros A H_cong H_diag H_bounded c d.
+    pose proof (zero_stable_partial Node eqN refN symN trnN finN dupN lenN memN
+      R 0 1 plusR mulR eqR refR symR trnR
+      zero_left_identity_plus zero_right_identity_plus
+      plus_associative plus_commutative
+      one_left_identity_mul one_right_identity_mul
+      mul_associative
+      left_distributive_mul_over_plus right_distributive_mul_over_plus
+      zero_right_anhilator_mul
+      congrP congrM congrR
+      H_bounded) as Hzs.
+    specialize (Hzs 1%nat A H_cong H_diag c d).
+    unfold kleene_exp in Hzs |- *.
+    replace (Nat.pred (length finN)) with
+    (length finN - 1) by lia.
+    eapply trnR; [exact Hzs | ].
+    replace (1 + length finN - 1) with
+    (S (length finN - 1)) by lia.
+    eapply astar_aide_gen_q_stable_matrix_right;
+    eauto.
+  Qed.
+
+  (* Right Kleene fixed point: x = A*.b  =>  x = A*.(A.b) + b               *)
+  Theorem kleene_fixed_point_right :
+    forall (A : Matrix Node R) (b x : Vector),
+      mat_cong Node eqN R eqR A ->
+      (forall u v : Node, eqN u v = true -> eqR (A u v) 1 = true) ->
+      (forall a : R, 1 + a =r= 1 = true) ->
+      (forall x y : Node, eqN x y = true -> eqV (b x) (b y) = true) ->
+      (forall i : Node, eqV (x i)
+        (matrix_vector_action (partial_sum_mat Node eqN finN R 0 1 plusR mulR A
+          kleene_exp) b i) = true) ->
+      (forall i : Node, eqV (x i)
+        (vec_add (matrix_vector_action
+                    (partial_sum_mat Node eqN finN R 0 1 plusR mulR A kleene_exp)
+                    (matrix_vector_action A b)) b i) = true).
+  Proof.
+    intros A b x H_cong H_diag H_bounded H_cong_b Hx_all i.
+    unfold matrix_vector_action, vec_add.
+    set (Astar := partial_sum_mat Node eqN finN R 0 1 plusR mulR A kleene_exp).
+    pose proof (Hx_all i) as Hx_at_i.
+    apply (trnV _ _ _ Hx_at_i).
+    pose proof (partial_sum_mat_fixpoint_right A H_cong H_diag H_bounded) as Hstar.
+    assert (H1 : eqV
+      (List.fold_right (fun j acc => plusV (scale (Astar i j) (b j)) acc) zeroV finN)
+      (List.fold_right (fun j acc => plusV (scale
+         ((matrix_add Node R plusR (I Node eqN R 0 1)
+            (matrix_mul Node finN R 0 plusR mulR Astar A)) i j) (b j)) acc) zeroV finN)
+      = true).
+    { apply (fold_right_congr finN
+        (fun j => scale (Astar i j) (b j))
+        (fun j => scale ((matrix_add Node R plusR (I Node eqN R 0 1)
+          (matrix_mul Node finN R 0 plusR mulR Astar A)) i j) (b j))
+        (fun j => congrS _ _ _ _ (Hstar i j) (refV (b j)))). }
+    apply (trnV _ _ _ H1); clear H1.
+    assert (Hdist := fold_right_scale_add finN
+      (fun j => (I Node eqN R 0 1) i j)
+      (fun j => matrix_mul Node finN R 0 plusR mulR Astar A i j)
+      (fun j => b j)).
+    simpl in Hdist.
+    apply (trnV
+      (List.fold_right (fun j acc => plusV (scale ((matrix_add Node R plusR (I Node eqN R 0 1)
+        (matrix_mul Node finN R 0 plusR mulR Astar A)) i j) (b j)) acc) zeroV finN)
+      (plusV
+        (List.fold_right (fun j acc => plusV (scale ((I Node eqN R 0 1) i j) (b j)) acc) zeroV finN)
+        (List.fold_right (fun j acc => plusV (scale (matrix_mul Node finN R 0 plusR mulR Astar A i j) (b j)) acc) zeroV finN))
+      (plusV
+        (List.fold_right (fun j acc => plusV (scale (Astar i j)
+          (List.fold_right (fun k acc2 => plusV (scale (A j k) (b k)) acc2) zeroV finN)) acc) zeroV finN)
+        (b i))
+      Hdist).
+    apply (trnV
+      (plusV
+        (List.fold_right (fun j acc => plusV (scale ((I Node eqN R 0 1) i j) (b j)) acc) zeroV finN)
+        (List.fold_right (fun j acc => plusV (scale (matrix_mul Node finN R 0 plusR mulR Astar A i j) (b j)) acc) zeroV finN))
+      (plusV (b i)
+        (List.fold_right (fun j acc => plusV (scale (matrix_mul Node finN R 0 plusR mulR Astar A i j) (b j)) acc) zeroV finN))
+      (plusV
+        (List.fold_right (fun j acc => plusV (scale (Astar i j)
+          (List.fold_right (fun k acc2 => plusV (scale (A j k) (b k)) acc2) zeroV finN)) acc) zeroV finN)
+        (b i))
+      (congrPV _ _ _ _
+        (fold_right_identity finN b i H_cong_b dupN (memN i))
+        (refV _))).
+    apply (trnV _ _ _
+      (plusV_commutative (b i) (List.fold_right
+        (fun j acc => plusV (scale (matrix_mul Node finN R 0 plusR mulR Astar A i j) (b j)) acc) zeroV finN))).
+    refine (congrPV
+      (List.fold_right (fun j acc => plusV (scale (matrix_mul Node finN R 0 plusR mulR Astar A i j) (b j)) acc) zeroV finN)
+      (b i)
+      (List.fold_right (fun j acc => plusV (scale (Astar i j)
+        (List.fold_right (fun k acc2 => plusV (scale (A j k) (b k)) acc2) zeroV finN)) acc) zeroV finN)
+      (b i)
+      _ (refV (b i))).
+    apply (fold_right_mul_assoc finN Astar A b i).
+  Qed.
+
+  (* Uniqueness: x = A.x + b  =>  x = A*.b  (under bounded semiring).      *)
+  Theorem kleene_fixed_point_unique :
+    forall (A : Matrix Node R) (b x : Vector),
+      mat_cong Node eqN R eqR A ->
+      (forall u v : Node, eqN u v = true -> eqR (A u v) 1 = true) ->
+      (forall a : R, 1 + a =r= 1 = true) ->
+      (forall i : Node, eqV (x i) (vec_add (matrix_vector_action A x) b i) = true) ->
+      (forall i : Node, eqV (x i)
+        (matrix_vector_action (partial_sum_mat Node eqN finN R 0 1 plusR mulR A
+          kleene_exp) b i) = true).
+  Proof.
+    (* Informal proof: see sketch above. TODO. *)
+  Admitted.
+
+End Semimodule_proofs.
