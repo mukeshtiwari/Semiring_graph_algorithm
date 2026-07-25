@@ -4,7 +4,8 @@ generate OCaml code from it (see _RocqProject file).
 1. Run `dune exec _build/default/executable/schulzecode/main.exe` to run the Schulze method on the example used by Markus Schulze in his [paper](https://link.springer.com/content/pdf/10.1007/s00355-010-0475-4.pdf) 
 2. Run `dune exec _build/default/executable/shortestpath/main.exe` to run the shortest path code 
 3. Run `dune exec _build/default/executable/widestpathcode/main.exe` to run the shortest-widest path algorithm
-4. Run `dune exec _build/default/executable/wikimedia/main.exe` to run the [wikipedia Schulze method](https://en.wikipedia.org/wiki/Schulze_method) example. In output you should see the `Strengths of the strongest paths` matrix 
+4. Run `dune exec _build/default/executable/wikimedia/main.exe` to run the [wikipedia Schulze method](https://en.wikipedia.org/wiki/Schulze_method) example. In output you should see the `Strengths of the strongest paths` matrix
+5. Run `dune exec _build/default/executable/viterbicode/main.exe` to run the Viterbi semiring code.  
     
 We have compiled this project with Rocq 9.1.1 but if you want to use it with any other Rocq version, please let us know. 
 

@@ -71,3 +71,24 @@
   (library
     (name wikimedia)
     (wrapped false)))
+
+(subdir viterbi
+ (rocq.extraction
+  (prelude Extraction)
+  (extracted_files
+    BinInt.ml BinInt.mli
+    BinNums.ml BinNums.mli
+    BinPos.ml BinPos.mli
+    Datatypes.ml Datatypes.mli
+    Definitions.ml Definitions.mli
+    List.ml List.mli
+    ListDef.ml ListDef.mli
+    Mat.ml Mat.mli
+    Path.ml Path.mli
+    PosDef.ml PosDef.mli
+    QArith_base.ml QArith_base.mli
+    Viterbi.ml Viterbi.mli)
+  (theories Stdlib Semiring Examples))
+  (library
+    (name viterbi)
+    (wrapped false)))
