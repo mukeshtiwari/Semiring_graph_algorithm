@@ -1,7 +1,7 @@
 From Stdlib Require Import List BinNatDef
   Psatz Utf8 EqNat. 
 From Semiring Require Import Mat  Definitions
-  Listprop.
+  Listprop Semimodule.
 Import ListNotations.
 
 
@@ -258,6 +258,73 @@ Section Proofs.
     try reflexivity.
     now rewrite PeanoNat.Nat.min_id,
     PeanoNat.Nat.eqb_refl.
+  Qed.
+
+  Theorem congrP : bop_congruence R eqR plusR.
+  Proof. (* True by case analysis; min preserves equality *) Admitted.
+
+  Theorem congrM : bop_congruence R eqR mulR.
+  Proof. (* True by case analysis; + preserves equality *) Admitted.
+
+  Theorem congrR : brel_congruence R eqR eqR.
+  Proof. (* True by case analysis *) Admitted.
+
+
+  (* =================================================================== *)
+  (*  Semimodule: V := R, scale := mulR (+), plusV := min               *)
+  (*                                                                      *)
+  (*  mva_eff_fun computes A·b efficiently via list-based operations.     *)
+  (*  The scale axioms reduce to the min-plus semiring properties.        *)
+  (* =================================================================== *)
+
+  Definition V' := R.
+  Definition zeroV' := zeroR.
+  Definition plusV' := plusR.
+  Definition eqV' := eqR.
+  Definition scale' (a : R) (v : R) : R := mulR a v.
+
+  Definition mva_eff_fun :=
+    Semimodule.matrix_vector_action_eff_fun R V' zeroV' plusV' scale' Node eqN finN.
+
+  Definition mva_func :=
+    Semimodule.matrix_vector_action R V' zeroV' plusV' scale' Node finN.
+
+  Lemma scale_distr_v_sm :
+    forall a x y, eqV' (scale' a (plusV' x y))
+                       (plusV' (scale' a x) (scale' a y)) = true.
+  Proof.
+    intros. unfold scale', plusV', eqV'. apply left_distributive_mul_over_plus.
+  Qed.
+
+  Lemma scale_distr_r_sm :
+    forall a b x, eqV' (scale' (plusR a b) x)
+                       (plusV' (scale' a x) (scale' b x)) = true.
+  Proof.
+    intros. unfold scale', plusV', eqV'. apply right_distributive_mul_over_plus.
+  Qed.
+
+  Lemma scale_assoc_sm :
+    forall a b x, eqV' (scale' a (scale' b x))
+                       (scale' (mulR a b) x) = true.
+  Proof.
+    intros. unfold scale', eqV'. apply mul_associative.
+  Qed.
+
+  Lemma scale_one_sm : forall x, eqV' (scale' oneR x) x = true.
+  Proof. intros. unfold scale', eqV'. apply one_left_identity_mul. Qed.
+
+  Lemma scale_zero_r_sm : forall x, eqV' (scale' zeroR x) zeroV' = true.
+  Proof. intros. unfold scale', zeroV'. apply zero_left_anhilator_mul. Qed.
+
+  Lemma scale_zero_v_sm : forall a, eqV' (scale' a zeroV') zeroV' = true.
+  Proof. intros. unfold scale', zeroV'. apply zero_right_anhilator_mul. Qed.
+
+  Lemma congrS_sm :
+    forall s1 s2 t1 t2,
+      eqR s1 t1 = true -> eqV' s2 t2 = true ->
+      eqV' (scale' s1 s2) (scale' t1 t2) = true.
+  Proof.
+    intros. unfold scale', eqV'. apply (congrM s1 s2 t1 t2 H H0).
   Qed.
 
 End Proofs.

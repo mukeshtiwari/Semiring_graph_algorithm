@@ -10,7 +10,8 @@
     Mat.ml Mat.mli
     Nat.ml Nat.mli
     Path.ml Path.mli
-    Schulze.ml Schulze.mli)
+    Schulze.ml Schulze.mli
+    Semimodule.ml Semimodule.mli)
   (theories Stdlib Semiring Examples))
   (library 
     (name schulze)
@@ -28,6 +29,7 @@
     Mat.ml Mat.mli
     Nat.ml Nat.mli
     Path.ml Path.mli
+    Semimodule.ml Semimodule.mli
     WidestShortestPath.ml WidestShortestPath.mli)
   (theories Stdlib Semiring Examples))
   (library
@@ -47,6 +49,7 @@
     Mat.ml Mat.mli
     Nat.ml Nat.mli
     Path.ml Path.mli
+    Semimodule.ml Semimodule.mli
     Shortestpath.ml Shortestpath.mli)
   (theories Stdlib Semiring Examples))
   (library
@@ -66,6 +69,7 @@
     Mat.ml Mat.mli
     Nat.ml Nat.mli
     Path.ml Path.mli
+    Semimodule.ml Semimodule.mli
     Wikimedia.ml Wikimedia.mli)
   (theories Stdlib Semiring Examples))
   (library
@@ -87,8 +91,31 @@
     Path.ml Path.mli
     PosDef.ml PosDef.mli
     QArith_base.ml QArith_base.mli
+    Semimodule.ml Semimodule.mli
     Viterbi.ml Viterbi.mli)
   (theories Stdlib Semiring Examples))
   (library
     (name viterbi)
+    (wrapped false)))
+
+(subdir fivegslicing
+ (rocq.extraction
+  (prelude Extraction)
+  (extracted_files
+    BinNums.ml BinNums.mli
+    Datatypes.ml Datatypes.mli
+    Decimal.ml Decimal.mli
+    Definitions.ml Definitions.mli
+    FiveGNetworkSlicing.ml FiveGNetworkSlicing.mli
+    Hexadecimal.ml Hexadecimal.mli
+    List.ml List.mli
+    ListDef.ml ListDef.mli
+    Mat.ml Mat.mli
+    Nat.ml Nat.mli
+    Number.ml Number.mli
+    Path.ml Path.mli
+    Semimodule.ml Semimodule.mli)
+  (theories Stdlib Semiring Examples))
+  (library
+    (name fivegslicing)
     (wrapped false)))

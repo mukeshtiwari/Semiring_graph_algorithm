@@ -117,10 +117,69 @@ let arraymat (x : coq_Node) (y : coq_Node) : coq_R =
   matrix.(rank x).(rank y) 
   
 
-let _ = 
-  let comp = wikimedia arraymat in 
-  let ret = Stdlib.List.map (fun (x, y) -> (string_candidates x, string_candidates y, string_values (comp x y))) 
-    (cross_product finN finN) in 
-  print_endline (string_list ret)
+(* -------------------------------------------------------------------- *)
+(*  Semimodule: fixed-point iteration from source Ting Chen               *)
+(* -------------------------------------------------------------------- *)
+
+let source_vector (n : coq_Node) : coq_R =
+  match n with
+  | TC -> oneR      (* start at Ting Chen with max strength *)
+  | _  -> zeroR
+
+let print_vector (label : string) (v : coq_Node -> coq_R) =
+  print_endline ("\n  " ^ label ^ ":");
+  Stdlib.List.iter (fun u ->
+    Printf.printf "    %-4s : %s\n"
+      (string_candidates u) (string_values (v u))
+  ) finN
+
+let print_iteration () =
+  print_endline "\n=== Semimodule: Fixed-Point Iteration from Ting Chen ===";
+  print_endline "  (Converges to strongest path strengths after at most 17 iterations)";
+
+  let x0 = source_vector in
+  let x1 = mva_eff_fun arraymat x0 in
+  print_vector "x₁ = A·b (one-step from TC)" x1;
+
+  let x2 = mva_eff_fun arraymat x1 in
+  print_vector "x₂ = A²·b (two-step)" x2;
+
+  let rec iterate n v =
+    if n = 0 then v else iterate (n-1) (mva_eff_fun arraymat v)
+  in
+  let x17 = iterate 15 x2 in
+  print_vector "x₁₇ = A¹⁷·b (converged to A*·b)" x17;
+
+  print_endline "\n  Compare with A*·b (from Wikimedia ranking, column TC):";
+  let star = wikimedia arraymat in
+  Stdlib.List.iter (fun u ->
+    let star_val = star u TC in
+    let iter_val = x17 u in
+    let match_str = if star_val = iter_val then "✓" else "✗" in
+    Printf.printf "    %-4s : %-8s  (A*·b)  vs  %-8s  (A¹⁷·b)  %s\n"
+      (string_candidates u) (string_values star_val) (string_values iter_val) match_str
+  ) finN
+
+
+(* -------------------------------------------------------------------- *)
+(*  Main                                                                *)
+(* -------------------------------------------------------------------- *)
+
+let () =
+  print_endline "╔═════════════════════════════════════════════╗";
+  print_endline "║   Wikimedia Schulze — Max-Min Semiring        ║";
+  print_endline "║   18-candidate Board election                  ║";
+  print_endline "╚═════════════════════════════════════════════╝";
+  print_endline "\n=== Strongest Path Strengths (A*) ===";
+  let comp = wikimedia arraymat in
+  Stdlib.List.iter (fun u ->
+    Stdlib.List.iter (fun v ->
+      if u <> v then
+        Printf.printf "  %-4s → %-4s : %s\n"
+          (string_candidates u) (string_candidates v) (string_values (comp u v))
+    ) finN
+  ) finN;
+  print_iteration ();
+  print_endline "\nDone."
 
   

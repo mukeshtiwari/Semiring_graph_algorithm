@@ -1,7 +1,7 @@
 From Stdlib Require Import List BinNatDef
   Psatz Utf8 EqNat. 
 From Semiring Require Import Mat  Definitions
-  Listprop.
+  Listprop Semimodule.
 Import ListNotations.
 
 
@@ -1136,7 +1136,21 @@ Section Proofs.
       apply Bool.andb_true_iff; split; [exact Hb1 | exact Hb2].
   Qed.
 
-  
+
+  (* =================================================================== *)
+  (*  Semimodule: V := RR, scale := direct_mulRR (componentwise)          *)
+  (* =================================================================== *)
+
+  Definition V' := RR.
+  Definition zeroV' := zeroRR.
+  Definition plusV' := lex_plusRR.
+  Definition eqV' := eqRR.
+  Definition scale' (a : RR) (v : RR) : RR := direct_mulRR a v.
+
+  Definition mva_eff_fun :=
+    Semimodule.matrix_vector_action_eff_fun RR V' zeroV' plusV' scale' Node eqN finN.
+
+
 End Proofs.
 
 (* ========================================================================= *)

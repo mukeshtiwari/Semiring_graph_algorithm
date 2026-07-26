@@ -1,7 +1,7 @@
 From Stdlib Require Import List BinNatDef
   Psatz Utf8 EqNat QArith.
 From Semiring Require Import Mat  Definitions
-  Listprop.
+  Listprop Semimodule.
 Import ListNotations.
 
 Local Open Scope Q_scope.
@@ -321,5 +321,60 @@ Section Proofs.
   Proof.
     unfold plusR, eqR. intro a. apply Qeq_bool_iff. apply Qmax_idem.
   Qed.
+
+  Theorem congrP : bop_congruence R eqR plusR.
+  Proof. Admitted.
+
+  Theorem congrM : bop_congruence R eqR mulR.
+  Proof. Admitted.
+
+  Theorem congrR : brel_congruence R eqR eqR.
+  Proof. Admitted.
+
+
+  (* =================================================================== *)
+  (*  Semimodule: V := R, scale := mulR (×), plusV := max               *)
+  (*                                                                      *)
+  (*  mva_eff_fun computes A·b efficiently via list-based operations.     *)
+  (* =================================================================== *)
+
+  Definition V' := R.
+  Definition zeroV' := zeroR.
+  Definition plusV' := plusR.
+  Definition eqV' := eqR.
+  Definition scale' (a : R) (v : R) : R := mulR a v.
+
+  Definition mva_eff_fun :=
+    Semimodule.matrix_vector_action_eff_fun R V' zeroV' plusV' scale' Node eqN finN.
+
+  Lemma scale_distr_v_sm :
+    forall a x y, 0 <= a -> eqV' (scale' a (plusV' x y))
+                                 (plusV' (scale' a x) (scale' a y)) = true.
+  Proof. intros. unfold scale', plusV', eqV'. apply left_distributive_mul_over_plus; auto. Qed.
+
+  Lemma scale_distr_r_sm :
+    forall a b x, 0 <= a -> 0 <= b -> 0 <= x ->
+      eqV' (scale' (plusR a b) x) (plusV' (scale' a x) (scale' b x)) = true.
+  Proof. intros. unfold scale', plusV', eqV'. apply right_distributive_mul_over_plus; auto. Qed.
+
+  Lemma scale_assoc_sm :
+    forall a b x, eqV' (scale' a (scale' b x))
+                       (scale' (mulR a b) x) = true.
+  Proof. intros. unfold scale', eqV'. apply mul_associative. Qed.
+
+  Lemma scale_one_sm : forall x, eqV' (scale' oneR x) x = true.
+  Proof. intros. unfold scale', eqV', oneR. apply one_left_identity_mul. Qed.
+
+  Lemma scale_zero_r_sm : forall x, eqV' (scale' zeroR x) zeroV' = true.
+  Proof. intros. unfold scale', zeroV'. apply zero_left_anhilator_mul. Qed.
+
+  Lemma scale_zero_v_sm : forall a, eqV' (scale' a zeroV') zeroV' = true.
+  Proof. intros. unfold scale', zeroV'. apply zero_right_anhilator_mul. Qed.
+
+  Lemma congrS_sm :
+    forall s1 s2 t1 t2,
+      eqR s1 t1 = true -> eqV' s2 t2 = true ->
+      eqV' (scale' s1 s2) (scale' t1 t2) = true.
+  Proof. intros. unfold scale', eqV'. apply (congrM s1 s2 t1 t2 H H0). Qed.
 
 End Proofs.

@@ -1,11 +1,12 @@
 # Semiring_graph_algorithm
 Run `dune build` (ignore the warinings) in this directory to compile the project. It will compile the Rocq code and 
 generate OCaml code from it (see _RocqProject file). 
-1. Run `dune exec _build/default/executable/schulzecode/main.exe` to run the Schulze method on the example used by Markus Schulze in his [paper](https://link.springer.com/content/pdf/10.1007/s00355-010-0475-4.pdf) 
-2. Run `dune exec _build/default/executable/shortestpath/main.exe` to run the shortest path code 
-3. Run `dune exec _build/default/executable/widestpathcode/main.exe` to run the shortest-widest path algorithm
-4. Run `dune exec _build/default/executable/wikimedia/main.exe` to run the [wikipedia Schulze method](https://en.wikipedia.org/wiki/Schulze_method) example. In output you should see the `Strengths of the strongest paths` matrix
-5. Run `dune exec _build/default/executable/viterbicode/main.exe` to run the Viterbi semiring code.  
+1. Run `dune exec _build/default/executable/schulzecode/main.exe` to run the Schulze method on the example used by Markus Schulze in his [paper](https://link.springer.com/content/pdf/10.1007/s00355-010-0475-4.pdf). The output shows the pairwise victory matrix, the strongest path strengths (A*), and the pairwise winners — candidate **D** is the Condorcet winner.
+2. Run `dune exec _build/default/executable/shortestpath/main.exe` to run the shortest path code (min-plus semiring). Shows the adjacency matrix, all-pairs shortest distances (A*), and the fixed-point iteration converging from source node A..
+3. Run `dune exec _build/default/executable/widestpathcode/main.exe` to run the widest-shortest path algorithm (lexicographic semiring: width first, then length). Shows adjacency matrix, all-pairs optimal paths (A*), and fixed-point iteration.
+4. Run `dune exec _build/default/executable/wikimedia/main.exe` to run the [Wikipedia Schulze method](https://en.wikipedia.org/wiki/Schulze_method) example (18-candidate Board election). Shows strongest path strengths and fixed-point iteration converging in 17 steps.
+5. Run `dune exec _build/default/executable/viterbicode/main.exe` to run the Viterbi code (max-× semiring). Shows the transition probability matrix, most likely path probabilities (A*), and fixed-point iteration from source node 0.  
+6. Run `dune exec executable/fivegslicing/main.exe` to run the 5G Network Slicing example, which computes optimal routing paths through a 5G core network (UE → gNB → UPF → DN) using a **latency × bandwidth product semiring**. Each link has two attributes — latency (minimized, min-plus) and bandwidth (maximized, max-min) — and A* finds the Pareto-optimal end-to-end path weights.
     
 We have compiled this project with Rocq 9.1.1 but if you want to use it with any other Rocq version, please let us know. 
 

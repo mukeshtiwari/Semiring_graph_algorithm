@@ -55,6 +55,7 @@ Section Semimodule_def.
   Definition vec_scale (a : R) (v : Vector) : Vector := fun i => scale a (v i).
 
   (* (m · v)_i  :=  Σ_{j ∈ finN}  (v_j) ⊙ m_{i,j}                            *)
+  (* v is a column vector                                                    *)
   Definition matrix_vector_action (m : Matrix Node R) (v : Vector) : Vector := 
     fun (i : Node) =>
       List.fold_right
@@ -76,7 +77,8 @@ Section Semimodule_def.
     | _, _ => zeroV
     end.
 
-  (* Functional wrapper: convert Matrix/Vector to lists, compute, convert back *)
+  (* Functional wrapper: convert Matrix/Vector to lists, compute, convert back. 
+    Vector v is a column vector  *)
   Definition matrix_vector_action_eff_fun (m : Matrix Node R) (v : Vector) : Vector :=
     let la := List.map (fun r => List.map (fun c => m r c) finN) finN in 
     let va := List.map (fun r => v r) finN in
