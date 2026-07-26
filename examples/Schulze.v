@@ -411,9 +411,6 @@ Section Proofs.
     intros. unfold scale', eqV'. apply (congrM s1 s2 t1 t2 H H0).
   Qed.
 
-  (* -------------------------------------------------------------------- *)
-  (*  Scale axioms (reduce to max-min semiring properties)                 *)
-  (* -------------------------------------------------------------------- *)
-
+  
 End Proofs.
 
