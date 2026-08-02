@@ -8,7 +8,7 @@
 (* ================================================================= *)
 
 From Stdlib Require Import List Utf8
-  FunctionalExtensionality BinNatDef 
+  BinNatDef 
   Lia PeanoNat PArith.
 From Semiring Require Import OrelN Structures.
 Import ListNotations SemiringNotations.
@@ -501,9 +501,17 @@ Section Matrix.
   Definition sum (f : Node -> R) : R :=
     List.fold_right (fun x y => f x + y) 0 elements.
 
-  (* sum of the elements of a matrix *)
+  (** Extensionality of [sum]: equal functions have equal sums. *)
+  Lemma sum_ext : forall (f g : Node -> R),
+    (forall x, f x = g x) -> sum f = sum g.
+  Proof.
+    intros f g Heq.
+    unfold sum.
+    induction elements as [|a l IH]; simpl.
+    - reflexivity.
+    - rewrite Heq. f_equal. exact IH.
+  Qed.
 
- 
   (* generalised matrix multiplication *)
   Definition matrix_mul 
     (m₁ m₂ : Matrix) : Matrix:=
@@ -1283,7 +1291,7 @@ Section Matrix.
     rewrite (dot_product_eq_sum
                (list_lookup [] elements L1 r)
                (list_lookup [] elements (transpose_list L2) c)).
-    - f_equal. apply FunctionalExtensionality.functional_extensionality. intro y.
+    - apply sum_ext. intro y.
       rewrite (list_lookup_transpose L2 c y); [reflexivity | exact HrectL2].
     - (* Prove: length (list_lookup [] elements L1 r) = n *)
       rewrite list_lookup_nth_gen.
@@ -1442,15 +1450,11 @@ Lemma pow_list_square : forall (m : Matrix) (n : nat),
       destruct (pow_list_square m n) as (Hpow_len & Hpow_row).
       rewrite (of_list_mul_list_gen (to_list m) (pow_list (to_list m) n) c d
         (to_list_length m) (to_list_row_length m) Hpow_len Hpow_row).
-      replace (of_list (to_list m)) with m.
-      2: { apply FunctionalExtensionality.functional_extensionality; intro r.
-           apply FunctionalExtensionality.functional_extensionality; intro c0.
-           symmetry. apply of_list_to_list. }
-      replace (of_list (pow_list (to_list m) n)) with (pow m n).
-      2: { apply FunctionalExtensionality.functional_extensionality; intro r.
-           apply FunctionalExtensionality.functional_extensionality; intro c0.
-           rewrite (IH r c0). unfold pow_fun. reflexivity. }
-      reflexivity.
+      unfold matrix_mul at 1.
+      apply sum_ext. intro k.
+      rewrite (of_list_to_list m c k).
+      rewrite (IH k d).
+      unfold pow_fun. reflexivity.
   Qed.
 
   (* ----------------------------------------------------------------- *)
@@ -1583,18 +1587,6 @@ Lemma pow_list_square : forall (m : Matrix) (n : nat),
       + apply add_swap_mid.
   Qed.
 
-    (** Extensionality of [sum]: equal functions have equal sums. *)
-
-  Lemma sum_ext : forall (f g : Node -> R),
-    (forall x, f x = g x) -> sum f = sum g.
-  Proof.
-    intros f g Heq.
-    unfold sum.
-    induction elements as [|a l IH]; simpl.
-    - reflexivity.
-    - rewrite Heq. f_equal. exact IH.
-  Qed.
-
     (** Right-distributivity of sum over multiplication: [(sum f) * k = sum (λx. f x * k)]. *)
 
   Lemma sum_mul_r : forall (f : Node -> R) (k : R),
@@ -1686,12 +1678,11 @@ Lemma pow_list_square : forall (m : Matrix) (n : nat),
     induction a as [|a IH]; intros b c d.
     - simpl. unfold pow at 2. symmetry. apply matrix_mul_I_l.
     - simpl plus. unfold pow. fold pow.
-      assert (Heq : pow m (a + b) = matrix_mul (pow m a) (pow m b)).
-      { apply FunctionalExtensionality.functional_extensionality; intro r.
-        apply FunctionalExtensionality.functional_extensionality; intro c0.
-        apply IH. }
-      rewrite Heq.
-      symmetry. apply matrix_mul_assoc.
+      rewrite (matrix_mul_assoc m (pow m a) (pow m b) c d).
+      unfold matrix_mul.
+      apply sum_ext. intro k.
+      f_equal.
+      apply (IH b k d).
   Qed.
 
     (** Binary exponentiation agrees with linear exponentiation for matrices. *)
@@ -1705,32 +1696,24 @@ Lemma pow_list_square : forall (m : Matrix) (n : nat),
       intros c d.
       rewrite Pos2Nat.inj_xI.
       replace (2 * Pos.to_nat p)%nat with (Pos.to_nat p + Pos.to_nat p)%nat by nia.
-      (* Goal: pow m (S (n+n)) c d = pow_pos m p~1 c d *)
       simpl (pow m (S (Pos.to_nat p + Pos.to_nat p))).
-      (* Goal: (m * pow m (n+n)) c d = (m * (pow_pos m p * pow_pos m p)) c d *)
+      apply sum_ext. intro k.
       f_equal.
-      replace (pow m (Pos.to_nat p + Pos.to_nat p))
-        with (matrix_mul (pow m (Pos.to_nat p)) (pow m (Pos.to_nat p))).
-      2: { apply FunctionalExtensionality.functional_extensionality; intro r.
-           apply FunctionalExtensionality.functional_extensionality; intro s.
-           symmetry; apply pow_add. }
-      replace (pow m (Pos.to_nat p)) with (pow_pos m p).
-      2: { apply FunctionalExtensionality.functional_extensionality; intro r.
-           apply FunctionalExtensionality.functional_extensionality; intro s.
-           symmetry; apply IH. }
+      rewrite (pow_add m (Pos.to_nat p) (Pos.to_nat p) k d).
+      unfold matrix_mul.
+      apply sum_ext. intro j.
+      rewrite (IH k j).
+      rewrite (IH j d).
       reflexivity.
     - (* xO p *)
       intros c d.
       rewrite Pos2Nat.inj_xO.
       replace (2 * Pos.to_nat p)%nat with (Pos.to_nat p + Pos.to_nat p)%nat by nia.
-      (* Goal: pow m (n+n) c d = pow_pos m p~0 c d *)
       rewrite pow_add.
-      (* Goal: (pow m n * pow m n) c d = (pow_pos m p * pow_pos m p) c d *)
-      f_equal.
-      replace (pow m (Pos.to_nat p)) with (pow_pos m p).
-      2: { apply FunctionalExtensionality.functional_extensionality; intro r.
-           apply FunctionalExtensionality.functional_extensionality; intro s.
-           symmetry; apply IH. }
+      unfold matrix_mul.
+      apply sum_ext. intro j.
+      rewrite (IH c j).
+      rewrite (IH j d).
       reflexivity.
     - (* xH *)
       intros c d.
@@ -1807,12 +1790,12 @@ Lemma pow_list_square : forall (m : Matrix) (n : nat),
       pose proof (list_lookup_tabulate R 0 (list_lookup [] elements L1 r) Hnd (Hlen_row1 r)) as Htab1.
       pose proof (list_lookup_tabulate R 0 (list_lookup [] elements L2 r) Hnd (Hlen_row2 r)) as Htab2.
       rewrite <- Htab1, <- Htab2.
-      f_equal. apply FunctionalExtensionality.functional_extensionality. intro c.
+      apply map_ext. intro c.
       unfold of_list in Heq. apply Heq. }
     pose proof (list_lookup_tabulate (list R) ([] : list R) L1 Hnd Hlen1) as HtabL1.
     pose proof (list_lookup_tabulate (list R) ([] : list R) L2 Hnd Hlen2) as HtabL2.
     rewrite <- HtabL1, <- HtabL2.
-    f_equal. apply FunctionalExtensionality.functional_extensionality. intro r.
+    apply map_ext. intro r.
     apply Hlookup_eq.
   Qed.
 
@@ -1830,24 +1813,16 @@ Lemma pow_list_square : forall (m : Matrix) (n : nat),
       rewrite (of_list_mul_list_gen (to_list m)
         (mul_list (pow_pos_list (to_list m) p) (pow_pos_list (to_list m) p)) c d
         (to_list_length m) (to_list_row_length m) Hlen_PP Hrow_PP).
+      unfold matrix_mul at 1.
+      apply sum_ext. intro y.
+      rewrite (of_list_to_list m c y).
+      rewrite (of_list_mul_list_gen (pow_pos_list (to_list m) p)
+        (pow_pos_list (to_list m) p) y d Hlen_P Hrow_P Hlen_P Hrow_P).
       f_equal.
-      replace (of_list (to_list m)) with m.
-      2: { apply FunctionalExtensionality.functional_extensionality; intro r.
-           apply FunctionalExtensionality.functional_extensionality; intro c0.
-           symmetry. apply of_list_to_list. }
-      f_equal.
-      replace (of_list (mul_list (pow_pos_list (to_list m) p) (pow_pos_list (to_list m) p)))
-        with (matrix_mul (of_list (pow_pos_list (to_list m) p))
-              (of_list (pow_pos_list (to_list m) p))).
-      2: { apply FunctionalExtensionality.functional_extensionality; intro r.
-           apply FunctionalExtensionality.functional_extensionality; intro c0.
-           symmetry. apply (of_list_mul_list_gen
-             (pow_pos_list (to_list m) p) (pow_pos_list (to_list m) p) r c0
-             Hlen_P Hrow_P Hlen_P Hrow_P). }
-      replace (of_list (pow_pos_list (to_list m) p)) with (pow_pos m p).
-      2: { apply FunctionalExtensionality.functional_extensionality; intro r.
-           apply FunctionalExtensionality.functional_extensionality; intro c0.
-           symmetry. apply IH. }
+      unfold matrix_mul.
+      apply sum_ext. intro z.
+      rewrite (IH y z).
+      rewrite (IH z d).
       reflexivity.
     - (* xO p *)
       intros c d.
@@ -1855,11 +1830,10 @@ Lemma pow_list_square : forall (m : Matrix) (n : nat),
       destruct (pow_pos_list_square m p) as (Hlen_P & Hrow_P).
       rewrite (of_list_mul_list_gen (pow_pos_list (to_list m) p) (pow_pos_list (to_list m) p) c d
         Hlen_P Hrow_P Hlen_P Hrow_P).
-      f_equal.
-      replace (of_list (pow_pos_list (to_list m) p)) with (pow_pos m p).
-      2: { apply FunctionalExtensionality.functional_extensionality; intro r.
-           apply FunctionalExtensionality.functional_extensionality; intro c0.
-           symmetry. apply IH. }
+      unfold matrix_mul.
+      apply sum_ext. intro z.
+      rewrite (IH c z).
+      rewrite (IH z d).
       reflexivity.
     - (* xH *)
       intros c d.
@@ -1928,10 +1902,10 @@ Lemma pow_list_square : forall (m : Matrix) (n : nat),
     - unfold pow. fold pow.
       destruct (pow_list_square_gen L n HlenL HrowL) as (Hsq_len & Hsq_row).
       rewrite (of_list_mul_list_gen L (pow_list L n) r c HlenL HrowL Hsq_len Hsq_row).
-      f_equal. f_equal.
-      apply FunctionalExtensionality.functional_extensionality; intro x.
-      apply FunctionalExtensionality.functional_extensionality; intro y.
-      apply (IH L HlenL HrowL x y).
+      unfold matrix_mul at 1.
+      apply sum_ext. intro y.
+      f_equal.
+      apply (IH L HlenL HrowL y c).
   Qed.
 
   (* Bridge: of_list (pow_pos_list L p) = pow_pos (of_list L) p for square L *)
@@ -1949,28 +1923,25 @@ Lemma pow_list_square : forall (m : Matrix) (n : nat),
         as (Hlen_PP & Hrow_PP).
       rewrite (of_list_mul_list_gen L (mul_list (pow_pos_list L p) (pow_pos_list L p)) r c
         HlenL HrowL Hlen_PP Hrow_PP).
+      unfold matrix_mul at 1.
+      apply sum_ext. intro y.
       f_equal.
-      replace (of_list (mul_list (pow_pos_list L p) (pow_pos_list L p)))
-        with (matrix_mul (of_list (pow_pos_list L p)) (of_list (pow_pos_list L p))).
-      2: { apply FunctionalExtensionality.functional_extensionality; intro x.
-           apply FunctionalExtensionality.functional_extensionality; intro y.
-           symmetry. apply (of_list_mul_list_gen
-             (pow_pos_list L p) (pow_pos_list L p) x y Hlen_P Hrow_P Hlen_P Hrow_P). }
-      replace (of_list (pow_pos_list L p)) with (pow_pos (of_list L) p).
-      2: { apply FunctionalExtensionality.functional_extensionality; intro x.
-           apply FunctionalExtensionality.functional_extensionality; intro y.
-           symmetry. apply (IH L HlenL HrowL x y). }
+      rewrite (of_list_mul_list_gen (pow_pos_list L p) (pow_pos_list L p) y c
+        Hlen_P Hrow_P Hlen_P Hrow_P).
+      unfold matrix_mul.
+      apply sum_ext. intro z.
+      rewrite (IH L HlenL HrowL y z).
+      rewrite (IH L HlenL HrowL z c).
       reflexivity.
     - (* xO p *)
       simpl (pow_pos_list L (p~0)).
       destruct (pow_pos_list_square_gen L p HlenL HrowL) as (Hlen_P & Hrow_P).
       rewrite (of_list_mul_list_gen (pow_pos_list L p) (pow_pos_list L p) r c
         Hlen_P Hrow_P Hlen_P Hrow_P).
-      f_equal.
-      replace (of_list (pow_pos_list L p)) with (pow_pos (of_list L) p).
-      2: { apply FunctionalExtensionality.functional_extensionality; intro x.
-           apply FunctionalExtensionality.functional_extensionality; intro y.
-           symmetry. apply (IH L HlenL HrowL x y). }
+      unfold matrix_mul.
+      apply sum_ext. intro z.
+      rewrite (IH L HlenL HrowL r z).
+      rewrite (IH L HlenL HrowL z c).
       reflexivity.
     - (* xH *)
       reflexivity.
