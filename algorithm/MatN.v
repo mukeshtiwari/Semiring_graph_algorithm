@@ -491,7 +491,7 @@ Section Matrix.
   
 
   (* pointwise addition to two matrices *)
-  Definition addM {R : Semiring.type} (m₁ m₂ : @Matrix R) : @Matrix R :=
+  Definition matrix_add {R : Semiring.type} (m₁ m₂ : @Matrix R) : @Matrix R :=
     fun c d => (m₁ c d + m₂ c d).
 
  
@@ -521,7 +521,7 @@ Section Matrix.
   (*  Matrix exponentiation                                             *)
   (* ----------------------------------------------------------------- *)
 
-  Local Infix "+M" := addM (at level 50).
+  Local Infix "+M" := matrix_add (at level 50, only parsing).
 
 
   (** Linear matrix exponentiation: [pow m n = m * m * ... * m] (n times). *)
@@ -2000,4 +2000,332 @@ Lemma transpose_list_length_square {R : Semiring.type} : forall (lb : list (list
     apply pow_fun_powN_fun_eqv.
   Qed.
 
+
+  (** In a bounded semiring, adding [scalar_pow a n] to the geometric sum
+      does not change it — the sum already contains [1] which absorbs everything. *)
+
+  Lemma scalar_geom_sum_add_pow {R : BoundedSemiring.type} : 
+    ∀ (n : nat) (a : R), scalar_geom_sum a n = 
+    scalar_geom_sum a n + scalar_pow a n.
+  Proof.
+    intros n a.
+    assert (Hgeom : scalar_geom_sum a n = 1).
+    { induction n; cbn; [reflexivity | rewrite IHn; apply add_bound]. }
+    rewrite Hgeom at 1 2.
+    symmetry. apply add_bound.
+  Qed.
+
+  (** Recurrence: [scalar_geom_sum a (S n) = 1 + a * scalar_geom_sum a n]. *)
+
+  Lemma scalar_geom_sum_S {R : Semiring.type} :
+    forall (n : nat) (a : R), scalar_geom_sum a (S n) = 
+      1 + a * scalar_geom_sum a n.
+  Proof.
+    induction n as [|n IH]; intros a.
+    - cbn. rewrite mulr1. reflexivity.
+    - cbn.
+      rewrite (IH a) at 1.
+      setoid_rewrite mulDl.
+      rewrite <- addA.
+      reflexivity.
+  Qed.
+
+
+  (** ** k-closed semirings                                                   *)
+
+  (**
+     Definition 6 (from https://cs.nyu.edu/~mohri/pub/jalc.pdf):  
+     Let [k ≥ 0] be an integer. A semiring [(K, ⊕, ⊗, 0̄, 1̄)] is
+     [k]-closed if:
+
+       [∀ a ∈ K,   ⊕_{n=0}^{k+1} aⁿ  =  ⊕_{n=0}^{k} aⁿ.]
+
+     In our notation, [scalar_geom_sum a n = ⊕_{p=0}^{n} aᵖ].
+     Hence [k]-closedness is simply [scalar_geom_sum a (S k) = scalar_geom_sum a k]
+     for every scalar [a].
+   *)
+  Definition k_closed {R : Semiring.type} (k : nat) : Prop :=
+    forall a : R, scalar_geom_sum a k = scalar_geom_sum a (S k).
+
+  (**
+     When [k] is 0 the defining identity becomes
+     [1 = 1 ⊕ a] for all [a], which is equivalent to
+     [1 ⊕ a = 1] (boundedness).  Thus [0]-closed coincides with
+     [BoundedSemiring] for commutative semirings.
+   *)
+  Lemma k_closed_0_equiv_add_one :
+    forall {R : Semiring.type},
+      k_closed (R := R) 0 <-> (forall a : R, add one a = one).
+  Proof.
+    split; intros H a.
+    - (* k_closed 0 -> add 1 a = 1 *)
+      pose proof (H a) as H0.
+      cbn in H0.
+      rewrite mulr1 in H0.
+      rewrite <- H0.
+      reflexivity.
+    - (* (forall a, add 1 a = 1) -> k_closed 0 *)
+      unfold k_closed.
+      cbn.
+      rewrite mulr1.
+      rewrite (H a).
+      reflexivity.
+  Qed.
+
+  (**
+     The stabilization lemma (Lemma 4, ibid.): if the semiring is
+     [k]-closed then the geometric sum stays constant beyond [k],
+     i.e., [scalar_geom_sum a (n + k) = scalar_geom_sum a k]
+     for every [n].
+   *)
+  Lemma scalar_geom_sum_stable {R : Semiring.type} 
+    (q : nat) : 
+    (forall w : R, scalar_geom_sum w q =  scalar_geom_sum w (S q)) -> 
+    forall (n : nat) (a : R), 
+    scalar_geom_sum a (n + q) = scalar_geom_sum a q.
+  Proof.
+    intros H n a.
+    induction n as [|n IH].
+    - (* n = 0 *) reflexivity.
+    - (* n = S n *)
+      assert (Hplus : ((S n) + q = S (n + q))%nat) by nia.
+      rewrite Hplus.
+      rewrite (scalar_geom_sum_S (n + q) a).
+      rewrite IH.
+      rewrite <- (scalar_geom_sum_S q a).
+      rewrite (H a).
+      reflexivity.
+  Qed.
+
+  (** In a bounded semiring every geometric sum collapses to [1],
+      because [1 + x = 1] for any [x]. *)
+
+  Lemma scalar_geom_sum_bounded {R : BoundedSemiring.type} :
+    forall (n : nat) (a : R), scalar_geom_sum a n = 1.
+  Proof.
+    induction n as [|n IH]; intros a; cbn; [reflexivity |].
+    rewrite IH. apply add_bound.
+  Qed.
+
+  (** Hence the sum is trivially stable at every index. *)
+
+  Lemma scalar_geom_sum_bounded_stable {R : BoundedSemiring.type} : 
+    forall (t q : nat) (a : R), 
+    scalar_geom_sum a (t + q) = scalar_geom_sum a q.
+  Proof.
+    intros t q a.
+    rewrite !scalar_geom_sum_bounded.
+    reflexivity.
+  Qed.
+
+  Local Infix "*M" := matrix_mul (at level 40, only parsing).
+
+  (** Left-distributivity of matrix multiplication over matrix addition:
+      [m *M (a +M b) = m *M a +M m *M b]. *)
+
+  (** Pointwise sum distributes: [sum (λy. f y + g y) = sum f + sum g]. *)
+
+
+  Lemma matrix_mul_add_distr_l {R : Semiring.type} :
+    forall (m a b : @Matrix R) (c d : Node),
+    (matrix_mul m (matrix_add a b)) c d = 
+    matrix_add (matrix_mul m a) (matrix_mul m b) c d.
+  Proof.
+    intros m a b c d.
+    unfold matrix_mul, matrix_add.
+    apply eq_trans with (sum (fun y => m c y * a y d + m c y * b y d)).
+    - apply sum_ext. intro y. apply mulDl.
+    - apply sum_add.
+  Qed.
+
+  (** Matrix analog of [scalar_geom_sum_S]:
+      [geom_sum m (S t) = I + m * geom_sum m t]. *)
+
+  Lemma matrix_add_unfold {R : Semiring.type} (A B : @Matrix R) 
+    (c d : Node) :
+    matrix_add A B c d = A c d + B c d.
+  Proof. reflexivity. Qed.
+
+  Lemma geom_sum_S {R : Semiring.type} :
+    forall (t : nat) (m : @Matrix R) (c d : Node),
+    geom_sum m (S t) c d = (I +M 
+    (m *M (geom_sum m t))) c d.
+  Proof.
+    induction t as [|t IH]; intros m c d.
+    - cbn. rewrite matrix_add_unfold. rewrite (matrix_mul_I_r m c d). reflexivity.
+    - cbn [geom_sum].
+      rewrite !matrix_add_unfold.
+      rewrite (IH m c d) at 1.
+      rewrite !matrix_add_unfold.
+      apply (eq_trans (addA (I c d) (matrix_mul m (geom_sum m t) c d)
+      (matrix_mul m (pow m (S t)) c d))).
+      apply f_equal2 with (f := add); [reflexivity |].
+      rewrite (matrix_mul_add_distr_l m (geom_sum m t) (pow m (S t)) c d).
+      rewrite matrix_add_unfold.
+      reflexivity.
+  Qed.
+
+
+  (* A * A^k = A^k * A : powers of a matrix commute with the matrix     *)
+  Lemma geom_sum_stable {R : Semiring.type} (q : nat) : 
+    forall (m : @Matrix R),
+    (forall (c d : Node), 
+      geom_sum m q c d = geom_sum m (S q) c d) -> 
+    forall (t : nat)  (u v : Node), 
+    geom_sum m (t + q) u v = geom_sum m q u v.
+  Proof.
+    intros m Hgeom t u v.
+    revert u v.
+    induction t as [|t IH]; intros u v.
+    - (* t = 0 *) reflexivity.
+    - (* t = S t *)
+      assert (Hplus : ((S t) + q = S (t + q))%nat) by nia.
+      rewrite Hplus.
+      rewrite (geom_sum_S (t + q) m u v).
+      rewrite (matrix_add_unfold I (m *M geom_sum m (t + q)) u v).
+      assert (Hinner : (m *M geom_sum m (t + q)) u v = (m *M geom_sum m q) u v).
+      { unfold matrix_mul, sum. apply sum_ext. intro y. rewrite (IH y v). reflexivity. }
+      rewrite Hinner.
+      rewrite <- (matrix_add_unfold I (m *M geom_sum m q) u v).
+      rewrite <- (geom_sum_S q m u v).
+      rewrite (Hgeom u v).
+      reflexivity.
+  Qed.
+
+  (** Powers of a matrix commute with the matrix: [m * m^k = m^k * m].
+      Proved by induction using associativity of matrix multiplication.
+      Compare [matrix_exp_unary_comm_A] in [algorithm/Mat.v]. *)
+  Lemma pow_comm {R : Semiring.type} (k : nat) (m : @Matrix R) (c d : Node) :
+    (m *M pow m k) c d = (pow m k *M m) c d.
+  Proof.
+    revert c d.
+    induction k as [|k IH]; intros c d.
+    - cbn. rewrite (matrix_mul_I_r m c d). rewrite (matrix_mul_I_l m c d). reflexivity.
+    - cbn [pow].
+      (* Goal: (m *M (m *M pow m k)) c d = ((m *M pow m k) *M m) c d *)
+      rewrite (matrix_mul_assoc m (pow m k) m c d).
+      (* Goal: (m *M (m *M pow m k)) c d = (m *M (pow m k *M m)) c d *)
+      unfold matrix_mul.
+      apply sum_ext. intro y.
+      apply (f_equal (fun t => m c y * t)). 
+      apply IH.
+  Qed.
+
+  (** Right-distributivity of matrix multiplication over matrix addition:
+      [(A +M B) *M C = (A *M C) +M (B *M C)]. *)
+  Lemma matrix_mul_add_distr_r {R : Semiring.type} (A B C : @Matrix R) (c d : Node) :
+    ((A +M B) *M C) c d = ((A *M C) +M (B *M C)) c d.
+  Proof.
+    unfold matrix_mul, matrix_add.
+    apply eq_trans with (sum (fun y => A c y * C y d + B c y * C y d)).
+    - apply sum_ext. intro y. apply mulDr.
+    - apply sum_add.
+  Qed.
+
+  (* Right-sided version of [geom_sum_S]:
+     [geom_sum m (S t) = I + geom_sum m t *M m]. *)
+  Lemma geom_sum_S_right {R : Semiring.type} :
+    forall (t : nat) (m : @Matrix R) (c d : Node),
+    (geom_sum m (S t) c d) = (I +M (geom_sum m t *M m)) c d.
+  Proof.
+    induction t as [|t IH]; intros m c d.
+    - cbn. rewrite !matrix_add_unfold. 
+      rewrite (matrix_mul_I_r m c d). 
+      rewrite (matrix_mul_I_l m c d). 
+      reflexivity.
+    - cbn [geom_sum].
+      rewrite !matrix_add_unfold.
+      rewrite (IH m c d) at 1.
+      rewrite !matrix_add_unfold.
+      apply (eq_trans (addA (I c d) (matrix_mul (geom_sum m t) m c d)
+        (matrix_mul m (pow m (S t)) c d))).
+      apply f_equal2 with (f := add); [reflexivity |].
+      rewrite (pow_comm (S t) m c d).
+      rewrite (matrix_mul_add_distr_r (geom_sum m t) (pow m (S t)) m c d).
+      rewrite matrix_add_unfold.
+      reflexivity.
+  Qed.
+
+
+  Lemma geom_sum_idem_recurrence {R : IdempotentSemiring.type} : 
+    forall (n : nat) (m : @Matrix R) (c d : Node),  
+    (m *M geom_sum m n +M geom_sum m n) c d = geom_sum m (S n) c d.
+  Proof.
+    (* Helper: in an idempotent semiring, x+y+x = x+y. *)
+    assert (add_absorb : forall (x y : R), x + y + x = x + y).
+    { intros x y. rewrite (addA x y x). rewrite (addC y x).
+      rewrite <- (addA x x y). rewrite (add_idem x) at 1. reflexivity. }
+    induction n as [|n IH]; intros m c d.
+    - (* n = 0 *)
+      cbn. rewrite !matrix_add_unfold. rewrite (matrix_mul_I_r m c d). apply addC.
+    - (* n = S n *)
+      cbn [geom_sum].
+      rewrite !matrix_add_unfold.
+      rewrite (matrix_mul_add_distr_l m (geom_sum m n) (pow m (S n)) c d).
+      rewrite matrix_add_unfold.
+      cbn [pow].
+      (* Introduce abbreviations for readability *)
+      set (A := matrix_mul m (geom_sum m n) c d).
+      set (G := geom_sum m n c d).
+      set (P := matrix_mul m (pow m n) c d).
+      set (PP := matrix_mul m (matrix_mul m (pow m n)) c d).
+      (* Extract the induction hypothesis as a scalar equality *)
+      pose proof (IH m c d) as IHscalar.
+      unfold matrix_add in IHscalar.
+      cbn [geom_sum] in IHscalar.
+      rewrite matrix_add_unfold in IHscalar.
+      cbn [pow] in IHscalar.
+      (* IHscalar : A + G = G + P *)
+      (* Goal : A + PP + (G + P) = G + P + PP *)
+      rewrite (addA A PP (G + P)).
+      rewrite (addC PP (G + P)).
+      rewrite <- (addA A (G + P) PP).
+      rewrite <- (addA A G P).
+      unfold A, G.
+      rewrite IHscalar at 1.
+      (* Goal now: (G' + P') + P' + PP = G' + P' + PP *)
+      unfold P, PP.
+      replace ((geom_sum m n c d + matrix_mul m (pow m n) c d)
+               + matrix_mul m (pow m n) c d)
+        with (geom_sum m n c d + matrix_mul m (pow m n) c d)
+        by (rewrite (addA (geom_sum m n c d) (matrix_mul m (pow m n) c d)
+                  (matrix_mul m (pow m n) c d));
+            rewrite (add_idem (matrix_mul m (pow m n) c d)) at 1;
+            reflexivity).
+      reflexivity.
+  Qed.
+
+
+  (** In an idempotent semiring, [(m + I)^n = I + m + m² + ... + mⁿ].
+      The idempotence collapses all the binomial-coefficient duplicates. 
+  *)
+  Lemma matrix_pow_idempotence {R : IdempotentSemiring.type} :
+    forall (n : nat) (m : @Matrix R) (c d : Node),
+    pow (m +M I) n c d = geom_sum m n c d.
+  Proof.
+    induction n as [|n IH]; intros m c d.
+    - cbn. reflexivity.
+    - cbn [pow].
+      unfold matrix_mul.
+      rewrite (sum_ext (fun y => (m +M I) c y * pow (m +M I) n y d)
+        (fun y => m c y * geom_sum m n y d + I c y * geom_sum m n y d)).
+      + rewrite sum_add.
+        change (sum (fun y => m c y * geom_sum m n y d)) with (matrix_mul m (geom_sum m n) c d).
+        change (sum (fun y => I c y * geom_sum m n y d)) with (matrix_mul I (geom_sum m n) c d).
+        rewrite (matrix_mul_I_l (geom_sum m n) c d).
+        rewrite <- matrix_add_unfold.
+        apply geom_sum_idem_recurrence.
+      + intro y.
+        rewrite matrix_add_unfold.
+        rewrite (IH m y d).
+        apply mulDr.
+  Qed.
+
+
+
+
+
+
+
+  
 End Matrix.
