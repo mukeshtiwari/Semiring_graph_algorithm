@@ -1,8 +1,10 @@
 
 From Stdlib Require Import List Utf8
   Lia.
+From Stdlib Require Import RelationClasses Morphisms.
 From Semiring Require Import 
-  Definitions Listprop.
+  Definitions.
+From Semiring Require Import Equiv.
 Import ListNotations.
 
 Section Def.
@@ -66,8 +68,27 @@ Section Proofs.
     (congrR : brel_congruence R eqR eqR).
     (* end of congruence *)
 
+  (* ----------------------------------------------------------------------- *)
+  (*  Setoid infrastructure — enables [setoid_rewrite] with eqR               *)
+  (* ----------------------------------------------------------------------- *)
 
-  (* Orel is a partial order *)
+  #[export] Instance R_brel_equiv : BrelEquivalence R eqR :=
+    {| brel_equiv_refl := refR;
+       brel_equiv_sym  := symR;
+       brel_equiv_trans := trnR |}.
+
+  #[export] Instance plusR_congr : BopCongruence R eqR plusR :=
+    {| bop_congr_proof := congrP |}.
+
+  #[export] Instance mulR_congr : BopCongruence R eqR mulR :=
+    {| bop_congr_proof := congrM |}.
+
+  #[export] Instance eqR_congr : BrelCongruence R eqR eqR :=
+    {| brel_congr_proof := congrR |}.
+
+  (* ----------------------------------------------------------------------- *)
+  (*  Orel is a partial order                                                *)
+  (* ----------------------------------------------------------------------- *)
   
   Lemma orel_refl : 
     forall a, Orel R plusR eqR a a.

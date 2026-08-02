@@ -36,33 +36,17 @@ Section Definitions.
 
 
   (* Equality of List *)
-  Definition brel_list {A : Type} 
-    (eqA : brel A) : list A -> list A -> bool.
-  Proof.
-    refine(fix Fn xs {struct xs} := 
-      match xs with 
-      | [] => fun ys => 
-        match ys with 
-        | [] => true
-        | _ :: _ => false
-        end 
-      | x :: xss => fun ys => 
-        match ys with 
-        | [] => false
-        | y :: yss => (andb (eqA x y) (Fn xss yss))
-        end
-      end).
-  Defined.
+  Fixpoint brel_list {A : Type} 
+    (eqA : brel A) (xs ys : list A) : bool :=
+    match xs, ys with
+    | [], [] => true
+    | x :: xs', y :: ys' => eqA x y && brel_list eqA xs' ys'
+    | _, _ => false
+    end.
 
   Definition in_list {A : Type} 
-    (eqA : brel A) : list A -> A -> bool.
-  Proof.
-    refine(fix Fn xs {struct xs} := 
-      match xs with 
-      | [] => fun _ => false
-      | y :: yss => fun x => orb (eqA x y) (Fn yss x)
-      end).
-  Defined.
+    (eqA : brel A) (l : list A) (x : A) : bool :=
+    List.existsb (eqA x) l.
 
   Definition binary_op (A : Type) := 
     A -> A -> A.
@@ -73,6 +57,26 @@ Section Definitions.
     r s₁ t₁ = true -> 
     r s₂ t₂ = true -> 
     r (b s₁ s₂) (b t₁ t₂) = true.
+
+  (* ----------------------------------------------------------------------- *)
+  (*  Convert a boolean relation to a Prop-valued relation for setoid rewriting *)
+  (* ----------------------------------------------------------------------- *)
+
+  Definition brel_prop {A : Type} (r : brel A) : A -> A -> Prop :=
+    fun x y => r x y = true.
+
+  (* ----------------------------------------------------------------------- *)
+  (*  Useful lemma: brel_list forces equal lengths                           *)
+  (* ----------------------------------------------------------------------- *)
+
+  Lemma brel_list_length {A : Type} (eqA : brel A) (xs ys : list A) :
+    brel_list eqA xs ys = true -> List.length xs = List.length ys.
+  Proof.
+    revert ys.
+    induction xs as [|x xs IH]; intros [|y ys]; simpl; auto; try congruence.
+    intros H. apply Bool.andb_true_iff in H. destruct H as [_ H].
+    apply f_equal. apply IH. exact H.
+  Qed.
 
 End Definitions.
   

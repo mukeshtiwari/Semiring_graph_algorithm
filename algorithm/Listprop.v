@@ -638,14 +638,8 @@ Section Listtripledefs.
     end.
 
 
-  Fixpoint all_elems_non_empty_list (l : list (list A)) : bool :=
-    match l with 
-    | [] => true
-    | h :: t => match h with 
-      | [] => false
-      | _ => all_elems_non_empty_list t
-    end 
-    end.
+  Definition all_elems_non_empty_list (l : list (list A)) : bool :=
+    List.forallb non_empty_list l.
   
   
   

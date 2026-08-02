@@ -1,8 +1,10 @@
 From Stdlib Require Import List Utf8
   FunctionalExtensionality BinNatDef 
   Lia.
+From Stdlib Require Import RelationClasses Morphisms.
 From Semiring Require Import
   Definitions Listprop Orel.
+From Semiring Require Import Equiv.
 Import ListNotations.
 
 
@@ -361,26 +363,45 @@ Section Pathprops.
     (congrR : brel_congruence R eqR eqR).
     (* end of congruence *)
 
+  (* ----------------------------------------------------------------------- *)
+  (*  Setoid infrastructure — enables [setoid_rewrite] with eqR/eqN           *)
+  (* ----------------------------------------------------------------------- *)
 
+  #[export] Instance R_brel_equiv : BrelEquivalence R eqR :=
+    {| brel_equiv_refl := refR;
+       brel_equiv_sym  := symR;
+       brel_equiv_trans := trnR |}.
 
+  #[export] Instance N_brel_equiv : BrelEquivalence Node eqN :=
+    {| brel_equiv_refl := refN;
+       brel_equiv_sym  := symN;
+       brel_equiv_trans := trnN |}.
 
-  (* append node path function contains only 
-    non-empty list *)  
+  #[export] Instance plusR_congr : BopCongruence R eqR plusR :=
+    {| bop_congr_proof := congrP |}.
+
+  #[export] Instance mulR_congr : BopCongruence R eqR mulR :=
+    {| bop_congr_proof := congrM |}.
+
+  #[export] Instance eqR_congr : BrelCongruence R eqR eqR :=
+    {| brel_congr_proof := congrR |}.
+
+  (* ----------------------------------------------------------------------- *)
+  (*  Path properties                                                        *)
+  (* ----------------------------------------------------------------------- *)  
   Lemma append_node_in_paths_non_empty_list : 
     forall (l : list (list (Node * Node * R))) 
       (m : Matrix Node R) (c : Node),  
     all_elems_non_empty_list _ 
     (append_node_in_paths Node R m c l) = true.
   Proof using Type.
-    induction l as [|a l IHl].
-    + simpl; intros ? ?; 
-      reflexivity.
-    + simpl; destruct a.
-      ++ 
-        apply IHl.
-      ++
-        intros; repeat destruct p;
-        simpl; apply IHl.
+    unfold all_elems_non_empty_list.
+    induction l as [|a l IHl]; simpl; intros.
+    - reflexivity.
+    - destruct a.
+      + apply IHl.
+      + repeat destruct p; simpl.
+        rewrite IHl. reflexivity.
   Qed.
 
 

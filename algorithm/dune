@@ -1,6 +1,6 @@
 (include_subdirs qualified)
 (rocq.theory
  (name Semiring)
- (theories Stdlib)
+ (theories Stdlib HB elpi_elpi elpi)
  (synopsis "Formalisation of semirings")
  (modules (:standard)))

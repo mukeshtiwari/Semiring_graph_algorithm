@@ -9,7 +9,9 @@
 (* ========================================================================= *)
 
 From Stdlib Require Import List Utf8 Lia Wf_nat.
+From Stdlib Require Import RelationClasses Morphisms.
 From Semiring Require Import Definitions Listprop Path Mat Orel Semimodule.
+From Semiring Require Import Equiv.
 
 Import ListNotations.
 
@@ -98,6 +100,37 @@ Section SocialChoice.
   Variables
     (plusR_idem : forall a : R, eqR (plusR a a) a = true)
     (bounded : forall a : R, eqR (plusR oneR a) oneR = true).
+
+  (* ----------------------------------------------------------------------- *)
+  (*  Setoid infrastructure — enables [setoid_rewrite] with eqR/eqN/eqV      *)
+  (* ----------------------------------------------------------------------- *)
+
+  #[export] Instance R_brel_equiv : BrelEquivalence R eqR :=
+    {| brel_equiv_refl := refR;
+       brel_equiv_sym  := symR;
+       brel_equiv_trans := trnR |}.
+
+  #[export] Instance N_brel_equiv : BrelEquivalence Node eqN :=
+    {| brel_equiv_refl := refN;
+       brel_equiv_sym  := symN;
+       brel_equiv_trans := trnN |}.
+
+  #[export] Instance V_brel_equiv : BrelEquivalence V eqV :=
+    {| brel_equiv_refl := refV;
+       brel_equiv_sym  := symV;
+       brel_equiv_trans := trnV |}.
+
+  #[export] Instance plusR_congr : BopCongruence R eqR plusR :=
+    {| bop_congr_proof := congrP |}.
+
+  #[export] Instance mulR_congr : BopCongruence R eqR mulR :=
+    {| bop_congr_proof := congrM |}.
+
+  #[export] Instance plusV_congr : BopCongruence V eqV plusV :=
+    {| bop_congr_proof := congrPV |}.
+
+  #[export] Instance eqR_congr : BrelCongruence R eqR eqR :=
+    {| brel_congr_proof := congrR |}.
 
   (* ======================================================================= *)
   (*  Definitions                                                            *)
