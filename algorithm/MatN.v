@@ -460,7 +460,7 @@ Section Matrix.
 
 
   (** A matrix over semiring [R] indexed by finite type [Node]. *)
-  Definition Matrix {R : Semiring.type} := Node -> Node -> R.
+  Let Matrix {R : Semiring.type} := @OrelN.Matrix Node R.
 
   (* returns the cth row of m *)
   Definition row {R : Semiring.type} (m : Matrix) (c : Node) : Node -> R := 
@@ -2323,9 +2323,6 @@ Lemma transpose_list_length_square {R : Semiring.type} : forall (lb : list (list
 
 
 
-
-
-
-
   
 End Matrix.
+

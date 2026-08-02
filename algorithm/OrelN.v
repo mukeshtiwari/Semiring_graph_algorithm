@@ -19,6 +19,12 @@ Import SemiringNotations.
 (* ========================================================================= *)
 (*  Properties                                                               *)
 (* ========================================================================= *)
+Section Matrixdef. 
+
+  Definition Matrix {Node : FinType.type} 
+    {R : Semiring.type} := Node → Node → R.
+
+End Matrixdef. 
 
 Section OrelProps.
 
