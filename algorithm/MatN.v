@@ -456,28 +456,27 @@ End GenericDefProofs.
 
 Section Matrix.
   Context 
-    {Node : FinType.type}
-    {R : Semiring.type}.
+    {Node : FinType.type}.
 
 
   (** A matrix over semiring [R] indexed by finite type [Node]. *)
-  Definition Matrix := Node -> Node -> R.
+  Definition Matrix {R : Semiring.type} := Node -> Node -> R.
 
   (* returns the cth row of m *)
-  Definition row (m : Matrix) (c : Node) : Node -> R := 
+  Definition row {R : Semiring.type} (m : Matrix) (c : Node) : Node -> R := 
     fun d => m c d.
 
   (* returns the cth column of m *)
-  Definition col (m : Matrix) (c : Node) : Node -> R :=
+  Definition col {R : Semiring.type} (m : Matrix) (c : Node) : Node -> R :=
     fun d => m d c.
 
   (* zero matrix, additive identity of plus *)
-  Definition zeroM : Matrix := 
+  Definition zeroM {R : Semiring.type} : @Matrix R := 
     fun _ _ => 0.
 
   (* identity matrix, mulitplicative identity of mul *)
   (* Idenitity Matrix *)
-  Definition I : Matrix := 
+  Definition I {R : Semiring.type} : @Matrix R := 
     fun (c d : Node) =>
     match fin_eq_dec c d with 
     | left _ => 1
@@ -486,23 +485,23 @@ Section Matrix.
 
   
   (* transpose the matrix m *)
-  Definition transpose (m : Matrix) : Matrix  := 
+  Definition transpose {R : Semiring.type} (m : @Matrix R) : @Matrix R  := 
     fun (c d : Node) => m d c.
 
   
 
   (* pointwise addition to two matrices *)
-  Definition addM (m₁ m₂ : Matrix) : Matrix :=
+  Definition addM {R : Semiring.type} (m₁ m₂ : @Matrix R) : @Matrix R :=
     fun c d => (m₁ c d + m₂ c d).
 
  
 
   (** Finite sum of a [Node]-indexed family over the semiring. *)
-  Definition sum (f : Node -> R) : R :=
+  Definition sum {R : Semiring.type} (f : Node -> R) : R :=
     List.fold_right (fun x y => f x + y) 0 elements.
 
   (** Extensionality of [sum]: equal functions have equal sums. *)
-  Lemma sum_ext : forall (f g : Node -> R),
+  Lemma sum_ext {R : Semiring.type} : forall (f g : Node -> R),
     (forall x, f x = g x) -> sum f = sum g.
   Proof.
     intros f g Heq.
@@ -513,8 +512,8 @@ Section Matrix.
   Qed.
 
   (* generalised matrix multiplication *)
-  Definition matrix_mul 
-    (m₁ m₂ : Matrix) : Matrix:=
+  Definition matrix_mul {R : Semiring.type}
+    (m₁ m₂ : @Matrix R) : @Matrix R:=
     fun (c d : Node) => 
       sum (fun y => (m₁ c y * m₂ y d)).
 
@@ -526,7 +525,7 @@ Section Matrix.
 
 
   (** Linear matrix exponentiation: [pow m n = m * m * ... * m] (n times). *)
-  Fixpoint pow (m : Matrix) (n : nat) : Matrix :=
+  Fixpoint pow {R : Semiring.type} (m : @Matrix R) (n : nat) : @Matrix R :=
     match n with 
     | 0%nat => I 
     | S n' => matrix_mul m (pow m n')
@@ -534,7 +533,7 @@ Section Matrix.
 
 
   (** Linear matrix exponentiation: [pow m n = m * m * ... * m] (n times). *)
-  Fixpoint pow_pos (e : Matrix) (n : positive) : Matrix :=
+  Fixpoint pow_pos {R : Semiring.type} (e : @Matrix R) (n : positive) : @Matrix R :=
     match n with
     | xH => e
     | xO p => let ret := pow_pos e p in matrix_mul ret ret
@@ -546,7 +545,7 @@ Section Matrix.
 
 
   (** Matrix exponentiation for [N] (binary for positive, identity for zero). *)
-  Definition powN (e : Matrix) (n : N) : Matrix :=
+  Definition powN {R : Semiring.type} (e : @Matrix R) (n : N) : @Matrix R :=
     match n with
     | N0 => I
     | Npos p => pow_pos e p 
@@ -556,7 +555,7 @@ Section Matrix.
   (*  Scalar exponentiation and partial sums                           *)
   (* ----------------------------------------------------------------- *)
 
-  Fixpoint scalar_pow (a : R) (n : nat) : R :=
+  Fixpoint scalar_pow {R : Semiring.type} (a : R) (n : nat) : R :=
     match n with 
     | O => 1
     | S n' => a * scalar_pow a n'
@@ -564,7 +563,7 @@ Section Matrix.
 
 
   (** Scalar geometric series: [1 + a + a² + ... + aⁿ]. *)
-  Fixpoint scalar_geom_sum (a : R) (n : nat) : R :=
+  Fixpoint scalar_geom_sum {R : Semiring.type} (a : R) (n : nat) : R :=
     match n with
     | O => 1
     | S n' => (scalar_geom_sum a n') + scalar_pow a n
@@ -572,7 +571,7 @@ Section Matrix.
 
 
   (** Matrix geometric series: [I + M + M² + ... + Mⁿ]. *)
-  Fixpoint geom_sum (m : Matrix) (n : nat) : Matrix :=
+  Fixpoint geom_sum {R : Semiring.type} (m : @Matrix R) (n : nat) : @Matrix R :=
     match n with
     | O => I 
     | S n' => (geom_sum m n') +M (pow m n)
@@ -583,20 +582,20 @@ Section Matrix.
   (* ----------------------------------------------------------------- *)
 
   (* Dot product of two lists *)
-  Definition dot_product (v1 v2 : list R) : R :=
+  Definition dot_product {R : Semiring.type} (v1 v2 : list R) : R :=
     fold_left add (map (fun '(x, y) => mul x y) 
     (combine v1 v2)) zero.
 
 
   (* Matrix multiplication (list-based) *)
-  Definition mul_list (la lb : list (list R)) : list (list R) :=
+  Definition mul_list {R : Semiring.type} (la lb : list (list R)) : list (list R) :=
     let lbT := transpose_list lb in
     map (fun row =>
       map (fun col => dot_product row col) lbT) la.
 
 
   (** Linear matrix exponentiation: [pow m n = m * m * ... * m] (n times). *)
-  Fixpoint pow_list (m : list (list R)) 
+  Fixpoint pow_list {R : Semiring.type} (m : list (list R)) 
     (n : nat) : list (list R) :=
     match n with 
     | 0%nat => List.map (fun r => List.map (fun c => I r c) elements) elements 
@@ -605,7 +604,7 @@ Section Matrix.
 
 
   (** Linear matrix exponentiation: [pow m n = m * m * ... * m] (n times). *)
-  Fixpoint pow_pos_list (e : list (list R)) 
+  Fixpoint pow_pos_list {R : Semiring.type} (e : list (list R)) 
     (n : positive) : list (list R) :=
     match n with
     | xH => e
@@ -618,7 +617,7 @@ Section Matrix.
 
 
   (** Matrix exponentiation for [N] (binary for positive, identity for zero). *)
-  Definition powN_list (e : list (list R)) (n : N) : list (list R) :=
+  Definition powN_list {R : Semiring.type} (e : list (list R)) (n : N) : list (list R) :=
     match n with
     | N0 => List.map (fun r => List.map (fun c => I r c) elements) elements 
     | Npos p => pow_pos_list e p
@@ -641,30 +640,30 @@ Section Matrix.
     end.
 
   (* Convert between functional and list-of-lists representations *)
-  Definition to_list (m : Node -> Node -> R) : list (list R) :=
+  Definition to_list {R : Semiring.type} (m : Node -> Node -> R) : list (list R) :=
     List.map (fun r => List.map (fun c => m r c) elements) elements.
 
 
   (** Reconstruct a functional matrix from a list-of-lists representation. *)
-  Definition of_list (me : list (list R)) : Matrix :=
+  Definition of_list {R : Semiring.type} (me : list (list R)) : @Matrix R :=
     fun r c =>
       let row := list_lookup [] elements me r in
       list_lookup 0 elements row c.
 
 
   (** Functional matrix multiplication via the list-based implementation. *)
-  Definition mul_fun (m₁ m₂ : Node -> Node -> R) : Node -> Node -> R :=
+  Definition mul_fun {R : Semiring.type} (m₁ m₂ : Node -> Node -> R) : Node -> Node -> R :=
     of_list (mul_list (to_list m₁) (to_list m₂)).
 
 
   (** Functional matrix exponentiation via the list-based implementation. *)
-  Definition pow_fun (m : Node -> Node -> R) (n : nat)
+  Definition pow_fun {R : Semiring.type} (m : Node -> Node -> R) (n : nat)
     : Node -> Node -> R :=
     of_list (pow_list (to_list m) n).
 
 
   (** Matrix exponentiation for [N] (binary for positive, identity for zero). *)
-  Definition powN_fun (m : Node -> Node -> R) (n : N)
+  Definition powN_fun {R : Semiring.type} (m : Node -> Node -> R) (n : N)
     : Node -> Node -> R :=
     of_list (powN_list (to_list m) n).
 
@@ -707,7 +706,7 @@ Section Matrix.
 
 
   (** Round-trip: [of_list (to_list m) = m]. *)
-  Lemma of_list_to_list : forall (m : Matrix) (r c : Node),
+  Lemma of_list_to_list {R : Semiring.type} : forall (m : @Matrix R) (r c : Node),
     of_list (to_list m) r c = m r c.
   Proof.
     intros m r c.
@@ -846,13 +845,13 @@ Section Matrix.
   Qed.
 
   (* Use the lemma to get specialized versions *)
-  Lemma list_lookup_nth_list (l : list (list R)) (k : Node) :
+  Lemma list_lookup_nth_list {R : Semiring.type} (l : list (list R)) (k : Node) :
     list_lookup [] elements l k = List.nth (index_of k) l [].
   Proof. apply list_lookup_nth_gen. Qed.
 
 
   (** Specialization of [list_lookup_nth_gen] for scalar lists. *)
-  Lemma list_lookup_nth_R (l : list R) (k : Node) :
+  Lemma list_lookup_nth_R {R : Semiring.type} (l : list R) (k : Node) :
     list_lookup 0 elements l k = List.nth (index_of k) l 0.
   Proof. apply list_lookup_nth_gen. Qed.
 
@@ -876,7 +875,7 @@ Section Matrix.
   (*  fold_left add = fold_right add for the additive monoid            *)
   (* ----------------------------------------------------------------- *)
 
-  Lemma fold_left_add_acc : forall (l : list R) (a : R),
+  Lemma fold_left_add_acc {R : Semiring.type} : forall (l : list R) (a : R),
     List.fold_left add l a = a + List.fold_right add 0 l.
   Proof.
     induction l as [|x l' IH]; intros a; simpl.
@@ -888,7 +887,7 @@ Section Matrix.
 
 
   (** [fold_left add] over a list equals [fold_right add 0]. *)
-  Lemma fold_left_add_fold_right_add : forall (l : list R),
+  Lemma fold_left_add_fold_right_add {R : Semiring.type} : forall (l : list R),
     List.fold_left add l 0 = List.fold_right add 0 l.
   Proof.
     intros l. rewrite fold_left_add_acc. rewrite add0r. reflexivity.
@@ -909,7 +908,7 @@ Section Matrix.
   (*  dot_product of tabulated lists = sum of pointwise products        *)
   (* ----------------------------------------------------------------- *)
 
-  Lemma fold_right_add_map : forall (h : Node -> R),
+  Lemma fold_right_add_map {R : Semiring.type} : forall (h : Node -> R),
     List.fold_right add 0 (List.map h elements) =
     List.fold_right (fun x y => h x + y) 0 elements.
   Proof.
@@ -920,7 +919,7 @@ Section Matrix.
 
 
   (** Dot product of tabulated vectors equals the sum of pointwise products. *)
-  Lemma dot_product_map_eq_sum : forall (f g : Node -> R),
+  Lemma dot_product_map_eq_sum {R : Semiring.type} : forall (f g : Node -> R),
     dot_product (List.map f elements) (List.map g elements) =
     sum (fun x => f x * g x).
   Proof.
@@ -1017,7 +1016,7 @@ Section Matrix.
 
 
   (** Dot product with an empty vector is zero. *)
-  Lemma dot_product_nil : forall (v : list R), dot_product v [] = 0.
+  Lemma dot_product_nil {R : Semiring.type} : forall (v : list R), dot_product v [] = 0.
   Proof.
     intros v. unfold dot_product. rewrite combine_nil_r. simpl. reflexivity.
   Qed.
@@ -1030,7 +1029,7 @@ Section Matrix.
      The intended transpose law is the rectangular, in-bounds form below. *)
 
   (** Key lemma: transpose swaps indices under [nth] for rectangular matrices. *)
-  Lemma nth_transpose_swap : forall (L : list (list R)) (i j : nat),
+  Lemma nth_transpose_swap {R : Semiring.type} : forall (L : list (list R)) (i j : nat),
     L <> [] ->
     (forall xs ys : list R, In xs L -> In ys L -> List.length xs = List.length ys) ->
     (j < List.length L)%nat ->
@@ -1094,7 +1093,7 @@ Section Matrix.
   (*  |v1| = |v2| = |elements|                                         *)
   (* ----------------------------------------------------------------- *)
 
-  Lemma dot_product_eq_sum : forall (v1 v2 : list R),
+  Lemma dot_product_eq_sum {R : Semiring.type} : forall (v1 v2 : list R),
     List.length v1 = List.length (elements (s := Node)) ->
     List.length v2 = List.length (elements (s := Node)) ->
     dot_product v1 v2 =
@@ -1112,7 +1111,7 @@ Section Matrix.
   (*             dot_product(row_r(L1), col_c(L2))                     *)
   (* ----------------------------------------------------------------- *)
 
-  Lemma of_list_mul_list_as_dot_product : forall (L1 L2 : list (list R)) (r c : Node),
+  Lemma of_list_mul_list_as_dot_product {R : Semiring.type} : forall (L1 L2 : list (list R)) (r c : Node),
     of_list (mul_list L1 L2) r c =
     dot_product (list_lookup [] elements L1 r)
                 (list_lookup [] elements (transpose_list L2) c).
@@ -1151,7 +1150,7 @@ Section Matrix.
   Qed.
 
   (* Helper: for a list where all rows have equal length, transpose has that many rows *)
-  Lemma transpose_list_length_eq_n : forall (L : list (list R)) (m : nat),
+  Lemma transpose_list_length_eq_n {R : Semiring.type} : forall (L : list (list R)) (m : nat),
     L <> [] ->
     (forall row, In row L -> length row = m) ->
     length (transpose_list L) = m.
@@ -1173,7 +1172,7 @@ Section Matrix.
   Qed.
 
   (* Helper: each row of transpose_list L has length = length L (rectangular, nonempty) *)
-  Lemma transpose_row_len_eq : forall (L : list (list R)),
+  Lemma transpose_row_len_eq {R : Semiring.type} : forall (L : list (list R)),
     L <> [] ->
     (forall xs ys : list R, In xs L -> In ys L -> length xs = length ys) ->
     forall row, In row (transpose_list L) -> length row = length L.
@@ -1207,7 +1206,7 @@ Section Matrix.
   (*  list_lookup_transpose: transpose swaps key lookup                 *)
   (* ----------------------------------------------------------------- *)
 
-  Lemma list_lookup_transpose : forall (L : list (list R)) (c y : Node),
+  Lemma list_lookup_transpose {R : Semiring.type} : forall (L : list (list R)) (c y : Node),
     (forall xs ys : list R, In xs L -> In ys L -> length xs = length ys) ->
     list_lookup 0 elements (list_lookup [] elements (transpose_list L) c) y =
     list_lookup 0 elements (list_lookup [] elements L y) c.
@@ -1271,7 +1270,7 @@ Section Matrix.
   (*  Main proof: of_list_mul_list_gen                                  *)
   (* ----------------------------------------------------------------- *)
 
-  Lemma of_list_mul_list_gen : forall (L1 L2 : list (list R)) (r c : Node),
+  Lemma of_list_mul_list_gen {R : Semiring.type} : forall (L1 L2 : list (list R)) (r c : Node),
     List.length L1 = List.length (elements (s := Node)) ->
     (forall row : list R, In row L1 ->
       List.length row = List.length (elements (s := Node))) ->
@@ -1323,7 +1322,7 @@ Section Matrix.
 
     (** Base case: [pow_list (to_list m) 0 = to_list I]. *)
 
-Lemma pow_list_base : forall (m : Matrix),
+  Lemma pow_list_base {R : Semiring.type} : forall (m : @Matrix R),
     pow_list (to_list m) 0 = to_list I.
   Proof.
     intros m.
@@ -1335,7 +1334,7 @@ Lemma pow_list_base : forall (m : Matrix),
   (*  Helper lemmas: to_list and pow_list preserve the square shape     *)
   (* ----------------------------------------------------------------- *)
 
-  Lemma to_list_length : forall (m : Matrix),
+  Lemma to_list_length {R : Semiring.type} : forall (m : @Matrix R),
     length (to_list m) = length (elements (s := Node)).
   Proof.
     intros m. unfold to_list. rewrite List.length_map. reflexivity.
@@ -1343,7 +1342,7 @@ Lemma pow_list_base : forall (m : Matrix),
 
     (** Every row of [to_list m] has length [|elements|]. *)
 
-Lemma to_list_row_length : forall (m : Matrix) (row : list R),
+  Lemma to_list_row_length {R : Semiring.type} : forall (m : @Matrix R) (row : list R),
     In row (to_list m) -> length row = length (elements (s := Node)).
   Proof.
     intros m row Hin.
@@ -1354,7 +1353,7 @@ Lemma to_list_row_length : forall (m : Matrix) (row : list R),
 
     (** [mul_list] preserves the outer length (number of rows). *)
 
-Lemma mul_list_length : forall (la lb : list (list R)),
+  Lemma mul_list_length {R : Semiring.type} : forall (la lb : list (list R)),
     length (mul_list la lb) = length la.
   Proof.
     intros la lb. unfold mul_list. rewrite List.length_map. reflexivity.
@@ -1362,7 +1361,7 @@ Lemma mul_list_length : forall (la lb : list (list R)),
 
     (** For a square matrix, the transpose has the same dimension. *)
 
-Lemma transpose_list_length_square : forall (lb : list (list R)),
+Lemma transpose_list_length_square {R : Semiring.type} : forall (lb : list (list R)),
     length lb = length (elements (s := Node)) ->
     (forall row, In row lb -> length row = length (elements (s := Node))) ->
     length (transpose_list lb) = length (elements (s := Node)).
@@ -1379,7 +1378,7 @@ Lemma transpose_list_length_square : forall (lb : list (list R)),
 
     (** Rows of [mul_list] have the right length when the second argument is square. *)
 
-Lemma mul_list_row_length : forall (la lb : list (list R)) (row : list R),
+  Lemma mul_list_row_length {R : Semiring.type} : forall (la lb : list (list R)) (row : list R),
     length lb = length (elements (s := Node)) ->
     (forall row', In row' lb -> length row' = length (elements (s := Node))) ->
     In row (mul_list la lb) -> length row = length (elements (s := Node)).
@@ -1395,7 +1394,7 @@ Lemma mul_list_row_length : forall (la lb : list (list R)) (row : list R),
   (*  Helper: mul_list preserves square shape                           *)
   (* ----------------------------------------------------------------- *)
 
-  Lemma mul_list_square : forall (la lb : list (list R)),
+  Lemma mul_list_square {R : Semiring.type} : forall (la lb : list (list R)),
     length la = length (elements (s := Node)) ->
     (forall row, In row la -> length row = length (elements (s := Node))) ->
     length lb = length (elements (s := Node)) ->
@@ -1411,7 +1410,7 @@ Lemma mul_list_row_length : forall (la lb : list (list R)) (row : list R),
 
     (** [pow_list] of a tabulated matrix stays square for any exponent. *)
 
-Lemma pow_list_square : forall (m : Matrix) (n : nat),
+  Lemma pow_list_square {R : Semiring.type} : forall (m : @Matrix R) (n : nat),
     length (pow_list (to_list m) n) = length (elements (s := Node))
     /\ (forall row, In row (pow_list (to_list m) n) -> length row = length (elements (s := Node))).
   Proof.
@@ -1425,9 +1424,9 @@ Lemma pow_list_square : forall (m : Matrix) (n : nat),
     - (* n = S n *)
       destruct (IH m) as (IHlen & IHrow).
       split.
-      + unfold pow_list. fold pow_list. rewrite mul_list_length. apply to_list_length.
+      + cbn. rewrite mul_list_length. apply to_list_length.
       + intros row Hin.
-        unfold pow_list in Hin. fold pow_list in Hin.
+        cbn in Hin. 
         eapply mul_list_row_length; eauto.
   Qed.
 
@@ -1435,7 +1434,7 @@ Lemma pow_list_square : forall (m : Matrix) (n : nat),
   (*  pow = pow_fun  (mathematical = efficient, unary case)             *)
   (* ----------------------------------------------------------------- *)
 
-  Lemma pow_pow_fun_eqv : forall (m : Matrix) (n : nat) c d,
+  Lemma pow_pow_fun_eqv {R : Semiring.type} : forall (m : @Matrix R) (n : nat) c d,
     pow m n c d = pow_fun m n c d.
   Proof.
     intros m n c d. revert c d.
@@ -1445,8 +1444,8 @@ Lemma pow_list_square : forall (m : Matrix) (n : nat),
       rewrite pow_list_base.
       symmetry. apply of_list_to_list.
     - (* n = S n *)
-      unfold pow. fold pow.
-      unfold pow_fun, pow_list. fold pow_fun. fold pow_list.
+      unfold pow. fold (@pow R).
+      unfold pow_fun, pow_list. fold (@pow_fun R). fold (@pow_list R).
       destruct (pow_list_square m n) as (Hpow_len & Hpow_row).
       rewrite (of_list_mul_list_gen (to_list m) (pow_list (to_list m) n) c d
         (to_list_length m) (to_list_row_length m) Hpow_len Hpow_row).
@@ -1462,10 +1461,12 @@ Lemma pow_list_square : forall (m : Matrix) (n : nat),
   (* ----------------------------------------------------------------- *)
 
   (* When NoDup l and d ∉ l, all I y d = 0, so the fold is 0.         *)
-  Lemma fold_I_zero : forall (l : list Node) (c d : Node) (m : Matrix),
+  Lemma fold_I_zero {R : Semiring.type} : forall (l : list Node) (c d : Node) (m : @Matrix R),
     (forall y, In y l -> y <> d) ->
     fold_right (fun y acc =>
-      m c y * (match fin_eq_dec y d with left _ => 1 | right _ => 0 end) + acc) 0 l = 0.
+      m c y * (match fin_eq_dec y d with 
+      | left _ => 1 
+      | right _ => 0 end) + acc) 0 l = 0.
   Proof.
     induction l as [|h t IH]; intros c d m Hnin; simpl.
     - reflexivity.
@@ -1480,7 +1481,7 @@ Lemma pow_list_square : forall (m : Matrix) (n : nat),
 
     (** Right identity: multiplying by the identity matrix on the right. *)
 
-  Lemma matrix_mul_I_r : forall (m : Matrix) (c d : Node),
+  Lemma matrix_mul_I_r {R : Semiring.type} : forall (m : @Matrix R) (c d : Node),
     matrix_mul m I c d = m c d.
   Proof.
     intros m c d.
@@ -1516,7 +1517,7 @@ Lemma pow_list_square : forall (m : Matrix) (n : nat),
 
     (** Left identity: multiplying by the identity matrix on the left. *)
 
-  Lemma matrix_mul_I_l : forall (m : Matrix) (c d : Node),
+  Lemma matrix_mul_I_l {R : Semiring.type} : forall (m : @Matrix R) (c d : Node),
     matrix_mul I m c d = m c d.
   Proof.
     intros m c d.
@@ -1560,7 +1561,7 @@ Lemma pow_list_square : forall (m : Matrix) (n : nat),
 
     (** [ (a+b)+(c+d) = (a+c)+(b+d) ] — a useful regrouping identity. *)
 
-  Lemma add_swap_mid : forall (a b c d : R),
+  Lemma add_swap_mid {R : Semiring.type} : forall (a b c d : R),
     (a + b) + (c + d) = (a + c) + (b + d).
   Proof.
     intros a b c d.
@@ -1574,7 +1575,7 @@ Lemma pow_list_square : forall (m : Matrix) (n : nat),
 
     (** Sum distributes over pointwise addition: [sum (f+g) = sum f + sum g]. *)
 
-  Lemma sum_add : forall (f g : Node -> R),
+  Lemma sum_add {R : Semiring.type} : forall (f g : Node -> R),
     sum (fun x => f x + g x) = sum f + sum g.
   Proof.
     intros f g.
@@ -1589,7 +1590,7 @@ Lemma pow_list_square : forall (m : Matrix) (n : nat),
 
     (** Right-distributivity of sum over multiplication: [(sum f) * k = sum (λx. f x * k)]. *)
 
-  Lemma sum_mul_r : forall (f : Node -> R) (k : R),
+  Lemma sum_mul_r {R : Semiring.type} : forall (f : Node -> R) (k : R),
     sum f * k = sum (fun x => f x * k).
   Proof.
     intros f k.
@@ -1604,7 +1605,7 @@ Lemma pow_list_square : forall (m : Matrix) (n : nat),
 
     (** Left-distributivity of sum over multiplication: [k * (sum f) = sum (λx. k * f x)]. *)
 
-  Lemma sum_mul_l : forall (k : R) (f : Node -> R),
+  Lemma sum_mul_l {R : Semiring.type} : forall (k : R) (f : Node -> R),
     k * sum f = sum (fun x => k * f x).
   Proof. 
     intros f k.
@@ -1618,7 +1619,7 @@ Lemma pow_list_square : forall (m : Matrix) (n : nat),
   Qed.
   
   (* Generalized sum_add: works on any list, not just elements *)
-  Lemma fold_right_add_gen : forall (g h : Node -> R) (l : list Node),
+  Lemma fold_right_add_gen {R : Semiring.type} : forall (g h : Node -> R) (l : list Node),
     fold_right (fun x acc => g x + acc) 0 l + fold_right (fun x acc => h x + acc) 0 l =
     fold_right (fun x acc => (g x + h x) + acc) 0 l.
   Proof.
@@ -1632,7 +1633,7 @@ Lemma pow_list_square : forall (m : Matrix) (n : nat),
   Qed.
 
   (* Interchange of double sums over a semiring.                          *)
-  Lemma sum_interchange : forall (f : Node -> Node -> R),
+  Lemma sum_interchange {R : Semiring.type} : forall (f : Node -> Node -> R),
     sum (fun y => sum (fun z => f y z)) = 
     sum (fun z => sum (fun y => f y z)).
   Proof.
@@ -1656,7 +1657,7 @@ Lemma pow_list_square : forall (m : Matrix) (n : nat),
 
     (** Matrix multiplication is associative. *)
 
-  Lemma matrix_mul_assoc : forall (a b c : Matrix) (r d : Node),
+  Lemma matrix_mul_assoc {R : Semiring.type} : forall (a b c : @Matrix R) (r d : Node),
     matrix_mul (matrix_mul a b) c r d = matrix_mul a (matrix_mul b c) r d.
   Proof.
     intros a b c r d.
@@ -1671,13 +1672,13 @@ Lemma pow_list_square : forall (m : Matrix) (n : nat),
 
     (** Exponent law: [pow m (a+b) = matrix_mul (pow m a) (pow m b)]. *)
 
-  Lemma pow_add : forall (m : Matrix) (a b : nat) (c d : Node),
+  Lemma pow_add {R : Semiring.type} : forall (m : @Matrix R) (a b : nat) (c d : Node),
     pow m (a + b) c d = matrix_mul (pow m a) (pow m b) c d.
   Proof.
     intros m a b c d. revert c d. revert b.
     induction a as [|a IH]; intros b c d.
     - simpl. unfold pow at 2. symmetry. apply matrix_mul_I_l.
-    - simpl plus. unfold pow. fold pow.
+    - simpl plus. cbn. 
       rewrite (matrix_mul_assoc m (pow m a) (pow m b) c d).
       unfold matrix_mul.
       apply sum_ext. intro k.
@@ -1687,7 +1688,7 @@ Lemma pow_list_square : forall (m : Matrix) (n : nat),
 
     (** Binary exponentiation agrees with linear exponentiation for matrices. *)
 
-  Lemma pow_pos_correct : forall (m : Matrix) (p : positive) (c d : Node),
+  Lemma pow_pos_correct {R : Semiring.type} : forall (m : @Matrix R) (p : positive) (c d : Node),
     pow m (Pos.to_nat p) c d = pow_pos m p c d.
   Proof.
     intros m p c d. revert c d.
@@ -1722,7 +1723,7 @@ Lemma pow_list_square : forall (m : Matrix) (n : nat),
 
     (** [pow m (N.to_nat n) = powN m n] — unary = binary exponentiation. *)
 
-  Lemma pow_powN_eqv : forall (m : Matrix) (n : N) c d,
+  Lemma pow_powN_eqv {R : Semiring.type} : forall (m : @Matrix R) (n : N) c d,
     pow m (N.to_nat n) c d = powN m n c d.
   Proof.
     intros m n c d.
@@ -1738,7 +1739,7 @@ Lemma pow_list_square : forall (m : Matrix) (n : nat),
   (* ----------------------------------------------------------------- *)
 
   (* Helper: pow_pos_list preserves square shape                        *)
-  Lemma pow_pos_list_square : forall (m : Matrix) (p : positive),
+  Lemma pow_pos_list_square {R : Semiring.type} : forall (m : @Matrix R) (p : positive),
     length (pow_pos_list (to_list m) p) = length (elements (s := Node))
     /\ (forall row, In row (pow_pos_list (to_list m) p) -> length row = length (elements (s := Node))).
   Proof.
@@ -1763,7 +1764,7 @@ Lemma pow_list_square : forall (m : Matrix) (n : nat),
   Qed.
 
   (* Helper: of_list is injective on square lists                       *)
-  Lemma of_list_inj_square : forall (L1 L2 : list (list R)),
+  Lemma of_list_inj_square {R : Semiring.type} : forall (L1 L2 : list (list R)),
     length L1 = length (elements (s := Node)) ->
     (forall row, In row L1 -> length row = length (elements (s := Node))) ->
     length L2 = length (elements (s := Node)) ->
@@ -1800,7 +1801,7 @@ Lemma pow_list_square : forall (m : Matrix) (n : nat),
   Qed.
 
   (* Helper: of_list (pow_pos_list (to_list m) p) = pow_pos m p          *)
-  Lemma of_list_pow_pos_list : forall (m : Matrix) (p : positive) (c d : Node),
+  Lemma of_list_pow_pos_list {R : Semiring.type} : forall (m : @Matrix R) (p : positive) (c d : Node),
     of_list (pow_pos_list (to_list m) p) c d = pow_pos m p c d.
   Proof.
     induction p as [p IH | p IH |].
@@ -1844,7 +1845,7 @@ Lemma pow_list_square : forall (m : Matrix) (n : nat),
      Only holds for square lists (same length and row length as elements). *)
 
   (* Generalized squareness: pow_list preserves square shape for any square L *)
-  Lemma pow_list_square_gen : forall (L : list (list R)) (n : nat),
+  Lemma pow_list_square_gen {R : Semiring.type} : forall (L : list (list R)) (n : nat),
     length L = length (elements (s := Node)) ->
     (forall row, In row L -> length row = length (elements (s := Node))) ->
     length (pow_list L n) = length (elements (s := Node))
@@ -1862,7 +1863,7 @@ Lemma pow_list_square : forall (m : Matrix) (n : nat),
   Qed.
 
   (* Generalized squareness: pow_pos_list preserves square shape for any square L *)
-  Lemma pow_pos_list_square_gen : forall (L : list (list R)) (p : positive),
+  Lemma pow_pos_list_square_gen {R : Semiring.type} : forall (L : list (list R)) (p : positive),
     length L = length (elements (s := Node)) ->
     (forall row, In row L -> length row = length (elements (s := Node))) ->
     length (pow_pos_list L p) = length (elements (s := Node))
@@ -1887,7 +1888,7 @@ Lemma pow_list_square : forall (m : Matrix) (n : nat),
   Qed.
 
   (* Bridge: of_list (pow_list L n) = pow (of_list L) n for square L *)
-  Lemma of_list_pow_list_gen : forall (L : list (list R)) (n : nat) (r c : Node),
+  Lemma of_list_pow_list_gen {R : Semiring.type} : forall (L : list (list R)) (n : nat) (r c : Node),
     length L = length (elements (s := Node)) ->
     (forall row, In row L -> length row = length (elements (s := Node))) ->
     of_list (pow_list L n) r c = pow (of_list L) n r c.
@@ -1897,9 +1898,9 @@ Lemma pow_list_square : forall (m : Matrix) (n : nat),
     induction n as [|n IH]; intros L HlenL HrowL r c; simpl.
     - unfold pow, pow_list.
       change (List.map (fun r : Node => List.map (fun c0 : Node => I r c0) elements) elements)
-        with (to_list I).
+        with (to_list (@I R)).
       apply of_list_to_list.
-    - unfold pow. fold pow.
+    - unfold pow. fold (@pow R).
       destruct (pow_list_square_gen L n HlenL HrowL) as (Hsq_len & Hsq_row).
       rewrite (of_list_mul_list_gen L (pow_list L n) r c HlenL HrowL Hsq_len Hsq_row).
       unfold matrix_mul at 1.
@@ -1909,7 +1910,7 @@ Lemma pow_list_square : forall (m : Matrix) (n : nat),
   Qed.
 
   (* Bridge: of_list (pow_pos_list L p) = pow_pos (of_list L) p for square L *)
-  Lemma of_list_pow_pos_list_gen : forall (L : list (list R)) (p : positive) (r c : Node),
+  Lemma of_list_pow_pos_list_gen {R : Semiring.type} : forall (L : list (list R)) (p : positive) (r c : Node),
     length L = length (elements (s := Node)) ->
     (forall row, In row L -> length row = length (elements (s := Node))) ->
     of_list (pow_pos_list L p) r c = pow_pos (of_list L) p r c.
@@ -1949,7 +1950,7 @@ Lemma pow_list_square : forall (m : Matrix) (n : nat),
 
     (** List-level analogue of [pow_pos_correct]: binary = linear list exponentiation (for square lists). *)
 
-  Lemma pow_list_powN_list_eqv : forall (L : list (list R)) (p : positive),
+  Lemma pow_list_powN_list_eqv {R : Semiring.type} : forall (L : list (list R)) (p : positive),
     length L = length (elements (s := Node)) ->
     (forall row, In row L -> length row = length (elements (s := Node))) ->
     pow_list L (Pos.to_nat p) = powN_list L (Npos p).
@@ -1968,7 +1969,7 @@ Lemma pow_list_square : forall (m : Matrix) (n : nat),
 
     (** [pow_fun] via [N.to_nat] equals [powN_fun]. *)
 
-  Lemma pow_fun_powN_fun_eqv : forall (m : Matrix) (n : N) c d,
+  Lemma pow_fun_powN_fun_eqv {R : Semiring.type} : forall (m : @Matrix R) (n : N) c d,
     pow_fun m (N.to_nat n) c d = powN_fun m n c d.
   Proof.
     intros m n c d.
@@ -1990,7 +1991,7 @@ Lemma pow_list_square : forall (m : Matrix) (n : nat),
   (*  Main theorem: mathematical binary = efficient binary             *)
   (* ----------------------------------------------------------------- *)
 
-  Lemma powN_eqv : forall (n : N) (m : Matrix) c d,
+  Lemma powN_eqv {R : Semiring.type} : forall (n : N) (m : @Matrix R) c d,
     powN m n c d = powN_fun m n c d.
   Proof.
     intros n m c d.
