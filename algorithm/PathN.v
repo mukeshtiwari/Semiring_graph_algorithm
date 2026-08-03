@@ -789,7 +789,10 @@ Section Path.
       apply IH. intros xs Hin. apply Hprop. right. exact Hin.
   Qed.
 
-  Lemma map_measure_simp {R : Semiring.type} : 
+
+  (** Specialization of [map_measure_append_node] to paths from
+      [all_paths_klength]. *)
+  Lemma map_measure_append_node_kpaths {R : Semiring.type} : 
     forall (n : nat) (m : @Matrix R) c d a,
     (map measure_of_path
       (append_node_in_paths m c (all_paths_klength elements m n a d))) = 
@@ -804,7 +807,725 @@ Section Path.
   Qed.
 
 
+  (** The sum of measures through [append_node_in_paths] distributes
+      over list concatenation: [Σ_{l₁++l₂} = Σ_{l₁} + Σ_{l₂}]. *)
+  Lemma fold_measure_append_node_app {R : Semiring.type} : 
+    forall (l₁ l₂ : list (list (Node * Node * R))) 
+    (m : @Matrix R) (c : Node), 
+    fold_right (λ u v : R, u + v) 0
+      (map measure_of_path (append_node_in_paths m c (l₁ ++ l₂))) 
+    = 
+    fold_right (λ u v : R, u + v) 0
+      (map measure_of_path
+        (append_node_in_paths m c l₁ ++ 
+        append_node_in_paths m c l₂)).
+  Proof.
+    induction l₁ as [|la lt ihl]; intros *.
+    + cbn. reflexivity.
+    + cbn. destruct la as [|((pa, pb), pc) laa].
+      ++ eapply ihl.
+      ++ cbn. rewrite ihl. reflexivity.
+  Qed.
+
+   (** Factoring [m c a] out of the sum of measures of paths from
+       [append_node_in_paths] specialized to [all_paths_klength]. *)
+  Lemma fold_measure_append_node_kpaths {R : Semiring.type} : 
+    forall n (m : @Matrix R) c a d,
+    fold_right (λ u₁ v₁ : R, u₁ + v₁) 0
+    (map measure_of_path 
+      (append_node_in_paths m c (all_paths_klength elements m n a d))) 
+    =
+    m c a * fold_right (λ b v : R, b + v) 0
+      (map measure_of_path (all_paths_klength elements m n a d)).
+  Proof.
+    intros *.
+    rewrite map_measure_append_node_kpaths.
+    setoid_rewrite fold_map_factor.
+    reflexivity.
+  Qed.
+
+
+  (** Reconstructing a well-formed path from its collected nodes
+      recovers the original path: [construct ∘ collect = id]. *)
+  Lemma path_collect_construct_id {R : Semiring.type} : 
+    forall (l : list (Node * Node * R)) (m : @Matrix R),
+    well_formed_path_aux m l -> 
+    construct_path_from_nodes (collect_nodes_from_a_path l) m = l.
+  Proof.
+    induction l as [|((la, lb), lp) lh ihl]; intros m ha.
+    - cbn. reflexivity.
+    - cbn in ha. destruct ha as [Hmv Hrest].
+      destruct lh as [|((pa, pb), pc) lhh].
+      + (* lh = []: singleton path *)
+        cbn. rewrite <- Hmv. reflexivity.
+      + (* lh = (pa, pb, pc) :: lhh *)
+        destruct Hrest as [Heq Hwf].
+        subst lb. subst lp.
+        destruct lhh as [|((qa, qb), qc) lhh'].
+        * (* lhh = [] *)
+          cbn. unfold well_formed_path_aux in Hwf. cbn in Hwf.
+          destruct Hwf as [Hmv' _]. subst pc. reflexivity.
+        * (* lhh = (qa, qb, qc) :: lhh' *)
+          (* compute the LHS: collect then construct *)
+          replace (collect_nodes_from_a_path ((la, pa, m la pa) :: (pa, pb, pc) :: (qa, qb, qc) :: lhh'))
+            with (la :: pa :: collect_nodes_from_a_path ((qa, qb, qc) :: lhh'))
+            by reflexivity.
+          (* Now: construct (la :: pa :: collect_nodes_from_a_path ((qa, qb, qc) :: lhh')) m
+                 = (la, pa, m la pa) :: (pa, pb, pc) :: (qa, qb, qc) :: lhh' *)
+          simpl (construct_path_from_nodes (la :: pa :: collect_nodes_from_a_path ((qa, qb, qc) :: lhh')) m).
+          (* (la, pa, m la pa) :: construct (pa :: collect_nodes_from_a_path ((qa, qb, qc) :: lhh')) m
+             = (la, pa, m la pa) :: (pa, pb, pc) :: (qa, qb, qc) :: lhh' *)
+          f_equal.
+          (* construct (pa :: collect_nodes_from_a_path ((qa, qb, qc) :: lhh')) m
+             = (pa, pb, pc) :: (qa, qb, qc) :: lhh' *)
+          replace (pa :: collect_nodes_from_a_path ((qa, qb, qc) :: lhh'))
+            with (collect_nodes_from_a_path ((pa, pb, pc) :: (qa, qb, qc) :: lhh'))
+            by reflexivity.
+          apply (ihl m Hwf).
+  Qed.
+
+
+   (** If a concatenated path [ll ++ lr] is well-formed, then both
+       [ll] and [lr] are individually well-formed. *)
+   Lemma well_formed_path_snoc {R : Semiring.type} : 
+    forall ll lr (m : @Matrix R),
+    well_formed_path_aux m (ll ++ lr)->
+    well_formed_path_aux m ll ∧ 
+    well_formed_path_aux m lr .
+  Proof.
+    induction ll as [|((c, x), v) ll' IH]; intros lr m Hwf.
+    - (* ll = [] *)
+      cbn in Hwf. split; [exact I | exact Hwf].
+    - (* ll = (c, x, v) :: ll' *)
+      cbn [app] in Hwf.
+      (* Hwf : well_formed_path_aux m ((c, x, v) :: ll' ++ lr) *)
+      cbn [well_formed_path_aux] in Hwf.
+      destruct Hwf as [Hmv Hconn].
+      (* Hmv : m c x = v *)
+      (* Hconn : match (ll' ++ lr) with
+                 | [] => True
+                 | (y, _, _) :: _ => (x = y) ∧ well_formed_path_aux m (ll' ++ lr)
+                 end *)
+      destruct (ll' ++ lr) as [|h t] eqn:Happ.
+      + (* ll' ++ lr = [] → ll' = [] ∧ lr = [] *)
+        apply app_eq_nil in Happ. destruct Happ as [Hll' Hlr].
+        subst ll' lr.
+        cbn. split; [| exact I].
+        cbn [well_formed_path_aux]. split; [exact Hmv | exact I].
+      + (* ll' ++ lr = h :: t, so ll' ++ lr is non-empty *)
+        destruct h as [[y z] w].
+        destruct Hconn as [Heq Hwf_tail].
+        (* Heq : x = y,  Hwf_tail : well_formed_path_aux m ((y, z, w) :: t) *)
+        (* Rewrite using Happ to get the form the IH expects *)
+        rewrite <- Happ in Hwf_tail.
+        apply IH in Hwf_tail.
+        destruct Hwf_tail as [Hwf_ll' Hwf_lr].
+        split; [| exact Hwf_lr].
+        (* prove well_formed_path_aux m ((c, x, v) :: ll') *)
+        cbn [well_formed_path_aux]. split; [exact Hmv |].
+        destruct ll' as [|h2 ll''].
+        * (* ll' = []: no connection condition needed *)
+          exact I.
+        * (* ll' = h2 :: ll'' *)
+          destruct h2 as [[y2 z2] w2].
+          cbn. split.
+          -- (* x = y2 *)
+             rewrite Heq.
+             simpl in Happ.
+             inversion Happ. subst. reflexivity.
+          -- (* well_formed_path_aux m ll' *)
+             exact Hwf_ll'.
+  Qed. 
+
+  Lemma keep_collecting_dropping_dual {R : Semiring.type} : 
+    forall (l : list (Node * Node * R)) au, 
+    l = (keep_collecting au l ++ keep_dropping au l).
+  Proof.
+    induction l as [|((la, lb), lc) lt ihl]; intros *.
+    +reflexivity.
+    +cbn. destruct (fin_eq_dec au lb) as [ha | ha].
+      ++reflexivity.
+      ++cbn. f_equal. now setoid_rewrite <-ihl.
+  Qed.
+
+  (** If [elem_path_triple_tail av l] holds, then [l] decomposes as
+      [ll ++ [(au, av, aw)] ++ lr] where [(au, av, aw)] is the first
+      element whose second component matches [av]. The prefix [ll]
+      contains no such element, and [keep_collecting av l] returns
+      exactly [ll ++ [(au, av, aw)]]. *)
+  Lemma elem_path_triple_tail_true {R : Semiring.type} : 
+    forall (l : list (Node * Node * R))  av,
+    elem_path_triple_tail av l = true ->
+    exists ll au aw lr, 
+      l = (ll ++ [(au, av, aw)] ++ lr) /\ 
+      elem_path_triple_tail av ll = false /\ 
+      (ll ++ [(au, av, aw)]) = (keep_collecting av l).
+  Proof.
+    induction l as [|((bu, bv), bw) t IH]; intros av Htrue.
+    - (* l = [] *)
+      cbn in Htrue. discriminate Htrue.
+    - (* l = (bu, bv, bw) :: t *)
+      cbn [elem_path_triple_tail] in Htrue.
+      destruct (fin_eq_dec av bv) as [Heq_av_bv | Hneq_av_bv].
+      + (* av = bv: the current element is the first match *)
+        subst bv.
+        exists [], bu, bw, t.
+        cbn [app elem_path_triple_tail keep_collecting].
+        destruct (fin_eq_dec av av) as [_ | Hc]; [| exfalso; apply Hc; reflexivity].
+        split; [reflexivity | split; [reflexivity | reflexivity]].
+      + (* av ≠ bv: the first match is in t *)
+        apply IH in Htrue.
+        destruct Htrue as (ll' & au & aw & lr' & Hl & Hfalse & Hcoll).
+        exists ((bu, bv, bw) :: ll'), au, aw, lr'.
+        cbn [app elem_path_triple_tail keep_collecting].
+        destruct (fin_eq_dec av bv) as [Heq' | _]; [exfalso; apply Hneq_av_bv; exact Heq' | ].
+        split.
+        * (* equality of lists *)
+          rewrite Hl. reflexivity.
+        * split.
+          -- (* elem_path_triple_tail on the extended prefix *)
+             exact Hfalse.
+          -- (* keep_collecting equality *)
+             rewrite Hcoll. reflexivity.
+  Qed.
+
+
+  (** Simplified form of [elem_path_triple_tail_true]: if
+      [elem_path_triple_tail av l] holds, then [keep_collecting av l]
+      equals some prefix ending with a matching element. *)
+  Lemma elem_path_triple_tail_simp {R : Semiring.type} : 
+    forall (l : list (Node * Node * R)) av, 
+    elem_path_triple_tail av l = true ->
+    exists ll au aw, 
+      (ll ++ [(au, av, aw)]) = (keep_collecting av l).
+  Proof.
+    intros l av H.
+    apply elem_path_triple_tail_true in H.
+    destruct H as (ll & au & aw & _ & _ & _ & Hcoll).
+    exists ll, au, aw. exact Hcoll.
+  Qed.
+
+
+  (** If [elem_path_triple_tail au l] holds, then [keep_collecting au l]
+      is non-empty (it contains at least the matching element). *)
+  Lemma keep_collecting_nonempty {R : Semiring.type} :
+    forall (l : list (Node * Node * R)) au,
+    elem_path_triple_tail au l = true ->
+    keep_collecting au l <> [].
+  Proof.
+    intros l au H.
+    apply elem_path_triple_tail_true in H.
+    destruct H as (ll & au' & aw' & lr & _ & _ & Hcoll).
+    rewrite <- Hcoll. intro Hnil.
+    apply app_eq_nil in Hnil. destruct Hnil as [_ Hnil'].
+    inversion Hnil'.
+  Qed.
+
+  (** If [elem_path_triple_tail au l] holds, then the last element of
+      [keep_collecting au l] has [au] as its second component, so
+      [target au (keep_collecting au l)] holds. *)
+  Lemma keep_collecting_target {R : Semiring.type} :
+    forall (l : list (Node * Node * R)) au,
+    elem_path_triple_tail au l = true ->
+    target au (keep_collecting au l) = true.
+  Proof.
+    intros l au H.
+    apply elem_path_triple_tail_true in H.
+    destruct H as (ll & au' & aw' & lr & _ & _ & Hcoll).
+    rewrite <- Hcoll.
+    rewrite target_end. cbn.
+    destruct (fin_eq_dec au au) as [_ | Hc]; [reflexivity | exfalso; apply Hc; reflexivity].
+  Qed.
+
+  (** When the tail of a cons is non-empty, [target d (h :: t)] reduces
+      to [target d t] — the head's second component is skipped. *)
+  Lemma target_cons_nonempty_tail {R : Semiring.type} :
+    forall (h : Node * Node * R) (t : list (Node * Node * R)) (d : Node),
+    t <> [] -> target d (h :: t) = target d t.
+  Proof.
+    intros h t d Hne.
+    destruct h as [[x y] r].
+    cbn. destruct t as [|h2 t2]; [exfalso; apply Hne; reflexivity | ].
+    reflexivity.
+  Qed.
+
+  (** If [elem_path_triple_compute_loop l] returns [Some lc], then
+      [lc] is of the form [(au, av, aw) :: lcc] and is a cyclic path
+      starting and ending at [au]. *)
+  Lemma compute_loop_cycle {R : Semiring.type} : 
+    forall (l : list (Node * Node * R)) lc,
+    Some lc = elem_path_triple_compute_loop l ->
+    exists au av aw lcc, Some ((au, av, aw) :: lcc) = Some lc /\ 
+    cyclic_path au lc.
+  Proof.
+    induction l as [|((au, av), aw) t IH]; intros lc H.
+    - (* l = [] *)
+      cbn in H. discriminate H.
+    - (* l = (au, av, aw) :: t *)
+      cbn [elem_path_triple_compute_loop] in H.
+      destruct (fin_eq_dec au av) as [Heq_au_av | Hneq_au_av].
+      + (* au = av: self-loop [(au, av, aw)] *)
+        inversion H. subst lc.
+        exists au, av, aw, [].
+        split; [reflexivity | ].
+        unfold cyclic_path.
+        split; [intro Hnil; inversion Hnil | ].
+        split.
+        * unfold source. cbn.
+          destruct (fin_eq_dec au au) as [_ | Hc]; [reflexivity | exfalso; apply Hc; reflexivity].
+        * unfold target. cbn.
+          destruct (fin_eq_dec au av) as [_ | Hc]; [reflexivity | exfalso; apply Hc; exact Heq_au_av].
+      + (* au ≠ av: check tail for a match *)
+        destruct (elem_path_triple_tail au t) eqn:Htail.
+        * (* match found in tail *)
+          inversion H. subst lc.
+          exists au, av, aw, (keep_collecting au t).
+          split; [reflexivity | ].
+          unfold cyclic_path.
+          split; [intro Hnil; inversion Hnil | ].
+          split.
+          -- unfold source. cbn.
+             destruct (fin_eq_dec au au) as [_ | Hc]; [reflexivity | exfalso; apply Hc; reflexivity].
+          -- assert (Hkeep_ne : keep_collecting au t <> [])
+               by (eapply keep_collecting_nonempty; eauto).
+             rewrite (target_cons_nonempty_tail (au, av, aw) (keep_collecting au t) au Hkeep_ne).
+             apply keep_collecting_target. exact Htail.
+        * (* no match in tail: recurse *)
+          apply IH in H.
+          destruct H as (au' & av' & aw' & lcc' & Hsome & Hcyclic).
+          exists au', av', aw', lcc'. split; [exact Hsome | exact Hcyclic].
+  Qed.
+
+
+  (** If [elem_path_triple l] holds (i.e., [l] contains no cycle), then
+      [elem_path_triple_compute_loop l] returns [None]. *)
+  Lemma elim_path_triple_connect_compute_loop_true_first {R : Semiring.type} : 
+    forall (l : list (Node * Node * R)),
+    elem_path_triple l = true -> elem_path_triple_compute_loop l = None.
+  Proof.
+    induction l as [|((au, av), aw) t IH]; intros Htrue.
+    - cbn. reflexivity.
+    - cbn [elem_path_triple] in Htrue.
+      destruct (fin_eq_dec au av) as [Heq | Hneq].
+      + (* au = av: contradiction — first conjunct is negb true = false *)
+        cbn in Htrue. discriminate Htrue.
+      + (* au ≠ av *)
+        cbn in Htrue. (* negb false → true *)
+        cbn in Htrue. (* true && ... → ... *)
+        destruct (elem_path_triple_tail au t) eqn:Htail.
+        * (* Htail = true: contradiction — second conjunct is negb true = false *)
+          cbn in Htrue. discriminate Htrue.
+        * (* Htail = false *)
+          cbn in Htrue. (* negb false → true, then true && ... → ... *)
+          (* Htrue : elem_path_triple t = true *)
+          cbn [elem_path_triple_compute_loop].
+          destruct (fin_eq_dec au av) as [Heq' | _].
+          { exfalso. apply Hneq. exact Heq'. }
+          rewrite Htail. cbn.
+          apply IH. exact Htrue.
+  Qed.
+
+
+  Lemma elim_path_triple_connect_compute_loop_true_second {R : Semiring.type} : 
+    forall (l : list (Node * Node * R)),
+    elem_path_triple_compute_loop l = None -> 
+    elem_path_triple l = true.
+  Proof using Type.
+    induction l as [|((au, av), aw) l].
+    + intros He; simpl in He.
+      simpl. reflexivity.
+    + intros He; simpl in * |- *.
+      case (fin_eq_dec au av) eqn:Hb.
+      ++congruence.
+      ++simpl. case (elem_path_triple_tail au l) eqn:Hbe.
+        -congruence.
+        -simpl. apply IHl; assumption.
+  Qed.
+
+
+  Lemma elim_path_triple_connect_compute_loop_true_none_eqv {R : Semiring.type} : 
+    forall (l : list (Node * Node * R)),
+    elem_path_triple_compute_loop l = None <-> elem_path_triple l = true.
+  Proof using Type.
+    intros ?; split; intro H.
+    apply elim_path_triple_connect_compute_loop_true_second; assumption.
+    apply elim_path_triple_connect_compute_loop_true_first; assumption.
+  Qed.
+
+
+  (** If [elem_path_triple l] is false (i.e., [l] contains a cycle),
+      then [elem_path_triple_compute_loop l] returns [Some lc] where
+      [lc] is a cyclic path of the form [(au, av, aw) :: lcc]. *)
+  Lemma elim_path_triple_connect_compute_loop_false_first {R : Semiring.type} : 
+    forall (l : list (Node * Node * R)),
+    elem_path_triple l = false -> 
+    exists au av aw lc lcc, 
+      Some lc = elem_path_triple_compute_loop l /\
+      ((au, av, aw) :: lcc) = lc /\ cyclic_path au lc.
+  Proof.
+    induction l as [|((au, av), aw) t IH]; intros Hfalse.
+    - (* l = [] *)
+      cbn in Hfalse. discriminate Hfalse.
+    - (* l = (au, av, aw) :: t *)
+      cbn [elem_path_triple] in Hfalse.
+      destruct (fin_eq_dec au av) as [Heq | Hneq].
+      + (* Case 1: au = av — self-loop.  First conjunct is negb true = false,
+           so elem_path_triple = false regardless of the rest. *)
+        cbn [elem_path_triple_compute_loop].
+        destruct (fin_eq_dec au av) as [_ | Hc]; [| exfalso; apply Hc; exact Heq].
+        exists au, av, aw, [(au, av, aw)], [].
+        split; [reflexivity | ].
+        split; [reflexivity | ].
+        unfold cyclic_path.
+        split; [intro Hnil; inversion Hnil | ].
+        split.
+        * unfold source. cbn.
+          destruct (fin_eq_dec au au) as [_ | Hc]; [reflexivity | exfalso; apply Hc; reflexivity].
+        * unfold target. cbn.
+          destruct (fin_eq_dec au av) as [_ | Hc]; [reflexivity | exfalso; apply Hc; exact Heq].
+      + (* au ≠ av: first conjunct is negb false = true.
+           Hfalse reduces to (negb (elem_path_triple_tail au t) && elem_path_triple t) = false *)
+        cbn in Hfalse.
+        destruct (elem_path_triple_tail au t) eqn:Htail.
+        * (* Case 2: elem_path_triple_tail au t = true.
+             Second conjunct is negb true = false, so the whole expression is false. *)
+          cbn in Hfalse. (* Hfalse becomes irrelevant (already used the destruct) *)
+          cbn [elem_path_triple_compute_loop].
+          destruct (fin_eq_dec au av) as [Heq' | _]; [exfalso; apply Hneq; exact Heq' | ].
+          rewrite Htail. cbn.
+          exists au, av, aw, ((au, av, aw) :: keep_collecting au t), (keep_collecting au t).
+          split; [reflexivity | ].
+          split; [reflexivity | ].
+          (* cyclic_path au ((au, av, aw) :: keep_collecting au t) *)
+          unfold cyclic_path.
+          split; [intro Hnil; inversion Hnil | ].
+          split.
+          -- unfold source. cbn.
+             destruct (fin_eq_dec au au) as [_ | Hc]; [reflexivity | exfalso; apply Hc; reflexivity].
+          -- assert (Hkeep_ne : keep_collecting au t <> [])
+               by (eapply keep_collecting_nonempty; eauto).
+             rewrite (target_cons_nonempty_tail (au, av, aw) (keep_collecting au t) au Hkeep_ne).
+             apply keep_collecting_target. exact Htail.
+        * (* Case 3: elem_path_triple_tail au t = false.
+             Second conjunct is negb false = true.
+             Hfalse reduces to (true && elem_path_triple t) = false,
+             hence elem_path_triple t = false. *)
+          cbn in Hfalse. (* true && ... → ... *)
+          (* Hfalse : elem_path_triple t = false *)
+          apply IH in Hfalse.
+          destruct Hfalse as (au' & av' & aw' & lc' & lcc' & Hsome & Hlc & Hcyclic).
+          cbn [elem_path_triple_compute_loop].
+          destruct (fin_eq_dec au av) as [Heq' | _]; [exfalso; apply Hneq; exact Heq' | ].
+          rewrite Htail. cbn.
+          exists au', av', aw', lc', lcc'.
+          split; [exact Hsome | split; [exact Hlc | exact Hcyclic]].
+  Qed.
+
+
+  Lemma elim_path_triple_connect_compute_loop_false_second {R : Semiring.type} : 
+    forall (l : list (Node * Node * R)) lc, 
+    Some lc = elem_path_triple_compute_loop l ->
+    elem_path_triple l = false.
+  Proof using Type.
+    induction l as [|((au, av), aw) l].
+    + intros ? Hs; simpl in Hs;
+      congruence.
+    + intros ? Hs; simpl in * |- *.
+      case (fin_eq_dec au av) eqn:Ha.
+      simpl. reflexivity.
+      case (elem_path_triple_tail au l) eqn:Hb.
+      simpl. reflexivity.
+      simpl.
+      eapply IHl; exact Hs.
+  Qed.
+
+
+  Lemma elim_path_triple_connect_compute_loop_false_eqv {R : Semiring.type} : 
+    forall (l : list (Node * Node * R)),
+    elem_path_triple l = false <-> 
+    exists au av aw lc lcc, 
+      Some lc = elem_path_triple_compute_loop l /\
+      ((au, av, aw) :: lcc) = lc /\ cyclic_path au lc.
+  Proof.
+    intros *; split; intros He.
+    apply  elim_path_triple_connect_compute_loop_false_first; assumption.
+    destruct He as (au & av & aw & lc & lcc & Hs & Hlcc & Hc).
+    eapply elim_path_triple_connect_compute_loop_false_second; 
+    exact Hs.
+  Qed.
+
+
+  Lemma elem_path_triple_compute_loop_triple_middle_element {R : Semiring.type} : 
+    forall (l : list (Node * Node * R)) ll lm lr, 
+    (ll, lm, lr) = elem_path_triple_compute_loop_triple l ->
+    lm = elem_path_triple_compute_loop l.
+  Proof using Type.
+    induction l as [|((au, av), aw) l].
+    + intros ? ? ? Hl; simpl in Hl; simpl;
+      inversion Hl; subst; reflexivity.
+    + intros ? ? ? Hl.
+      simpl in * |- *.
+      case (fin_eq_dec au av) eqn:Ha.
+      inversion Hl; subst; reflexivity.
+      case (elem_path_triple_tail au l) eqn:Hb.
+      inversion Hl; subst; reflexivity.
+      destruct (elem_path_triple_compute_loop_triple l) as ((al, bl), cl).
+      inversion Hl; subst; clear Hl.
+      eapply IHl.
+      reflexivity.
+  Qed.
+
+  (** [elem_path_triple_compute_loop_triple l] splits [l] into
+      [(fp, opt, tp)] where [l = fp ++ tp] when [opt = None], and
+      [l = fp ++ sp ++ tp] when [opt = Some sp]. *)
+  Lemma elem_path_triple_compute_loop_triple_combined_list {R : Semiring.type} : 
+    forall (l : list (Node * Node * R)),
+    match elem_path_triple_compute_loop_triple l with
+    | (fp, None, tp) => l = (fp ++ tp)
+    | (fp, Some sp, tp) => l = (fp ++ sp ++ tp)
+    end. 
+  Proof.
+    induction l as [|((au, av), aw) t IH].
+    - cbn. reflexivity.
+    - cbn [elem_path_triple_compute_loop_triple].
+      destruct (fin_eq_dec au av) as [Heq | Hneq].
+      + (* au = av: self-loop.  Result is ([], Some [(au, av, aw)], t) *)
+        cbn. reflexivity.
+      + (* au ≠ av *)
+        destruct (elem_path_triple_tail au t) eqn:Htail.
+        * (* tail match: result is ([], Some ((au, av, aw) :: keep_collecting au t),
+             keep_dropping au t) *)
+          cbn. f_equal. apply (keep_collecting_dropping_dual t au).
+        * (* no tail match: recurse.
+             Result is ((au, av, aw) :: fp, sp, tp) where (fp, sp, tp) = IH t *)
+          destruct (elem_path_triple_compute_loop_triple t) as [[fp sp_opt] tp].
+          simpl in IH.
+          destruct sp_opt as [sp | ].
+          -- cbn. f_equal. apply IH.
+          -- cbn. f_equal. apply IH.
+  Qed.
+
+
+  (** If no element in [l] has second component [au], and [l = ll ++ lr],
+      then neither [ll] nor [lr] contains such an element either. *)
+  Lemma elem_path_triple_tail_false {R : Semiring.type} : 
+    forall (l : list (Node * Node * R)) ll lr au, 
+    elem_path_triple_tail au l = false -> l = ll ++ lr ->
+    elem_path_triple_tail au ll = false /\
+    elem_path_triple_tail au lr = false.
+  Proof.
+    intros l ll lr au Hfalse Heq. subst l.
+    revert lr Hfalse.
+    induction ll as [|((bu, bv), bw) ll' IH]; intros lr Hfalse.
+    - (* ll = [] *)
+      cbn. split; [reflexivity | exact Hfalse].
+    - (* ll = (bu, bv, bw) :: ll' *)
+      cbn [app] in Hfalse.
+      cbn [elem_path_triple_tail] in Hfalse.
+      destruct (fin_eq_dec au bv) as [Heq_au_bv | Hneq_au_bv].
+      + (* au = bv: then the result would be true, contradiction *)
+        discriminate Hfalse.
+      + (* au ≠ bv: the result depends on the tail *)
+        apply IH in Hfalse as [Hll' Hlr].
+        split.
+        * cbn [elem_path_triple_tail].
+          destruct (fin_eq_dec au bv) as [Heq' | _]; [exfalso; apply Hneq_au_bv; exact Heq' | exact Hll'].
+        * exact Hlr.
+  Qed.
+
+  Lemma length_leq_lt {R : Semiring.type} : 
+    forall (l : list (Node * Node * R)) ,
+    l <> [] -> (List.length l) < List.length (collect_nodes_from_a_path l).
+  Proof.
+    induction l as [|((au, av), aw) l].
+    + simpl.
+      intro H.
+      congruence.
+    + simpl. 
+      intro H.
+      destruct l as [|((bu, bv), bw) l].
+      simpl.
+      nia.
+      remember ((bu, bv, bw) :: l) as bl.
+      simpl.
+      assert (Hne: bl <> []).
+      intro Hf.
+      congruence.
+      specialize (IHl Hne);
+      try nia.
+  Qed.
+ 
+
+
+  Lemma length_collect_node_gen {R : Semiring.type} :
+    forall (c : list Node) 
+    (l : list (Node * Node * R)),
+    c <> [] ->  
+    (List.length c <= List.length l)%nat ->
+    (List.length c < List.length (collect_nodes_from_a_path l)).
+  Proof.
+    intros ? ? Hne Hfin.
+    pose proof length_leq_lt l as IHl.
+    assert (Hlne: l <> []).
+    destruct l. 
+    intros Hf.
+    destruct c.
+    congruence.
+    simpl in Hfin.
+    nia.
+    intro Hf.
+    congruence.
+    specialize (IHl Hlne).
+    nia.
+  Qed.
+
+
+
+  (** If a well-formed path [l] has an element whose second component
+      matches [a] (per [elem_path_triple_tail]), then [a] appears in
+      the node list collected by [collect_nodes_from_a_path]. *)
+  Lemma elem_path_triple_tail_in_list {R : Semiring.type} : 
+    forall (l : list (Node * Node * R)) m a,
+    well_formed_path_aux m l -> elem_path_triple_tail a l = true ->
+    List.In a (collect_nodes_from_a_path l).
+  Proof.
+    induction l as [|((bu, bv), bw) t IH]; intros m a Hwf Htail.
+    - (* l = [] *)
+      cbn in Htail. discriminate Htail.
+    - (* l = (bu, bv, bw) :: t *)
+      cbn [elem_path_triple_tail] in Htail.
+      destruct (fin_eq_dec a bv) as [Heq_abv | Hneq_abv].
+      + (* a = bv: the current element's second component matches *)
+        subst a.
+        cbn [well_formed_path_aux] in Hwf.
+        destruct Hwf as [Hmv Hrest].
+        destruct t as [|((cu, cv), cw) t'].
+        * (* t = []: collect_nodes returns [bu; bv] *)
+          cbn [collect_nodes_from_a_path]. right. left. reflexivity.
+        * (* t ≠ []: from well-formedness, bv = cu, so bv is the head of the tail's collection *)
+          destruct Hrest as [Heq_bv_cu Hwf_t].
+          subst cu.
+          cbn [collect_nodes_from_a_path].
+          right. cbn [collect_nodes_from_a_path].
+          destruct t' as [|h t'']; [left; reflexivity | left; reflexivity].
+      + (* a ≠ bv: the match must be in t *)
+        cbn [well_formed_path_aux] in Hwf.
+        destruct Hwf as [Hmv Hrest].
+        destruct t as [|((cu, cv), cw) t'].
+        * (* t = []: elem_path_triple_tail a [] = false, contradiction *)
+          cbn in Htail. discriminate Htail.
+        * (* t ≠ []: from well-formedness, get well_formed_path_aux m t *)
+          destruct Hrest as [Heq_bv_cu Hwf_t].
+          cbn [collect_nodes_from_a_path].
+          apply IH with (m := m) in Htail; [| exact Hwf_t].
+          right. exact Htail.
+  Qed.
+
+
+  (** If [bl = (bu, bv, bw) :: l] is well-formed, [au ≠ bu], and
+      [elem_path_triple_tail au bl = false], then [au] does not appear
+      in [collect_nodes_from_a_path bl]. *)
+  Lemma elem_path_false_rewrite {R : Semiring.type} : 
+    forall (l : list (Node * Node * R)) bl bu bv bw m au, 
+    bl = (bu, bv, bw) :: l -> au <> bu ->
+    well_formed_path_aux m bl -> elem_path_triple_tail au bl = false ->
+    ~List.In au (collect_nodes_from_a_path bl).
+  Proof.
+    intros l bl bu bv bw m au Heq Hneq Hwf Htail.
+    subst bl.
+    revert bu bv bw Hneq Hwf Htail.
+    induction l as [|((cu, cv), cw) t IH]; intros bu bv bw Hneq Hwf Htail.
+    - (* l = [] *)
+      cbn [elem_path_triple_tail] in Htail.
+      destruct (fin_eq_dec au bv) as [Heq_au_bv | Hneq_au_bv].
+      + discriminate Htail.
+      + cbn [collect_nodes_from_a_path].
+        intro Hin. destruct Hin as [Hin | Hin].
+        * apply Hneq. symmetry. exact Hin.
+        * destruct Hin as [Hin | Hin].
+          -- apply Hneq_au_bv. symmetry. exact Hin.
+          -- inversion Hin.
+    - (* l = (cu, cv, cw) :: t *)
+      cbn [well_formed_path_aux] in Hwf.
+      destruct Hwf as [Hmv Hrest].
+      destruct Hrest as [Heq_bv_cu Hwf_t].
+      subst cu. (* now l = (bv, cv, cw) :: t *)
+      cbn [elem_path_triple_tail] in Htail.
+      destruct (fin_eq_dec au bv) as [Heq_au_bv | Hneq_au_bv].
+      + discriminate Htail.
+      + (* Htail : elem_path_triple_tail au ((bv, cv, cw) :: t) = false *)
+        cbn [collect_nodes_from_a_path].
+        intro Hin. destruct Hin as [Hin | Hin].
+        * apply Hneq. symmetry. exact Hin.
+        * exact (IH bv cv cw Hneq_au_bv Hwf_t Htail Hin).
+  Qed.
   
+
+  Lemma elem_path_collect_node_from_path_second {R : Semiring.type} : 
+    forall (l : list (Node * Node * R)) (m : @Matrix R), 
+    well_formed_path_aux m l -> NoDup (collect_nodes_from_a_path l) -> 
+    elem_path_triple l = true.
+  Proof.
+    induction l as [|((au, av), aw) t IH]; intros m Hwf Hnodup.
+    - cbn. reflexivity.
+    - cbn [well_formed_path_aux] in Hwf.
+      destruct Hwf as [Hmv Hrest].
+      destruct t as [|((cu, cv), cw) t'].
+      (* t = [] *)
+      cbn [collect_nodes_from_a_path elem_path_triple] in *.
+      destruct (fin_eq_dec au av) as [Heq | Hneq].
+      subst av. simpl in Hnodup. inversion Hnodup.
+      cbn in H1 |- *. unfold not in H1.
+      specialize (H1 (or_introl eq_refl)). 
+      inversion H1.
+      cbn. reflexivity. 
+      (* t = (cu, cv, cw) :: t' *)
+      destruct Hrest as [Heq_av_cu Hwf_t]. subst cu.
+      destruct t' as [|h t''].
+      (* t' = []: collected nodes are [au; av; cv] *)
+      cbn [collect_nodes_from_a_path] in Hnodup.
+      inversion Hnodup.
+      cbn [elem_path_triple].
+      destruct (fin_eq_dec au av) as [Heq_au_av | Hneq_au_av].
+      subst av.
+      unfold not in H1. specialize (H1 (or_introl eq_refl)). inversion H1.
+      change (negb false) with true.
+      rewrite Bool.andb_true_l.
+      destruct (elem_path_triple_tail au [(av, cv, cw)]) eqn:Htail.
+      { assert (Hin : List.In au (collect_nodes_from_a_path [(av, cv, cw)])).
+        { apply (elem_path_triple_tail_in_list [(av, cv, cw)] m au Hwf_t). exact Htail. }
+        cbn [collect_nodes_from_a_path] in Hin.
+        exfalso. unfold not in H1. apply H1. exact Hin. }
+      cbn [negb andb].
+      apply IH with (m := m); [exact Hwf_t | exact H2].
+      (* t' = h :: t'' *)
+      cbn [collect_nodes_from_a_path] in Hnodup.
+      inversion Hnodup.
+      cbn [elem_path_triple].
+      destruct (fin_eq_dec au av) as [Heq_au_av | Hneq_au_av].
+      subst av.
+      unfold not in H1. specialize (H1 (or_introl eq_refl)). inversion H1.
+      change (negb false) with true.
+      rewrite Bool.andb_true_l.
+      destruct (elem_path_triple_tail au ((av, cv, cw) :: h :: t'')) eqn:Htail.
+      { assert (Hin : List.In au (collect_nodes_from_a_path ((av, cv, cw) :: h :: t''))).
+        { apply (elem_path_triple_tail_in_list ((av, cv, cw) :: h :: t'') m au Hwf_t). exact Htail. }
+        cbn [collect_nodes_from_a_path] in Hin.
+        exfalso. unfold not in H1. apply H1. exact Hin. }
+      cbn [negb andb].
+      apply IH with (m := m); [exact Hwf_t | exact H2].
+  Qed.
+
+
+
+
+
+  
+
+
+  
+  
+
 
 
 
