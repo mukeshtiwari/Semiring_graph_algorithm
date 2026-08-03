@@ -1,7 +1,90 @@
 From Stdlib Require Import List Utf8
   BinNatDef Lia.
+From Stdlib Require Import Classical_Prop.
 From Semiring Require Import OrelN Structures.
 Import ListNotations SemiringNotations.
+
+Section Generic. 
+
+  Context {A : Type} 
+    {hdec : ∀ (x y : A), {x = y} + {x ≠ y}}.
+
+
+  (* c covers l, i.e., every element of l appears in c *)
+  Definition covers {A : Type} (l c : list A) : Prop :=
+    forall (x : A), In x l -> In x c.
+
+
+   Lemma covers_list_elem : 
+    forall (c l : list A), (forall y : A, List.In y c) ->
+    covers l c.
+  Proof using Type.
+    unfold covers.
+    destruct c as [|a c].
+    + intros ? Hy ? Hl.
+      specialize (Hy x).
+      simpl in Hy.
+      inversion Hy.
+    + intros ? Hy ? Hl.
+      simpl in *.
+      exact (Hy x). 
+  Qed.
+
+  (** Pigeonhole principle: if every element of [l] appears in [c]
+      (i.e., [covers l c]) and [c] is shorter than [l], then some
+      element [a] occurs at least twice in [l].  The proof uses
+      to decide membership on the type [A] with decidable equality. *)
+  Lemma covers_pigenhole : 
+    forall (l c : list A), 
+    covers l c ->  (length c < List.length l) -> 
+    exists a l₁ l₂ l₃, l = (l₁ ++ [a] ++ l₂ ++ [a] ++ l₃).
+  Proof.
+    (** [In a l] implies [l = l₁ ++ a :: l₂] without needing decidable equality. *)
+    assert (in_split' : forall (a : A) (l : list A), In a l ->
+      exists l₁ l₂, l = l₁ ++ a :: l₂).
+    { induction l as [|b l IH]; intros Hin.
+      - inversion Hin.
+      - destruct Hin as [Heq | Hin].
+        + subst b. exists [], l. reflexivity.
+        + destruct (IH Hin) as [l₁ [l₂ Hl]].
+          exists (b :: l₁), l₂. cbn. f_equal. exact Hl. }
+    induction l as [|a l' IH]; intros c Hcov Hlen.
+    - (* l = [] *)
+      cbn in Hlen. lia.
+    - (* l = a :: l' *)
+      cbn in Hlen.
+      unfold covers in Hcov.
+      assert (Ha_c : In a c) by (apply Hcov; left; reflexivity).
+      apply in_split' in Ha_c. destruct Ha_c as [c₁ [c₂ Hc]].
+      destruct (@in_dec A hdec a l') as [Hin | Hnotin].
+      + (* a ∈ l': found the duplicate *)
+        apply in_split' in Hin. destruct Hin as [l₁ [l₂ Hl']].
+        exists a, [], l₁, l₂.
+        cbn. f_equal. exact Hl'.
+      + (* a ∉ l' *)
+        assert (Hcov' : covers l' (c₁ ++ c₂)).
+        { unfold covers. intros x Hx.
+          pose proof (Hcov x (or_intror Hx)) as Hx_c.
+          rewrite Hc in Hx_c.
+          apply in_app_or in Hx_c.
+          destruct Hx_c as [Hx_c | [Heq | Hx_c]].
+          - apply in_or_app. left. exact Hx_c.
+          - subst x. exfalso. apply Hnotin. exact Hx.
+          - apply in_or_app. right. exact Hx_c. }
+        (* Length inequality *)
+        assert (Hlen' : length (c₁ ++ c₂) < length l').
+        { rewrite Hc in Hlen.
+          rewrite !length_app in Hlen. cbn in Hlen.
+          assert (Htemp : length c₁ + length c₂ < length l') by lia.
+          rewrite length_app. exact Htemp. }
+        apply IH in Hcov'; [| exact Hlen'].
+        destruct Hcov' as [a' [l₁ [l₂ [l₃ Hl']]]].
+        exists a', (a :: l₁), l₂, l₃.
+        cbn. f_equal. exact Hl'.
+  Qed.
+
+
+End Generic.
 
 Section Path.
 
@@ -1515,6 +1598,512 @@ Section Path.
       cbn [negb andb].
       apply IH with (m := m); [exact Hwf_t | exact H2].
   Qed.
+
+
+  (** If a node [a] appears in the collected nodes of a well-formed path
+      starting at [b], then either [a = b] or [a] appears as some
+      element's second component. *)
+  Lemma In_collect_nodes_implies_head_or_tail {R : Semiring.type} :
+    forall (l : list (Node * Node * R)) (m : @Matrix R) (a b c : Node) (w : R),
+      well_formed_path_aux m ((b, c, w) :: l) ->
+      List.In a (collect_nodes_from_a_path ((b, c, w) :: l)) ->
+      a = b \/ elem_path_triple_tail a ((b, c, w) :: l) = true.
+  Proof.
+    induction l as [|((du, dv), dw) l' IH]; intros m a b c w Hwf Hin.
+    - (* l = [] *)
+      cbn [collect_nodes_from_a_path] in Hin.
+      simpl in Hin.
+      destruct Hin as [Heq | Hin'].
+      + subst a. left. reflexivity.
+      + simpl in Hin'.
+        destruct Hin' as [Heq | []].
+        subst a. right. cbn [elem_path_triple_tail].
+        destruct (fin_eq_dec c c) as [_ | Hneq]; [reflexivity | exfalso; apply Hneq; reflexivity].
+    - (* l = (du, dv, dw) :: l' *)
+      cbn [well_formed_path_aux] in Hwf.
+      destruct Hwf as [Hmv [Heq_c_du Hwf_l]].
+      subst du. (* l = (c, dv, dw) :: l' *)
+      cbn [collect_nodes_from_a_path] in Hin.
+      destruct Hin as [Heq | Hin].
+      + subst a. left. reflexivity.
+      + apply (IH m a c dv dw) in Hin; [| exact Hwf_l].
+        destruct Hin as [Heq_ac | Htail].
+        * subst a. right. cbn [elem_path_triple_tail].
+          destruct (fin_eq_dec c c) as [_ | Hneq]; [reflexivity | exfalso; apply Hneq; reflexivity].
+        * right. cbn [elem_path_triple_tail].
+          destruct (fin_eq_dec a c) as [_ | _]; [reflexivity | exact Htail].
+  Qed.
+
+  Lemma not_NoDup_collect_implies_elem_path_triple_false {R : Semiring.type} :
+    ∀ (l : list (Node * Node * R)) (m : @Matrix R), 
+      well_formed_path_aux m l -> ~NoDup(collect_nodes_from_a_path l) -> 
+      elem_path_triple l = false.
+  Proof.
+    induction l as [|((au, av), aw) t IH]; intros m Hwf Hnotnodup.
+    - (* l = [] *)
+      cbn in Hnotnodup. exfalso. apply Hnotnodup. constructor.
+    - (* l = (au, av, aw) :: t *)
+      cbn [well_formed_path_aux] in Hwf.
+      destruct Hwf as [Hmv Hrest].
+      cbn [elem_path_triple collect_nodes_from_a_path].
+      destruct (fin_eq_dec au av) as [Heq_au_av | Hneq_au_av].
+      + (* au = av: first conjunct is false *)
+        cbn. reflexivity.
+      + (* au ≠ av: first conjunct = true *)
+        cbn.
+        destruct t as [|((cu, cv), cw) t'].
+        * (* t = []: collected nodes = [au; av], and au ≠ av, so NoDup holds — contradiction *)
+          cbn in Hnotnodup.
+          exfalso. apply Hnotnodup.
+          apply NoDup_cons.
+          -- intro Hin. simpl in Hin.
+             destruct Hin as [Heq | []].
+             apply Hneq_au_av. symmetry. exact Heq.
+          -- constructor; [intro Hin; inversion Hin | constructor].
+        * (* t = (cu, cv, cw) :: t' *)
+          cbn in Hnotnodup.
+          destruct Hrest as [Heq_av_cu Hwf_t]. subst cu.
+          (* t = (av, cv, cw) :: t' *)
+          (* Decision: is au in the tail's collected nodes? *)
+          destruct (in_dec fin_eq_dec au (collect_nodes_from_a_path ((av, cv, cw) :: t'))) as [Hin | Hnin].
+          -- (* au ∈ collect_nodes tail → elem_path_triple_tail au t = true *)
+             pose proof (In_collect_nodes_implies_head_or_tail t' m au av cv cw Hwf_t Hin)
+               as [Heq_au_av' | Htail].
+             ++ exfalso. apply Hneq_au_av. exact Heq_au_av'.
+             ++ rewrite Htail. cbn. reflexivity.
+          -- (* au ∉ tail: ~NoDup must come from the tail *)
+             assert (Hnotnd_tail : ~ NoDup (collect_nodes_from_a_path ((av, cv, cw) :: t'))).
+             { intro Hnd. apply Hnotnodup. apply NoDup_cons; [exact Hnin | exact Hnd]. }
+             apply (IH m) in Hnotnd_tail; [| exact Hwf_t].
+             rewrite Hnotnd_tail. rewrite Bool.andb_false_r. reflexivity.
+  Qed. 
+
+
+  
+
+  (** If a well-formed, acyclic path [l] is covered by a shorter list [c],
+      then by the pigeonhole principle [l] must actually contain a cycle. *)
+  Lemma all_paths_in_klength_paths_cycle  {R : Semiring.type} : 
+    forall (c : list Node)
+    (l : list (Node * Node * R)) (m : @Matrix R),
+    well_formed_path_aux m l ->
+    covers (collect_nodes_from_a_path l) c -> 
+    (List.length c < List.length (collect_nodes_from_a_path l)) ->
+    elem_path_triple l = false.
+  Proof.
+    intros * ha hb hc.
+    eapply not_NoDup_collect_implies_elem_path_triple_false.
+    exact ha.
+    intro hd.
+    destruct (@covers_pigenhole Node fin_eq_dec _ _ hb hc) as 
+    (a & l₁ & l₂ & l₃ & he).
+    rewrite he in hd. cbn in hd.
+    eapply NoDup_remove_2 in hd.
+    eapply hd. rewrite app_assoc.
+    remember (l₁ ++ l₂) as la.
+    eapply in_elt.
+  Qed.
+
+
+   (* if you give me path of length >= finN then there is loop *)
+  Lemma all_paths_in_klength_paths_cycle_elements  {R : Semiring.type} : 
+    forall (l : list (Node * Node * R)) (m : @Matrix R),
+    (List.length (@elements Node) <= List.length l) ->
+    well_formed_path_aux m l ->
+    exists au av aw lc lcc, 
+      Some lc = elem_path_triple_compute_loop l /\
+      ((au, av, aw) :: lcc) = lc /\ cyclic_path au lc.
+  Proof.
+    intros ? ? Hfin Hw.
+    assert(ha : @elements Node <> []).
+    destruct elements eqn:ha. pose proof 
+    (@elements_two_or_more Node) as hb.
+    rewrite ha in hb. cbn in hb. nia.
+    intro hb. inversion hb.
+    pose proof (@length_collect_node_gen R elements
+      l ha Hfin) as Hf.
+    pose proof covers_list_elem elements 
+      (collect_nodes_from_a_path l) elements_complete as Hcov.
+    pose proof all_paths_in_klength_paths_cycle
+      elements l m Hw Hcov Hf as Hwt.
+    eapply elim_path_triple_connect_compute_loop_false_first;
+    try assumption.
+  Qed.
+
+
+  Lemma triple_compute_connect_with_triple_elem_forward 
+    {R : Semiring.type} : forall (l : list (Node * Node * R)), 
+    elem_path_triple l = false ->
+    exists ll lm lr, (ll, Some lm, lr) = 
+    elem_path_triple_compute_loop_triple l.
+  Proof.
+    induction l as [|((au, av), aw) l].
+    + simpl;
+      intros Ha.
+      congruence.
+    + simpl.
+      intros Ha.
+      case (fin_eq_dec au av) eqn:Hauv.
+      eauto.
+      simpl in Ha.
+      case (elem_path_triple_tail au l) eqn:Hel.
+      eauto.
+      simpl in Ha.
+      destruct (IHl Ha) as 
+      (ll & lm & lr & Hb).
+      destruct (elem_path_triple_compute_loop_triple l) as 
+      ((bu, bv), bw).
+      exists ((au, av, aw) :: bu),
+        lm, lr.
+      f_equal.
+      f_equal.
+      inversion Hb; subst;
+      reflexivity.
+      inversion Hb; subst;
+      reflexivity.
+  Qed.
+
+
+   Lemma triple_compute_connect_with_triple_elem_backward 
+    {R : Semiring.type} : forall (l : list (Node * Node * R)) ll lm lr, 
+    (ll, Some lm, lr) = 
+    elem_path_triple_compute_loop_triple l ->
+    elem_path_triple l = false.
+  Proof using Type.
+    induction l as [|((au, av), aw) l].
+    + simpl.
+      intros * Ha.
+      congruence.
+    + simpl.
+      intros * Ha.
+      case (fin_eq_dec au av) eqn:Hauv.
+      reflexivity.
+      case (elem_path_triple_tail au l) eqn:Hel.
+      reflexivity.
+      simpl.
+      destruct (elem_path_triple_compute_loop_triple l) as 
+      ((bu, bv), bw).
+      inversion Ha;
+      subst; clear Ha.
+      exact (IHl bu lm bw eq_refl).
+  Qed.
+      
+
+  Lemma triple_compute_connect_with_triple_elem {R : Semiring.type} : forall (l : list (Node * Node * R)),
+    elem_path_triple l = false <->
+    exists ll lm lr, (ll, Some lm, lr) = 
+    elem_path_triple_compute_loop_triple l.
+  Proof.
+    intros ?; 
+    split;
+    intros He.
+    eapply triple_compute_connect_with_triple_elem_forward;
+    try assumption.
+    destruct He as (ll & lm & lr & Hal).
+    eapply triple_compute_connect_with_triple_elem_backward;
+    exact Hal.
+  Qed.
+
+
+  Lemma triple_compute_connect_with_triple_elem_stronger 
+    {R : Semiring.type} : forall (l : list (Node * Node * R)),
+    elem_path_triple l = false ->
+    exists ll au av aw lm lr, 
+      (ll, Some ((au, av, aw) :: lm), lr) = 
+      elem_path_triple_compute_loop_triple l /\ 
+      cyclic_path au ((au, av, aw) :: lm) /\ 
+      elem_path_triple ll = true /\ 
+      l = (ll ++  ((au, av, aw) :: lm) ++ lr).
+  Proof.
+    induction l as [|((au, av), aw) t IH]; intros Hfalse.
+    - cbn in Hfalse. discriminate Hfalse.
+    - cbn [elem_path_triple] in Hfalse.
+      cbn [elem_path_triple_compute_loop_triple].
+      destruct (fin_eq_dec au av) as [Heq_au_av | Hneq_au_av].
+      + (* au = av: self-loop *)
+        exists [], au, av, aw, [], t.
+        assert (Hcyc : cyclic_path au [(au, av, aw)]).
+        { unfold cyclic_path.
+          split; [intro Hnil; inversion Hnil | ].
+          split.
+          - unfold source. cbn.
+            destruct (fin_eq_dec au au) as [_ | Hc]; [reflexivity | exfalso; apply Hc; reflexivity].
+          - unfold target. cbn.
+            destruct (fin_eq_dec au av) as [_ | Hc]; [reflexivity | exfalso; apply Hc; exact Heq_au_av]. }
+        split; [reflexivity | ].
+        split; [exact Hcyc | ].
+        split; [cbn; reflexivity | ].
+        cbn. reflexivity.
+      + (* au ≠ av *)
+        cbn in Hfalse.
+        destruct (elem_path_triple_tail au t) eqn:Htail.
+        * (* Htail = true: cycle found starting at (au, av, aw) *)
+          cbn in Hfalse.
+          exists [], au, av, aw, (keep_collecting au t), (keep_dropping au t).
+          assert (Hcyc : cyclic_path au ((au, av, aw) :: keep_collecting au t)).
+          { assert (Heq_loop : Some ((au, av, aw) :: keep_collecting au t) =
+              elem_path_triple_compute_loop ((au, av, aw) :: t)).
+            { cbn [elem_path_triple_compute_loop].
+              destruct (fin_eq_dec au av) as [Heq' | _]; [exfalso; apply Hneq_au_av; exact Heq' | ].
+              rewrite Htail. reflexivity. }
+            apply compute_loop_cycle in Heq_loop.
+            destruct Heq_loop as (au' & av' & aw' & lcc' & Hsome & Hc).
+            inversion Hsome. subst. exact Hc. }
+          split; [reflexivity | ].
+          split; [exact Hcyc | ].
+          split; [cbn; reflexivity | ].
+          cbn. f_equal. apply (keep_collecting_dropping_dual t au).
+        * (* Htail = false: cycle is in the tail *)
+          cbn in Hfalse.
+          apply IH in Hfalse
+            as (ll' & au' & av' & aw' & lm' & lr' & Htriple_eq & Hcyc & Helem_ll' & Hl_eq).
+          rewrite <- Htriple_eq.
+          exists ((au, av, aw) :: ll'), au', av', aw', lm', lr'.
+          assert (Helem_cons : elem_path_triple ((au, av, aw) :: ll') = true).
+          { cbn [elem_path_triple].
+            destruct (fin_eq_dec au av) as [Heq' | _]; [exfalso; apply Hneq_au_av; exact Heq' | ].
+            cbn.
+            pose proof (elem_path_triple_tail_false t ll' (((au', av', aw') :: lm') ++ lr') au Htail Hl_eq)
+              as [Htail_ll' _].
+            rewrite Htail_ll'. cbn. exact Helem_ll'. }
+          split; [reflexivity | ].
+          split; [exact Hcyc | ].
+          split; [exact Helem_cons | ].
+          cbn. rewrite Hl_eq. reflexivity.
+  Qed.
+
+
+  (* if you give me path of length >= finN then there is loop *)
+  Lemma all_paths_in_klength_paths_cycle_finN_stronger 
+    {R : Semiring.type} : 
+    forall (l : list (Node * Node * R)) (m : @Matrix R),
+    (List.length (@elements Node) <= List.length l)%nat ->
+    well_formed_path_aux m l ->
+    exists ll au av aw lm lr, 
+    (ll, Some ((au, av, aw) :: lm), lr) = 
+    elem_path_triple_compute_loop_triple l /\ 
+    cyclic_path au ((au, av, aw) :: lm) /\  (* Loop so we can remove this *)
+    elem_path_triple  ll = true /\ (* Elementry Path *)
+    l = (ll ++  ((au, av, aw) :: lm) ++ lr). 
+    (* lr is the rest of path *)
+  Proof.
+    intros ? ? Hfin Hw.
+    assert(ha : @elements Node <> []).
+    destruct elements eqn:ha. pose proof 
+    (@elements_two_or_more Node) as hb.
+    rewrite ha in hb. cbn in hb. nia.
+    intro hb. inversion hb.
+    pose proof length_collect_node_gen elements
+      l ha Hfin as Hf.
+    pose proof covers_list_elem elements
+      (collect_nodes_from_a_path l) elements_complete as Hcov.
+    pose proof all_paths_in_klength_paths_cycle
+      elements l m Hw Hcov Hf as Hwt.
+    eapply triple_compute_connect_with_triple_elem_stronger.
+    exact Hwt.
+  Qed.
+
+
+
+  Definition zwf {R : Semiring.type} (x y : list (Node * Node * R)) := 
+      (List.length x < List.length y).
+
+  Lemma zwf_well_founded {R : Semiring.type} : well_founded 
+  (@zwf R).
+  Proof.
+    exact (Wf_nat.well_founded_ltof _ 
+      (fun x => List.length x)).
+  Defined.
+
+
+  (* easy proof List.length finN <= List.length l -> loop *)
+  Lemma elem_path_length {R : Semiring.type} : 
+    forall (l : list (Node * Node * R)) m, 
+    elem_path_triple l = true ->
+    well_formed_path_aux m l  -> 
+    (List.length l < List.length (@elements Node)).
+  Proof.
+    intros l m He Hw.
+    assert (Hwt : (length l < length (@elements Node))%nat \/ 
+    (length (@elements Node) <= length l)%nat).
+    nia.
+    destruct Hwt as [Hwt | Hwt].
+    exact Hwt.
+    assert(ha : @elements Node <> []).
+    destruct elements eqn:ha. pose proof 
+    (@elements_two_or_more Node) as hb.
+    rewrite ha in hb. cbn in hb. nia.
+    intro hb. inversion hb.
+    pose proof length_collect_node_gen elements 
+    l ha Hwt as Hf.
+    pose proof covers_list_elem elements 
+      (collect_nodes_from_a_path l) elements_complete as Hcov.
+    pose proof all_paths_in_klength_paths_cycle
+      elements l m Hw Hcov Hf as Hat.
+    rewrite Hat in He.
+    congruence.
+  Qed.
+
+
+  Lemma reduce_path_into_elem_path {R : Semiring.type} : 
+    forall (l : list (Node * Node * R)) m,
+    well_formed_path_aux m l  ->
+    exists lm, 
+      well_formed_path_aux m lm  /\ 
+      elem_path_triple lm = true.
+  Proof.
+    intros l.
+    induction (zwf_well_founded l) as [l Hf IHl].
+    unfold zwf in * |- *.
+    intros m Hw.
+    destruct (elem_path_triple l) eqn:He.
+    - (* l is already acyclic *)
+      exists l. split; [exact Hw | exact He].
+    - (* l contains a cycle: extract the acyclic prefix *)
+      apply triple_compute_connect_with_triple_elem_stronger in He
+        as (ll & au & av & aw & loop & lr & _ & _ & Helem_ll & Hl_eq).
+      rewrite Hl_eq in Hw.
+      apply well_formed_path_snoc in Hw as [Hwf_ll _].
+      exists ll. split; [exact Hwf_ll | exact Helem_ll].
+  Qed.
+
+
+
+  (* Every well formed path can be reduced into 
+      an well formed elementry path, i.e., path 
+      without loop and it's length < finN *)
+  Lemma reduce_path_into_elem_path_gen {R : Semiring.type} : 
+    forall (l : list (Node * Node * R)) m,
+    well_formed_path_aux m l ->
+    exists lm, 
+      well_formed_path_aux m lm /\ 
+      elem_path_triple lm = true /\ 
+      (List.length lm < List.length (@elements Node))%nat.
+  Proof.
+    intros ? ? Hw.
+    destruct (reduce_path_into_elem_path l m Hw) 
+    as (lm & Hwa & Hwe).
+    pose proof (elem_path_length lm m Hwe Hwa) as Hp.
+    exists lm.
+    repeat split; try assumption.
+  Qed.
+
+
+  Lemma well_founded_rev {R : Semiring.type} : 
+    forall lm aut avt awt au av aw cut cvt cwt lr (m : @Matrix R),
+    well_formed_path_aux m
+      ([(aut, avt, awt)] ++ ((au, av, aw) :: lm) ++ (cut, cvt, cwt) :: lr) ->
+    cyclic_path au ((au, av, aw) :: lm) ->
+    avt = cut.
+  Proof.
+    intros lm aut avt awt au av aw cut cvt cwt lr m Hwf Hcyc.
+    unfold cyclic_path in Hcyc.
+    destruct Hcyc as [Hne [Hsrc Htgt]].
+    (* Decompose the well-formedness to get avt = au *)
+    cbn [app] in Hwf.
+    cbn [well_formed_path_aux] in Hwf.
+    destruct Hwf as [Hmv1 Hconn1].
+    destruct ((au, av, aw) :: lm ++ (cut, cvt, cwt) :: lr) as [|h t] eqn:Heq_rest.
+    { (* cons can never be nil *) discriminate Heq_rest. }
+    destruct h as [[y z] w].
+    destruct Hconn1 as [Heq_avt_y Hwf_tail].
+    inversion Heq_rest. subst y z w t. clear Heq_rest.
+    (* Heq_avt_y: avt = au,  Hwf_tail: well_formed ((au, av, aw) :: lm ++ (cut, cvt, cwt) :: lr) *)
+    subst avt. (* goal: au = cut *)
+    (* Inner induction: for any target d and head (x,y,w), if the path is well-formed
+       and target d finds d at the end, then d must equal cut (the next node). *)
+    pose (P := fun (lm' : list (Node * Node * R)) =>
+      forall (d x y : Node) (w : R),
+        well_formed_path_aux m ((x, y, w) :: lm' ++ (cut, cvt, cwt) :: lr) ->
+        target d ((x, y, w) :: lm') = true ->
+        d = cut).
+    assert (Hind : forall lm', P lm').
+    { induction lm' as [|((xu, xv), xw) lm'' IH]; unfold P.
+      - (* lm' = [] *)
+        intros d x y w Hwf' Htgt'.
+        cbn [app] in Hwf'.
+        cbn [well_formed_path_aux] in Hwf'.
+        destruct Hwf' as [_ Hconn2].
+        destruct ((cut, cvt, cwt) :: lr) as [|h2 t2] eqn:Heq2.
+        { discriminate. }
+        destruct h2 as [[y2 z2] w2].
+        destruct Hconn2 as [Heq_y_y2 _].
+        inversion Heq2. subst y2 z2 w2 t2.
+        (* Heq_y_y2: y = cut *)
+        cbn [target] in Htgt'.
+        destruct (fin_eq_dec d y) as [Heq_dy | Hneq].
+        + subst d. subst y. reflexivity.
+        + discriminate Htgt'.
+      - (* lm' = (xu, xv, xw) :: lm'' *)
+        intros d x y w Hwf' Htgt'.
+        cbn [app] in Hwf'.
+        cbn [well_formed_path_aux] in Hwf'.
+        destruct Hwf' as [_ Hconn2].
+        destruct ((xu, xv, xw) :: lm'' ++ (cut, cvt, cwt) :: lr) as [|h2 t2] eqn:Heq2.
+        { discriminate Heq2. }
+        destruct h2 as [[y2 z2] w2].
+        destruct Hconn2 as [_ Hwf_lm_rest].
+        inversion Heq2. subst y2 z2 w2 t2. clear Heq2.
+        cbn [target] in Htgt'.
+        (* Htgt': target d ((xu, xv, xw) :: lm'') = true *)
+        exact (IH d xu xv xw Hwf_lm_rest Htgt'). }
+    apply (Hind lm au au av aw Hwf_tail Htgt).
+  Qed.
+
+
+  Lemma well_formed_loop_removal {R : Semiring.type} : 
+    forall ll lr lm au av aw (m : @Matrix R),
+    well_formed_path_aux m 
+      (ll ++ ((au, av, aw) :: lm) ++ lr) ->
+    cyclic_path au ((au, av, aw) :: lm) ->
+    well_formed_path_aux m ((ll ++ lr)).
+  Proof.
+    induction ll as [|((aut, avt), awt) ll' IH]; intros lr lm au av aw m Hwf Hcyc.
+    - (* ll = [] *)
+      apply well_formed_path_snoc in Hwf as [_ Hwf_cycle_lr].
+      apply well_formed_path_snoc in Hwf_cycle_lr as [_ Hwf_lr].
+      cbn. exact Hwf_lr.
+    - (* ll = (aut, avt, awt) :: ll' *)
+      destruct ll' as [|((but, bvt), bwt) ll''].
+      + (* ll' = [] *)
+        destruct lr as [|((cut, cvt), cwt) lr'].
+        * (* lr = [] *)
+          apply well_formed_path_snoc in Hwf as [Hwf_head _].
+          simpl in Hwf_head. exact Hwf_head.
+        * (* lr = (cut, cvt, cwt) :: lr' *)
+          pose proof (well_founded_rev lm aut avt awt au av aw cut cvt cwt lr' m Hwf Hcyc) as Heq_avt_cut.
+          apply well_formed_path_snoc in Hwf as [Hwf_head Hwf_rest].
+          apply well_formed_path_snoc in Hwf_rest as [Hwf_cycle Hwf_lr'].
+          (* Hwf_head: well_formed [(aut, avt, awt)] *)
+          simpl in Hwf_head.
+          destruct Hwf_head as [Hmv _].
+          (* Hwf_lr': well_formed ((cut, cvt, cwt) :: lr') *)
+          (* Build well_formed ((aut,avt,awt) :: (cut,cvt,cwt) :: lr') *)
+          simpl.
+          split; [exact Hmv | ].
+          simpl.
+          split; [rewrite Heq_avt_cut; reflexivity | exact Hwf_lr'].
+      + (* ll' ≠ [] *)
+        simpl in Hwf.
+        destruct Hwf as [Hmv [Heq_avt_but Hwf_tail]].
+        (* Hwf_tail: well_formed ((but,bvt,bwt) :: ll'' ++ ((au,av,aw)::lm) ++ lr) *)
+        pose proof (IH lr lm au av aw m Hwf_tail Hcyc) as Hwf_ll''_lr.
+        (* Hwf_ll''_lr: well_formed ((but,bvt,bwt) :: ll'' ++ lr) *)
+        simpl.
+        split; [exact Hmv | ].
+        simpl.
+        split; [exact Heq_avt_but | exact Hwf_ll''_lr].
+  Qed.
+
+  
+
+  
+
+
+
+
+
+
 
 
 
