@@ -833,10 +833,51 @@ Section Semimodule.
     forall (i : Node),
     Orel (matrix_vector_action (geom_sum A (length (@elements Node) - 1)%nat) b i) (x i).
   Proof.
-    (* Proof follows Semimodule.v: use absorb_b_fixpoint, absorb_Ax_fixpoint,
-       matrix_pow_absorb, and an induction over the partial-sum construction
-       of geom_sum. *)
-  Admitted.
+    intros A b x Hdiag Hfix i.
+    unfold Orel, vec_add in *.
+    set (Astar := fun n => geom_sum A n).
+
+    (* From the fixpoint, derive b ≤ x and A·x ≤ x *)
+    pose proof (absorb_b_fixpoint A b x Hfix) as Hb_all.
+    pose proof (absorb_Ax_fixpoint A b x Hfix) as HAx_all.
+    pose proof (Hb_all i) as Hb.
+    pose proof (HAx_all i) as HAx.
+
+    (* Prove by induction: for all n, x i + ((Astar n)·b) i = x i *)
+    assert (H_all : forall n : nat,
+      add (x i)
+        (List.fold_right (fun j acc => add (scale ((Astar n) i j) (b j)) acc) zero elements)
+      = x i).
+    { induction n as [|n IH]; simpl.
+      - (* n = 0: Astar 0 = I, I·b = b *)
+        unfold Astar, matrix_vector_action.
+        setoid_rewrite (fold_right_identity elements b i
+          (elements_nodup (s := Node))
+          (elements_complete (s := Node) i)).
+        (* Goal: x i + b i = x i, but Hb: b i + x i = x i *)
+        apply (eq_trans (addC (x i) (b i))). apply Hb.
+      - (* n → S n: Astar (S n) = Astar n + pow A (S n) *)
+        unfold Astar at 1.
+        (* Distribute: (Astar n + pow A (S n))·b = (Astar n)·b + pow A (S n)·b *)
+        unfold matrix_add.
+        apply (eq_trans (f_equal (fun s => add (x i) s)
+          (fold_right_scale_add elements
+            (fun j => (geom_sum A n) i j)
+            (fun j => (pow A (S n)) i j) b))).
+        (* Goal: x i + ((Astar n)·b i + (pow A (S n))·b i) = x i *)
+        rewrite <- (addA (x i) _ _).
+        unfold Astar in IH.
+        rewrite IH.
+        (* Goal: x i + (pow A (S n))·b i = x i *)
+        apply (eq_trans (addC (x i) _)).
+        apply (matrix_pow_absorb A x b (S n) Hb_all HAx_all i). }
+
+    unfold matrix_vector_action.
+    transitivity (add (x i)
+      (List.fold_right (fun j acc => add (scale ((Astar (length (@elements Node) - 1)) i j) (b j)) acc) zero elements)).
+    - apply (addC _ (x i)).
+    - apply (H_all (length (@elements Node) - 1)%nat).
+  Qed.
 
 
 End Semimodule.
