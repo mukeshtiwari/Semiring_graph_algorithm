@@ -649,7 +649,16 @@ Section Semimodule.
     reflexivity.
   Qed.
 
-
+  (** Orel transitivity for any commutative monoid (generalizes
+      [orel_trans] in [OrelN.v] from [Semiring] to [CommutativeMonoid]). *)
+  Lemma orel_trans_cm {V : CommutativeMonoid.type} (a b c : V) :
+    Orel a b -> Orel b c -> Orel a c.
+  Proof.
+    unfold Orel. intros Hab Hbc.
+    rewrite <- Hbc at 1.
+    rewrite <- addA, Hab, Hbc.
+    reflexivity.
+  Qed.
 
   (** Matrix-vector action distributes over vector addition:
       [A·(u + v) = A·u + A·v]. *)
