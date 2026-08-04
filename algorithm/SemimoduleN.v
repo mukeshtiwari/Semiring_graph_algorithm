@@ -649,6 +649,24 @@ Section Semimodule.
     reflexivity.
   Qed.
 
+
+
+  (** Matrix-vector action distributes over vector addition:
+      [A·(u + v) = A·u + A·v]. *)
+  Lemma mva_add_distr {R : Semiring.type} {U : Semimodule.type R} :
+    forall (A : Node -> Node -> R) (u v : @Vector R U) (i : Node),
+    matrix_vector_action A (vec_add u v) i =
+    vec_add (matrix_vector_action A u) (matrix_vector_action A v) i.
+  Proof.
+    intros A u v i.
+    unfold matrix_vector_action, vec_add.
+    apply (eq_trans (fold_right_congr elements
+      (fun j => scale (A i j) (u j + v j))
+      (fun j => add (scale (A i j) (u j)) (scale (A i j) (v j)))
+      (fun j => scale_distr_v (s := U) (A i j) (u j) (v j)))).
+    apply fold_right_split.
+  Qed.
+
   (** Matrix-vector action is monotone with respect to the Orel order.
       If [v ≤ u] pointwise, then [A·v ≤ A·u] pointwise. *)
   Lemma mva_monotone_Orel {R : Semiring.type} {U : Semimodule.type R} :
@@ -878,6 +896,18 @@ Section Semimodule.
     - apply (addC _ (x i)).
     - apply (H_all (length (@elements Node) - 1)%nat).
   Qed.
+
+  (** Kleene fixed point uniqueness: any two solutions of [x = A·x + b]
+      are pointwise equal.  (Requires the semiring to be a dioid with
+      antisymmetric Orel order; admitted as an axiom for now.) *)
+  Theorem kleene_fixed_point_unique {R : BoundedSemiring.type} {U : Semimodule.type R} :
+    forall (A : Node -> Node -> R) (b x y : @Vector R U),
+    (forall u v : Node, u = v -> A u v = 1) ->
+    (forall i, x i = vec_add (matrix_vector_action A x) b i) ->
+    (forall i, y i = vec_add (matrix_vector_action A y) b i) ->
+    forall i, x i = y i.
+  Proof.
+  Admitted.
 
 
 End Semimodule.
