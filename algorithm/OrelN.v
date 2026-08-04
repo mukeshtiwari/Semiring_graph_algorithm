@@ -42,7 +42,7 @@ Section OrelProps.
   Lemma orel_refl {R : IdempotentSemiring.type} : ∀ (a : R), a ≤ a.
   Proof. intro a. unfold Orel. apply add_idem. Qed.
 
-  Lemma orel_trans {R : Semiring.type} : ∀ (a b c : R), a ≤ b → b ≤ c → a ≤ c.
+  Lemma orel_trans {R : CommutativeMonoid.type} : ∀ (a b c : R), a ≤ b → b ≤ c → a ≤ c.
   Proof.
     unfold Orel. intros a b c Hab Hbc.
     rewrite <- Hbc at 1.
@@ -50,7 +50,7 @@ Section OrelProps.
     reflexivity.
   Qed.
 
-  Lemma orel_antisym {R : Semiring.type} : ∀ (a b : R), a ≤ b → b ≤ a → a = b.
+  Lemma orel_antisym {R : CommutativeMonoid.type} : ∀ (a b : R), a ≤ b → b ≤ a → a = b.
   Proof.
     unfold Orel. intros a b Hab Hba.
     rewrite <- Hab. rewrite addC. rewrite Hba. reflexivity.
@@ -65,7 +65,7 @@ Section OrelProps.
   Proof. split; [exact orel_refl | exact orel_trans]. Qed.
 
 
-  #[export] Instance add_proper {R : Semiring.type} : 
+  #[export] Instance add_proper {R : CommutativeMonoid.type} : 
     Proper (Orel ==> Orel ==> @Orel R) add.
   Proof.
     unfold Proper, respectful, Orel.
@@ -111,7 +111,7 @@ Section OrelProps.
   (*  Basic order-theoretic lemmas                                           *)
   (* ----------------------------------------------------------------------- *)
 
-  Lemma zero_is_bottom {R : Semiring.type} : ∀ (a : R), 0 ≤ a.
+  Lemma zero_is_bottom {R : CommutativeMonoid.type} : ∀ (a : R), 0 ≤ a.
   Proof. intro a. unfold Orel. apply add0r. Qed.
 
   (* Every element is ≤ itself plus something (adding only increases).        *)
