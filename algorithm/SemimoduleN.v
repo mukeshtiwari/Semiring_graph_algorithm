@@ -651,7 +651,7 @@ Section Semimodule.
 
   (** Matrix-vector action is monotone with respect to the Orel order.
       If [v ≤ u] pointwise, then [A·v ≤ A·u] pointwise. *)
-  Lemma mva_monotone_Orel {R : IdempotentSemiring.type} {U : Semimodule.type R} :
+  Lemma mva_monotone_Orel {R : Semiring.type} {U : Semimodule.type R} :
     forall (A : Node -> Node -> R) (u v : @Vector R U),
     (forall j, Orel (v j) (u j)) ->
     forall i, Orel (matrix_vector_action A v i) (matrix_vector_action A u i).
@@ -672,7 +672,7 @@ Section Semimodule.
     reflexivity.
   Qed.
 
-  
+
 
   (** Absorption lifts through matrix powers:
       if [b ≤ x] and [A·x ≤ x], then [A^k·b ≤ x] for all [k]. *)
@@ -682,9 +682,55 @@ Section Semimodule.
     (forall i, Orel (matrix_vector_action A x i) (x i)) ->
     forall i, Orel (matrix_vector_action (pow A k) b i) (x i).
   Proof.
-    (* Proof by induction on k, using fold_right_mul_assoc,
-       mva_monotone_Orel, and the absorption hypotheses. *)
-  Admitted.
+    intros A x b k Hb HAx.
+    induction k as [|k IH]; simpl.
+    - (* k = 0: pow A 0 = I, so I·b = b *)
+      intro i.
+      unfold matrix_vector_action.
+      setoid_rewrite (fold_right_identity elements b i
+        (elements_nodup (s := Node))
+        (elements_complete (s := Node) i)).
+      apply Hb.
+    - (* k = S k: pow A (S k) = matrix_mul A (pow A k) *)
+      intro i.
+      unfold Orel, matrix_vector_action in *.
+
+      (* Prove ((A·A^k)·b) i = (A·(A^k·b)) i *)
+      assert (H_mul_assoc :
+        List.fold_right (fun j acc =>
+          add (scale ((matrix_mul A (pow A k)) i j) (b j)) acc) zero elements =
+        List.fold_right (fun j acc =>
+          add (scale (A i j)
+            (List.fold_right (fun k0 acc0 =>
+              add (scale ((pow A k) j k0) (b k0)) acc0) zero elements)) acc)
+          zero elements).
+      { unfold matrix_mul, sum.
+        apply (eq_trans
+          (fold_right_congr elements
+            (fun j => scale
+              (List.fold_right (fun x y => A i x * (pow A k) x j + y) 0 elements) (b j))
+            (fun j => scale
+              (List.fold_right (fun k0 acc2 => A i k0 * (pow A k) k0 j + acc2) 0 elements) (b j))
+            (fun j => f_equal (fun s => scale s (b j))
+              (fold_right_alpha_R elements (fun x y => A i x * (pow A k) x y) j)))).
+        apply (fold_right_mul_assoc elements A (pow A k) b i). }
+
+      (* Apply the associativity to the LHS of the goal *)
+      apply (eq_trans (f_equal (fun s => add s (x i)) H_mul_assoc)).
+
+      (* Goal: (A·(A^k·b) i) + x i = x i *)
+      pose proof (mva_monotone_Orel A x
+        (matrix_vector_action (pow A k) b) IH i) as H_mid.
+      unfold Orel, matrix_vector_action in H_mid.
+      (* Transitivity: (A·(A^k·b) i) + x i = x i *)
+      rewrite <- (HAx i) at 1.
+      rewrite <- (addA _ (matrix_vector_action A x i) (x i)).
+      setoid_rewrite H_mid. 
+      setoid_rewrite (HAx i).
+      reflexivity.
+  Qed.
+
+
 
   (** Right matrix fixpoint: [A* = I + A* · A]. *)
   Lemma geom_sum_fixpoint_right {R : BoundedSemiring.type} :
@@ -694,9 +740,17 @@ Section Semimodule.
     geom_sum m (length (@elements Node) - 1)%nat c d =
     matrix_add I (matrix_mul (geom_sum m (length (@elements Node) - 1)%nat) m) c d.
   Proof.
-    (* Proof mirrors geom_sum_fixpoint using right-sided stabilization. *)
-  Admitted.
+    intros m Hdiag c d.
+    pose proof (geom_sum_stable_after_node_bound 1 m Hdiag c d) as Hstable.
+    rewrite Hstable.
+    pose proof (elements_two_or_more (s := Node)) as Hlen_pos.
+    assert (Harith : 1 + length (@elements Node) - 1 = S (length (@elements Node) - 1)) by lia.
+    rewrite Harith.
+    rewrite (geom_sum_S_right (length (@elements Node) - 1) m c d).
+    reflexivity.
+  Qed.
 
+  
   (** Right Kleene fixed point: [x = A*·b ⇒ x = A*·(A·b) + b]. *)
   Theorem kleene_fixed_point_right {R : BoundedSemiring.type} {U : Semimodule.type R} :
     forall (A : Node -> Node -> R) (b x : @Vector R U),
@@ -707,8 +761,68 @@ Section Semimodule.
       (matrix_vector_action (geom_sum A (length (@elements Node) - 1)%nat)
         (matrix_vector_action A b)) b i.
   Proof.
-    (* Proof uses geom_sum_fixpoint_right, fold_right_identity, fold_right_mul_assoc. *)
-  Admitted.
+    intros A b x Hdiag Hx i.
+    set (Astar := geom_sum A (length (@elements Node) - 1)%nat).
+    pose proof (geom_sum_fixpoint_right A Hdiag) as Hstar.
+
+    (* Replace x i with (Astar·b) i, then unfold definitions *)
+    rewrite (Hx i).
+    unfold vec_add, matrix_vector_action.
+
+    (* Goal: (Astar·b) i = (Astar·(A·b)) i + b i *)
+
+    (* Step 1: (Astar·b) i = ((I + Astar·A)·b) i via fixpoint *)
+    assert (H1 :
+      List.fold_right (fun j acc => add (scale (Astar i j) (b j)) acc) zero elements =
+      List.fold_right (fun j acc =>
+        add (scale ((matrix_add I (matrix_mul Astar A)) i j) (b j)) acc) zero elements).
+    { apply (fold_right_congr elements
+        (fun j => scale (Astar i j) (b j))
+        (fun j => scale ((matrix_add I (matrix_mul Astar A)) i j) (b j))).
+      intro j. apply (f_equal (fun m => scale m (b j))). apply Hstar. }
+    apply (eq_trans H1). clear H1.
+
+    (* LHS = ((I + Astar·A)·b) i *)
+
+    (* Step 2: distribute scale over matrix addition *)
+    unfold matrix_add at 1.
+    rewrite (fold_right_scale_add elements
+      (fun j => I i j) (fun j => (matrix_mul Astar A) i j) b).
+
+    (* LHS = (I·b) i + ((Astar·A)·b) i *)
+
+    (* Step 3: I·b = b via identity *)
+    assert (H_id :
+      List.fold_right (fun j acc => add (scale (I i j) (b j)) acc) zero elements = b i).
+    { apply (fold_right_identity elements b i
+        (elements_nodup (s := Node))
+        (elements_complete (s := Node) i)). }
+    apply (eq_trans (f_equal2 add H_id eq_refl)).
+
+    (* LHS = b i + ((Astar·A)·b) i *)
+
+    (* Step 4: ((Astar·A)·b) i = (Astar·(A·b)) i via associativity *)
+    cut (
+      List.fold_right (fun j acc => add (scale ((matrix_mul Astar A) i j) (b j)) acc) zero elements =
+      List.fold_right (fun j acc => add (scale (Astar i j)
+        (List.fold_right (fun k acc0 => add (scale (A j k) (b k)) acc0) zero elements)) acc)
+        zero elements).
+    - intro Hcore.
+      apply (eq_trans (f_equal (fun s => add (b i) s) Hcore)).
+      apply (addC (b i) _).
+    - (* Core equality: ((Astar·A)·b) i = (Astar·(A·b)) i *)
+      unfold matrix_mul, sum.
+      refine (eq_trans _ (eq_trans (fold_right_mul_assoc elements Astar A b i) _)).
+      + (* alpha-x-y = alpha-k-acc2 *)
+        apply (fold_right_congr elements
+          (fun j => scale
+            (List.fold_right (fun x y => Astar i x * A x j + y) 0 elements) (b j))
+          (fun j => scale
+            (List.fold_right (fun k acc2 => Astar i k * A k j + acc2) 0 elements) (b j))).
+        intro j. apply (f_equal (fun s => scale s (b j))).
+        apply (fold_right_alpha_R elements (fun x y => Astar i x * A x y) j).
+      + reflexivity.
+  Qed.
 
   (** Leastness of the Kleene fixed point: [x = A·x + b] implies
       [A*·b ≤ x] in the Orel order, i.e., [A*·b] is below every solution. *)
