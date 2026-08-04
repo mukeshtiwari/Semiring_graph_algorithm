@@ -95,7 +95,7 @@ let print_matrix () =
 
 let print_viterbi () =
   print_endline "\n=== Viterbi — Most Likely Path Probabilities (A*) ===";
-  let star = vit_solver arraymat in
+  let star = viterbi arraymat in
   Stdlib.List.iter (fun u ->
     Stdlib.List.iter (fun v ->
       let w = star u v in
@@ -137,7 +137,7 @@ let print_iteration () =
   print_vector "x₂ = A²·b  (≈ A*·b — converged!)" x2;
 
   print_endline "\n  Compare with A*·b (from Viterbi, column 0):";
-  let star = vit_solver arraymat in
+  let star = viterbi arraymat in
   Stdlib.List.iter (fun u ->
     let star_val = star u A in
     let iter_val = x2 u in

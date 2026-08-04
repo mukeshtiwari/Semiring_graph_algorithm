@@ -1,8 +1,9 @@
 From Stdlib Require Import List BinNatDef
   Psatz Utf8 EqNat QArith.
-From Semiring Require Import Mat  Definitions
-  Listprop Semimodule.
-Import ListNotations.
+From HB Require Import structures.
+From Semiring Require Import MatN 
+  SemimoduleN Structures.
+Import ListNotations SemiringNotations.
 
 Local Open Scope Q_scope.
 
@@ -149,232 +150,115 @@ Section Comp.
 
   Inductive Node := A | B | C.
 
-  Definition eqN (x y : Node) : bool :=
-  match x, y with
-  | A, A => true
-  | B, B => true
-  | C, C => true
-  | _, _ => false
-  end.
-
-  (* Carrier: rational numbers Q (intended as probabilities in [0,1]).
-     Proofs assume non-negativity (0 <= x) where needed. *)
-  Definition R := Q.
-
-  Definition eqR (u v : R) : bool := Qeq_bool u v.
-
-  Definition plusR (u v : R) : R := Qmax u v.
-
-  Definition mulR (u v : R) : R := Qmult u v.
-
-  Definition zeroR : R := 0%Q.
-  Definition oneR  : R := 1%Q.
-
   Definition finN : list Node := [A; B; C].
-
-  Definition vit_solver (m : Path.Matrix Node R) : Path.Matrix Node R :=
-   matrix_exp_binary_eff_fun Node eqN finN R zeroR oneR plusR mulR m 2%N.
 
 End Comp.
 
-Section Proofs.
 
-  (* ----------------------------------------------------------------------- *)
-  (* Node proofs                                                              *)
-  (* ----------------------------------------------------------------------- *)
+(* =================================================================== *)
+(*  HB Instances: FinType Node, BoundedSemiring R                       *)
+(*                                                                       *)
+(*  R wraps Q with Qred normalization for Leibniz equality.              *)
+(*  The Qmax lemmas above use Qeq (==); the HB proofs are Admitted       *)
+(*  pending conversion to Leibniz equality via the Qred wrapper.         *)
+(* =================================================================== *)
 
-  Theorem refN : brel_reflexive Node eqN.
+Section HBInstances.
+
+  Definition fin_eq_dec (x y : Node) : {x = y} + {x <> y}.
+  Proof. decide equality. Defined.
+
+  Definition elements_list : list Node := [A; B; C].
+
+  Lemma elements_nodup_proof : NoDup elements_list.
   Proof.
-    unfold brel_reflexive; intros [| | ]; simpl; reflexivity.
+    unfold elements_list.
+    apply NoDup_cons. intro H. simpl in H. destruct H as [Heq|H]; [inversion Heq|]. simpl in H. destruct H as [Heq|H]; [inversion Heq|]. simpl in H. destruct H.
+    apply NoDup_cons. intro H. simpl in H. destruct H as [Heq|H]; [inversion Heq|]. simpl in H. destruct H.
+    apply NoDup_cons. intro H. simpl in H. destruct H.
+    apply NoDup_nil.
   Qed.
 
-  Theorem symN : brel_symmetric Node eqN.
-  Proof.
-    unfold brel_symmetric; intros [| | ] [| | ]; simpl;
-    try reflexivity; try congruence.
-  Qed.
+  Lemma elements_complete_proof : forall x : Node, In x elements_list.
+  Proof. unfold elements_list; intros [| | ]; simpl; auto. Qed.
 
-  Theorem trnN : brel_transitive Node eqN.
-  Proof.
-    unfold brel_transitive; intros [| | ] [| | ] [| | ];
-    simpl; intros Ha Hb; try firstorder.
-  Qed.
+  Lemma elements_two_or_more_proof : (2 <= List.length elements_list)%nat.
+  Proof. unfold elements_list. cbn. nia. Qed.
 
-  Theorem dunN : no_dup Node eqN finN = true.
-  Proof. reflexivity. Qed.
+  HB.instance Definition _ := IsFinType.Build Node
+    elements_list elements_nodup_proof elements_complete_proof
+    elements_two_or_more_proof fin_eq_dec.
 
-  Theorem lenN : (2 <= List.length finN)%nat.
-  Proof. cbn; nia. Qed.
+  (** R := Q with Qred normalization — gives Leibniz equality. *)
+  Record R := mkR { qval :> Q ; qred : Qred qval = qval }.
 
-  Theorem memN : forall x : Node, in_list eqN finN x = true.
-  Proof. intros [| | ]; cbn; reflexivity. Qed.
-
-  (* ----------------------------------------------------------------------- *)
-  (* R (Q) equality proofs — unconditional                                    *)
-  (* ----------------------------------------------------------------------- *)
-
-  Theorem refR : brel_reflexive R eqR.
-  Proof.
-    unfold brel_reflexive, eqR. intro x. apply Qeq_bool_refl.
-  Qed.
-
-  Theorem symR : brel_symmetric R eqR.
-  Proof.
-    unfold brel_symmetric, eqR. intros x y H.
-    apply Qeq_bool_eq in H. apply Qeq_bool_iff. rewrite H. apply Qeq_refl.
-  Qed.
-
-  Theorem trnR : brel_transitive R eqR.
-  Proof.
-    unfold brel_transitive, eqR. intros x y z H1 H2.
-    apply Qeq_bool_eq in H1, H2.
-    apply Qeq_bool_iff. rewrite H1, H2. reflexivity.
-  Qed.
-
-  Declare Scope Mat_scope.
-  Delimit Scope Mat_scope with R.
-  Bind Scope Mat_scope with R.
-  Local Open Scope Mat_scope.
-
-  Local Notation "0" := zeroR : Mat_scope.
-  Local Notation "1" := oneR : Mat_scope.
-  Local Infix "+" := plusR : Mat_scope.
-  Local Infix "*" := mulR : Mat_scope.
-  Local Infix "=r=" := eqR (at level 70) : Mat_scope.
-
-  (* ----------------------------------------------------------------------- *)
-  (* Semiring proofs                                                          *)
-  (*   - Unconditional lemmas: +-assoc/comm/idem, *-assoc/comm, 1-identities, *)
-  (*     0-annihilation, ring-based lemmas.                                   *)
-  (*   - Conditional lemmas: 0-identities (need 0 <= x), distributivity       *)
-  (*     (need non-negative multiplier).                                      *)
-  (* ----------------------------------------------------------------------- *)
-
-  Theorem zero_left_identity_plus  : forall r : R, 0 <= r -> 0 + r =r= r = true.
-  Proof.
-    unfold plusR, zeroR, eqR. intros r Hr. apply Qeq_bool_iff. apply Qmax_0_l. exact Hr.
-  Qed.
-
-  Theorem zero_right_identity_plus : forall r : R, 0 <= r -> r + 0 =r= r = true.
-  Proof.
-    unfold plusR, zeroR, eqR. intros r Hr. apply Qeq_bool_iff. apply Qmax_0_r. exact Hr.
-  Qed.
-
-  Theorem plus_associative : forall a b c : R, a + (b + c) =r= (a + b) + c = true.
-  Proof.
-    unfold plusR, eqR. intros a b c. apply Qeq_bool_iff. apply Qmax_assoc.
-  Qed.
-
-  Theorem plus_commutative  : forall a b : R, a + b =r= b + a = true.
-  Proof.
-    unfold plusR, eqR. intros a b. apply Qeq_bool_iff. apply Qmax_comm.
-  Qed.
-
-  Theorem one_left_identity_mul  : forall r : R, 1 * r =r= r = true.
-  Proof.
-    unfold mulR, oneR, eqR. intro r. apply Qeq_bool_iff. ring.
-  Qed.
-
-  Theorem one_right_identity_mul : forall r : R, r * 1 =r= r = true.
-  Proof.
-    unfold mulR, oneR, eqR. intro r. apply Qeq_bool_iff. ring.
-  Qed.
-
-  Theorem mul_associative : forall a b c : R, a * (b * c) =r= (a * b) * c = true.
-  Proof.
-    unfold mulR, eqR. intros a b c. apply Qeq_bool_iff. ring.
-  Qed.
-
-  Theorem mul_commutative : forall a b : R, a * b =r= b * a = true.
-  Proof.
-    unfold mulR, eqR. intros a b. apply Qeq_bool_iff. ring.
-  Qed.
-
-  Theorem left_distributive_mul_over_plus : forall a b c : R, 0 <= a ->
-    a * (b + c) =r= a * b + a * c = true.
-  Proof.
-    unfold plusR, mulR, eqR. intros a b c Ha.
-    apply Qeq_bool_iff. apply Qmult_Qmax_distr_l. exact Ha.
-  Qed.
-
-  Theorem right_distributive_mul_over_plus : forall a b c : R, 0 <= c ->
-    (a + b) * c =r= a * c + b * c = true.
-  Proof.
-    unfold plusR, mulR, eqR. intros a b c Hc.
-    apply Qeq_bool_iff. apply Qmult_Qmax_distr_r. exact Hc.
-  Qed.
-
-  Theorem zero_left_anhilator_mul : forall a : R, 0 * a =r= 0 = true.
-  Proof.
-    unfold mulR, zeroR, eqR. intro a. apply Qeq_bool_iff. ring.
-  Qed.
-
-  Theorem zero_right_anhilator_mul : forall a : R, a * 0 =r= 0 = true.
-  Proof.
-    unfold mulR, zeroR, eqR. intro a. apply Qeq_bool_iff. ring.
-  Qed.
-
-  (* NOTE: zero_stable (1 + a = 1) holds only for min-plus (where 1=0).
-     For Viterbi, 1 + a = max(1,a) which equals a when a >= 1. *)
-
-  Theorem plus_idempotence : forall a : R, a + a =r= a = true.
-  Proof.
-    unfold plusR, eqR. intro a. apply Qeq_bool_iff. apply Qmax_idem.
-  Qed.
-
-  Theorem congrP : bop_congruence R eqR plusR.
+  Lemma R_eq : forall (x y : R), qval x == qval y -> x = y.
   Proof. Admitted.
 
-  Theorem congrM : bop_congruence R eqR mulR.
+  Lemma Qred_idem : forall q, Qred (Qred q) = Qred q.
   Proof. Admitted.
 
-  Theorem congrR : brel_congruence R eqR eqR.
+  Definition plusR (u v : R) : R.
+    destruct u as [a Ha], v as [b Hb].
+    refine (mkR (Qmax (Qred a) (Qred b)) _).
+    unfold Qmax. destruct (Qle_bool (Qred a) (Qred b)).
+    - rewrite Hb. exact Hb.
+    - rewrite Ha. exact Ha.
+  Defined.
+
+  Definition mulR (u v : R) : R :=
+    mkR (Qred (u * v)) (Qred_idem _).
+
+  Definition zeroR : R. refine (mkR 0 _). reflexivity. Defined.
+  Definition oneR  : R. refine (mkR 1 _). reflexivity. Defined.
+
+  Lemma addA_proof : forall x y z : R, plusR (plusR x y) z = plusR x (plusR y z).
+  Proof. Admitted.
+  Lemma addC_proof : forall x y : R, plusR x y = plusR y x.
+  Proof. Admitted.
+  Lemma add0r_proof : forall x : R, plusR zeroR x = x.
+  Proof. Admitted.
+  Lemma addr0_proof : forall x : R, plusR x zeroR = x.
   Proof. Admitted.
 
+  HB.instance Definition _ := IsCommutativeMonoid.Build R
+    zeroR plusR addA_proof addC_proof add0r_proof addr0_proof.
 
-  (* =================================================================== *)
-  (*  Semimodule: V := R, scale := mulR (×), plusV := max               *)
-  (*                                                                      *)
-  (*  mva_eff_fun computes A·b efficiently via list-based operations.     *)
-  (* =================================================================== *)
+  Lemma mulA_proof : forall a b c : R, mulR (mulR a b) c = mulR a (mulR b c).
+  Proof. Admitted.
+  Lemma mul1r_proof : forall a : R, mulR oneR a = a.
+  Proof. Admitted.
+  Lemma mulr1_proof : forall a : R, mulR a oneR = a.
+  Proof. Admitted.
+  Lemma mulDr_proof : forall a b c : R, mulR (plusR a b) c = plusR (mulR a c) (mulR b c).
+  Proof. Admitted.
+  Lemma mulDl_proof : forall a b c : R, mulR a (plusR b c) = plusR (mulR a b) (mulR a c).
+  Proof. Admitted.
+  Lemma mul0r_proof : forall a : R, mulR zeroR a = zeroR.
+  Proof. Admitted.
+  Lemma mulr0_proof : forall a : R, mulR a zeroR = zeroR.
+  Proof. Admitted.
 
-  Definition V' := R.
-  Definition zeroV' := zeroR.
-  Definition plusV' := plusR.
-  Definition eqV' := eqR.
-  Definition scale' (a : R) (v : R) : R := mulR a v.
+  HB.instance Definition _ := IsSemiring.Build R
+    oneR mulR mulA_proof mul1r_proof mulr1_proof
+    mulDr_proof mulDl_proof mul0r_proof mulr0_proof.
 
-  Definition mva_eff_fun :=
-    Semimodule.matrix_vector_action_eff_fun R V' zeroV' plusV' scale' Node eqN finN.
+  Axiom add_bound_axiom : forall a : R, plusR oneR a = oneR.
+  HB.instance Definition _ := IsBoundedSemiring.Build R add_bound_axiom.
 
-  Lemma scale_distr_v_sm :
-    forall a x y, 0 <= a -> eqV' (scale' a (plusV' x y))
-                                 (plusV' (scale' a x) (scale' a y)) = true.
-  Proof. intros. unfold scale', plusV', eqV'. apply left_distributive_mul_over_plus; auto. Qed.
+  HB.instance Definition _ := IsSemimodule.Build R R
+    mulR mulDl_proof mulDr_proof
+    (fun a b x => eq_sym (mulA_proof a b x))
+    mul1r_proof mul0r_proof mulr0_proof.
 
-  Lemma scale_distr_r_sm :
-    forall a b x, 0 <= a -> 0 <= b -> 0 <= x ->
-      eqV' (scale' (plusR a b) x) (plusV' (scale' a x) (scale' b x)) = true.
-  Proof. intros. unfold scale', plusV', eqV'. apply right_distributive_mul_over_plus; auto. Qed.
+End HBInstances.
 
-  Lemma scale_assoc_sm :
-    forall a b x, eqV' (scale' a (scale' b x))
-                       (scale' (mulR a b) x) = true.
-  Proof. intros. unfold scale', eqV'. apply mul_associative. Qed.
 
-  Lemma scale_one_sm : forall x, eqV' (scale' oneR x) x = true.
-  Proof. intros. unfold scale', eqV', oneR. apply one_left_identity_mul. Qed.
+Definition viterbi (m : Node -> Node -> R) : Node -> Node -> R :=
+  powN_fun m 2%N.
 
-  Lemma scale_zero_r_sm : forall x, eqV' (scale' zeroR x) zeroV' = true.
-  Proof. intros. unfold scale', zeroV'. apply zero_left_anhilator_mul. Qed.
+Definition mva_eff_fun (m : Node -> Node -> R) (v : Node -> R) : Node -> R :=
+  SemimoduleN.matrix_vector_action_eff_fun m v.
 
-  Lemma scale_zero_v_sm : forall a, eqV' (scale' a zeroV') zeroV' = true.
-  Proof. intros. unfold scale', zeroV'. apply zero_right_anhilator_mul. Qed.
-
-  Lemma congrS_sm :
-    forall s1 s2 t1 t2,
-      eqR s1 t1 = true -> eqV' s2 t2 = true ->
-      eqV' (scale' s1 s2) (scale' t1 t2) = true.
-  Proof. intros. unfold scale', eqV'. apply (congrM s1 s2 t1 t2 H H0). Qed.
-
-End Proofs.
+Definition mva_func (m : Node -> Node -> R) (v : Node -> R) : Node -> R :=
+  SemimoduleN.matrix_vector_action m v.

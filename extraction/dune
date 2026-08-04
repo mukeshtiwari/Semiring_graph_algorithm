@@ -86,14 +86,17 @@
     BinNums.ml BinNums.mli
     BinPos.ml BinPos.mli
     Datatypes.ml Datatypes.mli
-    Definitions.ml Definitions.mli
     List.ml List.mli
     ListDef.ml ListDef.mli
-    Mat.ml Mat.mli
-    Path.ml Path.mli
+    MatN.ml MatN.mli
+    Nat.ml Nat.mli
+    OrelN.ml OrelN.mli
     PosDef.ml PosDef.mli
     QArith_base.ml QArith_base.mli
-    Semimodule.ml Semimodule.mli
+    Qreduction.ml Qreduction.mli
+    SemimoduleN.ml SemimoduleN.mli
+    Specif.ml Specif.mli
+    Structures.ml Structures.mli
     Viterbi.ml Viterbi.mli)
   (theories Stdlib HB elpi_elpi elpi Semiring Examples))
   (library
