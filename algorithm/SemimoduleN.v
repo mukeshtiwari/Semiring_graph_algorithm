@@ -299,16 +299,47 @@ Section Semimodule.
         add (List.fold_right (fun j acc' => add (f j k) acc') zero l) acc)
       zero l.
   Proof.
-    induction l as [|h t IH]; simpl; intros f.
-    - reflexivity.
-    - set (A := f h h).
+      induction l as [|h t IH]; simpl; intros f.
+    - apply eq_refl.
+    - (* Name the sub-expressions for clarity *)
+      set (A := f h h).
       set (B := List.fold_right (fun k acc' => add (f h k) acc') zero t).
       set (C := List.fold_right (fun j acc' => add (f j h) acc') zero t).
-      (* The remaining steps: simplify inner folds at h::t via fold_right_congr,
-         then apply fold_right_split on both sides, use IH, then add_swap_mid_vec.
-         This lemma encodes Σ_j Σ_k f(j,k) = Σ_k Σ_j f(j,k) and is true by
-         commutativity and associativity of addition. *)
-  Admitted.
+      set (D := List.fold_right
+                 (fun j acc =>
+                    add (List.fold_right (fun k acc' => add (f j k) acc') zero t) acc) zero t).
+      (* LHS = plusV (A + B) (plusV C D) via fold_right_split *)
+      assert (HL : eq
+        (List.fold_right (fun j acc =>
+           add (List.fold_right (fun k acc' => add (f j k) acc') zero (h :: t)) acc)
+           zero (h :: t))
+        (add (add A B) (add C D))).
+      { simpl.
+        f_equal. unfold C, D.
+        rewrite <-fold_right_split.
+        reflexivity.
+      }
+      (* RHS = plusV (A + C) (plusV B D) via fold_right_split *)
+      assert (HR : eq
+        (List.fold_right (fun k acc =>
+           add (List.fold_right (fun j acc' => add (f j k) acc') zero (h :: t)) acc)
+           zero (h :: t))
+        (add (add A C) (add B D))).
+      { simpl.
+        f_equal. unfold B, D.
+        refine (eq_trans (fold_right_split t
+        (fun k => f h k)
+        (fun k => List.fold_right (fun j acc' => add (f j k) acc') zero t))_).
+        f_equal. rewrite IH. reflexivity.
+      }
+      cbn in HL, HR.
+      unfold A.
+      rewrite HL, HR.
+      apply add_swap_mid_vec.
+  Qed.
+
+  
+    
 
   (** Matrix-multiplication associativity for the matrix-vector action:
       [(M₁·M₂)·v = M₁·(M₂·v)]. *)
