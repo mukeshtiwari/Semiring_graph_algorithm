@@ -286,6 +286,27 @@ Section Semimodule.
     symmetry. exact Hdist.
   Qed.
 
+  (** Nested fold-right is invariant under swapping bound variable names:
+      [Σ_k Σ_j F j k = Σ_j Σ_k F k j] (alpha-rename). *)
+  Lemma fold_right_nest_alpha {R : Semiring.type} {U : Semimodule.type R} :
+    forall (l1 l2 : list Node) (F : Node -> Node -> U),
+    List.fold_right (fun k acc =>
+      add (List.fold_right (fun j acc' => add (F j k) acc') zero l2) acc)
+      zero l1 =
+    List.fold_right (fun j acc =>
+      add (List.fold_right (fun k acc' => add (F k j) acc') zero l2) acc)
+      zero l1.
+  Proof.
+    intros l1 l2 F.
+    apply (@fold_right_congr R U l1
+      (fun k => List.fold_right (fun j acc' => add (F j k) acc') zero l2)
+      (fun j => List.fold_right (fun k acc' => add (F k j) acc') zero l2)).
+    intro x.
+    apply (@fold_right_congr R U l2
+      (fun j => F j x) (fun k => F k x)).
+    intro y. reflexivity.
+  Qed.
+
   (** Double sum interchange over the same list:
       [Σ_j Σ_k f j k = Σ_k Σ_j f j k]. *)
   Lemma fold_right_double_commute {R : Semiring.type} {U : Semimodule.type R} :
@@ -338,7 +359,7 @@ Section Semimodule.
       apply add_swap_mid_vec.
   Qed.
 
-  
+
     
 
   (** Matrix-multiplication associativity for the matrix-vector action:
@@ -353,11 +374,93 @@ Section Semimodule.
       zero l.
   Proof.
     intros l M1 M2 v i.
+    (* f(j,k) := scale (M1 i k) (scale (M2 k j) (v j)) *)
     set (f := fun (j k : Node) => scale (M1 i k) (scale (M2 k j) (v j))).
-    (* The proof mirrors Semimodule.v: use fold_right_scale_r_sum,
-       fold_right_scale_distr, scale_assoc, fold_right_congr, and
-       fold_right_double_commute. *)
-  Admitted.
+    (* g(j,k) := scale (M1 i j) (scale (M2 j k) (v k)) *)
+    set (g := fun (j k : Node) => scale (M1 i j) (scale (M2 j k) (v k))).
+
+    (* Step 1: LHS = sum_j sum_k f(j,k) *)
+    assert (HL :
+      List.fold_right (fun j acc => add (scale
+        (List.fold_right (fun k acc2 => M1 i k * M2 k j + acc2) 0 l) (v j)) acc)
+        zero l =
+      List.fold_right (fun j acc =>
+        add (List.fold_right (fun k acc' => add (f j k) acc') zero l) acc)
+        zero l).
+    { apply (fold_right_congr l
+        (fun j => scale (List.fold_right (fun k acc2 => M1 i k * M2 k j + acc2) 0 l) (v j))
+        (fun j => List.fold_right (fun k acc' => add (f j k) acc') zero l)).
+      intro j.
+      rewrite (fold_right_scale_r_sum l (fun k => M1 i k * M2 k j) (v j)).
+      apply (fold_right_congr l
+        (fun k => scale (M1 i k * M2 k j) (v j))
+        (fun k => f j k)).
+      intro k. unfold f. rewrite scale_assoc. reflexivity.
+    }
+
+    (* Step 2: RHS = sum_j sum_k g(j,k) *)
+    assert (HR :
+      List.fold_right (fun j acc => add (scale (M1 i j)
+        (List.fold_right (fun k acc2 => add (scale (M2 j k) (v k)) acc2) zero l)) acc)
+        zero l =
+      List.fold_right (fun j acc =>
+        add (List.fold_right (fun k acc' => add (g j k) acc') zero l) acc)
+        zero l).
+    { apply (fold_right_congr l
+        (fun j => scale (M1 i j)
+          (List.fold_right (fun k acc2 => add (scale (M2 j k) (v k)) acc2) zero l))
+        (fun j => List.fold_right (fun k acc' => add (g j k) acc') zero l)).
+      intro j.
+      rewrite (fold_right_scale_distr (fun k => scale (M2 j k) (v k)) l (M1 i j)).
+      apply (fold_right_congr l
+        (fun k => scale (M1 i j) (scale (M2 j k) (v k)))
+        (fun k => g j k)).
+      intro k. unfold g. reflexivity.
+    }
+
+    (* Step 3: sum_j sum_k g(j,k) = sum_k sum_j g(j,k) via double commute *)
+    assert (Hcomm :
+      List.fold_right (fun j acc =>
+        add (List.fold_right (fun k acc' => add (g j k) acc') zero l) acc)
+        zero l =
+      List.fold_right (fun k acc =>
+        add (List.fold_right (fun j acc' => add (g j k) acc') zero l) acc)
+        zero l).
+    { apply (fold_right_double_commute l g). }
+
+    (* Step 4: sum_k sum_j g(j,k) = sum_j sum_k g(k,j) (alpha-rename) *)
+    assert (H_alpha :
+      List.fold_right (fun k acc =>
+        add (List.fold_right (fun j acc' => add (g j k) acc') zero l) acc)
+        zero l =
+      List.fold_right (fun j acc =>
+        add (List.fold_right (fun k acc' => add (g k j) acc') zero l) acc)
+        zero l).
+    { apply (fold_right_nest_alpha l l g). }
+
+    (* Step 5: g(k,j) = f(j,k), so sum_j sum_k g(k,j) = sum_j sum_k f(j,k) *)
+    assert (Hgf :
+      List.fold_right (fun j acc =>
+        add (List.fold_right (fun k acc' => add (g k j) acc') zero l) acc)
+        zero l =
+      List.fold_right (fun j acc =>
+        add (List.fold_right (fun k acc' => add (f j k) acc') zero l) acc)
+        zero l).
+    { apply (@fold_right_congr R U l
+        (fun j => List.fold_right (fun k acc' => add (g k j) acc') zero l)
+        (fun j => List.fold_right (fun k acc' => add (f j k) acc') zero l)).
+      intro j. apply (@fold_right_congr R U l
+        (fun k => g k j) (fun k => f j k)).
+      intro k.
+      cbv delta [g f].
+      reflexivity.
+    }
+
+    (* Chain: LHS = sum_j sum_k f = sum_j sum_k g(k,j) = sum_k sum_j g(j,k) = sum_j sum_k g(j,k) = RHS *)
+    rewrite HL.  rewrite <-Hgf, <- Hcomm, <- HR.
+    reflexivity.
+  Qed.
+
 
   (** Identity-matrix action yields zero on nodes not in the list. *)
   Lemma fold_right_identity_zero {R : Semiring.type} {U : Semimodule.type R} :
@@ -365,7 +468,17 @@ Section Semimodule.
     ~ In i l ->
     List.fold_right (fun j acc => add (scale (I i j) (v j)) acc) zero l = zero.
   Proof.
-  Admitted.
+    induction l as [|j js IH]; simpl; intros v i Hnotin.
+    - reflexivity.
+    - unfold I.
+      destruct (fin_eq_dec i j) as [Heq | Hneq].
+      + (* i = j case: contradiction with ~ In i (j::js) *)
+        subst. exfalso. apply Hnotin. simpl. auto.
+      + (* i ≠ j case: I i j = 0 *)
+        rewrite scale_zero_r, add0r.
+        apply IH.
+        intro Hin. apply Hnotin. simpl. auto.
+  Qed.
 
   (** Identity-matrix action returns the vector component at the
       matching index. *)
@@ -374,7 +487,25 @@ Section Semimodule.
     NoDup l -> In i l ->
     List.fold_right (fun j acc => add (scale (I i j) (v j)) acc) zero l = v i.
   Proof.
-  Admitted.
+    induction l as [|j js IH]; simpl; intros v i Hdup Hin.
+    - inversion Hin.
+    - inversion_clear Hdup as [|? ? Hnotin Hdup'].
+      unfold I.
+      destruct (fin_eq_dec i j) as [Heq | Hneq].
+      + (* i = j case: I i j = 1 *)
+        subst.
+        rewrite scale_one.
+        transitivity (add (v j) zero).
+        * apply (f_equal (add (v j))).
+          apply (fold_right_identity_zero js v j Hnotin).
+        * apply addr0.
+      + (* i ≠ j case: I i j = 0 *)
+        rewrite scale_zero_r, add0r.
+        destruct Hin as [Heq | Hin_js].
+        * exfalso. apply Hneq. symmetry. exact Heq.
+        * apply (IH v i Hdup' Hin_js).
+  Qed.
+
 
   (** The geometric sum at the node-count bound satisfies the Kleene
       fixpoint equation: [A* = I + A · A*]. *)
@@ -385,9 +516,24 @@ Section Semimodule.
     geom_sum m (length (@elements Node) - 1)%nat c d =
     matrix_add I (matrix_mul m (geom_sum m (length (@elements Node) - 1)%nat)) c d.
   Proof.
-    (* Provable using geom_sum_stable_after_node_bound and
-       the recurrence of geom_sum (geom_sum_S from MatN.v). *)
-  Admitted.
+    intros m Hdiag c d.
+    pose proof (geom_sum_stable_after_node_bound 1 m Hdiag c d) as Hstable.
+    rewrite Hstable.
+    pose proof (elements_two_or_more (s := Node)) as Hlen_pos.
+    assert (Harith : 1 + length (@elements Node) - 1 = S (length (@elements Node) - 1)) by lia.
+    rewrite Harith.
+    rewrite (geom_sum_S (length (@elements Node) - 1) m c d).
+    reflexivity.
+  Qed.
+
+  (** Nested fold-right alpha-rename for semiring-valued sums. *)
+  Lemma fold_right_alpha_R {R : Semiring.type} (l : list Node) (F : Node -> Node -> R) (j : Node) :
+    List.fold_right (fun x y => F x j + y) 0 l =
+    List.fold_right (fun k acc2 => F k j + acc2) 0 l.
+  Proof.
+    induction l as [|a l' IH]; simpl; [reflexivity|].
+    apply (f_equal (fun t => F a j + t)). apply IH.
+  Qed.
 
   (** Kleene fixed point: [x = A* · b ⇔ x = A · x + b]. *)
   Theorem kleene_fixed_point {R : BoundedSemiring.type} {U : Semimodule.type R} :
@@ -397,8 +543,71 @@ Section Semimodule.
       (geom_sum A (length (@elements Node) - 1)%nat) b i) ->
     forall (i : Node), x i = vec_add (matrix_vector_action A x) b i.
   Proof.
-    (* Proof uses geom_sum_fixpoint, fold_right_identity, fold_right_mul_assoc. *)
-  Admitted.
+    intros A b x Hdiag Hx i.
+    set (Astar := geom_sum A (length (@elements Node) - 1)%nat).
+    pose proof (geom_sum_fixpoint A Hdiag) as Hstar.
+
+    (* Replace x i with (Astar·b) i, then unfold definitions *)
+    rewrite (Hx i).
+    unfold vec_add, matrix_vector_action.
+
+    (* Goal: (Astar·b) i = (A·x) i + b i *)
+
+    (* Step 1: (Astar·b) i = ((I + A·Astar)·b) i via fixpoint *)
+    assert (H1 :
+      List.fold_right (fun j acc => add (scale (Astar i j) (b j)) acc) zero elements =
+      List.fold_right (fun j acc =>
+        add (scale ((matrix_add I (matrix_mul A Astar)) i j) (b j)) acc) zero elements).
+    { apply (fold_right_congr elements
+        (fun j => scale (Astar i j) (b j))
+        (fun j => scale ((matrix_add I (matrix_mul A Astar)) i j) (b j))).
+      intro j. apply (f_equal (fun m => scale m (b j))). apply Hstar. }
+    apply (eq_trans H1). clear H1.
+
+    (* LHS = ((I + A·Astar)·b) i *)
+
+    (* Step 2: distribute scale over matrix addition *)
+    unfold matrix_add at 1.
+    rewrite (fold_right_scale_add elements
+      (fun j => I i j) (fun j => (matrix_mul A Astar) i j) b).
+
+    (* LHS = (I·b) i + ((A·Astar)·b) i *)
+
+    (* Step 3: I·b = b via identity *)
+    assert (H_id :
+      List.fold_right (fun j acc => add (scale (I i j) (b j)) acc) zero elements = b i).
+    { apply (fold_right_identity elements b i
+        (elements_nodup (s := Node))
+        (elements_complete (s := Node) i)). }
+    apply (eq_trans (f_equal2 add H_id eq_refl)).
+
+    (* LHS = b i + ((A·Astar)·b) i *)
+
+    (* Step 4: prove ((A·Astar)·b) i = (A·x) i, then add b i *)
+    cut (
+      List.fold_right (fun j acc => add (scale ((matrix_mul A Astar) i j) (b j)) acc) zero elements =
+      List.fold_right (fun j acc => add (scale (A i j) (x j)) acc) zero elements).
+    - intro Hcore.
+      apply (eq_trans (f_equal (fun s => add (b i) s) Hcore)).
+      apply (addC (b i) _).
+    - (* Core equality: ((A·Astar)·b) i = (A·x) i *)
+      unfold matrix_mul, sum.
+      refine (eq_trans _ (eq_trans (fold_right_mul_assoc elements A Astar b i) _)).
+      + (* alpha-x-y = alpha-k-acc2 *)
+        apply (fold_right_congr elements
+          (fun j => scale
+            (List.fold_right (fun x y => A i x * Astar x j + y) 0 elements) (b j))
+          (fun j => scale
+            (List.fold_right (fun k acc2 => A i k * Astar k j + acc2) 0 elements) (b j))).
+        intro j. apply (f_equal (fun s => scale s (b j))).
+        apply (fold_right_alpha_R elements (fun x y => A i x * Astar x y) j).
+      + (* Astar-fold = A·x *)
+        apply (fold_right_congr elements
+          (fun j => scale (A i j)
+            (List.fold_right (fun k acc0 => add (scale (Astar j k) (b k)) acc0) zero elements))
+          (fun j => scale (A i j) (x j))).
+        intro j. apply (f_equal (scale (A i j))). symmetry. apply Hx.
+  Qed.
 
   (** Vector addition is pointwise: [(x + y) i = x i + y i]. *)
   Lemma vec_add_pointwise {R : Semiring.type} {U : Semimodule.type R} :
@@ -412,9 +621,17 @@ Section Semimodule.
     (forall i : Node, x i = vec_add (matrix_vector_action A x) b i) ->
     forall i : Node, Orel (b i) (x i).
   Proof.
-    (* Proof: x+b = (A·x+b)+b = A·x+(b+b) = A·x+b = x,
-       using add_idem_module and addA/addC. *)
-  Admitted.
+    intros A b x Hfix i.
+    unfold Orel, vec_add in *.
+    rewrite (Hfix i).
+    (* Goal: b i + (A·x i + b i) = A·x i + b i *)
+    rewrite <- (addA (b i) (matrix_vector_action A x i) (b i)).
+    rewrite (addC (b i) (matrix_vector_action A x i)).
+    rewrite (addA (matrix_vector_action A x i) (b i) (b i)).
+    rewrite (add_idem_module (b i)).
+    reflexivity.
+  Qed.
+
 
   (** From [x = A·x + b] and bounded idempotence, derive [A·x ≤ x]. *)
   Lemma absorb_Ax_fixpoint {R : BoundedSemiring.type} {U : Semimodule.type R} :
@@ -422,8 +639,15 @@ Section Semimodule.
     (forall i : Node, x i = vec_add (matrix_vector_action A x) b i) ->
     forall i : Node, Orel (matrix_vector_action A x i) (x i).
   Proof.
-    (* Proof using add_idem_module, addA, addC, and the fixpoint hypothesis. *)
-  Admitted.
+    intros A b x Hfix i.
+    unfold Orel, vec_add in *.
+    rewrite (Hfix i).
+    (* Goal: (A·x) i + ((A·x) i + b i) = (A·x) i + b i *)
+    rewrite <- (addA (matrix_vector_action A x i)
+                    (matrix_vector_action A x i) (b i)).
+    rewrite (add_idem_module (matrix_vector_action A x i)).
+    reflexivity.
+  Qed.
 
   (** Matrix-vector action is monotone with respect to the Orel order.
       If [v ≤ u] pointwise, then [A·v ≤ A·u] pointwise. *)
@@ -432,8 +656,23 @@ Section Semimodule.
     (forall j, Orel (v j) (u j)) ->
     forall i, Orel (matrix_vector_action A v i) (matrix_vector_action A u i).
   Proof.
-    (* Proof: use fold_right_split, fold_right_congr, scale_distr_v. *)
-  Admitted.
+    intros A u v Hle i.
+    unfold Orel, matrix_vector_action in *.
+    (* Goal: (Σ scale (A i j) (v j)) + (Σ scale (A i j) (u j)) = Σ scale (A i j) (u j) *)
+    refine (eq_trans (eq_sym (fold_right_split elements
+      (fun j => scale (A i j) (v j))
+      (fun j => scale (A i j) (u j)))) _).
+    (* Goal: Σ (scale (A i j) (v j) + scale (A i j) (u j)) = Σ scale (A i j) (u j) *)
+    apply (@fold_right_congr R U elements
+      (fun j => add (scale (A i j) (v j)) (scale (A i j) (u j)))
+      (fun j => scale (A i j) (u j))).
+    intro j.
+    setoid_rewrite <- (scale_distr_v (s := U) (A i j) (v j) (u j)).
+    setoid_rewrite (Hle j).
+    reflexivity.
+  Qed.
+
+  
 
   (** Absorption lifts through matrix powers:
       if [b ≤ x] and [A·x ≤ x], then [A^k·b ≤ x] for all [k]. *)
