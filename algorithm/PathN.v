@@ -2185,6 +2185,57 @@ Section Path.
       + apply (mulr1 (s := R) a).
   Qed.
 
+  Lemma reduce_path_cycle_step {R : BoundedSemiring.type} :
+    forall (l : list (Node * Node * R)) (m : @Matrix R) c d,
+    (length (@elements Node) <= length l)%nat ->
+    well_formed_path_aux m (l ++ [(d, d, 1)]) ->
+    source c (l ++ [(d, d, 1)]) = true ->
+    target d (l ++ [(d, d, 1)]) = true ->
+    exists ys,
+      (List.length ys < List.length l)%nat /\
+      well_formed_path_aux m (ys ++ [(d, d, 1)]) /\
+      source c (ys ++ [(d, d, 1)]) = true /\
+      target d (ys ++ [(d, d, 1)]) = true /\
+      Orel (measure_of_path l) (measure_of_path ys).
+  Proof.
+    intros l m c d Hlen Hwf Hsrc Htgt.
+    destruct (well_formed_path_snoc l [(d, d, 1)] m Hwf) as [Hwf_l Hwf_d].
+    simpl in Hwf_d. destruct Hwf_d as [Hdiag _].
+    pose proof (all_paths_in_klength_paths_cycle_finN_stronger (R := R) l m Hlen Hwf_l) as Hcycle.
+    destruct Hcycle as (ll & au & av & aw & lm & lr & _ & Hcyc & _ & Hpath).
+    set (ys := ll ++ lr).
+    assert (Hlen_ys : List.length ys < List.length l).
+    { subst ys. rewrite Hpath. rewrite !length_app. cbn. lia. }
+    assert (Hwf_ys : well_formed_path_aux m (ys ++ [(d, d, 1)])).
+    { subst ys.
+      pose proof Hwf as Hwf'.
+      rewrite Hpath in Hwf'.
+      repeat rewrite <- app_assoc in Hwf'.
+      pose proof (well_formed_loop_removal ll (lr ++ [(d, d, 1)]) lm au av aw m Hwf' Hcyc)
+        as Htmp.
+      rewrite app_assoc in Htmp.
+      exact Htmp. }
+    assert (Hsrc_ys : source c (ys ++ [(d, d, 1)]) = true).
+    { subst ys.
+      pose proof Hwf as Hwf'.
+      rewrite Hpath in Hwf'.
+      repeat rewrite <- app_assoc in Hwf'.
+      pose proof Hsrc as Hsrc'.
+      rewrite Hpath in Hsrc'.
+      repeat rewrite <- app_assoc in Hsrc'.
+      pose proof (source_loop_removal ll lr lm au av aw c d m Hwf' Hsrc' Hcyc)
+        as Htmp.
+      exact Htmp. }
+    assert (Htgt_ys : target d (ys ++ [(d, d, 1)]) = true).
+    { subst ys. rewrite target_end. cbn.
+      destruct (fin_eq_dec d d) as [_ | Hc]; [reflexivity | exfalso; apply Hc; reflexivity]. }
+    assert (Horel : Orel (measure_of_path l) (measure_of_path ys)).
+    { subst ys.
+      rewrite Hpath.
+      apply (cycle_path_dup_remove ll ((au, av, aw) :: lm) lr). }
+    exists ys. repeat split; try assumption.
+  Qed.
+
 
 
   Lemma reduce_path_into_simpl_path {R : BoundedSemiring.type} :
@@ -2205,110 +2256,26 @@ Section Path.
     intros l.
     induction (zwf_well_founded l) as [l Hf IHl].
     unfold zwf in * |- *.
-    intros ? ? ? Hfl Hw Hs Ht.
-    destruct (well_formed_path_snoc l ([(d, d, 1)]) m Hw) as 
-    (Ha & Hb).
-    destruct (all_paths_in_klength_paths_cycle_finN_stronger l 
-      m Hfl Ha) as (ll & au & av & aw & lm & lr & He 
-      & Hc & Hep & Hte).
-    assert (Hlt : (length (ll ++ lr) < length l)%nat).
-    { rewrite Hte. cbn. 
-    rewrite length_app. rewrite !length_app.
-    cbn. rewrite length_app. nia. }
-    assert (Hdisj : (length (ll ++ lr) < length (@elements Node))%nat ∨ 
-      (length (@elements Node) <= length (ll ++ lr))%nat).
-    nia.
-    destruct Hdisj as [Hdisj | Hdisj].
-    exists (ll ++ lr).
-    repeat split.
-    exact Hdisj.
-    rewrite Hte in Hw.
-    pose proof (@well_formed_loop_removal R ll (lr ++ [(d, d, 1)]) lm 
-      au av aw m) as Hu.
-    assert (ha : ((ll ++ ((au, av, aw) :: lm) ++ lr) ++ [(d, d, 1)]) = 
-      (ll ++ ((au, av, aw) :: lm) ++ lr ++ [(d, d, 1)])). 
-    {
-      rewrite !List.app_assoc. reflexivity. 
-    }
-    setoid_rewrite ha in Hw; clear ha.
-    specialize(Hu Hw Hc).
-    rewrite <-List.app_assoc.
-    exact Hu.
-    rewrite Hte in Hw.
-    pose proof (@source_loop_removal R ll lr lm au av aw c d m) as Hv.
-    assert (ha : ((ll ++ ((au, av, aw) :: lm) ++ lr) ++ [(d, d, 1)]) = 
-      (ll ++ ((au, av, aw) :: lm) ++ lr ++ [(d, d, 1)])). 
-    {
-      rewrite !List.app_assoc. reflexivity. 
-    }
-    setoid_rewrite ha in Hw. 
-    rewrite Hte in Hs. 
-    setoid_rewrite ha in Hs. clear ha.
-    specialize(Hv Hw Hs Hc).
-    exact Hv. rewrite target_end.
-    cbn. destruct (fin_eq_dec d d) as [hf | hf]; try congruence.
-    rewrite Hte.
-    eapply cycle_path_dup_remove.
-
-    (* inductive case *)
-    specialize (IHl (ll ++ lr) Hlt m c d Hdisj).
-    pose proof (@well_formed_loop_removal R ll (lr ++ [(d, d, 1)]) lm 
-      au av aw m) as Hu.
-    assert (ha : ((ll ++ ((au, av, aw) :: lm) ++ lr) ++ [(d, d, 1)]) = 
-      (ll ++ ((au, av, aw) :: lm) ++ lr ++ [(d, d, 1)])). 
-    {
-      rewrite !List.app_assoc. reflexivity. 
-    }
-    rewrite Hte in Hw.
-    setoid_rewrite ha in Hw; clear ha.
-    specialize(Hu Hw Hc).
-    rewrite List.app_assoc in Hu.
-    specialize(IHl Hu). clear Hu.
-    pose proof (@source_loop_removal R ll lr lm au av aw c d m) as Hv.
-    assert (ha : ((ll ++ ((au, av, aw) :: lm) ++ lr) ++ [(d, d, 1)]) = 
-      (ll ++ ((au, av, aw) :: lm) ++ lr ++ [(d, d, 1)])). 
-    {
-      rewrite !List.app_assoc. reflexivity. 
-    }
-    rewrite Hte in Hs. 
-    setoid_rewrite ha in Hs. clear ha.
-    specialize(Hv Hw Hs Hc).
-    specialize(IHl Hv). clear Hv.
-    rewrite target_end in IHl.
-    assert (ha : @target R d [(d, d, 1)] = true).
-    {
-      unfold target.
-      destruct (fin_eq_dec d d) as [hf | hf]; try congruence.
-    }
-    specialize(IHl ha).
-    destruct IHl as 
-    (ys & Hlfin & Hwf & Hsn & Htn & Horel).
-    exists ys.
-    repeat split.
-    exact Hlfin.
-    exact Hwf.
-    exact Hsn.
-    exact Htn.
-    rewrite Hte.
-    pose proof cycle_path_dup_remove 
-      ll ((au, av, aw) :: lm) lr as Hcp.
-    eapply orel_trans; try assumption.
-    exact Hcp.
-    exact Horel.
+    intros m c d Hlen Hwf Hsrc Htgt.
+    assert (Hshort_or_long : (length l < length (@elements Node))%nat \/
+      (length (@elements Node) <= length l)%nat) by lia.
+    destruct Hshort_or_long as [Hshort | Hlong].
+    - exists l.
+      repeat split; try assumption.
+      unfold Orel. apply bounded_add_idem.
+    - pose proof (reduce_path_cycle_step l m c d Hlen Hwf Hsrc Htgt)
+        as (ys & Hyslen & Hwf_ys & Hsrc_ys & Htgt_ys & Horel_ys).
+      assert (Hys_short_or_long : (length ys < length (@elements Node))%nat \/
+        (length (@elements Node) <= length ys)%nat) by lia.
+      destruct Hys_short_or_long as [Hys_short | Hys_long].
+      + exists ys.
+        repeat split; try assumption.
+      + specialize (IHl ys Hyslen m c d Hys_long Hwf_ys Hsrc_ys Htgt_ys)
+          as (zs & Hzs_short & Hwf_zs & Hsrc_zs & Htgt_zs & Horel_zs).
+        exists zs.
+        repeat split; try assumption.
+        eapply orel_trans; eauto.
   Qed.
-
-  
-
-
-
-
-
-
-
-    
-
-  Admitted. 
-  
 
 
 
