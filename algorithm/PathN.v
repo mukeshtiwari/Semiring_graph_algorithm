@@ -1,6 +1,5 @@
 From Stdlib Require Import List Utf8
   BinNatDef Lia.
-From Stdlib Require Import Classical_Prop.
 From Semiring Require Import OrelN Structures.
 Import ListNotations SemiringNotations.
 
