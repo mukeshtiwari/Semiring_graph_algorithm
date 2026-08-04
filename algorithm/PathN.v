@@ -2095,8 +2095,219 @@ Section Path.
         split; [exact Heq_avt_but | exact Hwf_ll''_lr].
   Qed.
 
+
+  Lemma source_loop_removal {R : Semiring.type} : 
+    forall ll lr lm au av aw c d (m : @Matrix R),
+    well_formed_path_aux m
+      (ll ++ ((au, av, aw) :: lm) ++ lr ++ [(d, d, 1)]) -> 
+    source c
+      (ll ++ ((au, av, aw) :: lm) ++ lr ++ [(d, d, 1)]) = true ->
+    cyclic_path au ((au, av, aw) :: lm) ->
+    source c ((ll ++ lr) ++ [(d, d, 1)]) = true.
+  Proof.
+    intros ll lr lm au av aw c d m Hwf Hsrc Hcyc.
+    unfold source in *.
+    destruct ll as [|((x, y), w) ll'].
+    - (* ll = [] *)
+      simpl in Hsrc.
+      destruct (fin_eq_dec c au) as [Heq_c_au | Hneq_c_au]; [| discriminate Hsrc].
+      subst c.
+      destruct (lr ++ [(d, d, 1)]) as [|h t] eqn:Hlr.
+      { (* impossible: lr ++ [(d,d,1)] is always non-empty *)
+        exfalso. apply app_eq_nil in Hlr. destruct Hlr as [_ Hnil].
+        discriminate Hnil. }
+      destruct h as [[y2 z2] w2].
+      simpl.
+      (* Need: fin_eq_dec au y2 = true, i.e., au = y2 *)
+      unfold cyclic_path in Hcyc. destruct Hcyc as [_ [_ Htgt]].
+      (* Inner induction as in well_founded_rev *)
+      pose (P := fun (lm' : list (Node * Node * R)) =>
+        forall (d x y : Node) (w : R),
+          well_formed_path_aux m ((x, y, w) :: lm' ++ (y2, z2, w2) :: t) ->
+          target d ((x, y, w) :: lm') = true ->
+          d = y2).
+      assert (Hind : forall lm', P lm').
+      { induction lm' as [|((xu, xv), xw) lm'' IH]; unfold P.
+        - intros d0 x0 y0 w0 Hwf' Htgt'.
+          simpl in Hwf'. destruct Hwf' as [_ [Heq_y0_y2 _]].
+          simpl in Htgt'.
+          destruct (fin_eq_dec d0 y0) as [Heq | Hneq]; [| discriminate Htgt'].
+          subst d0. subst y0. reflexivity.
+        - intros d0 x0 y0 w0 Hwf' Htgt'.
+          simpl in Hwf'. destruct Hwf' as [_ [_ Hwf_lm_rest]].
+          simpl in Htgt'. exact (IH d0 xu xv xw Hwf_lm_rest Htgt'). }
+      assert (Heq_au_y2 : au = y2).
+      { apply (Hind lm au au av aw).
+        - replace (lm ++ lr ++ [(d, d, 1)]) with (lm ++ (y2, z2, w2) :: t) in Hwf.
+          + exact Hwf.
+          + f_equal. exact (eq_sym Hlr).
+        - exact Htgt. }
+      subst y2.
+      rewrite Hlr. simpl.
+      destruct (fin_eq_dec au au) as [_ | Hc]; [reflexivity | exfalso; apply Hc; reflexivity].
+    - (* ll ≠ [] *)
+      simpl in Hsrc. simpl. exact Hsrc.
+  Qed.
+
+
+
+
+  Lemma cycle_path_dup_remove {R : BoundedSemiring.type} : 
+    forall (ll : list (Node * Node * R)) lm lr,
+    Orel 
+      (measure_of_path (ll ++ lm ++ lr))
+      (measure_of_path (ll ++ lr)).
+  Proof.
+    intros ll lm lr. unfold Orel. 
+    erewrite measure_of_path_app with (l₁ := ll) (l₂ := lm ++ lr).
+    assert (ha : measure_of_path (lm ++ lr) = 
+    (measure_of_path lm * measure_of_path lr)).
+    { rewrite measure_of_path_app with (l₁ := lm) (l₂ := lr). reflexivity. reflexivity. } 
+    rewrite ha; clear ha.
+    assert (ha : measure_of_path (ll ++ lr) = 
+    (measure_of_path ll * measure_of_path lr)).
+    { rewrite measure_of_path_app with (l₁ := ll) (l₂ := lr). reflexivity. reflexivity. }
+    rewrite ha. rewrite <-mulA.
+    apply path_weight_rel with (a := measure_of_path ll) (b := measure_of_path lm) (c := measure_of_path lr).
+    reflexivity.
+  Qed.
+
+  (** In a BoundedSemiring, addition is idempotent: [a + a = a].
+      Derived from [add_bound : 1 + a = 1] and distributivity. *)
+  Lemma bounded_add_idem {R : BoundedSemiring.type} : forall (a : R), a + a = a.
+  Proof.
+    intro a.
+    rewrite <- (mulr1 (s := R) a) at 1 2.
+    apply (@eq_trans _ (a * 1 + a * 1) (a * (1 + 1)) a).
+    - apply eq_sym, (mulDl (s := R) a 1 1).
+    - apply (@eq_trans _ (a * (1 + 1)) (a * 1) a).
+      + apply (f_equal (fun x => a * x)), (add_bound (s := R) 1).
+      + apply (mulr1 (s := R) a).
+  Qed.
+
+
+
+  Lemma reduce_path_into_simpl_path {R : BoundedSemiring.type} :
+    forall (l : list (Node * Node * R)) (m : @Matrix R) c d,
+    (length (@elements Node) <= length l)%nat ->
+    well_formed_path_aux m (l ++ [(d, d, 1)]) ->
+    source c (l ++ [(d, d, 1)]) = true -> 
+    target d (l ++ [(d, d, 1)]) = true ->
+    exists ys, 
+      (List.length ys < List.length (@elements Node))%nat ∧
+      well_formed_path_aux m (ys ++ [(d, d, 1)])  ∧
+      source c (ys ++ [(d, d, 1)]) = true ∧
+      target d (ys ++ [(d, d, 1)]) = true ∧
+      Orel
+        (measure_of_path l) 
+        (measure_of_path ys).
+  Proof.
+    intros l.
+    induction (zwf_well_founded l) as [l Hf IHl].
+    unfold zwf in * |- *.
+    intros ? ? ? Hfl Hw Hs Ht.
+    destruct (well_formed_path_snoc l ([(d, d, 1)]) m Hw) as 
+    (Ha & Hb).
+    destruct (all_paths_in_klength_paths_cycle_finN_stronger l 
+      m Hfl Ha) as (ll & au & av & aw & lm & lr & He 
+      & Hc & Hep & Hte).
+    assert (Hlt : (length (ll ++ lr) < length l)%nat).
+    { rewrite Hte. cbn. 
+    rewrite length_app. rewrite !length_app.
+    cbn. rewrite length_app. nia. }
+    assert (Hdisj : (length (ll ++ lr) < length (@elements Node))%nat ∨ 
+      (length (@elements Node) <= length (ll ++ lr))%nat).
+    nia.
+    destruct Hdisj as [Hdisj | Hdisj].
+    exists (ll ++ lr).
+    repeat split.
+    exact Hdisj.
+    rewrite Hte in Hw.
+    pose proof (@well_formed_loop_removal R ll (lr ++ [(d, d, 1)]) lm 
+      au av aw m) as Hu.
+    assert (ha : ((ll ++ ((au, av, aw) :: lm) ++ lr) ++ [(d, d, 1)]) = 
+      (ll ++ ((au, av, aw) :: lm) ++ lr ++ [(d, d, 1)])). 
+    {
+      rewrite !List.app_assoc. reflexivity. 
+    }
+    setoid_rewrite ha in Hw; clear ha.
+    specialize(Hu Hw Hc).
+    rewrite <-List.app_assoc.
+    exact Hu.
+    rewrite Hte in Hw.
+    pose proof (@source_loop_removal R ll lr lm au av aw c d m) as Hv.
+    assert (ha : ((ll ++ ((au, av, aw) :: lm) ++ lr) ++ [(d, d, 1)]) = 
+      (ll ++ ((au, av, aw) :: lm) ++ lr ++ [(d, d, 1)])). 
+    {
+      rewrite !List.app_assoc. reflexivity. 
+    }
+    setoid_rewrite ha in Hw. 
+    rewrite Hte in Hs. 
+    setoid_rewrite ha in Hs. clear ha.
+    specialize(Hv Hw Hs Hc).
+    exact Hv. rewrite target_end.
+    cbn. destruct (fin_eq_dec d d) as [hf | hf]; try congruence.
+    rewrite Hte.
+    eapply cycle_path_dup_remove.
+
+    (* inductive case *)
+    specialize (IHl (ll ++ lr) Hlt m c d Hdisj).
+    pose proof (@well_formed_loop_removal R ll (lr ++ [(d, d, 1)]) lm 
+      au av aw m) as Hu.
+    assert (ha : ((ll ++ ((au, av, aw) :: lm) ++ lr) ++ [(d, d, 1)]) = 
+      (ll ++ ((au, av, aw) :: lm) ++ lr ++ [(d, d, 1)])). 
+    {
+      rewrite !List.app_assoc. reflexivity. 
+    }
+    rewrite Hte in Hw.
+    setoid_rewrite ha in Hw; clear ha.
+    specialize(Hu Hw Hc).
+    rewrite List.app_assoc in Hu.
+    specialize(IHl Hu). clear Hu.
+    pose proof (@source_loop_removal R ll lr lm au av aw c d m) as Hv.
+    assert (ha : ((ll ++ ((au, av, aw) :: lm) ++ lr) ++ [(d, d, 1)]) = 
+      (ll ++ ((au, av, aw) :: lm) ++ lr ++ [(d, d, 1)])). 
+    {
+      rewrite !List.app_assoc. reflexivity. 
+    }
+    rewrite Hte in Hs. 
+    setoid_rewrite ha in Hs. clear ha.
+    specialize(Hv Hw Hs Hc).
+    specialize(IHl Hv). clear Hv.
+    rewrite target_end in IHl.
+    assert (ha : @target R d [(d, d, 1)] = true).
+    {
+      unfold target.
+      destruct (fin_eq_dec d d) as [hf | hf]; try congruence.
+    }
+    specialize(IHl ha).
+    destruct IHl as 
+    (ys & Hlfin & Hwf & Hsn & Htn & Horel).
+    exists ys.
+    repeat split.
+    exact Hlfin.
+    exact Hwf.
+    exact Hsn.
+    exact Htn.
+    rewrite Hte.
+    pose proof cycle_path_dup_remove 
+      ll ((au, av, aw) :: lm) lr as Hcp.
+    eapply orel_trans; try assumption.
+    exact Hcp.
+    exact Horel.
+  Qed.
+
   
 
+
+
+
+
+
+
+    
+
+  Admitted. 
   
 
 
