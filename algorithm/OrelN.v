@@ -28,7 +28,10 @@ End Matrixdef.
 
 Section OrelProps.
 
-  Definition Orel {R : Semiring.type} (a b : R) : Prop := a + b = b.
+  (** Orel order [a ≤ b := a + b = b], defined for any commutative monoid.
+      Works for semirings, semimodule carriers, and any type with an
+      idempotent addition. *)
+  Definition Orel {V : CommutativeMonoid.type} (a b : V) : Prop := a + b = b.
 
   Local Infix "≤" := Orel (at level 70).
 
