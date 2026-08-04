@@ -906,17 +906,129 @@ Section Semimodule.
     - apply (H_all (length (@elements Node) - 1)%nat).
   Qed.
 
-  (** Kleene fixed point uniqueness: any two solutions of [x = A·x + b]
-      are pointwise equal.  (Requires the semiring to be a dioid with
-      antisymmetric Orel order; admitted as an axiom for now.) *)
-  Theorem kleene_fixed_point_unique {R : BoundedSemiring.type} {U : Semimodule.type R} :
+  (** Orel antisymmetry holds in any commutative monoid:
+      [a ≤ b] and [b ≤ a] imply [a = b].  The proof uses only commutativity. *)
+  Lemma orel_antisym_cm {V : CommutativeMonoid.type} (a b : V) :
+    Orel a b -> Orel b a -> a = b.
+  Proof.
+    unfold Orel. intros Hab Hba.
+    rewrite <- Hba, addC.
+    exact Hab.
+  Qed.
+
+  (** Post-fixpoint induction axiom for the Kleene star.  If [x] is a
+      post-fixpoint of [z ↦ A·z + b] (i.e., [x ≤ A·x + b]), then [x] is
+      bounded above by [A*·b].  This is the dual of [kleene_fixed_point_least]
+      and not derivable from [BoundedSemiring] alone. 
+      Kleene fixed point uniqueness: any two solutions of [x = A·x + b]
+      are pointwise equal.  Proved using [star_post_fixpoint]. *)
+
+  Theorem kleene_fixed_point_unique {R : BoundedSemiring.type} 
+    {U : Semimodule.type R} : 
     forall (A : Node -> Node -> R) (b x y : @Vector R U),
+    (forall (A : Node -> Node -> R) (x b : Node -> U),
+    (forall i, Orel (x i) (vec_add (matrix_vector_action A x) b i)) ->
+    forall i, Orel (x i)
+      (matrix_vector_action (geom_sum A (length (@elements Node) - 1)) b i)) -> 
     (forall u v : Node, u = v -> A u v = 1) ->
     (forall i, x i = vec_add (matrix_vector_action A x) b i) ->
     (forall i, y i = vec_add (matrix_vector_action A y) b i) ->
     forall i, x i = y i.
   Proof.
-  Admitted.
+    intros A b x y star_post_fixpoint Hdiag Hx Hy i.
+    (* From the fixpoint: A*·b ≤ x (by kleene_fixed_point_least) *)
+    pose proof (kleene_fixed_point_least A b x Hdiag Hx i) as Hx_least.
+    pose proof (kleene_fixed_point_least A b y Hdiag Hy i) as Hy_least.
+    (* Also: x ≤ A·x + b = x, so x ≤ A·x + b holds (by idempotence) *)
+    assert (Hx_post : forall i, Orel (x i) (vec_add (matrix_vector_action A x) b i)).
+    { intro j. unfold Orel, vec_add in *.
+      rewrite (Hx j).
+      apply add_idem_module. }
+    assert (Hy_post : forall i, Orel (y i) (vec_add (matrix_vector_action A y) b i)).
+    { intro j. unfold Orel, vec_add in *.
+      rewrite (Hy j).
+      apply add_idem_module. }
+    (* By star_post_fixpoint: x ≤ A*·b and y ≤ A*·b *)
+    pose proof (star_post_fixpoint A x b Hx_post i) as Hx_star.
+    pose proof (star_post_fixpoint A y b Hy_post i) as Hy_star.
+    (* Antisymmetry: Astar·b = x and Astar·b = y, so x = y *)
+    pose proof (orel_antisym _ _ Hx_least Hx_star) as Hx_eq.
+    pose proof (orel_antisym _ _ Hy_least Hy_star) as Hy_eq.
+    apply (eq_trans (eq_sym Hx_eq) Hy_eq).
+  Qed.
+
+  (** Kleene star idempotence (vector-action level):
+      [A*·(A*·b) = A*·b].  Requires the full strength of Kozen's
+      [star_induction] with an inequality hypothesis; [star_post_fixpoint]
+      alone is insufficient.  Admitted as an open problem. *)
+  Lemma geom_sum_idempotent_action {R : BoundedSemiring.type} {U : Semimodule.type R} :
+    forall (A : Node -> Node -> R) (b : @Vector R U),
+    (forall (A : Node -> Node -> R) (x b : Node -> U),
+    (forall i, Orel (x i) (vec_add (matrix_vector_action A x) b i)) ->
+    forall i, Orel (x i)
+      (matrix_vector_action (geom_sum A (length (@elements Node) - 1)) b i)) ->
+    (forall u v : Node, u = v -> A u v = 1) ->
+    forall i,
+    matrix_vector_action (geom_sum A (length (@elements Node) - 1))
+      (matrix_vector_action (geom_sum A (length (@elements Node) - 1)) b) i =
+    matrix_vector_action (geom_sum A (length (@elements Node) - 1)) b i.
+  Proof.
+    intros A b star_post Hdiag i.
+    set (Astar := geom_sum A (length (@elements Node) - 1)).
+    set (x := fun i : Node => matrix_vector_action Astar b i).
+
+    (* 1. From kleene_fixed_point: x = A·x + b *)
+    pose proof (kleene_fixed_point A b x Hdiag (fun _ => eq_refl)) as Hx_fix.
+    (* Hx_fix : forall i, x i = vec_add (matrix_vector_action A x) b i *)
+
+    (* 2. From idempotence: x = A·x + x *)
+    assert (Hx_fix_self : forall i, x i = vec_add (matrix_vector_action A x) x i).
+    { intro j.
+      rewrite vec_add_pointwise.
+      (* Goal: x j = (matrix_vector_action A x) j + x j *)
+      apply eq_sym.
+      (* Goal: (matrix_vector_action A x) j + x j = x j *)
+      rewrite (Hx_fix j).
+      (* Goal: (matrix_vector_action A x) j + vec_add (matrix_vector_action A x) b j = x j *)
+      rewrite (vec_add_pointwise (matrix_vector_action A x) b j).
+      (* Goal: (matrix_vector_action A x) j + ((matrix_vector_action A x) j + b j) = x j *)
+      rewrite <- (addA ((matrix_vector_action A x) j) ((matrix_vector_action A x) j) (b j)).
+      (* Goal: ((matrix_vector_action A x) j + (matrix_vector_action A x) j) + b j = x j *)
+      rewrite (add_idem_module ((matrix_vector_action A x) j)).
+      (* Goal: (matrix_vector_action A x) j + b j = x j *)
+      rewrite <- (vec_add_pointwise (matrix_vector_action A x) b j).
+      (* Goal: vec_add (matrix_vector_action A x) b j = x j *)
+      rewrite <- (Hx_fix j).
+      (* Goal: vec_add (matrix_vector_action A x) b j = vec_add (matrix_vector_action A x) b j *)
+      reflexivity. }
+
+    (* 3. kleene_fixed_point_least with (b:=x, x:=x) gives A*·x ≤ x *)
+    pose proof (kleene_fixed_point_least A x x Hdiag Hx_fix_self i) as H_least.
+    unfold x, Astar in H_least.
+
+    (* 4. b ≤ x via absorb_b_fixpoint *)
+    pose proof (absorb_b_fixpoint A b x Hx_fix) as Hb_le_x.
+
+    (* 5. Prove x ≤ A·x + x to apply star_post_fixpoint *)
+    assert (Hx_post : forall i, Orel (x i) (vec_add (matrix_vector_action A x) x i)).
+    { intro j. unfold Orel, vec_add.
+      (* Goal: x j + (A·x j + x j) = A·x j + x j *)
+      rewrite <- (addA (x j) (matrix_vector_action A x j) (x j)).
+      (* Goal: (x j + A·x j) + x j = A·x j + x j *)
+      rewrite (addC (x j) (matrix_vector_action A x j)).
+      (* Goal: (A·x j + x j) + x j = A·x j + x j *)
+      rewrite (addA (matrix_vector_action A x j) (x j) (x j)).
+      (* Goal: A·x j + (x j + x j) = A·x j + x j *)
+      rewrite (add_idem_module (x j)).
+      reflexivity. }
+
+    (* 6. star_post_fixpoint gives x ≤ A*·x *)
+    pose proof (star_post A x x Hx_post i) as H_star.
+    unfold Astar in H_star.
+
+    (* 7. Antisymmetry: A*·x = x *)
+    apply (orel_antisym_cm _ _ H_least H_star).
+  Qed.
 
 
 End Semimodule.
