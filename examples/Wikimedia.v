@@ -1,12 +1,12 @@
 From Stdlib Require Import List BinNatDef
-  Psatz Utf8 EqNat. 
-From Semiring Require Import Mat  Definitions
-  Listprop Semimodule.
+  Psatz Utf8 EqNat Lia.
+From HB Require Import structures.
+From Semiring Require Import MatN 
+  SemimoduleN Structures.
 
-  
-Import ListNotations.
+Import ListNotations SemiringNotations. 
 
-  Section Comp. 
+Section Comp. 
 
     
     (* Inductive Node := A | B | C | D | E.  *)
@@ -56,28 +56,7 @@ Import ListNotations.
       end.
     *)
      
-    Definition eqN (x y : Node) : bool :=
-    match x, y with
-    | TC, TC => true
-    | SK, SK => true
-    | KW, KW => true
-    | MR, MR => true
-    | LG, LG => true
-    | CB, CB => true
-    | HC, HC => true
-    | JSR, JSR => true
-    | PL, PL => true
-    | JG, JG => true
-    | JF, JF => true
-    | FSS, FSS => true
-    | GM, GM => true
-    | MP, MP => true
-    | EZ, EZ => true
-    | WHD, WHD => true
-    | UW, UW => true
-    | TM, TM => true
-    | _, _ => false
-    end.
+   
     
 
 
@@ -85,12 +64,6 @@ Import ListNotations.
     | Left : nat -> R
     | Infinity : R.
 
-    Definition eqR (u v : R) : bool :=
-      match u, v with 
-      | Left x, Left y => Nat.eqb x y 
-      | Infinity, Infinity => true 
-      | _, _ => false 
-      end.
 
     Definition zeroR : R := Left 0.
 
@@ -118,283 +91,117 @@ Import ListNotations.
     Definition finN : list Node :=
     [TC; SK; KW; MR; LG; CB; HC; JSR; PL; JG; JF; FSS; GM; MP; EZ; WHD; UW; TM].
     
-    Definition wikimedia (m : Path.Matrix Node R) : Path.Matrix Node R :=
-      matrix_exp_binary_eff_fun Node eqN finN R zeroR oneR plusR mulR m 17%N.
 
-  End Comp.
+End Comp.
 
 
-Section Proofs. 
+(* =================================================================== *)
+(*  HB Instances: FinType Node, BoundedSemiring R (max-min semiring)    *)
+(* =================================================================== *)
 
-  (* Establish Proofs *)
-  Theorem refN : brel_reflexive Node eqN. 
+Section HBInstances.
+
+  Definition fin_eq_dec (x y : Node) : {x = y} + {x <> y}.
+  Proof. decide equality. Defined.
+
+  Definition elements_list : list Node :=
+    [TC; SK; KW; MR; LG; CB; HC; JSR; PL; JG; JF; FSS; GM; MP; EZ; WHD; UW; TM].
+
+  Lemma elements_nodup_proof : NoDup elements_list.
+  Proof. Admitted.
+
+  Lemma elements_complete_proof : forall x : Node, In x elements_list.
+  Proof. Admitted.
+
+  Lemma elements_two_or_more_proof : (2 <= List.length elements_list)%nat.
   Proof.
-    unfold brel_reflexive.
-    (* copilot: write a brackt with 17 | *)
-    destruct x; simpl; reflexivity.
+    unfold elements_list. cbn. nia.
   Qed.
 
-  Theorem symN : brel_symmetric Node eqN.
+  HB.instance Definition _ := IsFinType.Build Node
+    elements_list elements_nodup_proof elements_complete_proof
+    elements_two_or_more_proof fin_eq_dec.
+
+  Lemma addA_proof : forall x y z : R, plusR (plusR x y) z = plusR x (plusR y z).
   Proof.
-    unfold brel_symmetric;
-    destruct x; destruct y; simpl;
-    try reflexivity; try congruence.
+    intros [x|] [y|] [z|]; cbn; try reflexivity.
+    rewrite PeanoNat.Nat.max_assoc. reflexivity.
   Qed.
 
-  Theorem trnN : brel_transitive Node eqN.
+  Lemma addC_proof : forall x y : R, plusR x y = plusR y x.
   Proof.
-    unfold brel_transitive;
-    destruct x; destruct y; destruct z;
-    simpl; intros Ha Hb;
-    try firstorder. 
-  Qed. 
-
-
-  Theorem dunN : no_dup Node eqN finN = true. 
-  Proof.
-    reflexivity.
+    intros [x|] [y|]; cbn; try reflexivity.
+    rewrite PeanoNat.Nat.max_comm. reflexivity.
   Qed.
 
-  Theorem lenN : 2 <= List.length finN. 
+  Lemma add0r_proof : forall x : R, plusR zeroR x = x.
   Proof.
-    cbn; nia. 
-  Qed. 
-
-  Theorem memN : ∀ x : Node, in_list eqN finN x = true. 
-  Proof.
-    destruct x; reflexivity.
+    intro x. destruct x as [n|]; cbv [zeroR plusR].
+    f_equal. reflexivity.
   Qed.
 
-  Theorem refR : brel_reflexive R eqR.
+  Lemma addr0_proof : forall x : R, plusR x zeroR = x.
   Proof.
-    unfold brel_reflexive;
-    intros [x | ]; cbn;
-    [eapply PeanoNat.Nat.eqb_refl | reflexivity].
-  Qed. 
-  
-  Theorem symR : brel_symmetric R eqR.
-  Proof.
-    unfold brel_symmetric;
-    intros [x | ] [y | ]; cbn;
-    intros Ha; try reflexivity; 
-    try congruence.
-    eapply PeanoNat.Nat.eqb_eq in Ha.
-    eapply PeanoNat.Nat.eqb_eq. 
-    eapply eq_sym; assumption. 
-  Qed. 
-
-  Theorem trnR : brel_transitive R eqR.
-  Proof.
-    unfold brel_transitive;
-    intros [x | ] [y | ] [z |]; cbn;
-    intros Ha Hb;
-    try reflexivity;
-    try congruence.
-    eapply PeanoNat.Nat.eqb_eq in Ha, Hb.
-    eapply PeanoNat.Nat.eqb_eq.
-    eapply eq_trans with y;
-    try assumption.
-  Qed. 
-
-
-  Declare Scope Mat_scope.
-  Delimit Scope Mat_scope with R.
-  Bind Scope Mat_scope with R.
-  Local Open Scope Mat_scope.
-
-
-  Local Notation "0" := zeroR : Mat_scope.
-  Local Notation "1" := oneR : Mat_scope.
-  Local Infix "+" := plusR : Mat_scope.
-  Local Infix "*" := mulR : Mat_scope.
-  Local Infix "=r=" := eqR (at level 70) : Mat_scope.
-  Local Infix "=n=" := eqN (at level 70) : Mat_scope.
-
-  Theorem zero_left_identity_plus  : forall r : R, 0 + r =r= r = true.
-  Proof.
-    intros [x |]; cbn;
-    [eapply PeanoNat.Nat.eqb_refl | reflexivity].
+    intro x. destruct x as [n|]; cbv [zeroR plusR].
+    f_equal. nia. reflexivity.
   Qed.
 
-  Theorem zero_right_identity_plus : forall r : R, r + 0 =r= r = true.
-  Proof.
-    intros [x |]; cbn; try reflexivity.
-    now rewrite PeanoNat.Nat.max_0_r,
-    PeanoNat.Nat.eqb_refl.
-  Qed.
-  
+  HB.instance Definition _ := IsCommutativeMonoid.Build R
+    zeroR plusR addA_proof addC_proof add0r_proof addr0_proof.
 
-  Theorem plus_associative : forall a b c : R, a + (b + c) =r= 
-    (a + b) + c = true.
+  Lemma mulA_proof : forall a b c : R, mulR (mulR a b) c = mulR a (mulR b c).
   Proof.
-    intros [x | ] [y | ] [z |]; cbn;
-    try reflexivity.
-    now rewrite PeanoNat.Nat.max_assoc, 
-    PeanoNat.Nat.eqb_refl.
+    intros [a|] [b|] [c|]; cbn; try reflexivity.
+    rewrite PeanoNat.Nat.min_assoc. reflexivity.
   Qed.
 
-  Theorem plus_commutative  : forall a b : R, a + b =r= b + a = true.
-  Proof.
-    intros [x | ] [y | ]; simpl;
-    try reflexivity.
-    now rewrite PeanoNat.Nat.max_comm, 
-    PeanoNat.Nat.eqb_refl.
-  Qed.
-  
+  Lemma mul1r_proof : forall a : R, mulR oneR a = a.
+  Proof. intros [a|]; cbn; reflexivity. Qed.
 
-  Theorem one_left_identity_mul  : forall r : R, 1 * r =r= r = true.
+  Lemma mulr1_proof : forall a : R, mulR a oneR = a.
+  Proof. intros [a|]; cbn; reflexivity. Qed.
+
+  Lemma mulDr_proof : forall a b c : R,
+    mulR (plusR a b) c = plusR (mulR a c) (mulR b c).
   Proof.
-    intros [x |]; simpl;
-    [eapply PeanoNat.Nat.eqb_refl | reflexivity].
+    intros [a|] [b|] [c|]; cbn; try reflexivity; f_equal; nia.
   Qed.
 
-  Theorem one_right_identity_mul : forall r : R, r * 1 =r= r = true.
+  Lemma mulDl_proof : forall a b c : R,
+    mulR a (plusR b c) = plusR (mulR a b) (mulR a c).
   Proof.
-    intros [x |]; simpl;
-    [eapply PeanoNat.Nat.eqb_refl | reflexivity].
+    intros [a|] [b|] [c|]; cbn; try reflexivity; f_equal; nia.
   Qed.
 
-  Theorem mul_associative : forall a b c : R, a * (b * c) =r= 
-    (a * b) * c = true.
-  Proof.
-    intros [x | ] [y | ] [z |]; simpl;
-    try reflexivity;
-    try (eapply PeanoNat.Nat.eqb_refl).
-    now rewrite PeanoNat.Nat.min_assoc, 
-    PeanoNat.Nat.eqb_refl.
+  Lemma mul0r_proof : forall a : R, mulR zeroR a = zeroR.
+  Proof. intros [a|]; cbn; reflexivity. Qed.
+
+  Lemma mulr0_proof : forall a : R, mulR a zeroR = zeroR.
+  Proof. intros [a|]; cbn; try reflexivity.
+    rewrite PeanoNat.Nat.min_0_r. reflexivity.
   Qed.
 
-  (* Not in library! *)
-  Theorem max_min_interaction : 
-    forall (x y : nat), (Nat.max (Nat.min x y) x) = x.
-  Proof.
-    intros *. nia.
-  Qed.
-  
+  HB.instance Definition _ := IsSemiring.Build R
+    oneR mulR mulA_proof mul1r_proof mulr1_proof
+    mulDr_proof mulDl_proof mul0r_proof mulr0_proof.
 
-  Theorem left_distributive_mul_over_plus : forall a b c : R, 
-    a * (b + c) =r= a * b + a * c = true.
-  Proof.
-    intros [x | ] [y | ] [z |]; simpl;
-    try reflexivity.
-    +
-      now rewrite PeanoNat.Nat.min_max_distr,
-      PeanoNat.Nat.eqb_refl.
-    +
-      now rewrite max_min_interaction,
-      PeanoNat.Nat.eqb_refl.
-    +
-      now rewrite PeanoNat.Nat.max_comm,
-      max_min_interaction,
-      PeanoNat.Nat.eqb_refl.
-    +
-      now rewrite PeanoNat.Nat.max_id,
-      PeanoNat.Nat.eqb_refl.
-    +
-      eapply PeanoNat.Nat.eqb_refl.
-  Qed.
+  Lemma add_bound_proof : forall a : R, plusR oneR a = oneR.
+  Proof. intros [a|]; cbn; reflexivity. Qed.
 
+  HB.instance Definition _ := IsBoundedSemiring.Build R add_bound_proof.
 
-  Theorem right_distributive_mul_over_plus : forall a b c : R, 
-    (a + b) * c =r= a * c + b * c = true.
-  Proof.
-    intros [x | ] [y | ] [z |]; simpl;
-    try reflexivity.
-    +
-      (* Nat.eqb (Nat.min x (Nat.max y z)) 
-        (Nat.max (Nat.min x y) (Nat.min x z)) = true*)
-      rewrite PeanoNat.Nat.min_comm.
-      replace (Nat.min x z) with (Nat.min z x);
-      replace (Nat.min y z) with (Nat.min z y);
-      try (eapply PeanoNat.Nat.min_comm).
-      now rewrite PeanoNat.Nat.min_max_distr,
-      PeanoNat.Nat.eqb_refl.
-    +
-      eapply PeanoNat.Nat.eqb_refl.
-    +
-      replace (Nat.min x z) with (Nat.min z x);
-      try (eapply PeanoNat.Nat.min_comm).
-      now rewrite max_min_interaction,
-      PeanoNat.Nat.eqb_refl.
-    +
-      replace (Nat.max z (Nat.min y z)) with 
-      (Nat.max (Nat.min y z) z);
-      try (eapply PeanoNat.Nat.max_comm).
-      replace (Nat.min y z) with (Nat.min z y);
-      try (eapply PeanoNat.Nat.min_comm).
-      now rewrite max_min_interaction,
-      PeanoNat.Nat.eqb_refl.
-    +
-      now rewrite PeanoNat.Nat.max_id,
-      PeanoNat.Nat.eqb_refl.
-  Qed. 
+  HB.instance Definition _ := IsSemimodule.Build R R
+    mulR mulDl_proof mulDr_proof
+    (fun a b x => eq_sym (mulA_proof a b x))
+    mul1r_proof mul0r_proof mulr0_proof.
 
+End HBInstances.
 
-  Theorem zero_left_anhilator_mul : 
-    forall a : R, 0 * a =r= 0 = true.
-  Proof.
-    intros [x | ]; simpl;
-    reflexivity.
-  Qed.
+Definition wikimedia (m : Node -> Node -> R) : Node -> Node -> R :=
+  powN_fun m 17%N.
 
-  Theorem zero_right_anhilator_mul : 
-    forall a : R, a * 0 =r= 0 = true.
-  Proof.
-    intros [x | ]; simpl;
-    try reflexivity.
-    now rewrite PeanoNat.Nat.min_0_r,
-    PeanoNat.Nat.eqb_refl.
-  Qed.
+Definition mva_eff_fun (m : Node -> Node -> R) (v : Node -> R) : Node -> R :=
+  SemimoduleN.matrix_vector_action_eff_fun m v.
 
-  Theorem zero_stable : forall a : R, 1 + a =r= 1 = true.
-  Proof.
-    intros [x |]; simpl;
-    reflexivity.
-  Qed. 
-
-  Theorem plus_idempotence : forall a : R, a + a =r= a = true.
-  Proof.
-    intros [x |]; simpl;
-    try reflexivity.
-    now rewrite PeanoNat.Nat.max_id,
-    PeanoNat.Nat.eqb_refl.
-  Qed.
-
-  Theorem congrP : bop_congruence R eqR plusR. Proof. Admitted.
-  Theorem congrM : bop_congruence R eqR mulR. Proof. Admitted.
-  Theorem congrR : brel_congruence R eqR eqR. Proof. Admitted.
-
-  Definition V' := R.
-  Definition zeroV' := zeroR.
-  Definition plusV' := plusR.
-  Definition eqV' := eqR.
-  Definition scale' (a : R) (v : R) : R := mulR a v.
-
-  Definition mva_eff_fun :=
-    Semimodule.matrix_vector_action_eff_fun R V' zeroV' plusV' scale' Node eqN finN.
-
-  Lemma scale_distr_v_sm :
-    forall a x y, eqV' (scale' a (plusV' x y))
-                       (plusV' (scale' a x) (scale' a y)) = true.
-  Proof. intros. unfold scale', plusV', eqV'. apply left_distributive_mul_over_plus. Qed.
-  Lemma scale_distr_r_sm :
-    forall a b x, eqV' (scale' (plusR a b) x)
-                       (plusV' (scale' a x) (scale' b x)) = true.
-  Proof. intros. unfold scale', plusV', eqV'. apply right_distributive_mul_over_plus. Qed.
-  Lemma scale_assoc_sm :
-    forall a b x, eqV' (scale' a (scale' b x)) (scale' (mulR a b) x) = true.
-  Proof. intros. unfold scale', eqV'. apply mul_associative. Qed.
-  Lemma scale_one_sm : forall x, eqV' (scale' oneR x) x = true.
-  Proof. intros. unfold scale', eqV'. apply one_left_identity_mul. Qed.
-  Lemma scale_zero_r_sm : forall x, eqV' (scale' zeroR x) zeroV' = true.
-  Proof. intros. unfold scale', zeroV'. apply zero_left_anhilator_mul. Qed.
-  Lemma scale_zero_v_sm : forall a, eqV' (scale' a zeroV') zeroV' = true.
-  Proof. intros. unfold scale', zeroV'. apply zero_right_anhilator_mul. Qed.
-  Lemma congrS_sm : forall s1 s2 t1 t2,
-    eqR s1 t1 = true -> eqV' s2 t2 = true -> eqV' (scale' s1 s2) (scale' t1 t2) = true.
-  Proof. intros. unfold scale', eqV'. apply (congrM s1 s2 t1 t2 H H0). Qed.
-
-End Proofs.
-
-
-
+Definition mva_func (m : Node -> Node -> R) (v : Node -> R) : Node -> R :=
+  SemimoduleN.matrix_vector_action m v.
