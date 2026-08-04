@@ -2277,34 +2277,220 @@ Section Path.
         eapply orel_trans; eauto.
   Qed.
 
+  Lemma reduce_path_gen_lemma {R : BoundedSemiring.type} : 
+    ∀ (n : nat) (m : @Matrix R) 
+    (c d : Node) (xs : list (Node * Node * R)),
+    (length (@elements Node) <= n)%nat ->
+    (forall c d, c = d -> m c d = 1) -> 
+    List.In xs (all_paths_klength elements m n c d)  ->
+    exists ys, 
+      (length ys < length (@elements Node))%nat ∧
+      List.In (ys ++ [(d, d, 1)])
+        (all_paths_klength elements m (length ys) c d) ∧
+      Orel 
+        (measure_of_path xs)
+        (measure_of_path ys).
+  Proof.
+    intros n m c d xs Hfin Hdiag Hin.
+    destruct (source_target_non_empty_kpath_and_well_formed
+      n m c d xs Hdiag Hin)
+      as (Hne & Hsrc & Htgt & Hwf & Hlen & [xs' Hxs]).
+    assert (Hlen_xs' : length xs' = n).
+    { rewrite Hxs in Hlen.
+      rewrite length_app in Hlen.
+      cbn in Hlen. rewrite PeanoNat.Nat.add_comm in Hlen.
+      cbn in Hlen. inversion Hlen; subst; reflexivity. }
+    assert (Hfin_xs' : (length (@elements Node) <= length xs')%nat) by lia.
+    rewrite Hxs in Hwf, Hsrc, Htgt.
+    pose proof (reduce_path_into_simpl_path _ m c d Hfin_xs' Hwf Hsrc Htgt)
+      as (ys & Hlen_ys & Hwf_ys & Hsrc_ys & Htgt_ys & Horel_ys).
+    pose proof (all_paths_klength_complete ys m c d Hsrc_ys Htgt_ys Hwf_ys)
+      as Hin_ys.
+    exists ys.
+    split; [exact Hlen_ys | ].
+    split; [exact Hin_ys | ].
+    unfold Orel in *.
+    rewrite Hxs.
+    assert (Hxs_meas : measure_of_path (xs' ++ [(d, d, 1)]) = measure_of_path xs').
+    { induction xs' as [|((a, b), v) t IH]; cbn.
+      - rewrite mulr1. reflexivity.
+      - rewrite measure_of_path_app with (l₁ := t) (l₂ := [(d, d, 1)]).
+        cbn. rewrite !mul1r, mulr1. reflexivity. reflexivity. }
+    rewrite Hxs_meas.
+    exact Horel_ys.
+  Qed.
 
+  Lemma sum_all_flat_paths_app {R : Semiring.type} : 
+    forall (l₁ l₂ : list Path),
+    @sum_all_flat_paths R (l₁ ++ l₂) = 
+    sum_all_flat_paths l₁ + 
+    sum_all_flat_paths l₂.
+  Proof.
+    induction l₁ as [|((a, b), l) t IH]; intros l₂.
+    - cbn. symmetry. apply add0r.
+    - cbn. rewrite IH. rewrite addA. reflexivity.
+  Qed.
 
+  Lemma sum_all_rvalues_get_all_rvalues {R : Semiring.type} :
+    forall (l : list Path),
+    sum_all_rvalues (get_all_rvalues l) = @sum_all_flat_paths R l.
+  Proof.
+    induction l as [|((a, b), h) t IH].
+    - cbn. reflexivity.
+    - cbn [get_all_rvalues sum_all_flat_paths].
+      simpl.
+      rewrite IH.
+      reflexivity.
+  Qed.
 
-
-
-
-
-
-
-
+  Lemma flat_map_path_partial_sum {R : Semiring.type} : 
+    forall n (m : @Matrix R) c d, 
+    partial_sum_paths elements m n c d = 
+    @sum_all_flat_paths R (enum_all_paths_flat elements m n c d).
+  Proof.
+    induction n as [|n IH]; intros m c d.
+    - cbn. destruct (fin_eq_dec c d) as [Hcd | Hcd]; cbn.
+      + rewrite mul1r. rewrite addr0. reflexivity.
+      + reflexivity.
+    - cbn [partial_sum_paths enum_all_paths_flat].
+      rewrite IH.
+      rewrite sum_all_rvalues_get_all_rvalues.
+      rewrite sum_all_flat_paths_app.
+      rewrite addC.
+      reflexivity.
+  Qed.
   
 
+  Lemma in_eq_path_measure {R : Semiring.type} : 
+    forall (lpp : list Path) ys alph, 
+    List.In ys
+    (map (λ '(y, lt), let '(_, _) := y in lt) lpp) ->
+    (measure_of_path ys + measure_of_path alph = measure_of_path ys) -> 
+    @sum_all_flat_paths R lpp + measure_of_path alph = sum_all_flat_paths lpp.
+  Proof.
+    induction lpp as [|((au, av), l) t IH]; intros ys alph Hin Hm.
+    - simpl in Hin. contradiction.
+    - simpl in Hin.
+      destruct Hin as [Hys | Hin].
+      + subst ys. simpl.
+        rewrite addA.
+        rewrite (addC (sum_all_flat_paths t) (measure_of_path alph)).
+        rewrite <- addA.
+        rewrite Hm.
+        reflexivity.
+      + simpl.
+        rewrite addA.
+        rewrite (IH ys alph); try assumption.
+        reflexivity.
+  Qed.
 
+
+  Lemma sum_all_flat_paths_idempotence {R : Semiring.type} : 
+    forall (lp lpp : list Path), 
+    (forall xs, List.In xs lp ->
+     exists (ys : Path), List.In ys lpp  ∧ 
+      measure_of_path (t_proj ys) + measure_of_path (t_proj xs) =
+      measure_of_path (t_proj ys)) ->
+    @sum_all_flat_paths R lp + sum_all_flat_paths lpp = 
+    sum_all_flat_paths lpp.
+  Proof.
+    induction lp as [|x lp IH]; intros lpp Hcov.
+    - cbn. rewrite <- add0r. reflexivity.
+    - destruct x as [[a b] h]. cbn in *.
+      assert (Htail : sum_all_flat_paths lp + sum_all_flat_paths lpp =
+        sum_all_flat_paths lpp).
+      { apply IH. intros xs Hxs. apply Hcov. right. exact Hxs. }
+      assert (Hassoc : (measure_of_path h + sum_all_flat_paths lp) +
+        sum_all_flat_paths lpp = measure_of_path h +
+        (sum_all_flat_paths lp + sum_all_flat_paths lpp)).
+      { apply addA. }
+      rewrite Hassoc.
+      rewrite Htail.
+      destruct (Hcov ((a, b, h)) (or_introl eq_refl)) as [y [Hy Habs]].
+      assert (Hmem : List.In (t_proj y)
+        (map (λ '(y0, lt), let '(_, _) := y0 in lt) lpp)).
+      { apply in_map. exact Hy. }
+      pose proof (in_eq_path_measure (R := R) lpp (t_proj y) h Hmem Habs) as Hstep.
+      rewrite addC.
+      exact Hstep.
+  Qed.
+
+  Lemma construct_all_paths_in_enum_all_paths_flat {R : Semiring.type} :
+    forall n k (m : @Matrix R) c d (xs : Path),
+    (k <= n)%nat ->
+    List.In xs (construct_all_paths elements m k c d) ->
+    List.In xs (enum_all_paths_flat elements m n c d).
+  Proof.
+    induction n as [|n IH]; intros k m c d xs Hle Hin.
+    - assert (k = 0)%nat by lia. subst k. simpl in Hin. exact Hin.
+    - destruct k as [|k']; simpl in *.
+      + apply in_or_app. right.
+        assert (H0 : (0 <= n)%nat) by lia.
+        exact (IH (0%nat) m c d xs H0 Hin).
+      + assert (Hcase : k' = n \/ (k' < n)%nat) by lia.
+        destruct Hcase as [Heq | Hlt].
+        * subst k'. apply in_or_app. left. exact Hin.
+        * apply in_or_app. right.
+          assert (Hle' : (S k' <= n)%nat) by lia.
+          exact (IH (S k') m c d xs Hle' Hin).
+  Qed.
+
+  Lemma sum_all_flat_paths_fixpoint {R : BoundedSemiring.type} :
+    forall k (m : @Matrix R) c d,
+    (forall u v : Node, u = v -> m u v = 1) ->
+    @sum_all_flat_paths R (enum_all_paths_flat elements m (length (@elements Node) - 1)%nat c d) =
+    sum_all_flat_paths (enum_all_paths_flat elements m (k + length (@elements Node) - 1)%nat c d).
+  Proof.
+    induction k as [|k IH]; intros m c d Hdiag.
+    - reflexivity.
+    - assert (Hstep : (S k + length (@elements Node) - 1)%nat =
+        S (k + length (@elements Node) - 1)).
+      { destruct elements as [|a es] eqn:He.
+        - pose proof (@elements_two_or_more Node) as hb.
+          rewrite He in hb. cbn in hb. lia.
+        - cbn. lia.
+      }
+      rewrite Hstep; clear Hstep.
+      cbn [enum_all_paths_flat].
+      rewrite sum_all_flat_paths_app.
+      pose proof (@IH m c d Hdiag) as HIH.
+      rewrite HIH.
+      symmetry.
+      apply sum_all_flat_paths_idempotence.
+      intros xs Hin.
+      apply in_map_iff in Hin.
+      destruct Hin as [raw [Hxs Hin_raw]].
+      subst xs.
+      assert (Hn_ge : (length (@elements Node) <= S (k + length (@elements Node) - 1))%nat) by lia.
+      pose proof (@reduce_path_gen_lemma R
+        (S (k + length (@elements Node) - 1)) m c d raw
+        Hn_ge Hdiag Hin_raw) as (ys & Hys_short & Hys_mem & Horel).
+      assert (Hmeas : measure_of_path (ys ++ [(d, d, 1)]) = measure_of_path ys).
+      { clear Hys_short Hys_mem Horel raw Hin_raw Hn_ge HIH.
+        induction ys as [|((a, b), v) t IHys]; cbn.
+        - rewrite mul1r. reflexivity.
+        - f_equal. exact IHys.
+      }
+      exists (c, d, ys ++ [(d, d, 1)]).
+      split.
+      + apply construct_all_paths_in_enum_all_paths_flat with (k := List.length ys).
+        * lia.
+        * apply in_map. exact Hys_mem.
+      + cbn [t_proj]. rewrite Hmeas. rewrite addC. exact Horel.
+  Qed.
+
+  Lemma zero_stable_partial_sum_path {R : BoundedSemiring.type} :
+    forall k (m : @Matrix R),
+    (∀ u v : Node, u = v → m u v = 1) ->
+    forall (c d : Node), 
+      partial_sum_paths elements m (length (@elements Node) - 1)%nat c d = 
+      partial_sum_paths elements m (k + length (@elements Node) - 1)%nat c d.
+  Proof.
+    intros k m Hdiag c d.
+    rewrite !flat_map_path_partial_sum.
+    apply sum_all_flat_paths_fixpoint; exact Hdiag.
+  Qed.
   
-  
-
-
-
-
-
-
-
-  
-  
-
-
-
-
 
 
 
