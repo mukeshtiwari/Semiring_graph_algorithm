@@ -646,6 +646,7 @@ Section Path.
     reflexivity.
   Qed.
 
+  (** [target] also depends only on the last element of a non-empty list. *)
   Lemma target_end  {R : Semiring.type} : 
     forall (l : list (Node * Node * R))
     (x : Node * Node * R) (d : Node),
@@ -666,6 +667,7 @@ Section Path.
   Qed.
 
 
+  (** [target] and [target_alt] agree on every path. *)
   Lemma target_target_alt_same {R : Semiring.type} : 
     forall (l : list (Node * Node * R)) (d : Node), 
     target d l = target_alt d l.
@@ -1020,6 +1022,7 @@ Section Path.
              exact Hwf_ll'.
   Qed. 
 
+  (** Splitting a path at a chosen node returns the collected prefix and the remainder. *)
   Lemma keep_collecting_dropping_dual {R : Semiring.type} : 
     forall (l : list (Node * Node * R)) au, 
     l = (keep_collecting au l ++ keep_dropping au l).
@@ -1209,6 +1212,7 @@ Section Path.
   Qed.
 
 
+  (** If cycle detection returns [None], the path is acyclic. *)
   Lemma elim_path_triple_connect_compute_loop_true_second {R : Semiring.type} : 
     forall (l : list (Node * Node * R)),
     elem_path_triple_compute_loop l = None -> 
@@ -1226,6 +1230,7 @@ Section Path.
   Qed.
 
 
+  (** A path is acyclic iff cycle detection returns [None]. *)
   Lemma elim_path_triple_connect_compute_loop_true_none_eqv {R : Semiring.type} : 
     forall (l : list (Node * Node * R)),
     elem_path_triple_compute_loop l = None <-> elem_path_triple l = true.
@@ -1305,6 +1310,7 @@ Section Path.
   Qed.
 
 
+  (** If loop computation succeeds, the path is cyclic. *)
   Lemma elim_path_triple_connect_compute_loop_false_second {R : Semiring.type} : 
     forall (l : list (Node * Node * R)) lc, 
     Some lc = elem_path_triple_compute_loop l ->
@@ -1323,6 +1329,7 @@ Section Path.
   Qed.
 
 
+  (** A path is cyclic iff the loop-computation witness exists. *)
   Lemma elim_path_triple_connect_compute_loop_false_eqv {R : Semiring.type} : 
     forall (l : list (Node * Node * R)),
     elem_path_triple l = false <-> 
@@ -1338,6 +1345,7 @@ Section Path.
   Qed.
 
 
+  (** The middle component of the computed loop-triple is the detected loop. *)
   Lemma elem_path_triple_compute_loop_triple_middle_element {R : Semiring.type} : 
     forall (l : list (Node * Node * R)) ll lm lr, 
     (ll, lm, lr) = elem_path_triple_compute_loop_triple l ->
@@ -1416,6 +1424,7 @@ Section Path.
         * exact Hlr.
   Qed.
 
+  (** A non-empty path has strictly fewer edges than collected nodes. *)
   Lemma length_leq_lt {R : Semiring.type} : 
     forall (l : list (Node * Node * R)) ,
     l <> [] -> (List.length l) < List.length (collect_nodes_from_a_path l).
@@ -1440,6 +1449,7 @@ Section Path.
  
 
 
+  (** A long enough node list yields a longer collected-node list. *)
   Lemma length_collect_node_gen {R : Semiring.type} :
     forall (c : list Node) 
     (l : list (Node * Node * R)),
@@ -1544,6 +1554,7 @@ Section Path.
   Qed.
   
 
+  (** Well-formed paths with no duplicate collected nodes are acyclic. *)
   Lemma elem_path_collect_node_from_path_second {R : Semiring.type} : 
     forall (l : list (Node * Node * R)) (m : @Matrix R), 
     well_formed_path_aux m l -> NoDup (collect_nodes_from_a_path l) -> 
@@ -1634,6 +1645,7 @@ Section Path.
           destruct (fin_eq_dec a c) as [_ | _]; [reflexivity | exact Htail].
   Qed.
 
+  (** A duplicate in the collected nodes forces a cycle witness. *)
   Lemma not_NoDup_collect_implies_elem_path_triple_false {R : Semiring.type} :
     ∀ (l : list (Node * Node * R)) (m : @Matrix R), 
       well_formed_path_aux m l -> ~NoDup(collect_nodes_from_a_path l) -> 
@@ -1731,6 +1743,7 @@ Section Path.
   Qed.
 
 
+  (** A cyclic path can be re-encoded as a computed loop witness. *)
   Lemma triple_compute_connect_with_triple_elem_forward 
     {R : Semiring.type} : forall (l : list (Node * Node * R)), 
     elem_path_triple l = false ->
@@ -1789,6 +1802,7 @@ Section Path.
   Qed.
       
 
+  (** The computed-loop witness is equivalent to the path being cyclic. *)
   Lemma triple_compute_connect_with_triple_elem {R : Semiring.type} : forall (l : list (Node * Node * R)),
     elem_path_triple l = false <->
     exists ll lm lr, (ll, Some lm, lr) = 
@@ -1805,6 +1819,7 @@ Section Path.
   Qed.
 
 
+  (** A cyclic path splits into a prefix, one loop, and a suffix. *)
   Lemma triple_compute_connect_with_triple_elem_stronger 
     {R : Semiring.type} : forall (l : list (Node * Node * R)),
     elem_path_triple l = false ->
@@ -1908,6 +1923,7 @@ Section Path.
   Definition zwf {R : Semiring.type} (x y : list (Node * Node * R)) := 
       (List.length x < List.length y).
 
+  (** The length-based order on paths is well-founded. *)
   Lemma zwf_well_founded {R : Semiring.type} : well_founded 
   (@zwf R).
   Proof.
@@ -1945,11 +1961,12 @@ Section Path.
   Qed.
 
 
+  (** Every well-formed path can be reduced to an acyclic well-formed path. *)
   Lemma reduce_path_into_elem_path {R : Semiring.type} : 
     forall (l : list (Node * Node * R)) m,
-    well_formed_path_aux m l  ->
+    well_formed_path_aux m l ->
     exists lm, 
-      well_formed_path_aux m lm  /\ 
+      well_formed_path_aux m lm  /\
       elem_path_triple lm = true.
   Proof.
     intros l.
@@ -1976,8 +1993,8 @@ Section Path.
     forall (l : list (Node * Node * R)) m,
     well_formed_path_aux m l ->
     exists lm, 
-      well_formed_path_aux m lm /\ 
-      elem_path_triple lm = true /\ 
+      well_formed_path_aux m lm /\
+      elem_path_triple lm = true /\
       (List.length lm < List.length (@elements Node))%nat.
   Proof.
     intros ? ? Hw.
@@ -1989,6 +2006,7 @@ Section Path.
   Qed.
 
 
+  (** Removing a loop preserves the next-node boundary relation. *)
   Lemma well_founded_rev {R : Semiring.type} : 
     forall lm aut avt awt au av aw cut cvt cwt lr (m : @Matrix R),
     well_formed_path_aux m
@@ -2051,6 +2069,7 @@ Section Path.
   Qed.
 
 
+  (** Removing a cyclic middle segment preserves well-formedness. *)
   Lemma well_formed_loop_removal {R : Semiring.type} : 
     forall ll lr lm au av aw (m : @Matrix R),
     well_formed_path_aux m 
@@ -2096,6 +2115,7 @@ Section Path.
   Qed.
 
 
+  (** Removing a loop also preserves the source predicate at the front. *)
   Lemma source_loop_removal {R : Semiring.type} : 
     forall ll lr lm au av aw c d (m : @Matrix R),
     well_formed_path_aux m
@@ -2152,6 +2172,7 @@ Section Path.
 
 
 
+  (** A duplicate-free cycle segment can be removed without changing the path measure. *)
   Lemma cycle_path_dup_remove {R : BoundedSemiring.type} : 
     forall (ll : list (Node * Node * R)) lm lr,
     Orel 
@@ -2185,6 +2206,7 @@ Section Path.
       + apply (mulr1 (s := R) a).
   Qed.
 
+  (** Removing one cycle step keeps the measure ordered by [Orel]. *)
   Lemma reduce_path_cycle_step {R : BoundedSemiring.type} :
     forall (l : list (Node * Node * R)) (m : @Matrix R) c d,
     (length (@elements Node) <= length l)%nat ->
@@ -2238,6 +2260,7 @@ Section Path.
 
 
 
+  (** Any long enough path can be reduced to a short one with the same boundary loop. *)
   Lemma reduce_path_into_simpl_path {R : BoundedSemiring.type} :
     forall (l : list (Node * Node * R)) (m : @Matrix R) c d,
     (length (@elements Node) <= length l)%nat ->
@@ -2277,6 +2300,7 @@ Section Path.
         eapply orel_trans; eauto.
   Qed.
 
+  (** A path above the finite-node bound can be reduced while preserving the order relation. *)
   Lemma reduce_path_gen_lemma {R : BoundedSemiring.type} : 
     ∀ (n : nat) (m : @Matrix R) 
     (c d : Node) (xs : list (Node * Node * R)),
@@ -2320,6 +2344,7 @@ Section Path.
     exact Horel_ys.
   Qed.
 
+  (** Concatenating flat-path sums splits over list append. *)
   Lemma sum_all_flat_paths_app {R : Semiring.type} : 
     forall (l₁ l₂ : list Path),
     @sum_all_flat_paths R (l₁ ++ l₂) = 
@@ -2331,6 +2356,7 @@ Section Path.
     - cbn. rewrite IH. rewrite addA. reflexivity.
   Qed.
 
+  (** Summing R-values matches summing the corresponding flat paths. *)
   Lemma sum_all_rvalues_get_all_rvalues {R : Semiring.type} :
     forall (l : list Path),
     sum_all_rvalues (get_all_rvalues l) = @sum_all_flat_paths R l.
@@ -2343,6 +2369,7 @@ Section Path.
       reflexivity.
   Qed.
 
+  (** The partial path sum equals the sum over the flattened enumeration. *)
   Lemma flat_map_path_partial_sum {R : Semiring.type} : 
     forall n (m : @Matrix R) c d, 
     partial_sum_paths elements m n c d = 
@@ -2361,6 +2388,7 @@ Section Path.
   Qed.
   
 
+  (** A witness in the right list absorbs into the left flat-path sum. *)
   Lemma in_eq_path_measure {R : Semiring.type} : 
     forall (lpp : list Path) ys alph, 
     List.In ys
@@ -2385,6 +2413,7 @@ Section Path.
   Qed.
 
 
+  (** Flat-path sums are idempotent under a covering hypothesis. *)
   Lemma sum_all_flat_paths_idempotence {R : Semiring.type} : 
     forall (lp lpp : list Path), 
     (forall xs, List.In xs lp ->
@@ -2415,6 +2444,7 @@ Section Path.
       exact Hstep.
   Qed.
 
+  (** Every constructed path at a smaller length also appears in the flat enumeration. *)
   Lemma construct_all_paths_in_enum_all_paths_flat {R : Semiring.type} :
     forall n k (m : @Matrix R) c d (xs : Path),
     (k <= n)%nat ->
@@ -2435,6 +2465,7 @@ Section Path.
           exact (IH (S k') m c d xs Hle' Hin).
   Qed.
 
+  (** The flat-path sum stabilizes once the length exceeds the node bound. *)
   Lemma sum_all_flat_paths_fixpoint {R : BoundedSemiring.type} :
     forall k (m : @Matrix R) c d,
     (forall u v : Node, u = v -> m u v = 1) ->
@@ -2479,6 +2510,7 @@ Section Path.
       + cbn [t_proj]. rewrite Hmeas. rewrite addC. exact Horel.
   Qed.
 
+  (** The partial sum is stable after the finite-node bound is reached. *)
   Lemma zero_stable_partial_sum_path {R : BoundedSemiring.type} :
     forall k (m : @Matrix R),
     (∀ u v : Node, u = v → m u v = 1) ->
@@ -2491,7 +2523,5 @@ Section Path.
     apply sum_all_flat_paths_fixpoint; exact Hdiag.
   Qed.
   
-
-
 
 End Path.
