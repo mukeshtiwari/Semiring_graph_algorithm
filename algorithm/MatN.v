@@ -10,7 +10,8 @@
 From Stdlib Require Import List Utf8
   BinNatDef 
   Lia PeanoNat PArith.
-From Semiring Require Import OrelN Structures.
+From Semiring Require Import OrelN Structures
+  PathN.
 Import ListNotations SemiringNotations.
 
 (* ================================================================= *)
@@ -2322,7 +2323,239 @@ Lemma transpose_list_length_square {R : Semiring.type} : forall (lb : list (list
   Qed.
 
 
+  (** Bounded-semiring variant of [geom_sum_idem_recurrence]. *)
+  Lemma geom_sum_idem_recurrence_bounded {R : BoundedSemiring.type} :
+    forall (n : nat) (m : @Matrix R) (c d : Node),
+      (m *M geom_sum m n +M geom_sum m n) c d = geom_sum m (S n) c d.
+  Proof.
+    induction n as [|n IH]; intros m c d.
+    - cbn. rewrite !matrix_add_unfold. rewrite (matrix_mul_I_r m c d). apply addC.
+    - cbn [geom_sum].
+      rewrite !matrix_add_unfold.
+      rewrite (matrix_mul_add_distr_l m (geom_sum m n) (pow m (S n)) c d).
+      rewrite matrix_add_unfold.
+      cbn [pow].
+      set (A := matrix_mul m (geom_sum m n) c d).
+      set (G := geom_sum m n c d).
+      set (P := matrix_mul m (pow m n) c d).
+      set (PP := matrix_mul m (matrix_mul m (pow m n)) c d).
+      pose proof (IH m c d) as IHscalar.
+      unfold matrix_add in IHscalar.
+      cbn [geom_sum] in IHscalar.
+      rewrite matrix_add_unfold in IHscalar.
+      cbn [pow] in IHscalar.
+      rewrite (addA A PP (G + P)).
+      rewrite (addC PP (G + P)).
+      rewrite <- (addA A (G + P) PP).
+      rewrite <- (addA A G P).
+      unfold A, G.
+      rewrite IHscalar at 1.
+      unfold P, PP.
+      replace ((geom_sum m n c d + matrix_mul m (pow m n) c d)
+               + matrix_mul m (pow m n) c d)
+        with (geom_sum m n c d + matrix_mul m (pow m n) c d)
+        by (rewrite (addA (geom_sum m n c d) (matrix_mul m (pow m n) c d)
+                  (matrix_mul m (pow m n) c d));
+            rewrite (bounded_add_idem (R := R) (matrix_mul m (pow m n) c d)) at 1;
+            reflexivity).
+      reflexivity.
+  Qed.
 
-  
+
+  (** Bounded-semiring variant of [matrix_pow_idempotence]. *)
+  Lemma matrix_pow_idempotence_bounded {R : BoundedSemiring.type} :
+    forall (n : nat) (m : @Matrix R) (c d : Node),
+      pow (m +M I) n c d = geom_sum m n c d.
+  Proof.
+    induction n as [|n IH]; intros m c d.
+    - cbn. reflexivity.
+    - cbn [pow].
+      unfold matrix_mul.
+      rewrite (sum_ext (fun y => (m +M I) c y * pow (m +M I) n y d)
+        (fun y => m c y * geom_sum m n y d + I c y * geom_sum m n y d)).
+      + rewrite sum_add.
+        change (sum (fun y => m c y * geom_sum m n y d)) with (matrix_mul m (geom_sum m n) c d).
+        change (sum (fun y => I c y * geom_sum m n y d)) with (matrix_mul I (geom_sum m n) c d).
+        rewrite (matrix_mul_I_l (geom_sum m n) c d).
+        rewrite <- matrix_add_unfold.
+        apply geom_sum_idem_recurrence_bounded.
+      + intro y.
+        rewrite matrix_add_unfold.
+        rewrite (IH m y d).
+        apply mulDr.
+  Qed.
+
+
+  (** A single power term equals the sum of weights of all length-[n] paths. *)
+  Lemma matrix_path_equation {R : Semiring.type} :
+    forall n (m : @Matrix R) c d,
+    pow m n c d =
+    sum_all_rvalues
+      (get_all_rvalues
+        (construct_all_paths elements m n c d)).
+  Proof.
+    induction n as [|n IH]; intros m c d.
+    - cbn [pow].
+      rewrite sum_all_rvalues_get_all_rvalues.
+      unfold I.
+      pose proof (flat_map_path_partial_sum (R := R) 0 m c d) as H0.
+      cbn [partial_sum_paths enum_all_paths_flat] in H0.
+      exact H0.
+    - cbn [pow all_paths_klength].
+      unfold matrix_mul.
+      assert (Hflat :
+        forall (l : list Node),
+        fold_right (fun u v : R => u + v) 0
+          (map measure_of_path
+            (append_node_in_paths m c
+              (flat_map (fun x : Node => all_paths_klength elements m n x d) l))) =
+        fold_right
+          (fun y acc =>
+            m c y * fold_right (fun u v : R => u + v) 0
+              (map measure_of_path (all_paths_klength elements m n y d)) + acc)
+          0 l).
+      {
+        intros l.
+        induction l as [|a t IHt].
+        - cbn. reflexivity.
+        - cbn [List.flat_map].
+          set (lf := flat_map (fun x : Node => all_paths_klength elements m n x d) t).
+          assert (Hacc : forall (xs : list R) (acc : R),
+            fold_right (fun u v : R => u + v) acc xs =
+            fold_right (fun u v : R => u + v) 0 xs + acc).
+          {
+            intros xs acc.
+            induction xs as [|x xs IHxs].
+            - cbn. symmetry. apply add0r.
+            - cbn. rewrite IHxs. rewrite addA. reflexivity.
+          }
+          rewrite (fold_measure_append_node_app
+            (all_paths_klength elements m n a d)
+            lf
+            m c).
+          rewrite map_app.
+          rewrite fold_right_app.
+          rewrite (Hacc
+            (map measure_of_path
+              (append_node_in_paths m c (all_paths_klength elements m n a d)))
+            (fold_right (fun u v : R => u + v) 0
+              (map measure_of_path (append_node_in_paths m c lf)))).
+          rewrite (fold_measure_append_node_kpaths n m c a d).
+          unfold lf.
+          rewrite IHt.
+          reflexivity.
+      }
+      rewrite (sum_ext
+        (fun y => m c y * pow m n y d)
+        (fun y => m c y *
+          fold_right (fun u v : R => u + v) 0
+            (map measure_of_path (all_paths_klength elements m n y d)))).
+      2:{
+        intro y.
+        rewrite IH.
+        unfold sum_all_rvalues, get_all_rvalues, construct_all_paths.
+        rewrite map_map.
+        cbn [fold_right].
+        reflexivity.
+      }
+      rewrite sum_all_rvalues_get_all_rvalues.
+      assert (Hwrap :
+        forall c d (lp : list (list (Node * Node * R))),
+          @sum_all_flat_paths Node R (map (fun l => (c, d, l)) lp) =
+          fold_right (fun u v : R => u + v) 0 (map measure_of_path lp)).
+      {
+        intros c0 d0 lp.
+        induction lp as [|h t IHt].
+        - cbn. reflexivity.
+        - cbn. rewrite IHt. reflexivity.
+      }
+      unfold construct_all_paths.
+      rewrite Hwrap.
+      cbn [all_paths_klength].
+      rewrite (Hflat elements).
+        unfold sum.
+      reflexivity.
+  Qed.
+
+
+  Lemma connect_partial_sum_mat_paths  {R : Semiring.type} : 
+    forall n (m : @Matrix R) c d,
+    geom_sum m n c d = partial_sum_paths elements m n c d.
+  Proof.
+    induction n as [|n IH]; intros m c d.
+    - cbn [geom_sum partial_sum_paths].
+      unfold I.
+      destruct (fin_eq_dec c d) as [Hcd | Hcd]; reflexivity.
+    - cbn [geom_sum partial_sum_paths].
+      rewrite matrix_add_unfold.
+      rewrite (IH m c d).
+      rewrite (matrix_path_equation (S n) m c d).
+      reflexivity.
+  Qed.
+
+
+  Lemma connect_unary_matrix_exp_partial_sum_paths {R : BoundedSemiring.type} : 
+    forall n (m : @Matrix R) c d,
+    pow (m +M I) n c d = partial_sum_paths elements m n c d.
+  Proof. 
+    intros n m c d.
+    rewrite matrix_pow_idempotence_bounded.
+    apply connect_partial_sum_mat_paths.
+  Qed.
+
+  (** Matrix geometric sum stabilizes after the finite-node bound. *)
+  Lemma geom_sum_stable_after_node_bound {R : BoundedSemiring.type} : 
+    forall k (m : @Matrix R), (∀ u v : Node, u = v → m u v = 1) ->
+    (forall (c d : Node), 
+    geom_sum m (length (@elements Node) - 1)%nat c d = 
+    geom_sum m (k + length (@elements Node) - 1)%nat c d).
+  Proof.
+    intros k m Hdiag c d.
+    rewrite !connect_partial_sum_mat_paths.
+    apply zero_stable_partial_sum_path.
+    exact Hdiag.
+  Qed.
+
+
+  (** The power of the closure matrix stabilizes after the finite-node
+      bound: [(m + I)^(|Node|-1) = (m + I)^(n + |Node|-1)]. *)
+  Lemma matrix_pow_fixpoint_after_node_bound {R : BoundedSemiring.type} :
+    forall (n : nat) (m : @Matrix R) c d,
+    (∀ u v : Node, u = v → m u v = 1) ->
+    pow (m +M I) (length (@elements Node) - 1) c d =
+    pow (m +M I) (n + length (@elements Node) - 1) c d.
+  Proof.
+    intros n m c d Hdiag.
+    rewrite !connect_unary_matrix_exp_partial_sum_paths.
+    apply zero_stable_partial_sum_path.
+    exact Hdiag.
+  Qed.
+
+  (** The partial path sum equals the sum over the flattened enumeration
+      of all paths: [Σ_{p ≤ n} paths = Σ (enum_all_paths_flat)]. *)
+  Lemma partial_sum_paths_enum_flat {R : Semiring.type} :
+    forall n (m : @Matrix R) c d,
+    partial_sum_paths elements m n c d =
+    sum_all_rvalues (get_all_rvalues (enum_all_paths_flat elements m n c d)).
+  Proof.
+    intros n m c d.
+    rewrite sum_all_rvalues_get_all_rvalues.
+    apply flat_map_path_partial_sum.
+  Qed.
+
+
+  (** The matrix geometric sum equals the sum over the flattened
+      enumeration of all paths. *)
+  Lemma connect_geom_sum_enum_flat {R : Semiring.type} :
+    forall n (m : @Matrix R) c d,
+    geom_sum m n c d = sum_all_rvalues (get_all_rvalues
+      (enum_all_paths_flat elements m n c d)).
+  Proof.
+    intros n m c d.
+    rewrite connect_partial_sum_mat_paths.
+    apply partial_sum_paths_enum_flat.
+  Qed.
+
+
 End Matrix.
 
