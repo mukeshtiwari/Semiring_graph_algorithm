@@ -675,26 +675,67 @@ Section SocialChoice.
   (*  the Condorcet winner a is the unique Schulze winner.                   *)
   (* =====================================================================  *)
 
-  Theorem smith_criterion {R : Semiring.type} :
-    forall (M : @Matrix Node R) (B1 B2 : list Node),
-      (* B1 and B2 partition the nodes *)
+  Theorem smith_criterion {R : BoundedSemiring.type}
+    (M : @Matrix Node R)
+    (Htri : forall (X Y Z : Node), Orel (M X Y * M Y Z) (M X Z)) :
+    forall (B1 B2 : list Node),
+      B1 <> [] ->
       (forall (x : Node), In x B1 <-> ~ In x B2) ->
-      (* Every a ∈ B1 strictly beats every b ∈ B2 in direct comparison *)
       (forall (a b : Node), In a B1 -> In b B2 ->
          Orel (M b a) (M a b) ∧ M b a ≠ M a b) ->
-      (* Then all Schulze winners are in B1 *)
       forall (w : Node), schulze_winner M w -> In w B1.
   Proof.
-    (* Proof sketch:                                                          *)
-    (*   Suppose w ∈ B2 is a winner.  Pick any a ∈ B1 (non-empty, else      *)
-    (*   trivial).  By hypothesis, a strictly beats w directly:              *)
-    (*   M_{wa} ≤ M_{aw} and M_{wa} ≠ M_{aw}.  The direct edge a→w is       *)
-    (*   already a path, so M*_{wa} ≤ M_{aw} ≤ M*_{aw} and the              *)
-    (*   strict inequality propagates.  Thus a Schulze-beats w,              *)
-    (*   contradicting that w is a winner.                                    *)
-    (*   Admitted — requires lemma that direct dominance implies            *)
-    (*   Schulze dominance.                                                   *)
-  Admitted.
+    intros B1 B2 HB1_nonempty Hpartition Hdirect w Hwinner.
+    destruct (In_dec fin_eq_dec w B1) as [Hin | HnotinB1].
+    - exact Hin.
+    - destruct (In_dec fin_eq_dec w B2) as [HinB2 | HnotinB2].
+      + (* w ∈ B2.  Pick a ∈ B1 (non-empty by HB1_nonempty) *)
+        destruct B1 as [|a B1']; [exfalso; apply HB1_nonempty; reflexivity |].
+        (* a ∈ a::B1', w ∈ B2.  a strictly beats w directly *)
+        pose proof (Hdirect a w (or_introl eq_refl) HinB2) as [Hdir_le Hdir_neq].
+        (* Prove a ≠ w: if a = w, then w ∈ B1 ∩ B2, contradicting partition *)
+        assert (H_aw_neq : a <> w).
+        { intro Heq_aw. subst w.
+          destruct (Hpartition a) as [Hfw _].
+          apply Hfw; [left; reflexivity | exact HinB2]. }
+        (* Prove schulze_beats M a w *)
+        assert (H_aw_beats : schulze_beats M a w).
+        { unfold schulze_beats, beats. split.
+          - (* Non-strict: Orel (mat_star M w a) (mat_star M a w) *)
+            unfold mat_star.
+            eapply orel_trans.
+            { apply (geom_sum_bound (R:=R) M Htri kleene_exp w a).
+              intro Heq_wa. apply Hdir_neq. rewrite Heq_wa. reflexivity. }
+            eapply orel_trans.
+            { exact Hdir_le. }
+            apply (geom_sum_includes_direct (R:=R) M kleene_exp a w).
+            unfold kleene_exp.
+            pose proof (elements_two_or_more (s := Node)) as Hlen. lia.
+          - (* Strict: mat_star M w a ≠ mat_star M a w *)
+            intro Heq_star.
+            apply Hdir_neq.
+            unfold mat_star in Heq_star.
+            pose proof (geom_sum_bound (R:=R) M Htri kleene_exp w a) as Hbound.
+            assert (H_wa_neq : w <> a).
+            { intro Heq_wa. apply Hdir_neq. rewrite Heq_wa. reflexivity. }
+            apply Hbound in H_wa_neq.
+            pose proof (geom_sum_includes_direct (R:=R) M kleene_exp a w) as Hinclude.
+            assert (Hk_ge1 : (kleene_exp >= 1)%nat).
+            { unfold kleene_exp.
+              pose proof (elements_two_or_more (s := Node)) as Hlen. lia. }
+            apply Hinclude in Hk_ge1.
+            assert (H_Maw_le_Mwa : Orel (M a w) (M w a)).
+            { eapply orel_trans; [exact Hk_ge1 |].
+              rewrite <- Heq_star. exact H_wa_neq. }
+            apply (orel_antisym (R := R) (M w a) (M a w) Hdir_le H_Maw_le_Mwa). }
+        (* Contradiction: Hwinner says nobody beats w, but a beats w *)
+        exfalso.
+        unfold schulze_winner in Hwinner.
+        apply (Hwinner a H_aw_neq H_aw_beats).
+      + (* ~ In w B2 → In w B1 by partition, contradicting HnotinB1 *)
+        destruct (Hpartition w) as [_ Hrev].
+        apply Hrev in HnotinB2. contradiction.
+  Qed.
 
 
   (* =====================================================================  *)
