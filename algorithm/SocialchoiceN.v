@@ -3,6 +3,7 @@ From Semiring Require Import PathN MatN OrelN
   SemimoduleN Structures.
 Import ListNotations SemiringNotations.
 
+Local Infix "≤" := Orel (at level 70).
 
 Section SocialChoice.
 
@@ -22,12 +23,12 @@ Section SocialChoice.
 
   (* =====================================================================  *)
   (*  Fundamental: a beats b in matrix N if N_{ba} < N_{ab}                 *)
-  (*  — i.e., Orel (N b a) (N a b)  ∧  N b a ≠ N a b.                      *)
+  (*  — i.e., N b a ≤ N a b  ∧  N b a ≠ N a b.                      *)
   (* =====================================================================  *)
 
   Definition beats {R : Semiring.type}
     (N : @Matrix Node R) (a b : Node) : Prop :=
-    Orel (N b a) (N a b) ∧ N b a ≠ N a b.
+    N b a ≤ N a b ∧ N b a ≠ N a b.
 
   (* =====================================================================  *)
   (*  Condorcet winner: beats everyone in the DIRECT matrix M               *)
@@ -75,7 +76,7 @@ Section SocialChoice.
     (*  all other M[X][Y] unchanged), then A's Kleene-star scores do not     *)
     (*  decrease — i.e., for every opponent C:                               *)
     (*                                                                        *)
-    (*        Orel (M*_{AC}) (M'*_{AC})    (M'* dominates M* )               *)
+    (*        M*_{AC} ≤ M'*_{AC}    (M'* dominates M* )               *)
     (*                                                                        *)
     (*  Proof: with the triangle inequality Htri, every A→C path weight is   *)
     (*  bounded by the direct edge M_{AC}.  Since M'_{AC} dominates M_{AC}  *)
@@ -161,11 +162,11 @@ Section SocialChoice.
         * apply mulr1.
   Qed.
 
-  Lemma bounded_orel_refl {R : BoundedSemiring.type} (a : R) : Orel a a.
+  Lemma bounded_orel_refl {R : BoundedSemiring.type} (a : R) : a ≤ a.
   Proof. unfold Orel. apply bounded_add_idem. Qed.
 
   Lemma bounded_mul_orel_compat_r {R : BoundedSemiring.type} (a b c : R) :
-    Orel a b -> Orel (c * a) (c * b).
+    a ≤ b -> c * a ≤ c * b.
   Proof.
     unfold Orel. intros Hab.
     transitivity (c * (a + b)).
@@ -176,7 +177,7 @@ Section SocialChoice.
   (* If every term of a sum is ≤ v, then the whole sum is ≤ v.               *)
   Lemma sum_orel_bound {R : Semiring.type} 
     (f : Node -> R) (v : R) :
-    (forall x, Orel (f x) v) -> Orel (sum f) v.
+    (forall x, (f x) ≤ v) -> (sum f) ≤ v.
   Proof.
     unfold Orel, sum.
     intro H.
@@ -193,13 +194,13 @@ Section SocialChoice.
 
   (* If a ≤ c and b ≤ c then a+b ≤ c.  Works for any commutative monoid.    *)
   Lemma add_orel_bound {R : CommutativeMonoid.type} (a b c : R) :
-    Orel a c -> Orel b c -> Orel (a + b) c.
+    a ≤ c -> b ≤ c -> (a + b) ≤ c.
   Proof.
     unfold Orel. intros Ha Hb.
     rewrite addA, Hb, Ha. reflexivity.
   Qed.
 
-  Lemma bounded_plus_upper_left {R : BoundedSemiring.type} (a b : R) : Orel a (a + b).
+  Lemma bounded_plus_upper_left {R : BoundedSemiring.type} (a b : R) : a ≤ a + b.
   Proof.
     unfold Orel. rewrite <- addA. rewrite (bounded_add_idem a). reflexivity.
   Qed.
@@ -209,9 +210,9 @@ Section SocialChoice.
   (* direct edge weight: pow M k X A ≤ M X A  for k ≥ 1.                    *)
   Lemma pow_bound {R : BoundedSemiring.type} 
     (M : @Matrix Node R)
-    (Htri : forall (X Y Z : Node), Orel (M X Y * M Y Z) (M X Z)) :
+    (Htri : forall (X Y Z : Node), M X Y * M Y Z ≤ M X Z) :
     forall (k : nat) (X A : Node),
-      (1 <= k)%nat -> Orel (pow M k X A) (M X A).
+      (1 <= k)%nat -> pow M k X A ≤ M X A.
   Proof.
     induction k as [|k IH]; intros X A Hk.
     - lia.
@@ -232,9 +233,9 @@ Section SocialChoice.
   (* Corollary: the geometric sum from X to A is bounded by M_{XA}.          *)
   Lemma geom_sum_bound {R : BoundedSemiring.type}
     (M : @Matrix Node R)
-    (Htri : forall (X Y Z : Node), Orel (M X Y * M Y Z) (M X Z)) :
+    (Htri : forall (X Y Z : Node), M X Y * M Y Z ≤ M X Z) :
     forall (n : nat) (X A : Node),
-      X ≠ A -> Orel (geom_sum M n X A) (M X A).
+      X ≠ A -> geom_sum M n X A ≤ M X A.
   Proof.
     induction n as [|n IH]; intros X A Hneq.
     - (* n = 0: geom_sum M 0 X A = I X A = 0 *)
@@ -252,7 +253,7 @@ Section SocialChoice.
   (* The direct edge M_{AX} appears in geom_sum M n A X for n ≥ 1.           *)
   Lemma geom_sum_includes_direct {R : BoundedSemiring.type}
     (M : @Matrix Node R) (n : nat) (A X : Node) :
-    (1 <= n)%nat -> Orel (M A X) (geom_sum M n A X).
+    (1 <= n)%nat -> M A X ≤ geom_sum M n A X.
   Proof.
     induction n as [|n IH]; intros Hn.
     - lia.
@@ -299,12 +300,12 @@ Section SocialChoice.
 
   Theorem monotonicity {R : BoundedSemiring.type} :
     forall (M M' : @Matrix Node R)
-      (Htri : forall (X Y Z : Node), Orel (M X Y * M Y Z) (M X Z))
+      (Htri : forall (X Y Z : Node), M X Y * M Y Z ≤ M X Z)
       (A : Node),
-      (forall (Y : Node), Orel (M A Y) (M' A Y)) ->
-      (forall (X : Node), Orel (M' X A) (M X A)) ->
+      (forall (Y : Node), M A Y ≤ M' A Y) ->
+      (forall (X : Node), M' X A ≤ M X A) ->
       (forall (X Y : Node), X ≠ A -> Y ≠ A -> (M X Y) = (M' X Y)) ->
-      forall (C : Node), Orel (mat_star M A C) (mat_star M' A C).
+      forall (C : Node), mat_star M A C ≤ mat_star M' A C.
   Proof.
     intros M M' Htri A Hrow Hcol Heq C.
     destruct (fin_eq_dec C A) as [HeqCA|HneqCA].
@@ -335,9 +336,8 @@ Section SocialChoice.
 
   Theorem condorcet_implies_strict_winner {R : BoundedSemiring.type}
     (M : @Matrix Node R)
-    (Htri : forall (X Y Z : Node), Orel (M X Y * M Y Z) (M X Z))
-    (A : Node) :
-    condorcet_winner M A -> strict_winner M A.
+    (Htri : forall (X Y Z : Node), M X Y * M Y Z ≤ M X Z)
+    (A : Node) : condorcet_winner M A -> strict_winner M A.
   Proof.
     unfold condorcet_winner, strict_winner, schulze_beats, beats.
     intros Hc X Hneq.
@@ -368,7 +368,7 @@ Section SocialChoice.
         pose proof (elements_two_or_more (s := Node)) as Hlen2. lia. }
       pose proof (geom_sum_includes_direct (R:=R) M kleene_exp A X Hk_ge1) as Hinclude_use.
       (* M A X ≤ geom_sum M kleene_exp A X = geom_sum M kleene_exp X A ≤ M X A *)
-      assert (H_MA_le_MXA : Orel (M A X) (M X A)).
+      assert (H_MA_le_MXA : M A X ≤ M X A).
       { eapply orel_trans; [exact Hinclude_use |].
         rewrite <- Heq. exact Hbound. }
       apply (orel_antisym (R := R) (M X A) (M A X) Hdir_le H_MA_le_MXA).
@@ -416,8 +416,8 @@ Section SocialChoice.
     (* mat_star_transpose: (M^T)*_{AB} = M*_{BA}                           *)
     rewrite (mat_star_transpose M A B) in H_rev_le, H_rev_neq.
     (* Now we have:                                                          *)
-    (*   H_win_le  : Orel (M*_{BA}) (M*_{AB})  i.e., M*_{BA} ≤ M*_{AB}     *)
-    (*   H_rev_le  : Orel (M*_{AB}) (M*_{BA})  i.e., M*_{AB} ≤ M*_{BA}     *)
+    (*   H_win_le  : M*_{BA} ≤ M*_{AB}  i.e., M*_{BA} ≤ M*_{AB}     *)
+    (*   H_rev_le  : M*_{AB} ≤ M*_{BA}  i.e., M*_{AB} ≤ M*_{BA}     *)
     (*   H_win_neq : M*_{BA} ≠ M*_{AB}                                       *)
     (* Antisymmetry gives M*_{BA} = M*_{AB}, contradicting H_win_neq.       *)
     apply H_win_neq.
@@ -432,9 +432,8 @@ Section SocialChoice.
 
   Lemma pow_bound_general {R : IdempotentSemiring.type}
     (M : @Matrix Node R)
-    (Htri : forall (X Y Z : Node), Orel (M X Y * M Y Z) (M X Z)) :
-    forall (k : nat) (X A : Node),
-      (1 <= k)%nat -> Orel (pow M k X A) (M X A).
+    (Htri : forall (X Y Z : Node), M X Y * M Y Z ≤ M X Z) :
+    forall (k : nat) (X A : Node), (1 <= k)%nat -> pow M k X A ≤ M X A.
   Proof.
     induction k as [|k IH]; intros X A Hk.
     - lia.
@@ -462,12 +461,12 @@ Section SocialChoice.
 
   Theorem pareto {R : IdempotentSemiring.type}
     (M : @Matrix Node R)
-    (Htri : forall (X Y Z : Node), Orel (M X Y * M Y Z) (M X Z))
+    (Htri : forall (X Y Z : Node), M X Y * M Y Z ≤ M X Z)
     (A B : Node) :
       A ≠ B -> M B A = 0 -> M A B ≠ 0 ->
       (forall (X : Node), X ≠ A -> X ≠ B -> M A X = M B X) ->
       (forall (X : Node), X ≠ A -> X ≠ B -> M X A = M X B) ->
-      Orel (mat_star M B A) (mat_star M A B).
+      mat_star M B A ≤ mat_star M A B.
   Proof.
     intros Hneq Hzero Hnonzero Hrow Hcol.
     unfold mat_star, Orel.
@@ -512,14 +511,13 @@ Section SocialChoice.
     forall (M : @Matrix Node R) (C C' : Node),
       C ≠ C' ->
       (* C and C' have identical pairwise strengths *)
-      (forall (X : Node), X ≠ C -> X ≠ C' -> 
-        M C X = M C' X ∧ M X C = M X C') ->
+      (forall (X : Node), X ≠ C -> X ≠ C' ->  M C X = M C' X ∧ M X C = M X C') ->
       (* The clone-clone edge is symmetric *)
       M C C' = M C' C ->
       (* Then for any X,Y ≠ C,C', the domination relation is unchanged *)
       forall (X Y : Node), X ≠ C -> X ≠ C' -> Y ≠ C -> Y ≠ C' ->
-        Orel (mat_star M Y X) (mat_star M X Y) <->
-        Orel (mat_star M Y X) (mat_star M X Y).
+        mat_star M Y X ≤ mat_star M X Y <->
+        mat_star M Y X ≤ mat_star M X Y.
   Proof.
     intros M C C' Hneq Hclone Hsym X Y HXc HXc' HYc HYc'.
     split; auto.
@@ -546,26 +544,23 @@ Section SocialChoice.
 
   Lemma star_path_compose {R : BoundedSemiring.type}
     (M : @Matrix Node R) (a b c : Node) :
-    Orel (mat_star M a b * mat_star M b c) (mat_star M a c).
+    mat_star M a b * mat_star M b c ≤ mat_star M a c.
   Proof.
   Admitted.
 
   Theorem transitivity {R : BoundedSemiring.type}
-    (M : @Matrix Node R)
-    (Htri : forall (X Y Z : Node), Orel (M X Y * M Y Z) (M X Z)) :
+    (M : @Matrix Node R) :
     forall (a b c : Node),
-      schulze_beats M a b ->
-      schulze_beats M b c ->
-      schulze_beats M a c.
+      schulze_beats M a b -> schulze_beats M b c -> schulze_beats M a c.
   Proof.
     intros a b c Hab Hbc.
     unfold schulze_beats, beats in *.
     destruct Hab as [Hab_le Hab_neq].
     destruct Hbc as [Hbc_le Hbc_neq].
     unfold mat_star in *.
-    (* Hab_le : Orel (M*_{ba}) (M*_{ab}),  Hbc_le : Orel (M*_{cb}) (M*_{bc}) *)
+    (* Hab_le : M*_{ba} ≤ M*_{ab},  Hbc_le : M*_{cb} ≤ M*_{bc} *)
     split.
-    - (* Non-strict: Orel (M*_{ca}) (M*_{ac}) *)
+    - (* Non-strict: M*_{ca} ≤ M*_{ac} *)
       (* From path composition: M*_{cb} * M*_{ba} ≤ M*_{ca} *)
       (* And from hypotheses + path comp: M*_{cb} * M*_{ba} ≤ M*_{ac} *)
       (* In a commutative semiring these chain.  Without commutativity,   *)
@@ -609,9 +604,7 @@ Section SocialChoice.
   (* Winner existence on a finite set.  Uses decidable equality on R        *)
   (* (Hdec) to decide schulze_beats, avoiding classical logic.              *)
   Theorem winner_exists {R : BoundedSemiring.type}
-    (M : @Matrix Node R)
-    (Htri : forall (X Y Z : Node), Orel (M X Y * M Y Z) (M X Z))
-    (Hdec : forall x y : R, {x = y} + {x ≠ y}) :
+    (M : @Matrix Node R) (Hdec : forall x y : R, {x = y} + {x ≠ y}) :
     exists (a : Node), schulze_winner M a.
   Proof.
     (* Prove by induction on elements that a maximal element exists *)
@@ -639,7 +632,7 @@ Section SocialChoice.
             (* x is in b::l. If x beats a, then by transitivity x beats w,
                contradicting Hw_undefeated *)
             intro Hx_beats_a.
-            pose proof (transitivity M Htri x a w Hx_beats_a H_aw) as Hxw.
+            pose proof (transitivity M x a w Hx_beats_a H_aw) as Hxw.
             destruct (fin_eq_dec x w) as [Heq_xw | Hneq_xw].
             { subst x. apply (schulze_beats_irrefl M w). exact Hxw. }
             { apply (Hw_undefeated x Hx_in_tail Hneq_xw). exact Hxw. }
@@ -677,12 +670,12 @@ Section SocialChoice.
 
   Theorem smith_criterion {R : BoundedSemiring.type}
     (M : @Matrix Node R)
-    (Htri : forall (X Y Z : Node), Orel (M X Y * M Y Z) (M X Z)) :
+    (Htri : forall (X Y Z : Node), M X Y * M Y Z ≤ M X Z) :
     forall (B1 B2 : list Node),
       B1 <> [] ->
       (forall (x : Node), In x B1 <-> ~ In x B2) ->
       (forall (a b : Node), In a B1 -> In b B2 ->
-         Orel (M b a) (M a b) ∧ M b a ≠ M a b) ->
+         M b a ≤ M a b ∧ M b a ≠ M a b) ->
       forall (w : Node), schulze_winner M w -> In w B1.
   Proof.
     intros B1 B2 HB1_nonempty Hpartition Hdirect w Hwinner.
@@ -701,7 +694,7 @@ Section SocialChoice.
         (* Prove schulze_beats M a w *)
         assert (H_aw_beats : schulze_beats M a w).
         { unfold schulze_beats, beats. split.
-          - (* Non-strict: Orel (mat_star M w a) (mat_star M a w) *)
+          - (* Non-strict: mat_star M w a ≤ mat_star M a w *)
             unfold mat_star.
             eapply orel_trans.
             { apply (geom_sum_bound (R:=R) M Htri kleene_exp w a).
@@ -724,7 +717,7 @@ Section SocialChoice.
             { unfold kleene_exp.
               pose proof (elements_two_or_more (s := Node)) as Hlen. lia. }
             apply Hinclude in Hk_ge1.
-            assert (H_Maw_le_Mwa : Orel (M a w) (M w a)).
+            assert (H_Maw_le_Mwa : M a w ≤ M w a).
             { eapply orel_trans; [exact Hk_ge1 |].
               rewrite <- Heq_star. exact H_wa_neq. }
             apply (orel_antisym (R := R) (M w a) (M a w) Hdir_le H_Maw_le_Mwa). }
@@ -755,7 +748,7 @@ Section SocialChoice.
 
   Theorem prudence {R : IdempotentSemiring.type} :
     forall (M : @Matrix Node R)
-      (Htri : forall (X Y Z : Node), Orel (M X Y * M Y Z) (M X Z))
+      (Htri : forall (X Y Z : Node), M X Y * M Y Z ≤ M X Z)
       (a b : Node),
       a ≠ b ->
       M b a = 0 ->
@@ -772,7 +765,7 @@ Section SocialChoice.
     - exact Hneq.
     - unfold schulze_beats, beats.
       split.
-      + (* Orel (mat_star M b a) (mat_star M a b) — from Pareto *)
+      + (* mat_star M b a ≤ mat_star M a b — from Pareto *)
         apply (pareto M Htri a b Hneq Hzero Hnonzero Hrow Hcol).
       + (* mat_star M b a ≠ mat_star M a b — strictness *)
         exact Hstrict.
