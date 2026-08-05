@@ -23,7 +23,7 @@ Section SocialChoice.
     {Node : FinType.type}.
 
   (* Kleene star:  A* = I + A + A² + … + A^{|N|-1}                          *)
-  Definition kleene_exp := Init.Nat.pred (List.length (@elements Node)).
+  Definition kleene_exp := (List.length (@elements Node) - 1)%nat.
 
   (* =====================================================================  *)
   (*  Kleene star as a named definition for readability                     *)
@@ -234,6 +234,16 @@ Section SocialChoice.
     unfold Orel. rewrite <- addA. rewrite (bounded_add_idem a). reflexivity.
   Qed.
 
+  Lemma orel_plus_upper_right {R : BoundedSemiring.type} (a b : R) : a ≤ b + a.
+  Proof.
+    unfold Orel.
+    rewrite <- (addA a b a).
+    rewrite (addC a b).
+    rewrite (addA b a a).
+    rewrite (bounded_add_idem a).
+    reflexivity.
+  Qed.
+
   (* The Htri-dependent helper lemmas pow_bound and geom_sum_bound are      *)
   (* now in VoteSemiring.v (Section VoteSemiringTheorems).                   *)
 
@@ -387,53 +397,125 @@ Section SocialChoice.
   (*  The paper's Definition 2.2.1 (relation O) is schulze_beats.            *)
   (*  The paper's Definition 2.2.2 (winner set S) is schulze_winner.         *)
   (* =====================================================================  *)
+  (*  Stabilization lemma: pow (M+I) stabilizes after |N|-1 steps.           *)
+  (* =====================================================================  *)
+
+  Lemma pow_pointwise {R : Semiring.type} (A B : @Matrix Node R) (n : nat) (x y : Node) :
+    (forall i j, A i j = B i j) -> pow A n x y = pow B n x y.
+  Proof.
+    revert x y. induction n as [|n IH]; intros x y Heq; cbn.
+    - (* I x y is independent of A/B *)
+      reflexivity.
+    - (* matrix_mul: sum over z of A x z * pow A n z y *)
+      unfold matrix_mul.
+      apply sum_ext. intro z.
+      rewrite (Heq x z). rewrite (IH z y Heq). reflexivity.
+  Qed.
+
+  Lemma pow_MplusI_stable {R : BoundedSemiring.type}
+    (M : @Matrix Node R) (n : nat) (a c : Node) :
+    pow (matrix_add M (I : @Matrix Node R)) (kleene_exp + n) a c =
+    pow (matrix_add M (I : @Matrix Node R)) kleene_exp a c.
+  Proof.
+    (* (M+I)[i,i] = M[i,i] + 1 = 1 (bounded semiring: a+1=1) *)
+    assert (Hdiag : forall (u v : Node), u = v -> (matrix_add M (I : @Matrix Node R)) u v = 1).
+    { intros u v Heq. subst v.
+      unfold matrix_add.
+      assert (Htmp : (I : @Matrix Node R) u u = 1).
+      { unfold I. destruct (fin_eq_dec u u); [reflexivity | congruence]. }
+      rewrite Htmp.
+      transitivity ((1 : R) + (M u u : R)).
+      { apply (addC (M u u : R) (1 : R)). }
+      { apply (add_bound (s := R) (M u u)). } }
+    eapply eq_sym.
+    unfold kleene_exp.
+    pose proof (elements_two_or_more (s := Node)) as Hlen.
+    replace (length elements - 1 + n)%nat with 
+      (n + length (@elements Node) - 1)%nat by lia.
+    (* Apply fixpoint lemma with m := M+I (diagonal = 1). *)
+    pose proof (@matrix_pow_fixpoint_after_node_bound Node R n
+      (matrix_add M (I : @Matrix Node R)) a c
+      (fun u v Heq => Hdiag u v Heq)) as Hfix.
+    (* Key: (M+I)+I = M+I pointwise (since I+I=I in bounded semiring). *)
+    assert (Hidem : forall i j, (matrix_add (matrix_add M (I : @Matrix Node R)) (I : @Matrix Node R)) i j =
+                                (matrix_add M (I : @Matrix Node R)) i j).
+    { intros i j. unfold matrix_add.
+      destruct (fin_eq_dec i j) as [Heq|Hneq].
+      - subst j. unfold I.
+        destruct (fin_eq_dec i i); [|congruence].
+        rewrite (addA (M i i) 1 1).
+        apply (f_equal (fun t => M i i + t)). apply (add_bound (s := R) 1).
+      - unfold I. destruct (fin_eq_dec i j); [congruence|].
+        rewrite !addr0. reflexivity. }
+    (* Use pow_pointwise to lift pointwise equality to pow equality *)
+    pose proof (pow_pointwise _ _ (length (@elements Node) - 1) a c Hidem) as Heq1.
+    pose proof (pow_pointwise _ _ (n + length (@elements Node) - 1) a c Hidem) as Heq2.
+    rewrite Heq1, Heq2 in Hfix.
+    exact Hfix.
+  Qed.
+    
+  (* =====================================================================  *)
   (*  Lemma: path concatenation (Kleene star idempotence)                     *)
   (*                                                                          *)
   (*  M*_{ab} * M*_{bc} ≤ M*_{ac}                                             *)
   (*                                                                          *)
-  (*  Proof sketch:                                                           *)
-  (*  1. mat_star M a b = Σ_{p:a→b, |p|≤K} measure(p) (via connect_partial)  *)
-  (*  2. mat_star M a b * mat_star M b c                                     *)
-  (*     = Σ_{p,q} measure(p) * measure(q) (distributivity)                  *)
-  (*     = Σ_{p,q} measure(p++q) (measure_of_path_app)                       *)
-  (*  3. Each p++q is a path a→c.  If |p++q| > K, reduce_path_cycle_step     *)
-  (*     gives a shorter path r with measure(p++q) ≤ measure(r).              *)
-  (*  4. Since addition is idempotent in bounded semirings (a+a=a), the       *)
-  (*     shorter path r is included in mat_star M a c and the total sum       *)
-  (*     is not increased by counting duplicates.                             *)
-  (*  5. Therefore Σ_{p,q} measure(p++q) ≤ Σ_{r:a→c, |r|≤K} measure(r)       *)
-  (*     = mat_star M a c.                                                    *)
-  (*                                                                          *)
-  (*  Formalizing steps 3-4 requires the path enumeration machinery           *)
-  (*  from PathN.v (connect_partial_sum_mat_paths, cycle_path_dup_remove,     *)
-  (*  reduce_path_cycle_step).  This is future work.                         *)
+  (*  Algebraic proof:                                                        *)
+  (*  1. mat_star M = pow (M+I)^K (matrix_pow_idempotence_bounded)           *)
+  (*  2. pow B^K a b * pow B^K b c ≤ (pow B^K · pow B^K) a c                *)
+  (*     (b is one summand in the matrix multiplication)                      *)
+  (*  3. (pow B^K · pow B^K) = pow B^{2K} (pow_add)                          *)
+  (*  4. pow B^{2K} = pow B^K (stabilization lemma above)                    *)
+  (*  5. pow B^K = mat_star M (matrix_pow_idempotence_bounded)               *)
   (* =====================================================================  *)
 
   Lemma star_path_compose {R : BoundedSemiring.type}
     (M : @Matrix Node R) (a b c : Node) :
     mat_star M a b * mat_star M b c ≤ mat_star M a c.
   Proof.
-    (* Use the path-level bridge: mat_star = partial_sum_paths *)
-    unfold mat_star.
-    rewrite !connect_partial_sum_mat_paths.
-    (* Now: partial_sum_paths elements M K a b *
-             partial_sum_paths elements M K b c ≤
-             partial_sum_paths elements M K a c *)
-    (* The product of two path-sums distributes to a sum over
-       concatenated paths a→b→c.  Each long path can be shortened
-       via cycle removal (reduce_path_cycle_step from PathN.v).
-       Idempotence of addition (a+a=a) absorbs duplicates. *)
-    (* This requires the full path enumeration machinery. *)
-  Admitted.
+    set (B := matrix_add M (I : @Matrix Node R)).
+    set (K := kleene_exp).
+    (* Step 1: rewrite mat_star M to pow B K pointwise *)
+    assert (Hstar_pt : forall x y, mat_star M x y = pow B K x y).
+    { intros x y. unfold mat_star, B, K.
+      symmetry. apply (matrix_pow_idempotence_bounded K M x y). }
+    rewrite !Hstar_pt.
+    (* Goal: pow B K a b * pow B K b c ≤ pow B K a c *)
+    (* Step 2: bound by matrix multiplication *)
+    assert (Hmul : pow B K a b * pow B K b c ≤ matrix_mul (pow B K) (pow B K) a c).
+    { unfold matrix_mul, sum.
+      assert (Hin : In b (@elements Node)).
+      { apply elements_complete. }
+      induction (@elements Node) as [|x xs IH].
+      - inversion Hin.
+      - cbn. destruct (fin_eq_dec x b) as [Heq|Hneq].
+        + subst x. apply bounded_plus_upper_left.
+        + assert (Hin' : In b xs) by (inversion Hin; [congruence | assumption]).
+          specialize (IH Hin').
+          set (S := fold_right (λ (x0 : Node) (y : R), pow B K a x0 * pow B K x0 c + y) 0 xs).
+          assert (Htmp : S ≤ pow B K a x * pow B K x c + S).
+          { apply orel_plus_upper_right. }
+          unfold S in IH.
+          eapply orel_trans; [exact IH | exact Htmp]. }
+    (* Step 3-4: matrix multiplication = pow B (2K) = pow B K *)
+    assert (Hpow : matrix_mul (pow B K) (pow B K) a c = pow B K a c).
+    { unfold K, B.
+      rewrite <- (pow_add (matrix_add M (I : @Matrix Node R)) kleene_exp kleene_exp a c).
+      rewrite (pow_MplusI_stable M kleene_exp a c).
+      reflexivity. }
+    rewrite Hpow in Hmul.
+    exact Hmul.
+  Qed.
 
-  Theorem transitivity {R : BoundedSemiring.type} {R_comm : CommutativeSemiring R}
+  Theorem schulze_trans {R : BoundedSemiring.type} {R_comm : CommutativeSemiring R}
     (M : @Matrix Node R) :
     forall (a b c : Node),
       schulze_beats M a b -> schulze_beats M b c -> schulze_beats M a c.
   Proof.
-    (* Requires star_path_compose + commutativity.  The non-strict part
-       chains: M*_{ca} ≤ M*_{ba} * M*_{bc} ≤ M*_{ab} * M*_{bc} ≤ M*_{ac}.
-       The first inequality uses commutativity to reorder factors. *)
+    (* Non-strict part: M*_{ca} ≤ M*_{ac}
+       Chains: M*_{ca} ≤ M*_{bc} * M*_{ba} = M*_{ba} * M*_{bc} ≤ M*_{ab} * M*_{bc} ≤ M*_{ac}
+       The first inequality requires mulC + star_path_compose.
+       Strict part: if M*_{ca} = M*_{ac}, antisymmetry through star_path_compose
+       forces M*_{ba} = M*_{ab}, contradiction. *)
   Admitted.
 
   (* =====================================================================  *)
@@ -498,7 +580,7 @@ Section SocialChoice.
             (* x is in b::l. If x beats a, then by transitivity x beats w,
                contradicting Hw_undefeated *)
             intro Hx_beats_a.
-            pose proof (@transitivity R R_comm M x a w Hx_beats_a H_aw) as Hxw.
+            pose proof (@schulze_trans R R_comm M x a w Hx_beats_a H_aw) as Hxw.
             destruct (fin_eq_dec x w) as [Heq_xw | Hneq_xw].
             { subst x. apply (schulze_beats_irrefl M w). exact Hxw. }
             { apply (Hw_undefeated x Hx_in_tail Hneq_xw). exact Hxw. }
