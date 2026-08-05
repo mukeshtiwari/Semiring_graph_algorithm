@@ -591,6 +591,8 @@ Section SocialChoice.
   Qed.
 
 
+  (* schulze_beats is decidable when R has decidable equality.               *)
+  (* This holds in concrete semirings like max-min (Nat) or min-plus.        *)
   Lemma schulze_beats_dec {R : Semiring.type}
     (M : @Matrix Node R) (a b : Node)
     (Hdec : forall x y : R, {x = y} + {x ≠ y}) :
@@ -604,6 +606,8 @@ Section SocialChoice.
     - right. intros [H H']. apply Hnle. exact H.
   Qed.
 
+  (* Winner existence on a finite set.  Uses decidable equality on R        *)
+  (* (Hdec) to decide schulze_beats, avoiding classical logic.              *)
   Theorem winner_exists {R : BoundedSemiring.type}
     (M : @Matrix Node R)
     (Htri : forall (X Y Z : Node), Orel (M X Y * M Y Z) (M X Z))
