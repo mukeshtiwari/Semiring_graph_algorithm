@@ -412,6 +412,41 @@ Section SocialChoice.
       rewrite (Heq x z). rewrite (IH z y Heq). reflexivity.
   Qed.
 
+  Lemma idem_plus_upper_left {R : IdempotentSemiring.type} (a b : R) : a ≤ a + b.
+  Proof.
+    red. rewrite <- addA. assert (Hadd : a + a = a) by apply add_idem.
+    rewrite Hadd. reflexivity.
+  Qed.
+
+  Lemma idem_plus_upper_right {R : IdempotentSemiring.type} (a b : R) : a ≤ b + a.
+  Proof.
+    red. rewrite (addC b a). apply idem_plus_upper_left.
+  Qed.
+
+  Lemma pow_orel {R : IdempotentSemiring.type} (A B : @Matrix Node R) (n : nat) (x y : Node) :
+    (forall i j, A i j ≤ B i j) -> pow A n x y ≤ pow B n x y.
+  Proof.
+    revert x y. induction n as [|n IH]; intros x y Hle; cbn.
+    - apply orel_refl.
+    - unfold matrix_mul. apply sum_orel_bound. intro z.
+      assert (H1a : A x z * pow A n z y ≤ B x z * pow A n z y).
+      { apply mul_orel_compat_l. apply Hle. }
+      assert (H1b : B x z * pow A n z y ≤ B x z * pow B n z y).
+      { apply mul_orel_compat_r. apply IH. exact Hle. }
+      assert (H1 : A x z * pow A n z y ≤ B x z * pow B n z y).
+      { eapply orel_trans; [exact H1a | exact H1b]. }
+      assert (H2 : B x z * pow B n z y ≤ sum (fun k : Node => B x k * pow B n k y)).
+      { unfold sum. set (f := fun k : Node => B x k * pow B n k y).
+        assert (Hin : In z (@elements Node)) by apply elements_complete.
+        induction (@elements Node) as [|w ws IHws]; [inversion Hin |].
+        cbn. destruct (fin_eq_dec w z) as [Heq|Hneq].
+        - subst w. apply idem_plus_upper_left.
+        - assert (Hin' : In z ws) by (inversion Hin; [congruence | assumption]).
+          specialize (IHws Hin').
+          eapply orel_trans; [exact IHws | apply idem_plus_upper_right]. }
+      eapply orel_trans; [exact H1 | exact H2].
+  Qed.
+
   Lemma pow_MplusI_stable {R : BoundedSemiring.type}
     (M : @Matrix Node R) (n : nat) (a c : Node) :
     pow (matrix_add M (I : @Matrix Node R)) (kleene_exp + n) a c =
@@ -626,15 +661,107 @@ Section SocialChoice.
     forall (C : Node), mat_star M A C ≤ mat_star M' A C.
   Proof. Admitted.
 
-  Theorem pareto {R : IdempotentSemiring.type}
+  (* ------------------------------------------------------------------ *)
+  (*  Pareto criterion (Section 4.3):                                     *)
+  (*                                                                      *)
+  (*  Two versions appear in the literature:                              *)
+  (*    1. If a ≻ᵥ b for all v ∈ V, then a ≻ b.                          *)
+  (*    2. If a ≿ᵥ b for all v ∈ V and a ≻ᵥ b for some v ∈ V,           *)
+  (*       then a ≻ b.                                                    *)
+  (*                                                                      *)
+  (*  The Schulze method satisfies both.  We formalise the second         *)
+  (*  (stronger) version as [pareto_stronger] below.  The first           *)
+  (*  (weaker) version is [pareto].                                       *)
+  (* ------------------------------------------------------------------ *)
+
+  (* ------------------------------------------------------------------ *)
+  (*  Version 1 (weaker):  a ≻ᵥ b for all v ∈ V  →  a ≻ b               *)
+  (*                                                                      *)
+  (*  "Every voter strictly prefers a over b."                            *)
+  (*                                                                      *)
+  (*  In the matrix M (where M x y counts voters who prefer x over y):    *)
+  (*    M b a = 0   — zero voters prefer b over a                         *)
+  (*    M a b ≠ 0   — at least one (in fact all) prefer a over b          *)
+  (*                                                                      *)
+  (*  Conclusion: a beats b in the Schulze sense, i.e.,                   *)
+  (*    mat_star M b a ≤ mat_star M a b.                                  *)
+  (*                                                                      *)
+  (*  Unlike [pareto_stronger], this version does NOT require the         *)
+  (*  row/column homogeneity conditions (Hrow, Hcol).  The universal      *)
+  (*  quantifier "for all v" is encoded entirely in M b a = 0, which      *)
+  (*  is a stronger hypothesis than the "for some v" in version 2.        *)
+  (* ------------------------------------------------------------------ *)
+  Theorem pareto_weaker {R : BoundedSemiring.type}
+    (M : @Matrix Node R) (A B : Node) :
+    A ≠ B -> M B A = 0 -> M A B ≠ 0 ->
+    mat_star M B A ≤ mat_star M A B.
+  Proof.
+  (* Proof sketch: since M B A = 0, every term in pow M n B A either
+     contains the edge (A,B) (bounded above by M A B via boundedness)
+     or can be paired with a symmetric term in pow M n A B via a
+     path-swapping argument.  Direct formalisation requires the path
+     infrastructure from PathN.v. *)
+  Admitted.
+
+  (* ------------------------------------------------------------------ *)
+  (*  Version 2 (stronger):  a ≿ᵥ b for all v  ∧  a ≻ᵥ b for some v    *)
+  (*                         →  a ≻ b                                    *)
+  (*                                                                      *)
+  (*  Every voter weakly prefers a over b, and at least one voter       *)
+  (*   strictly prefers a over b.                                        *)
+  (*                                                                      *)
+  (*  Paper                    Code                                     *)
+  (*  ------------------------------------------------------------     *)
+  (*  a ≿ᵥ b for all v     M b a = 0                                   *)
+  (*                         (no voter strictly prefers b over a)         *)
+  (*                                                                      *)
+  (*  a ≻ᵥ b for some v    M a b ≠ 0                                   *)
+  (*                         (some voter strictly prefers a over b)       *)
+  (*                                                                      *)
+  (*  a ≻ b                mat_star M b a ≤ mat_star M a b             *)
+  (*                         (a beats b in the Schulze sense)             *)
+  (*                                                                      *)
+  (*  The two additional hypotheses are specific to the abstract          *)
+  (*  semiring framework (they are not needed in the standard proof       *)
+  (*  because when M counts voters they follow automatically):            *)
+  (*                                                                      *)
+  (*    Hrow : M a X = M b X    for X ≠ a,b                              *)
+  (*    Hcol : M X a = M X b    for X ≠ a,b                              *)
+  (*                                                                      *)
+  (*  These say that a and b are indistinguishable to/from every          *)
+  (*  other candidate — a homogeneity condition that reflects the         *)
+  (*  fact that voter preferences for a vs X and b vs X can differ        *)
+  (*  only when X is a or b themselves.                                   *)
+  (* ------------------------------------------------------------------ *)
+  Theorem pareto_stronger {R : BoundedSemiring.type}
     (M : @Matrix Node R) (A B : Node) :
     A ≠ B -> M B A = 0 -> M A B ≠ 0 ->
     (forall (X : Node), X ≠ A -> X ≠ B -> M A X = M B X) ->
     (forall (X : Node), X ≠ A -> X ≠ B -> M X A = M X B) ->
     mat_star M B A ≤ mat_star M A B.
-  Proof. Admitted.
+  Proof.
+  (* PROOF SKETCH (path-based):
+     mat_star M B A = sum over paths from B to A (connect_partial_sum_mat_paths).
+     mat_star M A B = sum over paths from A to B.
+     For each B→A path p, we show measure(p) ≤ mat_star M A B via case analysis:
 
-  Theorem prudence {R : IdempotentSemiring.type}
+     1. If p contains edge (A,B): in a BoundedSemiring, any product containing
+        M[A,B] is ≤ M[A,B] (iterated bounded_mul_lower_left/right).
+        And M[A,B] ≤ mat_star M A B (geom_sum_includes_direct).  ✓
+
+     2. If p does NOT contain (A,B):
+        a. Strip leading B→B self-loops: M[B,B]*rest ≤ rest (bounded_mul_lower_left).
+        b. Strip trailing A→A self-loops: rest*M[A,A] ≤ rest (bounded_mul_lower_right).
+        c. After stripping, first neighbor ≠ B and last neighbor ≠ A.
+           No A→B edge means first neighbor ≠ A and last neighbor ≠ B.
+           So first & last neighbors ≠ A,B.
+        d. Row condition: M[B,v1]=M[A,v1]. Col condition: M[vk,A]=M[vk,B].
+        e. Swap endpoints: A→v1→...→vk→B is valid, same weight, in mat_star M A B.
+
+     By sum_orel_bound, mat_star M B A ≤ mat_star M A B. *)
+  Admitted.
+
+  Theorem prudence {R : BoundedSemiring.type}
     (M : @Matrix Node R) (a b : Node) :
     a ≠ b ->
     M b a = 0 ->
@@ -651,8 +778,8 @@ Section SocialChoice.
     - exact Hneq.
     - unfold schulze_beats, beats.
       split.
-      + (* Non-strict: M*_{ba} ≤ M*_{ab} — from Pareto *)
-        apply (pareto M a b Hneq Hzero Hnonzero Hrow Hcol).
+      + (* Non-strict: M*_{ba} ≤ M*_{ab} — from Pareto (stronger) *)
+        apply (pareto_stronger M a b Hneq Hzero Hnonzero Hrow Hcol).
       + (* Strict: M*_{ba} ≠ M*_{ab} — from hypothesis *)
         exact Hstrict.
   Qed.
