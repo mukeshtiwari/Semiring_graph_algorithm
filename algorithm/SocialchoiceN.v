@@ -231,7 +231,7 @@ Section SocialChoice.
   (* The direct edge M_{AX} appears in geom_sum M n A X for n ≥ 1.           *)
   Lemma geom_sum_includes_direct {R : BoundedSemiring.type}
     (M : @Matrix Node R) (n : nat) (A X : Node) :
-    (n >= 1)%nat -> Orel (M A X) (geom_sum M n A X).
+    (1 <= n)%nat -> Orel (M A X) (geom_sum M n A X).
   Proof.
     induction n as [|n IH]; intros Hn.
     - lia.
