@@ -2835,7 +2835,7 @@ Section Matrix_proofs.
         eapply plus_idempotence.
     Qed.
 
-    
+    (* MOVED EVERYTHIGN UPTO THIS POINT INTO THE MATN.V *)
     Lemma connect_partial_sum_mat_paths : forall n m c d,
       mat_cong Node eqN R eqR m -> 
       partial_sum_mat Node eqN finN R 0 1 plusR mulR m n c d =r= 
