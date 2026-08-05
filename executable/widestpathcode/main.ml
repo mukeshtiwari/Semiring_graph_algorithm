@@ -33,7 +33,7 @@ let rank (n : coq_Node) : int =
 
 let matrix : (coq_R * coq_R) array array =
   [|
-    [| oneRR;               (Left 3,  Left 5);  (Left 5,  Left 4)  |];
+    [| oneRR;               (Left 3,  Left 5);   (Left 5,  Left 4)  |];
     [| zeroRR;              oneRR;               (Left 2,  Left 10) |];
     [| zeroRR;              zeroRR;              oneRR               |]
   |]
@@ -64,7 +64,7 @@ let print_matrix () =
 
 let print_widest () =
   print_endline "\n=== Widest-Shortest Paths — All-Pairs (A*) ===";
-  let star = widest_shortest_path arraymat in
+  let star = widestshortestpath arraymat in
   Stdlib.List.iter (fun u ->
     Stdlib.List.iter (fun v ->
       let w = star u v in
@@ -80,7 +80,7 @@ let print_widest () =
 
 let source_vector (n : coq_Node) : coq_R * coq_R =
   match n with
-  | A -> oneRR     (* (0, ∞): best width, worst length starting point *)
+  | C -> oneRR     (* (0, ∞): best width, worst length starting point *)
   | _ -> zeroRR    (* unreachable *)
 
 let print_vector (label : string) (v : coq_Node -> coq_R * coq_R) =
@@ -92,7 +92,7 @@ let print_vector (label : string) (v : coq_Node -> coq_R * coq_R) =
 
 let print_iteration () =
   print_endline "\n=== Semimodule: Fixed-Point Iteration  x_{k+1} = A·x_k + b ===";
-  print_endline "  (Lexicographic: width first, then length breaks ties)";
+  print_endline "  (Lexicographic: width first, then length breaks ties — source C)";
 
   let x0 = source_vector in
   print_vector "x₀ = b (source)" x0;
@@ -103,10 +103,10 @@ let print_iteration () =
   let x2 = mva_eff_fun arraymat x1 in
   print_vector "x₂ = A²·b  (≈ A*·b — converged!)" x2;
 
-  print_endline "\n  Compare with A-star·b (from widest-shortest paths, column A):";
-  let star = widest_shortest_path arraymat in
+  print_endline "\n  Compare with A-star·b (from widest-shortest paths, column C):";
+  let star = widestshortestpath arraymat in
   Stdlib.List.iter (fun u ->
-    let star_val = star u A in
+    let star_val = star u C in
     let iter_val = x2 u in
     let match_str = if star_val = iter_val then "✓" else "✗" in
     Printf.printf "    %-2s : %-16s  (A*·b)  vs  %-16s  (A²·b)  %s\n"

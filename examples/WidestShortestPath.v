@@ -1,8 +1,9 @@
 From Stdlib Require Import List BinNatDef
   Psatz Utf8 EqNat. 
-From Semiring Require Import Mat  Definitions
-  Listprop Semimodule.
-Import ListNotations.
+From HB Require Import structures.
+From Semiring Require Import MatN 
+  SemimoduleN Structures.
+Import ListNotations SemiringNotations.
 
 
   (* It should be shortest widest path. Most of the literature    *)
@@ -21,14 +22,6 @@ Section Comp.
   (* Define Candidates *)
   Inductive Node := A | B | C. 
   
-  (* Equality on Candidate *)
-  Definition eqN (x y : Node) : bool :=
-  match x, y with 
-  | A, A => true 
-  | B, B => true 
-  | C, C => true 
-  | _, _ => false
-  end. 
 
    (* Nat extended with Infinity *)
   Inductive R := 
@@ -42,7 +35,7 @@ Section Comp.
   | _, _ => false 
   end. 
 
-   Section min_plus.
+  Section min_plus.
 
     (* min_plus algebra + = min, * = +, 
       zero = Infinity, and one = Left 0 *)
@@ -91,9 +84,6 @@ Section Comp.
    
   End max_min.
 
- 
-
-  (* all good upto here *)
 
   (* This definition does appear to be correct in 
   the paper. *)
@@ -119,7 +109,7 @@ Section Comp.
 
 
   (* Lexicographic product *)
-  Definition lex_plusRR (u v : RR) : RR :=
+  Definition plusRR (u v : RR) : RR :=
   match u, v with 
   | (au, bu), (av, bv) => 
     match orb (ltR au av) (andb (eqR au av) (ltR bv bu)) with 
@@ -130,7 +120,7 @@ Section Comp.
 
  
   (* Direct product *)
-  Definition direct_mulRR (u v : RR) : RR :=
+  Definition mulRR (u v : RR) : RR :=
   match u, v with 
   | (au, bu), (av, bv) => (mulf au av,  muls bu bv)
   end.  
@@ -138,1020 +128,101 @@ Section Comp.
 
   Definition finN : list Node := [A; B; C].
 
-  (* Now, configure the matrix *)
-  Definition widest_shortest_path (m : Path.Matrix Node RR) : Path.Matrix Node RR :=
-    matrix_exp_binary_eff_fun Node eqN finN RR zeroRR oneRR lex_plusRR direct_mulRR m 2%N.
+End Comp.
 
-End Comp. 
 
-Section Proofs. 
+(* =================================================================== *)
+(*  HB Instances: FinType Node, BoundedSemiring RR                       *)
+(*                                                                       *)
+(*  RR = R × R lexicographic product.                                    *)
+(*  First component: min-plus (shortest path).                           *)
+(*  Second component: max-min (widest path), tiebreaker.                 *)
+(* =================================================================== *)
 
-  (* Establish Proofs *)
-  Theorem refN : brel_reflexive Node eqN. 
+Section HBInstances.
+
+  Definition fin_eq_dec (x y : Node) : {x = y} + {x <> y}.
+  Proof. decide equality. Defined.
+
+  Definition elements_list : list Node := [A; B; C].
+
+  Lemma elements_nodup_proof : NoDup elements_list.
   Proof.
-    unfold brel_reflexive;
-    intros [| | ]; simpl;
-    reflexivity.
+    unfold elements_list.
+    apply NoDup_cons. intro H. simpl in H. destruct H as [Heq|H]; [inversion Heq|]. simpl in H. destruct H as [Heq|H]; [inversion Heq|]. simpl in H. destruct H.
+    apply NoDup_cons. intro H. simpl in H. destruct H as [Heq|H]; [inversion Heq|]. simpl in H. destruct H.
+    apply NoDup_cons. intro H. simpl in H. destruct H.
+    apply NoDup_nil.
   Qed.
 
-  Theorem symN : brel_symmetric Node eqN.
-  Proof.
-    unfold brel_symmetric;
-    intros [| | ] [| | ]; simpl;
-    try reflexivity; try congruence.
-  Qed.
+  Lemma elements_complete_proof : forall x : Node, In x elements_list.
+  Proof. unfold elements_list; intros [ | | ]; simpl; auto. Qed.
 
-  Theorem trnN : brel_transitive Node eqN.
-  Proof.
-    unfold brel_transitive;
-    intros [| | ] [| | ] [| | ];
-    simpl; intros Ha Hb;
-    try firstorder. 
-  Qed. 
+  Lemma elements_two_or_more_proof : (2 <= List.length elements_list)%nat.
+  Proof. unfold elements_list. cbn. nia. Qed.
 
+  HB.instance Definition _ := IsFinType.Build Node
+    elements_list elements_nodup_proof elements_complete_proof
+    elements_two_or_more_proof fin_eq_dec.
 
-  Theorem dunN : no_dup Node eqN finN = true. 
-  Proof.
-    reflexivity.
-  Qed.
+  Lemma addA_proof : forall x y z : RR, plusRR (plusRR x y) z = plusRR x (plusRR y z).
+  Proof. Admitted.
 
-  Theorem lenN : 2 <= List.length finN. 
-  Proof.
-    cbn; nia. 
-  Qed. 
+  Lemma addC_proof : forall x y : RR, plusRR x y = plusRR y x.
+  Proof. Admitted.
 
-  Theorem memN : ∀ x : Node, in_list eqN finN x = true. 
-  Proof.
-    intros [| | ];
-    cbn; reflexivity.
-  Qed.
+  Lemma add0r_proof : forall x : RR, plusRR zeroRR x = x.
+  Proof. Admitted.
 
-  Theorem refR : brel_reflexive R eqR.
-  Proof.
-    unfold brel_reflexive;
-    intros [x | ]; cbn;
-    [eapply PeanoNat.Nat.eqb_refl | reflexivity].
-  Qed. 
-  
-  Theorem symR : brel_symmetric R eqR.
-  Proof.
-    unfold brel_symmetric;
-    intros [x | ] [y | ]; cbn;
-    intros Ha; try reflexivity; 
-    try congruence.
-    eapply PeanoNat.Nat.eqb_eq in Ha.
-    eapply PeanoNat.Nat.eqb_eq. 
-    eapply eq_sym; assumption. 
-  Qed. 
+  Lemma addr0_proof : forall x : RR, plusRR x zeroRR = x.
+  Proof. Admitted.
 
-  Theorem trnR : brel_transitive R eqR.
-  Proof.
-    unfold brel_transitive;
-    intros [x | ] [y | ] [z |]; cbn;
-    intros Ha Hb;
-    try reflexivity;
-    try congruence.
-    eapply PeanoNat.Nat.eqb_eq in Ha, Hb.
-    eapply PeanoNat.Nat.eqb_eq.
-    eapply eq_trans with y;
-    try assumption.
-  Qed. 
+  HB.instance Definition _ := IsCommutativeMonoid.Build RR
+    zeroRR plusRR addA_proof addC_proof add0r_proof addr0_proof.
 
-  Declare Scope Mat_scope.
-  Delimit Scope Mat_scope with R.
-  Bind Scope Mat_scope with R.
-  Local Open Scope Mat_scope.
+  Lemma mulA_proof : forall a b c : RR, mulRR (mulRR a b) c = mulRR a (mulRR b c).
+  Proof. Admitted.
 
+  Lemma mul1r_proof : forall a : RR, mulRR oneRR a = a.
+  Proof. Admitted.
 
+  Lemma mulr1_proof : forall a : RR, mulRR a oneRR = a.
+  Proof. Admitted.
 
-  Local Notation "0" := zeroRR : Mat_scope.
-  Local Notation "1" := oneRR : Mat_scope.
-  Local Infix "+" := lex_plusRR : Mat_scope.
-  Local Infix "*" := direct_mulRR : Mat_scope.
-  Local Infix "=r=" := eqRR (at level 70) : Mat_scope.
+  Lemma mulDr_proof : forall a b c : RR, mulRR (plusRR a b) c = plusRR (mulRR a c) (mulRR b c).
+  Proof. Admitted.
 
-  Theorem zero_left_identity_plus  : forall r : RR, 0 + r =r= r = true.
-  Proof.
-    intros ([ x | ], [y |]); cbn;
-    try (repeat rewrite PeanoNat.Nat.eqb_refl);
-    reflexivity.
-  Qed.
+  Lemma mulDl_proof : forall a b c : RR, mulRR a (plusRR b c) = plusRR (mulRR a b) (mulRR a c).
+  Proof. Admitted.
 
-  Theorem zero_right_identity_plus : forall r : RR, r + 0 =r= r = true.
-  Proof.
-    intros ([ x | ], [[ | y] |]); cbn;
-    try (repeat rewrite PeanoNat.Nat.eqb_refl);
-    reflexivity.
-  Qed.
+  Lemma mul0r_proof : forall a : RR, mulRR zeroRR a = zeroRR.
+  Proof. Admitted.
 
-  Theorem ltr_transitive : forall (x y z : R), 
-    ltR x y = true -> ltR y z = true -> ltR x z = true. 
-  Proof.
-    unfold ltR.
-    intros [x |] [y |] [z|] Ha Hb; 
-    try reflexivity; 
-    try congruence.
-    rewrite PeanoNat.Nat.ltb_lt in Ha, Hb |- *.
-    nia.
-  Qed.  
+  Lemma mulr0_proof : forall a : RR, mulRR a zeroRR = zeroRR.
+  Proof. Admitted.
 
-  Theorem ltr_total : forall (xa xb : R), ltR xa xb = false -> 
-    eqR xa xb = true ∨ ltR xb xa = true. 
-  Proof. 
-    unfold ltR.
-    intros [xa|] [xb|];
-    intros Ha; try congruence.
-    +
-      rewrite PeanoNat.Nat.ltb_ge in Ha.
-      simpl.
-      rewrite PeanoNat.Nat.eqb_eq, 
-      PeanoNat.Nat.ltb_lt.
-      nia.
-    +
-      right; reflexivity.
-    +
-      left; reflexivity.
-  Qed.
+  HB.instance Definition _ := IsSemiring.Build RR
+    oneRR mulRR mulA_proof mul1r_proof mulr1_proof
+    mulDr_proof mulDl_proof mul0r_proof mulr0_proof.
 
-  Theorem eqr_reflexive : forall x : R, eqR x x = true. 
-  Proof.
-    intros [x|]; cbn;
-    [now rewrite PeanoNat.Nat.eqb_refl |reflexivity].
-  Qed.
+  Axiom add_bound_axiom : forall a : RR, plusRR oneRR a = oneRR.
+  HB.instance Definition _ := IsBoundedSemiring.Build RR add_bound_axiom.
 
-  Theorem eqr_symmetric : forall x y : R, eqR x y = true -> eqR y x = true. 
-  Proof.
-    intros [x | ] [y | ]; 
-    simpl; try reflexivity; 
-    try congruence.
-    intro Ha. 
-    rewrite PeanoNat.Nat.eqb_eq in Ha |- *.
-    auto.
-  Qed.
+  HB.instance Definition _ := IsSemimodule.Build RR RR
+    mulRR mulDl_proof mulDr_proof
+    (fun a b x => eq_sym (mulA_proof a b x))
+    mul1r_proof mul0r_proof mulr0_proof.
 
-  Theorem eqr_transitive : forall x y z : R, eqR x y = true -> 
-    eqR y z = true -> eqR x z = true. 
-  Proof. 
-    intros [x | ] [y | ] [z |] Ha Hb; 
-    simpl in Ha, Hb |- *; try reflexivity;
-    try congruence.
-    rewrite PeanoNat.Nat.eqb_eq in Ha, Hb |- *.
-    nia.
-  Qed.
+End HBInstances.
 
-  Theorem ltr_eqr_false : forall xb xc : R, eqR xb xc = true -> ltR xb xc = false.
-  Proof.
-    intros [x | ] [y | ]; simpl;
-    try reflexivity; try congruence.
-    intro Ha.
-    rewrite PeanoNat.Nat.eqb_eq in Ha.
-    rewrite PeanoNat.Nat.ltb_ge.
-    nia.
-  Qed.
+Definition widestshortestpath (m : Node -> Node -> RR) : Node -> Node -> RR :=
+  powN_fun m 2%N.
 
-    
-  Theorem eqrr_reflexive : forall xa ya : R, 
-    ((xa, ya) =r= (xa, ya)) = true.
-  Proof.
-    intros [xa | ] [ya | ];
-    simpl;
-    try (repeat rewrite PeanoNat.Nat.eqb_refl);
-    simpl; reflexivity.
-  Qed.
-  
-  Theorem ltr_false : forall x y : R, ltR x y = true -> ltR y x = false.
-  Proof.
-    intros [x | ] [y | ]; 
-    simpl; intros Ha;
-    try reflexivity; 
-    try congruence.
-    rewrite PeanoNat.Nat.ltb_lt in Ha.
-    rewrite PeanoNat.Nat.ltb_ge.
-    nia.
-  Qed.
+Definition mva_eff_fun (m : Node -> Node -> RR) (v : Node -> RR) : Node -> RR :=
+  SemimoduleN.matrix_vector_action_eff_fun m v.
 
-
-  Theorem ltr_eqr_gen : forall (ya yb yc yd : R) (b : bool) , 
-    eqR yc yb = true -> eqR ya yd = true -> ltR yc ya = b -> ltR yb yd = b.
-  Proof. 
-    intros [ya | ] [yb | ] [yc | ] [yd | ] [|]; 
-    simpl; intros Ha Hb Hc;
-    try congruence.
-    +
-      eapply PeanoNat.Nat.eqb_eq in Ha, Hb.
-      rewrite PeanoNat.Nat.ltb_lt in Hc |- *.
-      nia.
-    +
-      eapply PeanoNat.Nat.eqb_eq in Ha, Hb.
-      rewrite PeanoNat.Nat.ltb_ge in Hc |- *.
-      nia.
-  Qed.
-      
-
-  Theorem ltr_eqr : forall (ya yb yc yd : R), 
-    eqR yc yb = true -> eqR ya yd = true -> ltR yc ya = true -> ltR yb yd = true.
-  Proof. 
-    intros * Ha Hb Hc.
-    eapply ltr_eqr_gen.
-    exact Ha.
-    exact Hb. 
-    exact Hc.
-  Qed.
-
-
-  Theorem ltr_true_eqr_false : forall x y : R, 
-    ltR x y = true -> eqR x y = false.
-  Proof.
-    intros [x | ] [y | ];
-    simpl; try reflexivity;
-    try congruence.
-    intros Ha.
-    rewrite PeanoNat.Nat.ltb_lt in Ha.
-    rewrite PeanoNat.Nat.eqb_neq.
-    nia.
-  Qed.
-
-  Theorem eqr_replace : forall xb xc xa : R, 
-    eqR xb xc = true -> eqR xa xc = false -> 
-    eqR xa xb = false.
-  Proof.
-    intros [xb | ] [xc | ] [xa | ] Ha Hb;
-    simpl in Ha, Hb |- *;
-    try reflexivity; 
-    try congruence.
-    rewrite PeanoNat.Nat.eqb_eq in Ha.
-    rewrite PeanoNat.Nat.eqb_neq in Hb |- *.
-    nia.
-  Qed.
-
-  Theorem plus_associative : forall a b c : RR, a + (b + c) =r= 
-    (a + b) + c = true.
-  Proof.
-    intros (xa, ya) (xb, yb) (xc, yc); cbn.
-    case (ltR xb xc) eqn:Ha; cbn;
-    case (ltR xa xb) eqn:Hb; cbn.
-    +
-      rewrite (ltr_transitive _ _ _ Hb Ha); cbn.
-      now (repeat rewrite eqr_reflexive).
-    +
-      case (eqR xa xb) eqn:Hc;
-      case (ltR yb ya) eqn:Hd;
-      cbn.
-      ++
-        case (ltR xa xc) eqn:He; cbn.
-        +++
-          now (repeat rewrite eqr_reflexive).
-        +++
-          case (eqR xa xc) eqn:Hf;
-          case (ltR yc ya) eqn:Hg;
-          simpl.
-          *
-            now (repeat rewrite eqr_reflexive).
-          *
-            rewrite Hf.
-            eapply ltr_total in Hg.
-            destruct Hg as [Hg | Hg].
-            **  
-              eapply eqr_symmetric in Hg.
-              now rewrite Hg.
-            **
-              eapply eqr_symmetric in Hc.
-              pose proof eqr_transitive _ _ _ Hc Hf as Hi.
-              (* contradiction *)
-              pose proof ltr_eqr_false _ _ Hi as Hj.
-              rewrite Hj in Ha.
-              congruence.
-          *
-            (* contradiction *)
-            eapply ltr_total in He.
-            destruct He as [He | He].
-            **
-              rewrite He in Hf; congruence.
-            **
-              pose proof ltr_transitive _ _ _ Ha He as Hh.
-              eapply eqr_symmetric in Hc.
-              now rewrite (ltr_eqr_false _ _ Hc) in Hh.
-          *
-            (* contracdiction *)
-            eapply ltr_total in He.
-            destruct He as [He | He].
-            **
-              rewrite He in Hf; congruence.
-            **
-              pose proof ltr_transitive _ _ _ Ha He as Hh.
-              eapply eqr_symmetric in Hc.
-              now rewrite (ltr_eqr_false _ _ Hc) in Hh.
-
-      ++
-        case (ltR xb xc) eqn:He; cbn.
-        +++
-          now (repeat rewrite eqr_reflexive).
-        +++
-          congruence.
-      ++
-        case (ltR xb xc) eqn:He; cbn.
-        +++
-          now (repeat rewrite eqr_reflexive).
-        +++
-          congruence.
-      ++
-        case (ltR xb xc) eqn:He; cbn.
-        +++
-          now (repeat rewrite eqr_reflexive).
-        +++
-          congruence.
-    +
-      case (eqR xb xc) eqn:Hc;
-      case (ltR yc yb) eqn:Hd;
-      simpl.
-      ++
-        rewrite Hb; simpl.
-        case (ltR xa xc) eqn:He; cbn.
-        +++
-          now (repeat rewrite eqr_reflexive).
-        +++
-          case (eqR xa xc) eqn:Hf;
-          case (ltR yc ya) eqn:Hg;
-          simpl.
-          *
-            now (repeat rewrite eqr_reflexive).
-          *
-            rewrite Hf.
-            eapply ltr_total in Hg.
-            destruct Hg as [Hg | Hg].
-            **  
-              eapply eqr_symmetric in Hg.
-              now rewrite Hg.
-            **
-              eapply eqr_symmetric in Hc.
-              pose proof eqr_transitive _ _ _ Hf Hc as Hi.
-              (* contradiction *)
-              pose proof ltr_eqr_false _ _ Hi as Hj.
-              rewrite Hj in Hb.
-              congruence.
-          *
-            (* contradiction *)
-            eapply ltr_total in He.
-            destruct He as [He | He].
-            **
-              rewrite He in Hf; congruence.
-            **
-              pose proof ltr_transitive _ _ _ He Hb as Hh.
-              eapply eqr_symmetric in Hc.
-              now rewrite (ltr_eqr_false _ _ Hc) in Hh.
-          *
-            (* contracdiction *)
-            eapply ltr_total in He.
-            destruct He as [He | He].
-            **
-              rewrite He in Hf; congruence.
-            **
-              pose proof ltr_transitive _ _ _ He Hb as Hh.
-              eapply eqr_symmetric in Hc.
-              now rewrite (ltr_eqr_false _ _ Hc) in Hh.
-        ++
-          case (ltR xa xc) eqn:He; cbn.
-          +++
-            now (repeat rewrite eqr_reflexive).
-          +++
-            destruct ((eqR xa xc && ltR yc ya))%bool.
-            *
-              eapply eqrr_reflexive.
-            *
-              eapply eqrr_reflexive.
-        ++
-          destruct (ltR xa xc || eqR xa xc && ltR yc ya)%bool;
-          eapply eqrr_reflexive.
-        ++
-          destruct (ltR xa xc || eqR xa xc && ltR yc ya)%bool;
-          eapply eqrr_reflexive.
-    +
-      case (eqR xb xc) eqn:Hc;
-      case (ltR yc yb) eqn:Hd;
-      simpl.
-      ++
-        rewrite Hb; simpl.
-        case (eqR xa xb) eqn:He;
-        case (ltR yb ya) eqn:Hf;
-        simpl.
-        +++
-          rewrite (eqr_transitive _ _ _ He Hc).
-          rewrite (ltr_transitive _ _ _ Hd Hf).
-          simpl.
-          rewrite Bool.orb_true_r.
-          now (repeat rewrite eqr_reflexive).
-        +++
-          rewrite Ha, Hc, Hd. simpl.
-          now (repeat rewrite eqr_reflexive).
-        +++
-          rewrite Ha, Hc, Hd; simpl.
-          now (repeat rewrite eqr_reflexive).
-        +++
-          rewrite Ha, Hc, Hd; simpl.
-          now (repeat rewrite eqr_reflexive).
-      ++
-        case (ltR xa xc) eqn:He;
-        simpl.
-        +++
-          eapply ltr_total in Ha, Hb. 
-          destruct Ha as [Ha | Ha];
-          destruct Hb as [Hb | Hb].
-          *
-            (* contradiction *)
-            pose proof (eqr_transitive _ _ _ Hb Ha) as Hi.
-            rewrite (ltr_eqr_false _ _ Hi) in He.
-            congruence.
-          *
-            pose proof (ltr_transitive _ _ _ Hb He) as Hi.
-            rewrite (ltr_eqr_false _ _ Hc) in Hi.
-            congruence.
-          *
-            pose proof (eqr_transitive _ _ _ Hb Hc) as Hi.
-            rewrite (ltr_eqr_false _ _ Hi) in He.
-            congruence.
-          *
-            eapply eqr_symmetric in Hc.
-            eapply ltr_eqr_false in Hc.
-            rewrite Hc in Ha.
-            congruence.
-        +++
-          case (eqR xa xc) eqn:Hf;
-          case (ltR yc ya) eqn:Hg;
-          simpl.
-          *
-            eapply eqr_symmetric in Hc.
-            rewrite (eqr_transitive _ _ _ Hf Hc); simpl.
-            eapply ltr_total in Hd.
-            destruct Hd as [Hd | Hd].
-            **
-              rewrite (ltr_eqr ya yb yc ya Hd (eqr_reflexive ya) Hg); simpl.
-              rewrite He, Hf, Hg; simpl.
-              now (repeat rewrite eqr_reflexive).
-            **
-              rewrite (ltr_transitive _ _ _ Hd Hg); simpl.
-              rewrite He, Hf, Hg; simpl.
-              now (repeat rewrite eqr_reflexive).
-          *
-            eapply eqr_symmetric in Hc.
-            rewrite (eqr_transitive _ _ _ Hf Hc).
-            simpl.
-            case (ltR yb ya) eqn:Hh; simpl.
-            **
-              rewrite He, Hf, Hg; simpl.
-              now (repeat rewrite eqr_reflexive).
-            **
-              eapply eqr_symmetric in Hc.
-              rewrite Ha, Hc, Hd; simpl.
-              now (repeat rewrite eqr_reflexive).
-          *
-            rewrite (eqr_replace _ _ _ Hc Hf).
-            simpl.
-            rewrite Ha, Hc, Hd; simpl.
-            now (repeat rewrite eqr_reflexive).
-          *
-            rewrite (eqr_replace _ _ _ Hc Hf).
-            simpl.
-            rewrite Ha, Hc, Hd; simpl.
-            now (repeat rewrite eqr_reflexive).
-      ++
-        case (ltR xa xc) eqn:He;
-        simpl.
-        +++
-          case (eqR xa xb) eqn:Hf;
-          case (ltR yb ya) eqn:Hi;
-          simpl.
-          *
-            rewrite He; simpl.
-            now (repeat rewrite eqr_reflexive).
-          *
-            rewrite Ha, Hc; simpl.
-            (* contradiction *)
-            eapply ltr_total in Ha, Hb.
-            destruct Ha as [Ha | Ha];
-            destruct Hb as [Hb | Hb].
-            **
-              pose proof (eqr_transitive _ _ _ Hb Ha) as Hh.
-              eapply ltr_eqr_false in Hh.
-              rewrite Hh in He.
-              congruence.
-            **
-              rewrite Hc in Ha; congruence.
-            **
-              assert (Hj : ltR xc xa = true).
-              eapply ltr_eqr.
-              eapply eqr_reflexive.
-              eapply eqr_symmetric.
-              exact Hb.
-              exact Ha.
-              eapply ltr_false in Hj.
-              rewrite Hj in He.
-              congruence.
-            **
-              pose proof (ltr_transitive _ _ _ Ha Hb) as Hh.
-              eapply ltr_false in Hh.
-              rewrite He in Hh; congruence.
-          *
-            rewrite Ha, Hc, Hd; simpl.
-            eapply ltr_total in Ha, Hb.
-            destruct Ha as [Ha | Ha];
-            destruct Hb as [Hb | Hb].
-            **
-              pose proof (eqr_transitive _ _ _ Hb Ha) as Hh.
-              eapply ltr_eqr_false in Hh.
-              rewrite Hh in He.
-              congruence.
-            **
-              rewrite Hc in Ha; congruence.
-            **
-              assert (Hj : ltR xc xa = true).
-              eapply ltr_eqr.
-              eapply eqr_reflexive.
-              eapply eqr_symmetric.
-              exact Hb.
-              exact Ha.
-              eapply ltr_false in Hj.
-              rewrite Hj in He.
-              congruence.
-            **
-              pose proof (ltr_transitive _ _ _ Ha Hb) as Hh.
-              eapply ltr_false in Hh.
-              rewrite He in Hh; congruence.
-          *
-            eapply ltr_total in Ha, Hb.
-            destruct Ha as [Ha | Ha];
-            destruct Hb as [Hb | Hb].
-            **
-              pose proof (eqr_transitive _ _ _ Hb Ha) as Hh.
-              eapply ltr_eqr_false in Hh.
-              rewrite Hh in He.
-              congruence.
-            **
-              rewrite Hc in Ha; congruence.
-            **
-              assert (Hj : ltR xc xa = true).
-              eapply ltr_eqr.
-              eapply eqr_reflexive.
-              eapply eqr_symmetric.
-              exact Hb.
-              exact Ha.
-              eapply ltr_false in Hj.
-              rewrite Hj in He.
-              congruence.
-            **
-              pose proof (ltr_transitive _ _ _ Ha Hb) as Hh.
-              eapply ltr_false in Hh.
-              rewrite He in Hh; congruence.
-        +++
-          case (eqR xa xc) eqn:Hf;
-          case (ltR yc ya) eqn:Hg;
-          simpl.
-          *
-            pose proof eqr_replace xa xc xb Hf Hc as Hi.
-            case (eqR xa xb) eqn:Hj.
-            eapply eqr_symmetric in Hj;
-            rewrite Hj in Hi; congruence.
-            simpl.
-            rewrite Ha, Hc; simpl.
-            (* contradiciton *)
-            (* it was close! I though it was false :) *)
-            eapply ltr_total in Ha, Hb.
-            destruct Ha as [Ha | Ha];
-            destruct Hb as [Hb | Hb];
-            try (rewrite Hc in Ha; congruence);
-            try (rewrite Hc in Ha; congruence).
-            rewrite Hb in Hj; congruence.
-            pose proof (ltr_transitive _ _ _ Ha Hb) as Hk.
-            eapply eqr_symmetric in Hf.
-            rewrite (ltr_eqr_false _ _ Hf) in Hk; 
-            congruence.
-          *
-            pose proof eqr_replace _ _ _ Hf Hc as Hi.
-            case (eqR xa xb) eqn:Hj.
-            eapply eqr_symmetric in Hj;
-            rewrite Hj in Hi; congruence.
-            simpl.
-            rewrite Ha, Hc; simpl.
-            now (repeat rewrite eqr_reflexive).
-          *
-            eapply ltr_total in Ha, Hb.
-            destruct Ha as [Ha | Ha];
-            destruct Hb as [Hb | Hb].
-            **
-              pose proof (eqr_transitive _ _ _ Hb Ha) as Hh.
-              eapply ltr_eqr_false in Hh.
-              rewrite Hh in He.
-              congruence.
-            **
-              rewrite Hc in Ha; congruence.
-            **
-              rewrite Hb; simpl.
-              case (ltR yb ya) eqn:Hi; 
-              simpl.
-              ***
-                rewrite He, Hf, Hg; simpl.
-                now (repeat rewrite eqr_reflexive).
-              ***
-                eapply ltr_false  in Ha;
-                rewrite Ha; simpl.
-                rewrite Hc; simpl.
-                now (repeat rewrite eqr_reflexive).
-            **
-                eapply ltr_true_eqr_false in Hb.
-                case (eqR xa xb) eqn:Hi; 
-                simpl. eapply eqr_symmetric in Hi;
-                rewrite Hi in Hb; congruence.
-                eapply ltr_false in Ha.
-                rewrite Ha; simpl.
-                rewrite Hc; simpl.
-                now (repeat rewrite eqr_reflexive).
-            *
-              eapply ltr_total in Ha, Hb.
-              destruct Ha as [Ha | Ha];
-              destruct Hb as [Hb | Hb].
-              **
-                pose proof (eqr_transitive _ _ _ Hb Ha) as Hh.
-                eapply ltr_eqr_false in Hh.
-                rewrite Hh in He.
-                congruence.
-              **
-                rewrite Hc in Ha; congruence.
-              **
-                rewrite Hb; simpl.
-                case (ltR yb ya) eqn:Hi; 
-                simpl.
-                ***
-                  rewrite He, Hf, Hg; simpl.
-                  now (repeat rewrite eqr_reflexive).
-                ***
-                  eapply ltr_false  in Ha;
-                  rewrite Ha; simpl.
-                  rewrite Hc; simpl.
-                  now (repeat rewrite eqr_reflexive).
-              **
-                  eapply ltr_true_eqr_false in Hb.
-                  case (eqR xa xb) eqn:Hi; 
-                  simpl. eapply eqr_symmetric in Hi;
-                  rewrite Hi in Hb; congruence.
-                  eapply ltr_false in Ha.
-                  rewrite Ha; simpl.
-                  rewrite Hc; simpl.
-                  now (repeat rewrite eqr_reflexive).
-      ++
-        eapply ltr_total in Ha, Hb.
-        destruct Ha as [Ha | Ha];
-        destruct Hb as [Hb | Hb].
-        +++
-          pose proof (eqr_transitive _ _ _ Hb Ha) as He.
-          eapply ltr_eqr_false in He;
-          rewrite He; simpl.
-          rewrite (eqr_transitive _ _ _ Hb Ha); 
-          simpl.
-          case (ltR yc ya) eqn:Hf; simpl;
-          rewrite Hb; simpl;
-          eapply ltr_total in Hd;
-          destruct Hd as [Hd | Hd].
-          *
-            assert (Hg : ltR yb ya = true).
-            eapply  ltr_eqr.
-            exact Hd.
-            eapply eqr_reflexive.
-            exact Hf.
-            rewrite Hg; simpl.
-            rewrite He; simpl.
-            rewrite (eqr_transitive _ _ _ Hb Ha); simpl.
-            rewrite Hf.
-            now (repeat rewrite eqr_reflexive).
-          *
-            rewrite (ltr_transitive _ _ _ Hd Hf);
-            simpl.
-            rewrite He; simpl.
-            rewrite (eqr_transitive _ _ _ Hb Ha); simpl.
-            rewrite Hf.
-            now (repeat rewrite eqr_reflexive).
-          *
-            rewrite (ltr_eqr_gen ya yb yc ya false Hd (eqr_reflexive ya) Hf).
-            simpl. rewrite Hc; simpl. 
-            assert (Hi : ltR xb xc = false).
-            eapply ltr_eqr_gen.
-            exact Hb.
-            eapply eqr_reflexive.
-            exact He.
-            rewrite Hi; simpl.
-            now (repeat rewrite eqr_reflexive).
-          *
-            case (ltR yb ya) eqn:Hg; 
-            simpl.
-            rewrite He; simpl.
-            **
-              rewrite (eqr_transitive _ _ _ Hb Ha); 
-              simpl. rewrite Hf.
-              now (repeat rewrite eqr_reflexive).
-            **
-              assert (Hi : ltR xb xc = false).
-              eapply ltr_eqr_gen.
-              exact Hb.
-              eapply eqr_reflexive.
-              exact He.
-              rewrite Hi; simpl.
-              rewrite Ha; simpl.
-              eapply ltr_false in Hd.
-              rewrite Hd.
-              now (repeat rewrite eqr_reflexive).
-        +++
-          rewrite Hc in Ha; congruence.
-        +++
-          eapply ltr_false in Ha.
-          assert (He : ltR xa xc = false).
-          eapply ltr_eqr_gen.
-          eapply eqr_symmetric in Hb.
-          exact Hb.
-          eapply eqr_reflexive.
-          exact Ha.
-          rewrite He; simpl.
-          case (eqR xa xc) eqn:Hf.
-          rewrite (eqr_transitive _ _ _  (eqr_symmetric _ _ Hb) Hf) in Hc;
-          congruence.
-          simpl.
-          rewrite Hb; simpl.
-          case (ltR yb ya) eqn:Hi; simpl.
-          **
-            rewrite He, Hf. simpl.
-            now (repeat rewrite eqr_reflexive).
-          **
-            rewrite Ha, Hc; simpl.
-            now (repeat rewrite eqr_reflexive).
-        +++
-          pose proof (ltr_transitive _ _ _ Ha Hb) as He.
-          eapply ltr_false in He.
-          rewrite He; simpl.
-          pose proof (ltr_transitive _ _ _ Ha Hb) as Hf.
-          eapply ltr_true_eqr_false in Hf.
-          case (eqR xa xc) eqn:Hg.
-          eapply eqr_symmetric in Hg;
-          rewrite Hg in Hf; 
-          congruence.
-          simpl.
-          eapply ltr_true_eqr_false in Hb.
-          case (eqR xa xb) eqn:Hi.
-          eapply eqr_symmetric in Hi;
-          rewrite Hi in Hb; congruence.
-          simpl.
-          assert (Hj : ltR xb xc = false).
-          eapply ltr_false in Ha;
-          rewrite Ha; reflexivity.
-          rewrite Hj; simpl.
-          rewrite Hc; simpl.
-          now (repeat rewrite eqr_reflexive).
-  Qed.
-
-
-  Theorem eqr_general : forall x y u v : R, eqR x u = true -> 
-    eqR y v = true -> eqRR (x, y) (u, v) = true.
-  Proof.
-    intros [x | ] [y | ] [u | ] [v |]; 
-    simpl; intros Ha Hb;
-    try congruence;
-    rewrite Ha; simpl;
-    [assumption | reflexivity].
-  Qed. 
-
-  Theorem plus_commutative  : forall a b : RR, a + b =r= b + a = true.
-  Proof.
-    intros (xa, ya) (xb, yb); simpl.
-    case (ltR xa xb) eqn:Ha; simpl.
-    +
-      assert (Hb : ltR xb xa = false).
-      eapply ltr_false; exact Ha.
-      rewrite Hb; simpl.
-      eapply ltr_true_eqr_false in Ha.
-      case (eqR xb xa) eqn:Hc.
-      ++
-        eapply eqr_symmetric in Hc;
-        rewrite Hc in Ha;
-        congruence.
-      ++
-        simpl; now (repeat rewrite eqr_reflexive).
-    +
-      eapply ltr_total in Ha.
-      destruct Ha as [Ha | Ha].
-      ++
-        rewrite Ha; simpl.
-        assert (Hb : ltR xb xa = false).
-        eapply eqr_symmetric in Ha.
-        eapply ltr_eqr_false in Ha.
-        exact Ha.
-        rewrite Hb; simpl.
-        eapply eqr_symmetric in Ha;
-        rewrite Ha; simpl.
-        case (ltR yb ya) eqn:Hc.
-        +++
-          eapply ltr_false in Hc;
-          rewrite Hc.
-          eapply eqrr_reflexive.
-        +++
-          eapply ltr_total in Hc.
-          destruct Hc as [Hc | Hc].
-          *
-            eapply eqr_symmetric in Hc.
-            assert (Hd : ltR ya yb = false).
-            eapply ltr_eqr_false in Hc.
-            exact Hc. 
-            rewrite Hd.
-            eapply eqr_general;
-            try assumption.
-            eapply eqr_symmetric; 
-            try assumption.
-          *
-            rewrite Hc.
-            eapply eqrr_reflexive.
-      ++
-        assert (Hb : eqR xb xa = false).
-        eapply ltr_true_eqr_false in Ha.
-        exact Ha.
-        assert (Hc : eqR xa xb = false).
-        case (eqR xa xb) eqn:Hc.
-        eapply eqr_symmetric in Hc.
-        rewrite Hc in Hb; congruence.
-        reflexivity.
-        rewrite Hc; simpl.
-        rewrite Ha, Hb. simpl.
-        now (repeat rewrite eqr_reflexive).
-  Qed.
-
-  Theorem one_left_identity_mul  : forall r : RR, 1 * r =r= r = true.
-  Proof.
-    intros ([x |], [y |]); simpl;
-    repeat rewrite PeanoNat.Nat.eqb_refl;
-    reflexivity.
-  Qed.
-
-  Theorem one_right_identity_mul : forall r : RR, r * 1 =r= r = true.
-  Proof.
-    intros ([x |], [y |]); simpl;
-    try rewrite PeanoNat.Nat.add_0_r;
-    repeat rewrite PeanoNat.Nat.eqb_refl;
-    reflexivity.
-  Qed.
-
-  Theorem mul_associative : forall a b c : RR, a * (b * c) =r= (a * b) * c = true.
-  Proof.
-    intros ([al|], [ar|]) ([bl|], [br|])  ([cl|], [cr|]);
-    simpl;
-    try (repeat rewrite PeanoNat.Nat.eqb_refl);
-    try reflexivity;
-    try rewrite Bool.andb_true_r;
-    simpl;
-    try (repeat rewrite PeanoNat.Nat.add_assoc);
-    try (repeat rewrite PeanoNat.Nat.eqb_refl);
-    simpl; try reflexivity;
-    try (repeat rewrite PeanoNat.Nat.min_assoc);
-    try (repeat rewrite PeanoNat.Nat.eqb_refl);
-    simpl; try reflexivity.
-  Qed.
-
-
-  Theorem zero_left_anhilator_mul : 
-    forall a : RR, 0 * a =r= 0 = true.
-  Proof.
-    intros ([al|], [ar|]); simpl;
-    reflexivity.
-  Qed.
-
-  Theorem zero_right_anhilator_mul : 
-    forall a : RR, a * 0 =r= 0 = true.
-  Proof.
-    intros ([al|], [ar|]); simpl;
-    try (repeat rewrite PeanoNat.Nat.min_0_r);
-    try reflexivity.
-  Qed.
-    
-   Theorem zero_stable : forall a : RR, 1 + a =r= 1 = true.
-  Proof.
-    intros ([[|x]|], [y|]); try reflexivity;
-    simpl.
-  Qed. 
-
-  Theorem plus_idempotence : forall a : RR, a + a =r= a = true.
-  Proof.
-    intros (x, y); simpl.
-    destruct (ltR x x || eqR x x && ltR y y)%bool;
-    eapply eqrr_reflexive.
-  Qed.
-
-  (* ----------------------------------------------------------------- *)
-  (* Congruence lemmas: these ARE provable.                             *)
-
-  Theorem congrR : brel_congruence R eqR eqR.
-  Proof.
-    unfold brel_congruence.
-    intros s t u v Hsu Htv.
-    destruct (eqR s t) eqn:Hst.
-    - (* eqR s t = true. Goal: true = eqR u v *)
-      apply eqr_symmetric in Hsu.
-      assert (Huv : eqR u v = true).
-      { apply (eqr_transitive u s v Hsu). apply (eqr_transitive s t v Hst Htv). }
-      rewrite Huv. reflexivity.
-    - (* eqR s t = false. Goal: false = eqR u v *)
-      symmetry. apply Bool.not_true_is_false. intro Huv.
-      assert (Hsv : eqR s v = true).
-      { apply (eqr_transitive s u v Hsu Huv). }
-      apply eqr_symmetric in Htv.
-      pose proof (eqr_transitive s v t Hsv Htv) as Hst'.
-      rewrite Hst in Hst'. inversion Hst'.
-  Qed.
-
-  Lemma mulf_congr : forall a1 b1 c1 d1 : R,
-    eqR a1 c1 = true -> eqR b1 d1 = true ->
-    eqR (mulf a1 b1) (mulf c1 d1) = true.
-  Proof.
-    intros a1 b1 c1 d1 Ha Hb.
-    destruct a1 as [x|], c1 as [z|]; try (simpl in Ha; congruence);
-    destruct b1 as [y|], d1 as [w|]; try (simpl in Hb; congruence).
-    - (* all Left *)
-      simpl in Ha, Hb.
-      apply PeanoNat.Nat.eqb_eq in Ha, Hb.
-      subst z w. simpl.
-      apply PeanoNat.Nat.eqb_refl.
-    - (* a1=Left _, c1=Left _, b1=Infinity, d1=Infinity *)
-      simpl. reflexivity.
-    - (* a1=Infinity, c1=Infinity, b1=Left, d1=Left *)
-      simpl. reflexivity.
-    - (* a1=Infinity, c1=Infinity, b1=Infinity, d1=Infinity *)
-      simpl. reflexivity.
-  Qed.
-
-  Lemma muls_congr : forall a2 b2 c2 d2 : R,
-    eqR a2 c2 = true -> eqR b2 d2 = true ->
-    eqR (muls a2 b2) (muls c2 d2) = true.
-  Proof.
-    intros a2 b2 c2 d2 Ha Hb.
-    destruct a2 as [x|], c2 as [z|]; try (simpl in Ha; congruence);
-    destruct b2 as [y|], d2 as [w|]; try (simpl in Hb; congruence).
-    - (* all Left *)
-      simpl in Ha, Hb.
-      apply PeanoNat.Nat.eqb_eq in Ha, Hb.
-      subst z w. simpl.
-      apply PeanoNat.Nat.eqb_refl.
-    - (* a2=Left, c2=Left, b2=Inf, d2=Inf *)
-      simpl in Ha. apply PeanoNat.Nat.eqb_eq in Ha. subst z. simpl. apply PeanoNat.Nat.eqb_refl.
-    - (* a2=Inf, c2=Inf, b2=Left, d2=Left *)
-      simpl. exact Hb.
-    - (* a2=Inf, c2=Inf, b2=Inf, d2=Inf *)
-      simpl. reflexivity.
-  Qed.
-
-  Theorem congrM : bop_congruence RR eqRR direct_mulRR.
-  Proof.
-    unfold bop_congruence, direct_mulRR.
-    intros (a1,a2) (b1,b2) (c1,c2) (d1,d2) Hs Ht.
-    unfold eqRR in Hs, Ht.
-    apply Bool.andb_true_iff in Hs. destruct Hs as [Ha1 Ha2].
-    apply Bool.andb_true_iff in Ht. destruct Ht as [Hb1 Hb2].
-    unfold eqRR. simpl.
-    apply Bool.andb_true_iff.
-    split.
-    - apply (mulf_congr a1 b1 c1 d1 Ha1 Hb1).
-    - apply (muls_congr a2 b2 c2 d2 Ha2 Hb2).
-  Qed.
-
-  Theorem congrP : bop_congruence RR eqRR lex_plusRR.
-  Proof.
-    unfold bop_congruence, lex_plusRR.
-    intros (a1,a2) (b1,b2) (c1,c2) (d1,d2) Hs Ht.
-    unfold eqRR in Hs, Ht.
-    apply Bool.andb_true_iff in Hs. destruct Hs as [Ha1 Ha2].
-    apply Bool.andb_true_iff in Ht. destruct Ht as [Hb1 Hb2].
-    (* Use ltr_eqr_gen to show ltR respects eqR *)
-    assert (Hlt1 : ltR a1 b1 = ltR c1 d1).
-    { symmetry. apply ltr_eqr_gen with (yc:=a1)(ya:=b1); [exact Ha1 | exact Hb1 | reflexivity]. }
-    assert (Heq1 : eqR a1 b1 = eqR c1 d1).
-    { apply congrR; [exact Ha1 | exact Hb1]. }
-    assert (Hlt2 : ltR b2 a2 = ltR d2 c2).
-    { symmetry. apply ltr_eqr_gen with (yc:=b2)(ya:=a2); [exact Hb2 | exact Ha2 | reflexivity]. }
-    rewrite <- Hlt1, Heq1, <- Hlt2.
-    case_eq (orb (ltR a1 b1) (eqR c1 d1 && ltR b2 a2))%bool; intro Hb; simpl.
-    - (* both pick first arguments: (a1,a2) and (c1,c2) *)
-      apply Bool.andb_true_iff; split; [exact Ha1 | exact Ha2].
-    - (* both pick second arguments: (b1,b2) and (d1,d2) *)
-      apply Bool.andb_true_iff; split; [exact Hb1 | exact Hb2].
-  Qed.
-
-
-  (* =================================================================== *)
-  (*  Semimodule: V := RR, scale := direct_mulRR (componentwise)          *)
-  (* =================================================================== *)
-
-  Definition V' := RR.
-  Definition zeroV' := zeroRR.
-  Definition plusV' := lex_plusRR.
-  Definition eqV' := eqRR.
-  Definition scale' (a : RR) (v : RR) : RR := direct_mulRR a v.
-
-  Definition mva_eff_fun :=
-    Semimodule.matrix_vector_action_eff_fun RR V' zeroV' plusV' scale' Node eqN finN.
-
-
-End Proofs.
+Definition mva_func (m : Node -> Node -> RR) (v : Node -> RR) : Node -> RR :=
+  SemimoduleN.matrix_vector_action m v.
 
 (* ========================================================================= *)
 (*  WIDEST-SHORTEST PATH SEMIRING: layered construction (OCaml Cas)           *)

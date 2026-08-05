@@ -24,13 +24,14 @@
   (extracted_files
     BinNums.ml BinNums.mli
     Datatypes.ml Datatypes.mli
-    Definitions.ml Definitions.mli
     List.ml List.mli
     ListDef.ml ListDef.mli
-    Mat.ml Mat.mli
+    MatN.ml MatN.mli
     Nat.ml Nat.mli
-    Path.ml Path.mli
-    Semimodule.ml Semimodule.mli
+    OrelN.ml OrelN.mli
+    SemimoduleN.ml SemimoduleN.mli
+    Specif.ml Specif.mli
+    Structures.ml Structures.mli
     WidestShortestPath.ml WidestShortestPath.mli)
   (theories Stdlib HB elpi_elpi elpi Semiring Examples))
   (library
