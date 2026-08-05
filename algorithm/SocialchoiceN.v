@@ -211,7 +211,7 @@ Section SocialChoice.
     (M : @Matrix Node R)
     (Htri : forall (X Y Z : Node), Orel (M X Y * M Y Z) (M X Z)) :
     forall (k : nat) (X A : Node),
-      (k >= 1)%nat -> Orel (pow M k X A) (M X A).
+      (1 <= k)%nat -> Orel (pow M k X A) (M X A).
   Proof.
     induction k as [|k IH]; intros X A Hk.
     - lia.
