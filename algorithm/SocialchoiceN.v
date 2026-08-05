@@ -110,15 +110,59 @@ Section SocialChoice.
   (*  Lemma: transpose commutes with Kleene star                            *)
   (*                                                                         *)
   (*  (M^T)* = (M* )^T                                                       *)
+  (*  Requires commutative multiplication (mulC) for (M^T)^k = (M^k)^T.     *)
   (* =====================================================================  *)
 
-  Lemma mat_star_transpose {R : Semiring.type} : 
+  Lemma pow_transpose {R : CommutativeSemiring.type}
+    (M : @Matrix Node R) (k : nat) (i j : Node) :
+    pow (fun x y => M y x) k i j = pow M k j i.
+  Proof.
+    revert i j. induction k as [|k IH]; intros i j; cbn [pow].
+    - (* Base: I i j = I j i *)
+      unfold I.
+      destruct (fin_eq_dec i j) as [Heq|Hneq];
+      destruct (fin_eq_dec j i) as [Heq'|Hneq'].
+      + reflexivity.
+      + congruence.
+      + congruence.
+      + reflexivity.
+    - (* Inductive step *)
+      unfold matrix_mul.
+      rewrite (sum_ext (fun X => M X i * pow (fun x y => M y x) k X j)
+                       (fun X => M X i * pow M k j X)).
+      + rewrite (sum_ext (fun X => M X i * pow M k j X)
+                         (fun X => pow M k j X * M X i)).
+        * symmetry. apply (pow_comm k M j i).
+        * intro X. apply mulC.
+      + intro X. rewrite (IH X j). reflexivity.
+  Qed.
+
+  Lemma geom_sum_transpose {R : CommutativeSemiring.type}
+    (M : @Matrix Node R) (n : nat) (i j : Node) :
+    geom_sum (fun x y => M y x) n i j = geom_sum M n j i.
+  Proof.
+    induction n as [|n IH]; cbn [geom_sum].
+    - unfold I.
+      destruct (fin_eq_dec i j) as [Heq|Hneq];
+      destruct (fin_eq_dec j i) as [Heq'|Hneq'].
+      + reflexivity.
+      + congruence.
+      + congruence.
+      + reflexivity.
+    - unfold matrix_add.
+      rewrite IH.
+      rewrite (pow_transpose M (S n) i j).
+      reflexivity.
+  Qed.
+
+  Lemma mat_star_transpose {R : CommutativeSemiring.type} : 
     forall (M : @Matrix Node R) (i j : Node),
       mat_star (fun x y => M y x) i j = mat_star M j i.
   Proof.
-    (* (M^T)* = (M* )^T follows from transpose distributing over           *)
-    (* matrix_add and (M^k)^T = (M^T)^k.  Admitted.                       *)
-  Admitted.
+    intros M i j.
+    unfold mat_star.
+    apply geom_sum_transpose.
+  Qed.
 
 
 
@@ -321,7 +365,7 @@ Section SocialChoice.
   (*  reversed preferences (M^T), A is NOT a strict winner.                  *)
   (* =====================================================================  *)
 
-  Theorem reversal_symmetry {R : Semiring.type} :
+  Theorem reversal_symmetry {R : CommutativeSemiring.type} :
     forall (M : @Matrix Node R) (A : Node),
       strict_winner M A -> ~ strict_winner (fun i j => M j i) A.
   Proof.
