@@ -20,6 +20,55 @@ Section SocialChoice.
     : @Matrix Node R :=
     geom_sum M kleene_exp.
 
+  (* =====================================================================  *)
+  (*  Fundamental: a beats b in matrix N if N_{ba} < N_{ab}                 *)
+  (*  — i.e., Orel (N b a) (N a b)  ∧  N b a ≠ N a b.                      *)
+  (* =====================================================================  *)
+
+  Definition beats {R : Semiring.type}
+    (N : @Matrix Node R) (a b : Node) : Prop :=
+    Orel (N b a) (N a b) ∧ N b a ≠ N a b.
+
+  (* =====================================================================  *)
+  (*  Condorcet winner: beats everyone in the DIRECT matrix M               *)
+  (*  condorcet_winner M a := ∀X≠a, beats M a X                             *)
+  (* =====================================================================  *)
+
+  Definition condorcet_winner {R : Semiring.type}
+    (M : @Matrix Node R) (a : Node) : Prop :=
+    forall (X : Node), X ≠ a -> beats M a X.
+
+  (* =====================================================================  *)
+  (*  Schulze order: beats in the Kleene star M*                            *)
+  (*  schulze_beats M a b := beats (mat_star M) a b                         *)
+  (*  (Definition 2.2.1 in the paper)                                       *)
+  (* =====================================================================  *)
+
+  Definition schulze_beats {R : Semiring.type}
+    (M : @Matrix Node R) (a b : Node) : Prop :=
+    beats (mat_star M) a b.
+
+  (* =====================================================================  *)
+  (*  Strict winner: beats everyone in the Schulze sense (via M* )          *)
+  (*  strict_winner M a := ∀X≠a, schulze_beats M a X                        *)
+  (* =====================================================================  *)
+
+  Definition strict_winner {R : Semiring.type}
+    (M : @Matrix Node R) (a : Node) : Prop :=
+    forall (X : Node), X ≠ a -> schulze_beats M a X.
+
+  (* =====================================================================  *)
+  (*  Schulze winner: nobody beats me in the Schulze sense                  *)
+  (*  schulze_winner M a := ∀b≠a, ~ schulze_beats M b a                     *)
+  (*  (Definition 2.2.2 in the paper)                                       *)
+  (* =====================================================================  *)
+
+  Definition schulze_winner {R : Semiring.type}
+    (M : @Matrix Node R) (a : Node) : Prop :=
+    forall (b : Node), b ≠ a -> ~ schulze_beats M b a.
+
+
+
     (* =====================================================================  *)
     (*  Monotonicity: if voters improve candidate A's pairwise scores        *)
     (*  (raising A's outgoing row and lowering A's incoming column, with     *)
@@ -73,54 +122,7 @@ Section SocialChoice.
 
 
 
-  (* =====================================================================  *)
-  (*  Fundamental: a beats b in matrix N if N_{ba} < N_{ab}                 *)
-  (*  — i.e., Orel (N b a) (N a b)  ∧  N b a ≠ N a b.                      *)
-  (* =====================================================================  *)
-
-  Definition beats {R : Semiring.type}
-    (N : @Matrix Node R) (a b : Node) : Prop :=
-    Orel (N b a) (N a b) ∧ N b a ≠ N a b.
-
-  (* =====================================================================  *)
-  (*  Condorcet winner: beats everyone in the DIRECT matrix M               *)
-  (*  condorcet_winner M a := ∀X≠a, beats M a X                             *)
-  (* =====================================================================  *)
-
-  Definition condorcet_winner {R : Semiring.type}
-    (M : @Matrix Node R) (a : Node) : Prop :=
-    forall (X : Node), X ≠ a -> beats M a X.
-
-  (* =====================================================================  *)
-  (*  Schulze order: beats in the Kleene star M*                            *)
-  (*  schulze_beats M a b := beats (mat_star M) a b                         *)
-  (*  (Definition 2.2.1 in the paper)                                       *)
-  (* =====================================================================  *)
-
-  Definition schulze_beats {R : Semiring.type}
-    (M : @Matrix Node R) (a b : Node) : Prop :=
-    beats (mat_star M) a b.
-
-  (* =====================================================================  *)
-  (*  Strict winner: beats everyone in the Schulze sense (via M* )          *)
-  (*  strict_winner M a := ∀X≠a, schulze_beats M a X                        *)
-  (* =====================================================================  *)
-
-  Definition strict_winner {R : Semiring.type}
-    (M : @Matrix Node R) (a : Node) : Prop :=
-    forall (X : Node), X ≠ a -> schulze_beats M a X.
-
-  (* =====================================================================  *)
-  (*  Schulze winner: nobody beats me in the Schulze sense                  *)
-  (*  schulze_winner M a := ∀b≠a, ~ schulze_beats M b a                     *)
-  (*  (Definition 2.2.2 in the paper)                                       *)
-  (* =====================================================================  *)
-
-  Definition schulze_winner {R : Semiring.type}
-    (M : @Matrix Node R) (a : Node) : Prop :=
-    forall (b : Node), b ≠ a -> ~ schulze_beats M b a.
-
-
+  
   (* =====================================================================  *)
   (*  Helper lemmas for Condorcet → Strict Winner                           *)
   (* =====================================================================  *)
