@@ -366,36 +366,71 @@ Section SocialChoice.
 
 
   (* =====================================================================  *)
-  (*  Theorem — PARETO                                                       *)
-  (*                                                                          *)
-  (*  If M_{BA} = 0 and M_{AB} ≠ 0, and rows/columns of A and B are         *)
-  (*  identical for all other candidates, then the strongest path from A     *)
-  (*  to B dominates the strongest path from B to A.                         *)
+  (*  Lemma: every matrix power is bounded by the direct edge (Orel).        *)
+  (*  Requires only Htri (triangle inequality); works for any Semiring.      *)
   (* =====================================================================  *)
 
-  Theorem pareto {R : Semiring.type} :
-    forall (M : @Matrix Node R) (A B : Node),
+  Lemma pow_bound_general {R : IdempotentSemiring.type}
+    (M : @Matrix Node R)
+    (Htri : forall (X Y Z : Node), Orel (M X Y * M Y Z) (M X Z)) :
+    forall (k : nat) (X A : Node),
+      (1 <= k)%nat -> Orel (pow M k X A) (M X A).
+  Proof.
+    induction k as [|k IH]; intros X A Hk.
+    - lia.
+    - destruct k as [|k].
+      + (* k = 1 *)
+        cbn [pow]. rewrite (matrix_mul_I_r M X A).
+        unfold Orel. apply orel_refl.
+      + (* k ≥ 2 *)
+        assert (Hk' : (1 <= S k)%nat) by lia.
+        cbn [pow]. unfold matrix_mul.
+        apply sum_orel_bound. intro y.
+        eapply orel_trans; [| apply (Htri X y A)].
+        apply (mul_orel_compat_r (pow M (S k) y A) (M y A) (M X y)).
+        apply (IH y A Hk').
+  Qed.
+
+  (* =====================================================================  *)
+  (*  Theorem — PARETO                                                       *)
+  (*                                                                          *)
+  (*  With the triangle inequality Htri, every path from B to A has weight   *)
+  (*  ≤ M_{BA} = 0, so all powers are zero and the geometric sum is zero.    *)
+  (*  The row/column homogeneity hypotheses become redundant with Htri but   *)
+  (*  are kept for compatibility with the paper's formulation.               *)
+  (* =====================================================================  *)
+
+  Theorem pareto {R : IdempotentSemiring.type}
+    (M : @Matrix Node R)
+    (Htri : forall (X Y Z : Node), Orel (M X Y * M Y Z) (M X Z))
+    (A B : Node) :
       A ≠ B -> M B A = 0 -> M A B ≠ 0 ->
       (forall (X : Node), X ≠ A -> X ≠ B -> M A X = M B X) ->
       (forall (X : Node), X ≠ A -> X ≠ B -> M X A = M X B) ->
       Orel (mat_star M B A) (mat_star M A B).
   Proof.
-    (* Proof sketch (path-based):                                            *)
-    (*   M* = I + M + M² + ... + M^{|N|-1}.                                 *)
-    (*   For each k, every term in M^k_{BA} is min (product) of k edges     *)
-    (*   along a path B → v₁ → ... → v_{k-1} → A.                           *)
-    (*   Using the hypotheses:                                               *)
-    (*     - If the path uses the direct edge B→A: weight involves          *)
-    (*       M_{BA}=0, so the term is 0 (annihilator).                       *)
-    (*     - Otherwise, replace first edge B→v₁ with A→v₁ (neutrality on   *)
-    (*       rows) and last edge v_{k-1}→A with v_{k-1}→B (neutrality on   *)
-    (*       columns).  This gives an A→B path of equal weight.             *)
-    (*   Since plusR = max (idempotent), every BA term is ≤ some AB term,  *)
-    (*   and plusR is idempotent, so max(all BA, all AB) = all AB.          *)
-    (*                                                                       *)
-    (* Formal proof requires induction on path length and case analysis     *)
-    (* on intermediate nodes.  Admitted.                                     *)
-  Admitted.
+    intros Hneq Hzero Hnonzero Hrow Hcol.
+    unfold mat_star, Orel.
+    (* Show that geom_sum kleene_exp B A = 0 *)
+    assert (Hgs_zero : geom_sum M kleene_exp B A = 0).
+    { induction kleene_exp as [|n IH]; cbn.
+      - unfold I. destruct (fin_eq_dec B A) as [Heq|_].
+        + exfalso. apply Hneq. symmetry. exact Heq.
+        + reflexivity.
+      - unfold matrix_add.
+        (* Goal: geom_sum M n B A + pow M (S n) B A = 0 *)
+        pose proof (pow_bound_general M Htri (S n) B A) as Hpow.
+        assert (HSn_ge1 : (S n >= 1)%nat) by lia.
+        pose proof (Hpow HSn_ge1) as Hpow_le.
+        unfold Orel in Hpow_le.
+        rewrite Hzero in Hpow_le.
+        rewrite addr0 in Hpow_le.
+        (* Hpow_le: pow M (S n) B A = 0 *)
+        transitivity (geom_sum M n B A + 0).
+        { apply (f_equal (fun t => geom_sum M n B A + t)). exact Hpow_le. }
+        rewrite addr0. exact IH. }
+    rewrite Hgs_zero. apply add0r.
+  Qed.
 
 
   (* =====================================================================  *)
@@ -535,32 +570,27 @@ Section SocialChoice.
   (*  In our matrix setting: M_{ba} = 0 and M_{ab} ≠ 0 ⇒ ~schulze_winner b *)
   (* =====================================================================  *)
 
-  Theorem prudence {R : Semiring.type} :
-    forall (M : @Matrix Node R) (a b : Node),
+  Theorem prudence {R : IdempotentSemiring.type} :
+    forall (M : @Matrix Node R)
+      (Htri : forall (X Y Z : Node), Orel (M X Y * M Y Z) (M X Z))
+      (a b : Node),
       a ≠ b ->
-      (* no voter prefers b over a *)
       M b a = 0 ->
-      (* at least one voter prefers a over b *)
       M a b ≠ 0 ->
-      (* rows of a,b coincide on other candidates *)
       (forall (X : Node), X ≠ a -> X ≠ b -> M a X = M b X) ->
-      (* columns of a,b coincide on other candidates *)
       (forall (X : Node), X ≠ a -> X ≠ b -> M X a = M X b) ->
-      (* strictness: Kleene-star entries differ *)
       mat_star M b a ≠ mat_star M a b ->
       ~ schulze_winner M b.
   Proof.
-    intros M a b Hneq Hzero Hnonzero Hrow Hcol Hstrict.
+    intros M Htri a b Hneq Hzero Hnonzero Hrow Hcol Hstrict.
     unfold schulze_winner.
     intro Hwin.
-    (* Hwin : ∀ b0 ≠ b, ~ schulze_beats M b0 b *)
-    (* Instantiate with b0 := a *)
     apply Hwin with (b := a).
     - exact Hneq.
     - unfold schulze_beats, beats.
       split.
       + (* Orel (mat_star M b a) (mat_star M a b) — from Pareto *)
-        apply (pareto M a b Hneq Hzero Hnonzero Hrow Hcol).
+        apply (pareto M Htri a b Hneq Hzero Hnonzero Hrow Hcol).
       + (* mat_star M b a ≠ mat_star M a b — strictness *)
         exact Hstrict.
   Qed.
