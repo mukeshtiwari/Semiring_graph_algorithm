@@ -77,34 +77,11 @@ Section SocialChoice.
     (*                                                                        *)
     (*        Orel (M*_{AC}) (M'*_{AC})    (M'* dominates M* )               *)
     (*                                                                        *)
-    (*  Proof outline:                                                        *)
-    (*    • If C = A: both entries are oneR (diagonal of the Kleene star),   *)
-    (*      and Orel oneR oneR follows from idempotence.                     *)
-    (*    • If C ≠ A: we zero out column A in both matrices (Z and Z'),      *)
-    (*      prove Orel Z Z' entrywise using the row/col/Heq hypotheses,     *)
-    (*      then lift to Kleene stars via mat_star_monotone.  Finally,       *)
-    (*      column-zeroing doesn't change the A-row                           *)
-    (*      (column_A_zero_preserves_row), so the chain:                     *)
-    (*                                                                        *)
-    (*        M*_{AC} = Z*_{AC}  ≤  Z'*_{AC} = M'*_{AC}                      *)
-    (*                                                                        *)
-    (*      collapses to Orel (M*_{AC}) (M'*_{AC}).                           *)
+    (*  Proof: with the triangle inequality Htri, every A→C path weight is   *)
+    (*  bounded by the direct edge M_{AC}.  Since M'_{AC} dominates M_{AC}  *)
+    (*  (Hrow), the chain M*_{AC} ≤ M_{AC} ≤ M'_{AC} ≤ M'*_{AC} holds.      *)
+    (*  The C=A case uses boundedness (diagonal of geom_sum = 1).            *)
     (* =====================================================================  *)
-
-  Theorem monotonicity {R : Semiring.type}:
-    forall (M M' : @Matrix Node R) (A : Node),
-    (forall (a b c : R), Orel (a * (b * c)) (a * c)) ->
-    (* row increases *)
-    (forall (Y : Node), Orel (M A Y) (M' A Y)) ->
-    (* column decreases *)
-    (forall (X : Node), Orel (M' X A) (M X A)) ->
-    (* every other place, M is unchanged. *)
-    (forall (X Y : Node), X ≠ A -> Y ≠ A -> (M X Y) = (M' X Y)) ->
-    forall (C : Node), Orel (mat_star M A C) 
-    (mat_star M' A C).
-  Proof. 
-  Admitted.
-
 
   (* =====================================================================  *)
   (*  Lemma: transpose commutes with Kleene star                            *)
@@ -304,6 +281,45 @@ Section SocialChoice.
         unfold matrix_add.
         eapply orel_trans; [apply (IH Hn') |].
         apply bounded_plus_upper_left.
+  Qed.
+
+  (* In a bounded semiring, the diagonal of geom_sum is always 1.            *)
+  Lemma geom_sum_diag_one {R : BoundedSemiring.type}
+    (M : @Matrix Node R) (n : nat) (A : Node) :
+    geom_sum M n A A = 1.
+  Proof.
+    induction n as [|n IH]; cbn [geom_sum].
+    - unfold I. destruct (fin_eq_dec A A) as [_|Hc]; [reflexivity | congruence].
+    - unfold matrix_add. rewrite IH. apply (add_bound (s := R) (pow M (S n) A A)).
+  Qed.
+
+  (* =====================================================================  *)
+  (*  Theorem — MONOTONICITY (§4.5)                                           *)
+  (* =====================================================================  *)
+
+  Theorem monotonicity {R : BoundedSemiring.type} :
+    forall (M M' : @Matrix Node R)
+      (Htri : forall (X Y Z : Node), Orel (M X Y * M Y Z) (M X Z))
+      (A : Node),
+      (forall (Y : Node), Orel (M A Y) (M' A Y)) ->
+      (forall (X : Node), Orel (M' X A) (M X A)) ->
+      (forall (X Y : Node), X ≠ A -> Y ≠ A -> (M X Y) = (M' X Y)) ->
+      forall (C : Node), Orel (mat_star M A C) (mat_star M' A C).
+  Proof.
+    intros M M' Htri A Hrow Hcol Heq C.
+    destruct (fin_eq_dec C A) as [HeqCA|HneqCA].
+    - subst C. unfold mat_star, Orel.
+      rewrite !geom_sum_diag_one.
+      apply (add_bound (s := R) 1).
+    - unfold mat_star.
+      eapply orel_trans.
+      + apply (geom_sum_bound (R:=R) M Htri kleene_exp A C).
+        intro HeqAC. apply HneqCA. symmetry. exact HeqAC.
+      + eapply orel_trans.
+        * apply (Hrow C).
+        * apply (geom_sum_includes_direct (R:=R) M' kleene_exp A C).
+          unfold kleene_exp.
+          pose proof (elements_two_or_more (s := Node)) as Hlen. lia.
   Qed.
 
   (* =====================================================================  *)
