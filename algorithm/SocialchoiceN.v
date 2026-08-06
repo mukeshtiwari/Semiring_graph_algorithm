@@ -9,13 +9,15 @@ Local Infix "<" := (fun x y => x ≤ y ∧ x ≠ y) (at level 70).
 (* ======================================================================= *)
 (*  Social Choice — Schulze method definitions and theorems                  *)
 (*                                                                          *)
-(*  Five social-choice theorems (Condorcet, monotonicity, Pareto,           *)
-(*  prudence, Smith) are currently ADMITTED at the end of this file.        *)
-(*  They were previously proved using a triangle-inequality hypothesis      *)
-(*  Htri which is stronger than necessary and false in general.             *)
-(*                                                                          *)
-(*  Future work: prove these theorems using the path formalization          *)
-(*  (PathN.v) via star_path_compose and cycle removal.                      *)
+(*  Status:                                                                 *)
+(*    schulze_trans                    — Qed (requires H_pair_sum_one)      *)
+(*    condorcet_implies_strict_winner  — Qed                               *)
+(*    monotonicity                     — Qed                               *)
+(*    smith_criterion                  — Qed                               *)
+(*    pareto_second                    — Qed                               *)
+(*    pareto_first                     — Admitted (future work)            *)
+(*    reversal_symmetry                — Qed                               *)
+(*    winner_exists                    — Qed (depends on schulze_trans)    *)
 (* ======================================================================= *)
 
 Section SocialChoice.
@@ -309,10 +311,6 @@ Section SocialChoice.
     - unfold matrix_add. rewrite IH. apply (add_bound (s := R) (pow M (S n) A A)).
   Qed.
 
-  (* =====================================================================  *)
-  (*  monotonicity and condorcet_implies_strict_winner are now in             *)
-  (*  VoteSemiring.v (Section VoteSemiringTheorems) — they need Htri.        *)
-  (* =====================================================================  *)
 
   (* =====================================================================  *)
   (*  Theorem — REVERSAL SYMMETRY (Section 4.4)                               *)
@@ -705,8 +703,8 @@ Section SocialChoice.
   (*  Theorem — WINNER EXISTENCE (Corollary of §4.1)                          *)
   (*                                                                          *)
   (*  On a finite set, a strict partial order (transitive + irreflexive)     *)
-  (*  always has a maximal element.  Since schulze_beats is transitive       *)
-  (*  (admitted) and irreflexive (a never beats itself), a winner exists.    *)
+  (*  always has a maximal element.  schulze_beats is transitive (Qed)       *)
+  (*  and irreflexive, so a winner exists.                                   *)
   (* =====================================================================  *)
 
   Lemma schulze_beats_irrefl {R : Semiring.type} (M : @Matrix Node R) (a : Node) :
@@ -1438,11 +1436,8 @@ Section SocialChoice.
     intros Hb_lt_1. eapply orel_lt_trans; [apply bounded_mul_lower_right|exact Hb_lt_1].
   Qed.
   (* =====================================================================  *)
-  (*  The following theorems are currently ADMITTED.  They were previously   *)
-  (*  proved using the triangle-inequality hypothesis Htri, which is         *)
-  (*  stronger than necessary and false for general vote-count matrices.     *)
-  (*  Correct proofs require the path formalization (PathN.v) and            *)
-  (*  star_path_compose.                                                     *)
+  (*  condorcet_implies_strict_winner and smith_criterion                    *)
+  (*  — proved using H_total_order and H_pair_sum_one.                      *)
   (* =====================================================================  *)
 
   Theorem condorcet_implies_strict_winner {R : BoundedSemiring.type}
