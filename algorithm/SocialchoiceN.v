@@ -1203,29 +1203,7 @@ Section SocialChoice.
   Proof.
   Admitted.
 
-  
-  (* Does this actually capture the meaning of prudence? *)
-  Theorem prudence {R : BoundedSemiring.type}
-    (M : @Matrix Node R) (a b : Node) :
-    a ≠ b -> M b a = 0 -> M a b ≠ 0 ->
-    (forall X, X ≠ a -> X ≠ b -> M b X ≤ M a X) ->
-    (forall X, X ≠ a -> X ≠ b -> M X a ≤ M X b) ->
-     (forall i j, i = j -> M i j = 1) ->
-    mat_star M b a ≠ mat_star M a b ->
-    ~ schulze_winner M b.
-  Proof.
-    intros Hneq Hzero Hnonzero Hrow Hcol Hdiag Hstrict.
-    unfold schulze_winner.
-    intro Hwin.
-    apply Hwin with (b := a).
-    - exact Hneq.
-    - unfold schulze_beats, beats.
-      split.
-      + (* Non-strict: M*_{ba} ≤ M*_{ab} — from pareto_second *)
-        eapply pareto_second; try assumption.
-      + (* Strict: M*_{ba} ≠ M*_{ab} — from hypothesis *)
-        exact Hstrict.
-  Qed.
+
 
   (** With total order on +, if every term in a sum is < 1, the sum < 1. *)
   Lemma sum_lt_1_if_all_lt_1 {R : BoundedSemiring.type}
