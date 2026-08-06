@@ -650,8 +650,9 @@ Section SocialChoice.
         setoid_rewrite <-Hy_1.
         exact H1. }
       assert (H2' : 1 * mat_star M c a ≤ mat_star M b a).
-      { unfold y in Hy_1. admit.
-      
+      { unfold y in Hy_1.
+        setoid_rewrite Hy_1 in H2.
+        exact H2.
       }
       rewrite Heq in H2'.                             (* 1 * S a c ≤ S b a *)
       setoid_rewrite <-Heq in H2'.                             (* 1 * S a c ≤ S b a *)
@@ -681,7 +682,9 @@ Section SocialChoice.
         setoid_rewrite <-Hy_1.
         exact H1. }
       assert (H2' : 1 * mat_star M c a ≤ mat_star M b a).
-      { unfold y in Hy_1. admit. }
+      { unfold y in Hy_1. 
+        setoid_rewrite Hy_1 in H2.
+        exact H2. }
       rewrite !mul1r in H1'.                           (* 1 ≤ S a c *)
       assert (H1b : 1 ≤ mat_star M c a).
       { apply (orel_trans _ (mat_star M a c) _); [exact H1' | exact H_ac_le_ca]. }
@@ -696,7 +699,7 @@ Section SocialChoice.
       unfold not in H_ab_ne.
       specialize(H_ab_ne eq_refl).
       inversion H_ab_ne. }
-  Admitted.
+  Qed.
 
   (* =====================================================================  *)
   (*  Theorem — WINNER EXISTENCE (Corollary of §4.1)                          *)

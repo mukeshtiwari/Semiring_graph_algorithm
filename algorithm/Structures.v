@@ -103,6 +103,17 @@ HB.structure Definition BoundedSemiring :=
   { R of IsBoundedSemiring R & Semiring R }.
 
 (* ========================================================================= *)
+(*  5b. Bounded Commutative Semiring                                          *)
+(*       Combines BoundedSemiring + CommutativeSemiring.                      *)
+(*       Since both share the Semiring ancestor, mulC and add_bound live     *)
+(*       in the same HB sort, so [rewrite mulC] works on bounded semiring    *)
+(*       terms directly.                                                      *)
+(* ========================================================================= *)
+
+HB.structure Definition BoundedCommutativeSemiring :=
+  { R of IsBoundedSemiring R & IsCommutativeSemiring R & Semiring R }.
+
+(* ========================================================================= *)
 (*  6. Semimodule (two-sorted, parameterized HB structure)                   *)
 
 HB.mixin Record IsSemimodule {R : Semiring.type} V
