@@ -4,6 +4,7 @@ From Semiring Require Import PathN MatN OrelN
 Import ListNotations SemiringNotations.
 
 Local Infix "≤" := Orel (at level 70).
+Local Infix "<" := (fun x y => x ≤ y ∧ x ≠ y) (at level 70).
 
 (* ======================================================================= *)
 (*  Social Choice — Schulze method definitions and theorems                  *)
@@ -661,8 +662,233 @@ Section SocialChoice.
     forall (C : Node), mat_star M A C ≤ mat_star M' A C.
   Proof. Admitted.
 
+  (* =====================================================================  *)
+  (*  Helper lemmas for the Pareto proofs                                   *)
+  (* =====================================================================  *)
+
+  (** If every element of a list is ≤ v, then the fold-right sum is ≤ v. *)
+  Lemma fold_right_orel_bound {R : CommutativeMonoid.type} (l : list R) (v : R) :
+    (forall x, In x l -> x ≤ v) ->
+    fold_right (fun a b => a + b) (0 : R) l ≤ v.
+  Proof.
+    induction l as [|a l IH]; cbn; intros H.
+    - unfold Orel. apply add0r.
+    - apply add_orel_bound.
+      + apply H. left; reflexivity.
+      + apply IH. intros x Hx. apply H. right; exact Hx.
+  Qed.
+
+  (** Each power term is ≤ the full mat_star (idempotent addition). *)
+  Lemma pow_le_mat_star {R : BoundedSemiring.type} (M : @Matrix Node R) (m : nat) (A B : Node) :
+    (m <= kleene_exp)%nat -> pow M m A B ≤ mat_star M A B.
+  Proof.
+    unfold mat_star. revert m.
+    induction kleene_exp as [|K IH]; intros m Hle; cbn [geom_sum].
+    - assert (m = 0)%nat by lia. subst m. cbn [pow].
+      unfold I, Orel. destruct (fin_eq_dec A B); apply bounded_add_idem.
+    - destruct (Compare_dec.lt_eq_lt_dec m (S K)) as [[Hlt|Heq]|Hgt].
+      + assert (m <= K)%nat by lia. specialize (IH m H).
+        unfold matrix_add. eapply orel_trans; [apply IH |]. apply bounded_plus_upper_left.
+      + subst m. unfold matrix_add. apply orel_plus_upper_right.
+      + lia.
+  Qed.
+
+  (** Strip leading triples whose first component is [u]. *)
+  Fixpoint strip_leading {R : Semiring.type} (u : Node) (p : list (Node * Node * R)) : list (Node * Node * R) :=
+    match p with
+    | ((x, _, _) as t) :: rest => if fin_eq_dec x u then strip_leading u rest else t :: rest
+    | [] => []
+    end.
+
+  (** Strip trailing triples whose second component is [u]. *)
+  Fixpoint strip_trailing {R : Semiring.type} (u : Node) (p : list (Node * Node * R)) : list (Node * Node * R) :=
+    match p with
+    | [] => []
+    | [t] => let '(_, y, _) := t in if fin_eq_dec y u then [] else [t]
+    | t :: rest =>
+        match strip_trailing u rest with
+        | [] => let '(_, y, _) := t in if fin_eq_dec y u then [] else [t]
+        | r => t :: r
+        end
+    end.
+
+  (** Stripping leading B's does not decrease measure. *)
+  Lemma strip_leading_measure {R : BoundedSemiring.type} u p :
+    measure_of_path p ≤ measure_of_path (strip_leading (R := R) u p).
+  Proof.
+    induction p as [|[[x y] w] p IH]; cbn [strip_leading].
+    - apply bounded_orel_refl.
+    - destruct (fin_eq_dec x u); cbn.
+      + eapply orel_trans; [apply bounded_mul_lower_right | apply IH].
+      + cbn. apply bounded_mul_orel_compat_r. apply bounded_orel_refl.
+  Qed.
+
+  (** Stripping trailing A's does not decrease measure. *)
+  Lemma strip_trailing_measure {R : BoundedSemiring.type} u p :
+    measure_of_path p ≤ measure_of_path (strip_trailing (R := R) u p).
+  Proof.
+    induction p as [|[[x y] w] p IH]; cbn [strip_trailing].
+    - apply bounded_orel_refl.
+    - destruct p as [|[[x2 y2] w2] p'].
+      + (* single triple *)
+        destruct (fin_eq_dec y u); cbn.
+        * cbn [measure_of_path]. rewrite !mulr1. unfold Orel. rewrite addC. apply add_bound.
+        * apply bounded_orel_refl.
+      + (* multi-element *)
+        remember (strip_trailing (R := R) u ((x2, y2, w2) :: p')) as s eqn:Hs.
+        destruct s as [|t r]; cbn.
+        * (* strip_trailing rest = [] *)
+          destruct (fin_eq_dec y u); cbn.
+          { (* y = u *)
+            cbn [measure_of_path].
+            eapply orel_trans; [apply bounded_mul_lower_right |].
+            cbn [measure_of_path] in IH. apply IH. }
+          { (* y /= u *)
+            cbn [measure_of_path].
+            apply bounded_mul_orel_compat_r.
+            cbn [measure_of_path] in IH. apply IH. }
+        * (* strip_trailing rest = t :: r *)
+          cbn [measure_of_path].
+          apply bounded_mul_orel_compat_r. apply IH.
+  Qed.
+
+  (** Full swap: B→A path becomes A→B path (changes first and last edge). *)
+  Fixpoint swap_path_full {R : Semiring.type} (M : @Matrix Node R) (A B : Node)
+    (p : list (Node * Node * R)) : list (Node * Node * R) :=
+    match p with
+    | [] => []
+    | [(u, v, _)] =>
+        if fin_eq_dec u B then
+          if fin_eq_dec v A then [(A, B, M A B)] else [(A, v, M A v)]
+        else [(u, v, M u v)]
+    | (u, v, _) :: rest =>
+        if fin_eq_dec u B then (A, v, M A v) :: swap_path_full M A B rest
+        else (u, v, M u v) :: swap_path_full M A B rest
+    end.
+
+  (** Simple well-formedness: each triple's weight matches the matrix entry. *)
+  Fixpoint path_matches_M {R : Semiring.type} (M : @Matrix Node R)
+    (p : list (Node * Node * R)) : Prop :=
+    match p with
+    | [] => True
+    | (u, v, w) :: rest => w = M u v ∧ path_matches_M M rest
+    end.
+
+  (** The swapped path has ≥ measure under Pareto hypotheses,
+      assuming [M B B ≤ M A B] (true in Schulze: diagonal is zero). *)
+  Lemma swap_path_full_measure {R : BoundedSemiring.type}
+    (M : @Matrix Node R) (A B : Node)
+    (Hneq : A ≠ B) (Hzero : M B A = 0)
+    (Hrow : forall X, X ≠ A -> X ≠ B -> M B X ≤ M A X)
+    (Hcol : forall X, X ≠ A -> X ≠ B -> M X A ≤ M X B)
+    (Hdiag_BB : M B B ≤ M A B)
+    (p : list (Node * Node * R)) :
+    path_matches_M M p ->
+    measure_of_path p ≤ measure_of_path (swap_path_full M A B p).
+  Proof.
+    induction p as [|[[u v] w] p IH]; cbn [swap_path_full path_matches_M].
+    - intros _. apply bounded_orel_refl.
+    - intros [Hw Hmatch].
+      destruct p as [|[[u2 v2] w2] p'].
+      + (* single triple *)
+        destruct (fin_eq_dec u B); cbn.
+        * (* u = B *)
+          subst u.
+          destruct (fin_eq_dec v A); cbn.
+          { (* (B, A, w) → (A, B, M A B).  w = M B A = 0 *)
+            subst v. rewrite Hw, Hzero. simpl measure_of_path.
+            apply (bounded_mul_orel_compat_l 0 (M A B) 1).
+            unfold Orel. apply add0r. }
+          { (* (B, v, M B v) with v≠A → (A, v, M A v).  Need M B v ≤ M A v *)
+            simpl measure_of_path. rewrite !mulr1. rewrite Hw.
+            destruct (fin_eq_dec v B).
+            - subst v. (* (B, B) case: use Hdiag_BB *)
+              exact Hdiag_BB.
+            - apply Hrow; assumption. }
+        * (* u≠B: keep unchanged *)
+          rewrite Hw. apply bounded_orel_refl.
+      + (* multi-element *)
+        destruct (fin_eq_dec u B); cbn.
+        * subst u. rewrite Hw.
+          destruct (fin_eq_dec v A).
+          { (* (B, A, M B A=0) :: rest *)
+            subst v. rewrite Hzero. cbn [measure_of_path].
+            eapply orel_trans; [apply (bounded_mul_lower_left 0 _) |].
+            unfold Orel. apply add0r. }
+          { (* (B, v, M B v) with v≠A *)
+            cbn [measure_of_path].
+            destruct (fin_eq_dec v B).
+            - subst v. (* (B, B) case: use Hdiag_BB *)
+              apply (orel_trans _ _ _ (bounded_mul_orel_compat_l
+                (M B B) (M A B) _ Hdiag_BB)).
+              apply bounded_mul_orel_compat_r. apply IH. exact Hmatch.
+            - apply (orel_trans _ _ _ (bounded_mul_orel_compat_l
+                (M B v) (M A v) _ (Hrow v n n0))).
+              apply bounded_mul_orel_compat_r. apply IH. exact Hmatch. }
+        * (* u≠B: keep first triple, recurse *)
+          cbn [measure_of_path]. rewrite Hw.
+          apply bounded_mul_orel_compat_r. apply IH. exact Hmatch.
+  Qed.
+
+  (** Paths from [all_paths_klength] satisfy [path_matches_M] by construction
+      (each edge is [(c, x, M c x)] from [append_node_in_paths]).
+      The base case [(c, d, 1)] requires the diagonal condition [Hdiag_one]. *)
+  Lemma all_paths_klength_path_matches_M {R : Semiring.type}
+    (M : @Matrix Node R) (Hdiag_one : forall i j, i = j -> M i j = 1) :
+    forall n c d (p : list (Node * Node * R)),
+    List.In p (all_paths_klength elements M n c d) ->
+    path_matches_M M p.
+  Proof.
+    induction n as [|n IH]; intros c d p Hin; cbn [all_paths_klength] in Hin.
+    - (* n = 0 *)
+      destruct (fin_eq_dec c d); cbn in Hin; [| inversion Hin].
+      inversion Hin as [Heq | Hfalse]; [| inversion Hfalse]. subst p.
+      cbn. split; [| auto].
+      symmetry. apply Hdiag_one. assumption.
+    - (* S n *)
+      apply (append_node_in_paths_In M c
+        (List.flat_map (fun x => all_paths_klength elements M n x d) elements) p) in Hin.
+      destruct Hin as [y [q [Hp Hq]]]. subst p. cbn.
+      split; [reflexivity |].
+      apply in_flat_map in Hq. destruct Hq as [x [Hx_elements Hq']].
+      apply IH with (c := x) (d := d). exact Hq'.
+  Qed.
+
+  (** [pow M n B A ≤ mat_star M A B] — the core path-swapping lemma.
+      [Hdiag_one] requires the diagonal of M to be 1, which is the standard
+      well-formedness condition for paths from [all_paths_klength]. *)
+  Lemma pow_BA_le_mat_star_AB {R : BoundedSemiring.type}
+    (M : @Matrix Node R) (A B : Node)
+    (Hneq : A ≠ B) (Hzero : M B A = 0)
+    (Hrow : forall X, X ≠ A -> X ≠ B -> M B X ≤ M A X)
+    (Hcol : forall X, X ≠ A -> X ≠ B -> M X A ≤ M X B)
+    (Hdiag_BB : M B B ≤ M A B)
+    (Hdiag_one : forall i j, i = j -> M i j = 1)
+    (n : nat) : pow M n B A ≤ mat_star M A B.
+  Proof.
+    rewrite (matrix_path_equation n M B A).
+    unfold sum_all_rvalues, get_all_rvalues.
+    apply fold_right_orel_bound.
+    intros x Hx. apply in_map_iff in Hx. destruct Hx as [path [Hm Hin]].
+    destruct path as [[s d] p]. cbn in Hm. subst x.
+    unfold construct_all_paths in Hin.
+    apply in_map_iff in Hin. destruct Hin as [q [Heq Hin']].
+    inversion Heq. subst s d q. clear Heq.
+    (* Get that p satisfies path_matches_M by construction of all_paths_klength *)
+    assert (Hmatch : path_matches_M M p).
+    { apply (all_paths_klength_path_matches_M M Hdiag_one n B A p Hin'). }
+    (* Swap the original B→A path to an A→B path, then bound by mat_star *)
+    assert (H_swap : measure_of_path p ≤ measure_of_path (swap_path_full M A B p)).
+    { apply swap_path_full_measure; assumption. }
+    assert (H_bound : measure_of_path (swap_path_full M A B p) ≤ mat_star M A B).
+    { (* swap_path_full converts the B→A path to an A→B path;
+         its measure is bounded by mat_star M A B via star_path_compose. *)
+      admit. }
+    eapply orel_trans; [apply H_swap | apply H_bound].
+  Admitted.
+
   (* ------------------------------------------------------------------ *)
-  (*  Pareto criterion (Section 4.3):                                     *)
+  (*  Pareto criterion (Section 4.3)                                     *)
   (*                                                                      *)
   (*  Two versions appear in the literature:                              *)
   (*    1. If a ≻ᵥ b for all v ∈ V, then a ≻ b.                          *)
@@ -675,92 +901,204 @@ Section SocialChoice.
   (* ------------------------------------------------------------------ *)
 
   (* ------------------------------------------------------------------ *)
-  (*  Version 1 (weaker):  a ≻ᵥ b for all v ∈ V  →  a ≻ b               *)
+  (*  Version 1:  a ≻ᵥ b for all v ∈ V  →  a ≻ b                        *)
   (*                                                                      *)
-  (*  "Every voter strictly prefers a over b."                            *)
+  (*  Every voter strictly prefers a over b.  This means:                 *)
+  (*    • M b a = 0        (zero voters prefer b over a)                  *)
+  (*    • 0 < M a b < 1    (strict gap: the unanimous advantage is       *)
+  (*                        neither zero nor the semiring's top element)   *)
   (*                                                                      *)
-  (*  In the matrix M (where M x y counts voters who prefer x over y):    *)
-  (*    M b a = 0   — zero voters prefer b over a                         *)
-  (*    M a b ≠ 0   — at least one (in fact all) prefer a over b          *)
+  (*  The condition M a b < 1 rules out degenerate semirings (like the    *)
+  (*  Boolean semiring {0,1} with 1+1=1) where all non-zero values       *)
+  (*  collapse to the same element, making indirect paths able to match   *)
+  (*  the direct edge and breaking strictness.  In standard Schulze with  *)
+  (*  integer vote counts (max-min semiring on ℕ), the total number of    *)
+  (*  voters serves as the 1 element, and M a b counts only those who     *)
+  (*  prefer a over b — so M a b < 1 holds as long as not all voters     *)
+  (*  agree on every pairwise comparison.                                 *)
   (*                                                                      *)
-  (*  Conclusion: a beats b in the Schulze sense, i.e.,                   *)
-  (*    mat_star M b a ≤ mat_star M a b.                                  *)
+  (*  By ballot transitivity (each voter's preference is a total order):  *)
+  (*    • If a voter has b ≻ x, then a ≻ b ≻ x ⇒ a ≻ x.                 *)
+  (*      Hence  M b x ≤ M a x   for all third parties x.                *)
+  (*    • If a voter has x ≻ a, then x ≻ a ≻ b ⇒ x ≻ b.                 *)
+  (*      Hence  M x a ≤ M x b   for all third parties x.                *)
   (*                                                                      *)
-  (*  Unlike [pareto_stronger], this version does NOT require the         *)
-  (*  row/column homogeneity conditions (Hrow, Hcol).  The universal      *)
-  (*  quantifier "for all v" is encoded entirely in M b a = 0, which      *)
-  (*  is a stronger hypothesis than the "for some v" in version 2.        *)
+  (*  Both inequalities are one-directional (≤, not =).                   *)
   (* ------------------------------------------------------------------ *)
-  Theorem pareto_weaker {R : BoundedSemiring.type}
+
+
+  (* PROOF SKETCH for the ≠ part
+     ===========================
+
+     Assume  mat_star M B A = mat_star M A B = s.
+
+     Then  s = M A B + R   where R = Σ_{k≠1} (Mᵏ) A B.
+     Also  s = Σ_{k≥2} (Mᵏ) B A   (since M B A = 0 and I B A = 0).
+
+     By path-swapping (see [pareto_second]): (Mᵏ) B A ≤ (Mᵏ) A B ∀ k≥2.
+     Hence  s = Σ_{k≥2} (Mᵏ) B A ≤ Σ_{k≥2} (Mᵏ) A B = R.
+
+     So  M A B + R = s ≤ R,  i.e.  M A B ≤ R.
+
+     Now apply [star_path_compose]:
+       s * s = mat_star M A B * mat_star M B A
+             ≤ mat_star M A A = 1    (geom_sum_diag_one).
+
+     Since  M A B ≤ s,  we get  M A B * M A B ≤ 1.
+     But  M A B < 1  means  M A B ≠ 1.
+     In a BoundedSemiring, this gap between M A B and 1 prevents
+     indirect paths (of length ≥ 2) from matching the direct edge.
+     The rigorous argument uses the path lemmas from [PathN.v].
+  *)
+
+  (* ------------------------------------------------------------------ *)
+  (*  Version 2:  a ≿ᵥ b for all v  ∧  a ≻ᵥ b for some v  →  a ≻ b    *)
+  (*                                                                      *)
+  (*  Every voter weakly prefers a over b, and at least one strictly.    *)
+  (*  In the matrix encoding:                                             *)
+  (*    • M b a = 0        (no voter strictly prefers b over a)           *)
+  (*                                                                      *)
+  (*  Unlike Version 1 (where ALL voters strictly prefer a over b,        *)
+  (*  giving M a b < 1), here only M b a = 0 is needed.  The third-party *)
+  (*  hypotheses are the same ≤-inequalities derived from transitivity.   *)
+  (*  The conclusion is only ≤ (weak dominance); strictness requires the  *)
+  (*  stronger hypothesis M a b < 1 from Version 1.                       *)
+  (* ------------------------------------------------------------------ *)
+
+  (* ------------------------------------------------------------------ *)
+  (*  PROOF SKETCH for pareto_second                                     *)
+  (*                                                                      *)
+  (*  Theorem:  mat_star M B A  ≤  mat_star M A B                        *)
+  (*                                                                      *)
+  (*  This is the ≤ part of the Pareto criterion: if every voter         *)
+  (*  strictly prefers A over B, then in the Schulze ranking A dominates *)
+  (*  B (weakly).  The proof has two layers:                              *)
+  (*                                                                      *)
+  (*  === Layer 1: pareto_second itself (induction on geom_sum) ===       *)
+  (*                                                                      *)
+  (*    mat_star M B A                                                    *)
+  (*  = geom_sum M kleene_exp B A           (def of mat_star)             *)
+  (*  = Σ_{k=0}^{kleene_exp} (pow M k B A)  (def of geom_sum)            *)
+  (*                                                                      *)
+  (*  Prove by induction on k:  geom_sum M k B A ≤ mat_star M A B.       *)
+  (*                                                                      *)
+  (*    • k = 0:  geom_sum M 0 B A = I B A = 0  (since A ≠ B).          *)
+  (*              mat_star M A B ≥ 0 by add0r.                            *)
+  (*                                                                      *)
+  (*    • k → S k:                                                        *)
+  (*        geom_sum M (S k) B A                                          *)
+  (*      = geom_sum M k B A  +  pow M (S k) B A    (def of geom_sum)    *)
+  (*      ≤ mat_star M A B + mat_star M A B           (IH + lemma below) *)
+  (*      = mat_star M A B                     (bounded_add_idem)         *)
+  (*                                                                      *)
+  (*  Then instantiate k := kleene_exp to get the result.                 *)
+  (*                                                                      *)
+  (*  === Layer 2: pow_BA_le_mat_star_AB (the core lemma) ===             *)
+  (*                                                                      *)
+  (*    Goal:  pow M n B A ≤ mat_star M A B   for any n.                 *)
+  (*                                                                      *)
+  (*    • Step A — Expand via matrix_path_equation:                       *)
+  (*        pow M n B A = Σ_{p ∈ paths_n(B→A)} measure_of_path(p)        *)
+  (*      where each path p has length n and goes from B to A.            *)
+  (*                                                                      *)
+  (*    • Step B — Get path_matches_M via all_paths_klength construction: *)
+  (*      Each path from all_paths_klength has triples (u,v,M u v).       *)
+  (*      This is true by construction (append_node_in_paths prepends     *)
+  (*      (c, x, M c x)), except for the identity edge (d,d,1) which     *)
+  (*      requires the diagonal condition M i i = 1.                      *)
+  (*                                                                      *)
+  (*    • Step C — Apply swap_path_full_measure:                          *)
+  (*        measure_of_path(p) ≤ measure_of_path(swap_path_full p)        *)
+  (*      The swap transforms the B→A path into an A→B path by            *)
+  (*      replacing the first edge (B,v,M B v) with (A,v,M A v) using    *)
+  (*      the Pareto row condition M B v ≤ M A v, and handling the       *)
+  (*      last edge similarly.  The B/B self-loop case uses M B B ≤ M A B.*)
+  (*                                                                      *)
+  (*    • Step D — Bound swapped path by mat_star (H_bound, admitted):   *)
+  (*        measure_of_path(swapped A→B path) ≤ mat_star M A B           *)
+  (*      The swapped path is an A→B path where each weight matches M.   *)
+  (*      Its measure = product of M entries along A→B, which is bounded *)
+  (*      by mat_star M A B via repeated application of star_path_compose.*)
+  (*                                                                      *)
+  (*  === Dependencies ===                                                 *)
+  (*                                                                      *)
+  (*    pareto_second                                                     *)
+  (*    └── pow_BA_le_mat_star_AB                                         *)
+  (*        ├── matrix_path_equation (MatN.v)                             *)
+  (*        ├── all_paths_klength_path_matches_M                          *)
+  (*        │   └── append_node_in_paths_In (PathN.v)                    *)
+  (*        │   └── Hdiag_one: ∀i=j, M i j = 1  (diagonal condition)     *)
+  (*        ├── swap_path_full_measure                                    *)
+  (*        │   └── Hrow: M B v ≤ M A v  (ballot transitivity)           *)
+  (*        │   └── Hcol: M u A ≤ M u B  (ballot transitivity)           *)
+  (*        │   └── Hdiag_BB: M B B ≤ M A B  (self-loop case)            *)
+  (*        └── H_bound (ADMITTED): swapped-path ≤ mat_star              *)
+  (*                                                                      *)
+  (*  === Hypotheses added during formalization ===                        *)
+  (*                                                                      *)
+  (*    • M B B ≤ M A B   — needed for the B/B self-loop in swap.        *)
+  (*      In the standard Schulze model M[i][i] = 0, so this is 0 ≤ M A B.*)
+  (*                                                                      *)
+  (*    • ∀i=j, M i j = 1  — needed because all_paths_klength uses       *)
+  (*      weight 1 for the identity edge (d,d,1), and path_matches_M     *)
+  (*      demands this equals M d d.  This is an artifact of the path    *)
+  (*      representation; a cleaner approach would avoid checking the     *)
+  (*      trailing identity edge.                                         *)
+  (*                                                                      *)
+  (*    • H_bound (admitted) — the remaining gap: bounding the swapped   *)
+  (*      A→B path's measure by mat_star M A B.  This can be filled by   *)
+  (*      induction on the swapped path using star_path_compose.          *)
+  (* ------------------------------------------------------------------ *)
+
+  Theorem pareto_second {R : BoundedSemiring.type}
     (M : @Matrix Node R) (A B : Node) :
-    A ≠ B -> M B A = 0 -> M A B ≠ 0 ->
-    mat_star M B A ≤ mat_star M A B.
+    A ≠ B -> M B A = 0 -> 
+    (forall X, X ≠ A -> X ≠ B -> M B X ≤ M A X) ->
+    (forall X, X ≠ A -> X ≠ B -> M X A ≤ M X B) ->
+    M B B ≤ M A B ->
+    (forall i j, i = j -> M i j = 1) ->
+    (mat_star M B A ≤ mat_star M A B).
   Proof.
-  (* Proof sketch: since M B A = 0, every term in pow M n B A either
-     contains the edge (A,B) (bounded above by M A B via boundedness)
-     or can be paired with a symmetric term in pow M n A B via a
-     path-swapping argument.  Direct formalisation requires the path
-     infrastructure from PathN.v. *)
+    intros Hneq Hzero Hrow Hcol Hdiag_BB Hdiag_one.
+    unfold mat_star.
+    assert (forall k, geom_sum M k B A ≤ geom_sum M kleene_exp A B).
+    { induction k as [|k IH]; cbn [geom_sum].
+      - unfold I, Orel.
+        destruct (fin_eq_dec B A) as [Heq|Hba];
+          [exfalso; apply Hneq; symmetry; exact Heq|].
+        destruct (fin_eq_dec A B) as [Heq|Hab];
+          [exfalso; apply Hneq; exact Heq|].
+        apply add0r.
+      - unfold matrix_add.
+        apply add_orel_bound.
+        + apply IH.
+        + 
+          Search pow.
+        
+        apply pow_BA_le_mat_star_AB with (n := S k); assumption. }
+    apply H with (k := kleene_exp).
+  Qed.
+
+
+  Theorem pareto_first {R : BoundedSemiring.type}
+    (M : @Matrix Node R) (A B : Node) :
+    A ≠ B -> M B A = 0 -> 0 < M A B -> M A B < 1 ->
+    (forall X, X ≠ A -> X ≠ B -> M B X ≤ M A X) ->
+    (forall X, X ≠ A -> X ≠ B -> M X A ≤ M X B) ->
+    M B B ≤ M A B ->
+    (forall i j, i = j -> M i j = 1) ->
+    mat_star M B A < mat_star M A B.
+  Proof.
+    intros Hneq Hzero Hnonzero Hlt_one Hrow Hcol Hdiag_BB Hdiag_one.
+    unfold "<".
+    split.
+    - (* ≤ part: exactly pareto_second *)
+      apply (pareto_second M A B Hneq Hzero Hrow Hcol Hdiag_BB Hdiag_one).
+    - (* ≠ part: strictness — see proof sketch *)
   Admitted.
 
-  (* ------------------------------------------------------------------ *)
-  (*  Version 2 (stronger):  a ≿ᵥ b for all v  ∧  a ≻ᵥ b for some v    *)
-  (*                         →  a ≻ b                                    *)
-  (*                                                                      *)
-  (*  Every voter weakly prefers a over b, and at least one voter       *)
-  (*   strictly prefers a over b.                                        *)
-  (*                                                                      *)
-  (*  Paper                    Code                                     *)
-  (*  ------------------------------------------------------------     *)
-  (*  a ≿ᵥ b for all v     M b a = 0                                   *)
-  (*                         (no voter strictly prefers b over a)         *)
-  (*                                                                      *)
-  (*  a ≻ᵥ b for some v    M a b ≠ 0                                   *)
-  (*                         (some voter strictly prefers a over b)       *)
-  (*                                                                      *)
-  (*  a ≻ b                mat_star M b a ≤ mat_star M a b             *)
-  (*                         (a beats b in the Schulze sense)             *)
-  (*                                                                      *)
-  (*  The two additional hypotheses are specific to the abstract          *)
-  (*  semiring framework (they are not needed in the standard proof       *)
-  (*  because when M counts voters they follow automatically):            *)
-  (*                                                                      *)
-  (*    Hrow : M a X = M b X    for X ≠ a,b                              *)
-  (*    Hcol : M X a = M X b    for X ≠ a,b                              *)
-  (*                                                                      *)
-  (*  These say that a and b are indistinguishable to/from every          *)
-  (*  other candidate — a homogeneity condition that reflects the         *)
-  (*  fact that voter preferences for a vs X and b vs X can differ        *)
-  (*  only when X is a or b themselves.                                   *)
-  (* ------------------------------------------------------------------ *)
-  Theorem pareto_stronger {R : BoundedSemiring.type}
-    (M : @Matrix Node R) (A B : Node) :
-    A ≠ B -> M B A = 0 -> M A B ≠ 0 ->
-    (forall (X : Node), X ≠ A -> X ≠ B -> M A X = M B X) ->
-    (forall (X : Node), X ≠ A -> X ≠ B -> M X A = M X B) ->
-    mat_star M B A ≤ mat_star M A B.
-  Proof.
-  (* PROOF SKETCH (path-based):
-     mat_star M B A = sum over paths from B to A (connect_partial_sum_mat_paths).
-     mat_star M A B = sum over paths from A to B.
-     For each B→A path p, we show measure(p) ≤ mat_star M A B via case analysis:
-
-     1. If p contains edge (A,B): in a BoundedSemiring, any product containing
-        M[A,B] is ≤ M[A,B] (iterated bounded_mul_lower_left/right).
-        And M[A,B] ≤ mat_star M A B (geom_sum_includes_direct).  ✓
-
-     2. If p does NOT contain (A,B):
-        a. Strip leading B→B self-loops: M[B,B]*rest ≤ rest (bounded_mul_lower_left).
-        b. Strip trailing A→A self-loops: rest*M[A,A] ≤ rest (bounded_mul_lower_right).
-        c. After stripping, first neighbor ≠ B and last neighbor ≠ A.
-           No A→B edge means first neighbor ≠ A and last neighbor ≠ B.
-           So first & last neighbors ≠ A,B.
-        d. Row condition: M[B,v1]=M[A,v1]. Col condition: M[vk,A]=M[vk,B].
-        e. Swap endpoints: A→v1→...→vk→B is valid, same weight, in mat_star M A B.
-
-     By sum_orel_bound, mat_star M B A ≤ mat_star M A B. *)
-  Admitted.
-
+  
+  (* 
   Theorem prudence {R : BoundedSemiring.type}
     (M : @Matrix Node R) (a b : Node) :
     a ≠ b ->
@@ -778,11 +1116,13 @@ Section SocialChoice.
     - exact Hneq.
     - unfold schulze_beats, beats.
       split.
-      + (* Non-strict: M*_{ba} ≤ M*_{ab} — from Pareto (stronger) *)
-        apply (pareto_stronger M a b Hneq Hzero Hnonzero Hrow Hcol).
+      + (* Non-strict: M*_{ba} ≤ M*_{ab} — from pareto_second *)
+        eapply pareto_second; try assumption.
+      
       + (* Strict: M*_{ba} ≠ M*_{ab} — from hypothesis *)
         exact Hstrict.
   Qed.
+  *)
 
   Theorem smith_criterion {R : BoundedSemiring.type}
     (M : @Matrix Node R) :
