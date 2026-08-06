@@ -544,16 +544,158 @@ Section SocialChoice.
     exact Hmul.
   Qed.
 
-  Theorem schulze_trans {R : BoundedSemiring.type} {R_comm : CommutativeSemiring R}
-    (M : @Matrix Node R) :
+  (** Helper: if (x*y)*y < x then x*y < x, in a bounded semiring with
+      total order and decidable equality. *)
+  Lemma xy2_lt_x_implies_xy_lt_x {R : BoundedSemiring.type}
+    (H_total_order : forall x y : R, x + y = x \/ x + y = y)
+    (Hdec : forall x y : R, {x = y} + {x ≠ y})
+    (x y : R) : (x * y) * y < x -> x * y < x.
+  Proof.
+    intros [Hle Hne].
+    assert (Hxy_le_x : x * y ≤ x) by apply bounded_mul_lower_left.
+    destruct (H_total_order (x * y) x) as [Hcase | Hcase].
+    - (* x ≤ x*y, with x*y ≤ x → x = x*y, then (x*y)*y = x*y, Hne gives x*y ≠ x *)
+      assert (Hx_le_xy : x ≤ x * y).
+      { change (x + (x * y) = x * y). rewrite addC. exact Hcase. }
+      assert (Heq : x * y = x) by (apply orel_antisym; [exact Hxy_le_x | exact Hx_le_xy]).
+      rewrite Heq in Hle, Hne. exact (conj Hxy_le_x Hne).
+    - (* x*y ≤ x, check if = or < *)
+      destruct (Hdec (x * y) x) as [Heq | Hneq].
+      + rewrite Heq in Hle, Hne. exfalso. apply Hne. exact Heq.
+      + exact (conj Hxy_le_x Hneq).
+  Qed.
+
+
+  Theorem schulze_trans {R : BoundedCommutativeSemiring.type}
+    (M : @Matrix Node R)
+    (H_total_order : forall x y : R, x + y = x \/ x + y = y)
+    (Hdec : forall x y : R, {x = y} + {x ≠ y})
+    (H_pair_sum_one : forall i j : Node, i ≠ j -> M i j + M j i = 1) :
     forall (a b c : Node),
       schulze_beats M a b -> schulze_beats M b c -> schulze_beats M a c.
   Proof.
-    (* Non-strict part: M*_{ca} ≤ M*_{ac}
-       Chains: M*_{ca} ≤ M*_{bc} * M*_{ba} = M*_{ba} * M*_{bc} ≤ M*_{ab} * M*_{bc} ≤ M*_{ac}
-       The first inequality requires mulC + star_path_compose.
-       Strict part: if M*_{ca} = M*_{ac}, antisymmetry through star_path_compose
-       forces M*_{ba} = M*_{ab}, contradiction. *)
+    intros a b c H_ab H_bc.
+    unfold schulze_beats, beats in *.
+    destruct H_ab as [H_ab_le H_ab_ne].
+    destruct H_bc as [H_bc_le H_bc_ne].
+    set (x := mat_star M a b) in *.
+    set (y := mat_star M b c) in *.
+    (* From beats a b: a ≠ b, and M a b = 1 (since M b a ≠ 1). *)
+    assert (Ha_ne_b : a ≠ b).
+    { intro Heq. subst b. apply H_ab_ne. apply orel_antisym; [exact H_ab_le |].
+      unfold Orel. apply (@bounded_add_idem R (mat_star M a a)). }
+    assert (H_Mab_1 : M a b = 1).
+    { pose proof (H_pair_sum_one a b Ha_ne_b) as Hsum.
+      destruct (H_total_order (M a b) (M b a)) as [Hcase | Hcase].
+      - (* M a b + M b a = M a b, so Hsum gives M a b = 1 *)
+        exact (eq_trans (eq_sym Hcase) Hsum).
+      - (* M a b + M b a = M b a, so M b a = 1.  Then S b a = 1, contradicting beats. *)
+        assert (H_Mba_1 : M b a = 1) by (exact (eq_trans (eq_sym Hcase) Hsum)).
+        assert (H_Sba_1 : mat_star M b a = 1).
+        { apply orel_antisym; [| rewrite <- H_Mba_1].
+          - unfold Orel. rewrite addC. apply (@add_bound R _).
+          - apply (geom_sum_includes_direct M kleene_exp b a).
+            pose proof (elements_two_or_more (s := Node)). unfold kleene_exp. nia. }
+        rewrite H_Sba_1 in H_ab_le.
+        exfalso. apply H_ab_ne.
+        apply (@orel_antisym R (mat_star M b a) x);
+        [ rewrite H_Sba_1; exact H_ab_le
+        | rewrite H_Sba_1; unfold Orel; rewrite addC; apply (@add_bound R _) ]. }
+    (* Hence x = S a b = 1 *)
+    assert (Hx_1 : x = 1).
+    { apply orel_antisym.
+      - unfold Orel. rewrite addC. apply (@add_bound R _).
+      - rewrite <- H_Mab_1. apply (geom_sum_includes_direct M kleene_exp a b).
+        pose proof (elements_two_or_more (s := Node)). unfold kleene_exp. nia. }
+    (* Similarly, from beats b c: b ≠ c, and M b c = 1, and y = 1 *)
+    assert (Hb_ne_c : b ≠ c).
+    { intro Heq. subst c. apply H_bc_ne. apply orel_antisym; [exact H_bc_le |].
+      unfold Orel. apply (@bounded_add_idem R (mat_star M b b)). }
+    assert (H_Mbc_1 : M b c = 1).
+    { pose proof (H_pair_sum_one b c Hb_ne_c) as Hsum.
+      destruct (H_total_order (M b c) (M c b)) as [Hcase | Hcase].
+      - exact (eq_trans (eq_sym Hcase) Hsum).
+      - (* M c b = 1, so S c b = 1, contradicting beats *)
+        assert (H_Mcb_1 : M c b = 1) by (exact (eq_trans (eq_sym Hcase) Hsum)).
+        assert (H_Scb_1 : mat_star M c b = 1).
+        { apply orel_antisym; [| rewrite <- H_Mcb_1].
+          - unfold Orel. rewrite addC. apply (@add_bound R _).
+          - apply (geom_sum_includes_direct M kleene_exp c b).
+            pose proof (elements_two_or_more (s := Node)). unfold kleene_exp. nia. }
+        rewrite H_Scb_1 in H_bc_le.
+        exfalso. apply H_bc_ne.
+        apply (@orel_antisym R (mat_star M c b) y);
+        [ rewrite H_Scb_1; exact H_bc_le
+        | rewrite H_Scb_1; unfold Orel; rewrite addC; apply (@add_bound R _) ]. }
+    assert (Hy_1 : y = 1).
+    { apply orel_antisym.
+      - unfold Orel. rewrite addC. apply (@add_bound R _).
+      - rewrite <- H_Mbc_1. apply (geom_sum_includes_direct M kleene_exp b c).
+        pose proof (elements_two_or_more (s := Node)). unfold kleene_exp. nia. }
+    (* Rewrite x and y as 1 everywhere *)
+    rewrite Hx_1, Hy_1 in *.
+    (* Now H_ab_le : S b a ≤ 1, H_ab_ne : S b a ≠ 1 *)
+    (* H_bc_le : S c b ≤ 1, H_bc_ne : S c b ≠ 1 *)
+    destruct (H_total_order (mat_star M a c) (mat_star M c a)) as [H_ca_le_ac | H_ac_le_ca].
+    { (* Good case: S c a ≤ S a c *)
+      split; [unfold Orel; rewrite addC; exact H_ca_le_ac |].
+      destruct (Hdec (mat_star M c a) (mat_star M a c)) as [Heq | Hneq]; [| exact Hneq].
+      (* Equality case: derive contradiction via the chain. *)
+      pose proof (star_path_compose M a b c) as H1.   (* S a b * S b c ≤ S a c *)
+      pose proof (star_path_compose M b c a) as H2.   (* S b c * S c a ≤ S b a *)
+      (* Since S a b = 1 and S b c = 1, we have 1*1 ≤ S a c and 1 * S c a ≤ S b a *)
+      assert (H1' : 1 * 1 ≤ mat_star M a c).
+      { unfold x in Hx_1; unfold y in Hy_1.
+        setoid_rewrite <-Hx_1 at 1.
+        setoid_rewrite <-Hy_1.
+        exact H1. }
+      assert (H2' : 1 * mat_star M c a ≤ mat_star M b a).
+      { unfold y in Hy_1. admit.
+      
+      }
+      rewrite Heq in H2'.                             (* 1 * S a c ≤ S b a *)
+      setoid_rewrite <-Heq in H2'.                             (* 1 * S a c ≤ S b a *)
+      rewrite !mul1r in H1', H2'.                     (* 1 ≤ S a c,  S a c ≤ S b a *)
+      assert (Hle : 1 ≤ mat_star M b a). 
+      {
+        eapply orel_trans.
+        exact H1'.
+        rewrite <-Heq. exact H2'.
+      }
+     
+      assert (Hle_ab : 1 ≤ 1) by (eapply orel_trans; [exact Hle | exact H_ab_le]).
+      (* 1 ≤ 1 is true.  But H_ab_ne says S b a ≠ 1.
+         From Hle: 1 ≤ S b a, and bounded gives S b a ≤ 1, so S b a = 1.  Contradiction! *)
+      assert (H_Sba_1 : mat_star M b a = 1).
+      { apply orel_antisym; [| exact Hle].
+        unfold Orel. rewrite addC. apply (@add_bound R _). }
+      rewrite H_Sba_1 in H_ab_ne.
+      intro ha. unfold not in H_ab_ne.
+      apply H_ab_ne. reflexivity. }
+    { (* Bad case: S a c ≤ S c a.  Derive contradiction. *)
+      pose proof (star_path_compose M a b c) as H1.   (* S a b * S b c ≤ S a c *)
+      pose proof (star_path_compose M b c a) as H2.   (* S b c * S c a ≤ S b a *)
+      assert (H1' : 1 * 1 ≤ mat_star M a c).
+      { unfold x in Hx_1; unfold y in Hy_1.
+        setoid_rewrite <-Hx_1 at 1.
+        setoid_rewrite <-Hy_1.
+        exact H1. }
+      assert (H2' : 1 * mat_star M c a ≤ mat_star M b a).
+      { unfold y in Hy_1. admit. }
+      rewrite !mul1r in H1'.                           (* 1 ≤ S a c *)
+      assert (H1b : 1 ≤ mat_star M c a).
+      { apply (orel_trans _ (mat_star M a c) _); [exact H1' | exact H_ac_le_ca]. }
+      rewrite mul1r in H2'.                            (* S c a ≤ S b a *)
+      assert (Hle : 1 ≤ mat_star M b a).
+      { eapply orel_trans. exact H1b. exact H2'.  }
+      (* As in the good case: 1 ≤ S b a implies S b a = 1, contradiction. *)
+      assert (H_Sba_1 : mat_star M b a = 1).
+      { apply orel_antisym; [| exact Hle].
+        unfold Orel. rewrite addC. apply (@add_bound R _). }
+      rewrite H_Sba_1 in H_ab_ne.
+      unfold not in H_ab_ne.
+      specialize(H_ab_ne eq_refl).
+      inversion H_ab_ne. }
   Admitted.
 
   (* =====================================================================  *)
@@ -589,8 +731,11 @@ Section SocialChoice.
 
   (* Winner existence on a finite set.  Uses decidable equality on R        *)
   (* (Hdec) to decide schulze_beats, avoiding classical logic.              *)
-  Theorem winner_exists {R : BoundedSemiring.type} {R_comm : CommutativeSemiring R}
-    (M : @Matrix Node R) (Hdec : forall x y : R, {x = y} + {x ≠ y}) :
+  Theorem winner_exists {R : BoundedCommutativeSemiring.type}
+    (M : @Matrix Node R)
+    (H_total_order : forall x y : R, x + y = x \/ x + y = y)
+    (Hdec : forall x y : R, {x = y} + {x ≠ y})
+    (H_pair_sum_one : forall i j : Node, i ≠ j -> M i j + M j i = 1) :
     exists (a : Node), schulze_winner M a.
   Proof.
     (* Prove by induction on elements that a maximal element exists *)
@@ -618,7 +763,7 @@ Section SocialChoice.
             (* x is in b::l. If x beats a, then by transitivity x beats w,
                contradicting Hw_undefeated *)
             intro Hx_beats_a.
-            pose proof (@schulze_trans R R_comm M x a w Hx_beats_a H_aw) as Hxw.
+            pose proof (@schulze_trans R M H_total_order Hdec H_pair_sum_one x a w Hx_beats_a H_aw) as Hxw.
             destruct (fin_eq_dec x w) as [Heq_xw | Hneq_xw].
             { subst x. apply (schulze_beats_irrefl M w). exact Hxw. }
             { apply (Hw_undefeated x Hx_in_tail Hneq_xw). exact Hxw. }
@@ -702,7 +847,7 @@ Section SocialChoice.
             apply (orel_trans _ (mat_star M' A A * mat_star M' A C)).
             { apply bounded_mul_orel_compat_l.
               unfold mat_star. rewrite (geom_sum_diag_one M' kleene_exp A).
-              unfold Orel. rewrite addC. apply add_bound. }
+              unfold Orel. rewrite addC. apply (@add_bound R _). }
             { apply star_path_compose. } }
         + (* z ≠ A *)
           destruct IH as [_ IH2].
@@ -716,7 +861,7 @@ Section SocialChoice.
                                   (M A z * geom_sum M' kleene_exp z C)) as [Hcase|Hcase].
           * setoid_rewrite Hcase.
             apply (orel_trans _ (1 * geom_sum M' kleene_exp A C)).
-            { apply bounded_mul_orel_compat_l. unfold Orel; rewrite addC; apply add_bound. }
+            { apply bounded_mul_orel_compat_l. unfold Orel; rewrite addC; apply (@add_bound R _). }
             rewrite mul1r. apply bounded_orel_refl.
           * setoid_rewrite Hcase.
             apply (orel_trans _ (M' A z * geom_sum M' kleene_exp z C)).
@@ -736,7 +881,7 @@ Section SocialChoice.
           apply (orel_trans _ (M z A * geom_sum M' kleene_exp A C)).
           { apply bounded_mul_orel_compat_r. apply IH1. }
           apply (orel_trans _ (1 * geom_sum M' kleene_exp A C)).
-          { apply bounded_mul_orel_compat_l. unfold Orel; rewrite addC; apply add_bound. }
+          { apply bounded_mul_orel_compat_l. unfold Orel; rewrite addC; apply (@add_bound R _). }
           rewrite mul1r.
           (* star' A C ≤ star' A C + star' z C *)
           apply bounded_plus_upper_left.
@@ -751,7 +896,7 @@ Section SocialChoice.
                                   (M' z w * geom_sum M' kleene_exp w C)) as [Hcase|Hcase].
           * setoid_rewrite Hcase.
             apply (orel_trans _ (1 * geom_sum M' kleene_exp A C)).
-            { apply bounded_mul_orel_compat_l. unfold Orel; rewrite addC; apply add_bound. }
+            { apply bounded_mul_orel_compat_l. unfold Orel; rewrite addC; apply (@add_bound R _). }
             rewrite mul1r. apply bounded_plus_upper_left.
           * setoid_rewrite Hcase.
             apply (orel_trans _ (mat_star M' z w * mat_star M' w C)).
@@ -832,7 +977,7 @@ Section SocialChoice.
     - destruct p as [|[[x2 y2] w2] p'].
       + (* single triple *)
         destruct (fin_eq_dec y u); cbn.
-        * cbn [measure_of_path]. rewrite !mulr1. unfold Orel. rewrite addC. apply add_bound.
+        * cbn [measure_of_path]. rewrite !mulr1. unfold Orel. rewrite addC. apply (@add_bound R _).
         * apply bounded_orel_refl.
       + (* multi-element *)
         remember (strip_trailing (R := R) u ((x2, y2, w2) :: p')) as s eqn:Hs.
@@ -1325,7 +1470,7 @@ Section SocialChoice.
       destruct (Hcw w Hw_ne_A) as [Hle_w Hne_w].
       split.
       - eapply orel_trans; [exact Hle_w |].
-        unfold Orel. rewrite addC. apply add_bound.
+        unfold Orel. rewrite addC. apply (@add_bound R _).
       - intro Heq. apply Hne_w.
         unfold Orel in Hle_w.
         rewrite Heq in Hle_w. (* Hle_w: 1 + M A w = M A w *)
@@ -1341,19 +1486,19 @@ Section SocialChoice.
         apply Hne.
         transitivity (0 + M X A). { symmetry. apply add0r. }
         transitivity (1 + M X A). { apply (f_equal (fun t => t + M X A) Hz). }
-        apply add_bound. }
+        apply (@add_bound R _). }
     (* Step 2: mat_star M A X = 1 *)
     assert (H_star_AX1 : mat_star M A X = 1).
     { apply orel_antisym.
       - (* mat_star M A X ≤ 1 *)
-        unfold mat_star. unfold Orel. rewrite addC. apply add_bound.
+        unfold mat_star. unfold Orel. rewrite addC. apply (@add_bound R _).
       - (* 1 ≤ mat_star M A X *)
         rewrite <- HMA1.
         apply (geom_sum_includes_direct M kleene_exp A X).
         pose proof (elements_two_or_more (s := Node)). unfold kleene_exp. nia. }
     split.
     - (* ≤ part: mat_star M X A ≤ mat_star M A X *)
-      rewrite H_star_AX1. unfold Orel. rewrite addC. apply add_bound.
+      rewrite H_star_AX1. unfold Orel. rewrite addC. apply (@add_bound R _).
     - (* ≠ part: mat_star M X A ≠ mat_star M A X *)
       rewrite H_star_AX1. intro Heq.
       (* mat_star M X A = 1. Show this is impossible via induction on path length. *)
@@ -1431,7 +1576,7 @@ Section SocialChoice.
         assert (H_sum1 : M c b + M b c = 1). { apply H_pair_sum_one. apply not_eq_sym. exact Hbc_ne. }
         unfold Orel in H_le.
         split.
-        - eapply orel_trans; [apply H_le|]. unfold Orel. rewrite addC. apply add_bound.
+        - eapply orel_trans; [apply H_le|]. unfold Orel. rewrite addC. apply (@add_bound R _).
         - intro Heq1. apply H_neq.
           rewrite addC in H_le. rewrite H_sum1 in H_le.
           rewrite Heq1. exact H_le. }
@@ -1444,7 +1589,7 @@ Section SocialChoice.
       (* mat_star M a w = 1 *)
       assert (H_star_AW1 : mat_star M a w = 1).
       { apply orel_antisym.
-        - unfold mat_star, Orel. rewrite addC. apply add_bound.
+        - unfold mat_star, Orel. rewrite addC. apply (@add_bound R _).
         - rewrite <- H_MAW1.
           apply (geom_sum_includes_direct M kleene_exp a w).
           pose proof (elements_two_or_more (s := Node)). unfold kleene_exp. nia. }
