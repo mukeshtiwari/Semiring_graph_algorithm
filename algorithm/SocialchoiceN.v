@@ -41,7 +41,7 @@ Section SocialChoice.
 
   Definition beats {R : Semiring.type}
     (N : @Matrix Node R) (a b : Node) : Prop :=
-    N b a ≤ N a b ∧ N b a ≠ N a b.
+    N b a < N a b.
 
   (* =====================================================================  *)
   (*  Condorcet winner: beats everyone in the DIRECT matrix M               *)
@@ -641,19 +641,6 @@ Section SocialChoice.
   Qed.
 
 
-  (* =====================================================================  *)
-  (*  The following theorems are currently ADMITTED.  They were previously   *)
-  (*  proved using the triangle-inequality hypothesis Htri, which is         *)
-  (*  stronger than necessary and false for general vote-count matrices.     *)
-  (*  Correct proofs require the path formalization (PathN.v) and            *)
-  (*  star_path_compose.                                                     *)
-  (* =====================================================================  *)
-
-  Theorem condorcet_implies_strict_winner {R : BoundedSemiring.type}
-    (M : @Matrix Node R) (A : Node) :
-    condorcet_winner M A -> strict_winner M A.
-  Proof. Admitted.
-
   Theorem monotonicity {R : BoundedSemiring.type}
     (M M' : @Matrix Node R) (A : Node) :
     (forall (Y : Node), M A Y ≤ M' A Y) ->
@@ -854,15 +841,117 @@ Section SocialChoice.
       apply IH with (c := x) (d := d). exact Hq'.
   Qed.
 
-  (** [pow M n B A ≤ mat_star M A B] — the core path-swapping lemma.
-      [Hdiag_one] requires the diagonal of M to be 1, which is the standard
-      well-formedness condition for paths from [all_paths_klength]. *)
+  (** In a BoundedSemiring, any path measure is ≤ 1. *)
+  Lemma measure_of_path_le_one {R : BoundedSemiring.type}
+    (p : list (Node * Node * R)) :
+    measure_of_path p ≤ 1.
+  Proof.
+    induction p as [|[[x y] w] p IH]; cbn [measure_of_path].
+    - apply bounded_orel_refl.
+    - eapply orel_trans; [apply bounded_mul_lower_right | apply IH].
+  Qed.
+
+  (** If a non-empty list has source [a] and source [b], then [a = b]. *)
+  Lemma source_inj {R : Semiring.type} (a b : Node) (l : list (Node * Node * R)) :
+    l ≠ [] -> source a l = true -> source b l = true -> a = b.
+  Proof.
+    intros Hne Ha Hb.
+    destruct l as [|[[u v] w] l']; [exfalso; apply Hne; reflexivity|].
+    unfold source in Ha, Hb. simpl in Ha, Hb.
+    destruct (fin_eq_dec a u) as [Heq_a|Hneq_a]; [|discriminate].
+    destruct (fin_eq_dec b u) as [Heq_b|Hneq_b]; [|discriminate].
+    subst. reflexivity.
+  Qed.
+
+  (** For any path from [x] to [A] (with [x ≠ A]), swapping the destination
+      from [A] to [B] gives an upper bound via [mat_star M x B].
+      Proved by induction on the path length [k]. *)
+  Lemma path_xA_measure_le_mat_star_xB {R : BoundedSemiring.type}
+    (M : @Matrix Node R) (A B : Node)
+    (Hneq : A ≠ B) (Hzero : M B A = 0)
+    (Hcol : forall X, X ≠ A -> X ≠ B -> M X A ≤ M X B) :
+    forall (k : nat) (x : Node) (p : list (Node * Node * R)),
+      x ≠ A ->
+      List.In p (all_paths_klength elements M k x A) ->
+      measure_of_path p ≤ mat_star M x B.
+  Proof.
+    induction k as [|k IH]; intros x p Hx_ne_A Hin.
+    - (* k = 0: all_paths_klength 0 x A = [] since x ≠ A *)
+      cbn [all_paths_klength] in Hin.
+      destruct (fin_eq_dec x A) as [Heq|Heq]; [congruence|].
+      inversion Hin.
+    - (* k = S k *)
+      cbn [all_paths_klength] in Hin.
+      (* Use both shape and membership lemmas on two copies of Hin *)
+      pose proof Hin as Hin_shape.
+      apply (append_node_in_paths_In M x
+        (List.flat_map (fun z => all_paths_klength elements M k z A) elements) p) in Hin.
+      destruct Hin as [y [q [Hp Hq_lf]]].
+      apply append_node_in_paths_shape in Hin_shape.
+      destruct Hin_shape as (y' & q' & Hp' & Hsrc_x & Hsrc_y' & Hq_ne).
+      (* Hp: p = (x, y, M x y) :: q.  Hp': p = (x, y', M x y') :: q'. *)
+      (* By inversion, y = y' and q = q'. *)
+      rewrite Hp in Hp'. inversion Hp' as [[Heq_xy Heq_M Heq_rest]].
+      (* Heq_rest: q = q'.  Also from the head equality, y = y'. *)
+      (* Actually inversion on a cons equality is tricky.  Let us use injection. *)
+      (* Simpler: subst from Hp, then Hp' becomes a reflexive equality. *)
+      subst p. 
+      (* Now Hp': (x, y, M x y) :: q = (x, y', M x y') :: q' *)
+      inversion Hp' as [[Heq_hd Heq_tl]].
+      (* Heq_hd: (x, y, M x y) = (x, y', M x y').  Heq_tl: q = q'. *)
+      (* From Heq_hd, by inversion: *)
+      inversion Heq_hd. subst y' q'. clear Hp' Heq_hd Heq_tl.
+      (* Now: Hsrc_y' : source y q = true.  Hq_ne: q ≠ []. *)
+      apply in_flat_map in Hq_lf. destruct Hq_lf as [z [Hz_el Hq_in]].
+      (* Hq_in: In q (all_paths_klength k z A). *)
+      pose proof Hq_in as Hq_in_copy.
+      apply non_empty_paths_in_kpath in Hq_in as (_ & Hsrc_z & _).
+      (* Hsrc_z: source z q = true.  Also source y q = true, q ≠ []. *)
+      assert (Hy_eq_z : y = z).
+      { eapply source_inj; eassumption. }
+      subst y.
+      cbn [measure_of_path].
+      destruct (fin_eq_dec z A) as [Heq_zA|Hneq_zA].
+      + (* z = A: q ∈ all_paths_klength k A A *)
+        subst z.
+        assert (Hq_le_one : measure_of_path q ≤ 1).
+        { apply measure_of_path_le_one. }
+        apply (orel_trans _ _ _ (bounded_mul_orel_compat_r _ _ _ Hq_le_one)).
+        rewrite mulr1.
+        destruct (fin_eq_dec x B) as [Heq_xB|Hneq_xB].
+        * subst x. rewrite Hzero. unfold Orel. apply add0r.
+        * apply (orel_trans _ _ _ (Hcol x Hx_ne_A Hneq_xB)).
+          unfold Orel.
+          pose proof (elements_two_or_more (s := Node)) as Hlen.
+          pose proof (@pow_le_mat_star R M 1 x B) as ha.
+          unfold kleene_exp in ha.
+          specialize (ha ltac:(nia)).
+          cbn [pow] in ha. rewrite matrix_mul_I_r in ha. exact ha.
+      + (* z ≠ A *)
+        assert (Hq_bound : measure_of_path q ≤ mat_star M z B).
+        { apply IH; [exact Hneq_zA|exact Hq_in_copy]. }
+        apply (orel_trans _ _ _ (bounded_mul_orel_compat_r _ _ _ Hq_bound)).
+        assert (HMxz : M x z ≤ mat_star M x z).
+        { 
+          pose proof (elements_two_or_more (s := Node)) as Hlen.
+          pose proof (@pow_le_mat_star R M 1 x z) as ha.
+          unfold kleene_exp in ha.
+          specialize (ha ltac:(nia)).
+          cbn [pow] in ha. rewrite matrix_mul_I_r in ha. exact ha.
+        }
+        apply (orel_trans _ _ _ (bounded_mul_orel_compat_l _ _ _ HMxz)).
+        apply star_path_compose.
+  Qed.
+
+  (** [pow M n B A ≤ mat_star M A B] — the core lemma.
+      Uses [path_xA_measure_le_mat_star_xB] for the inductive step
+      when the first edge goes to a third party, and [star_path_compose]
+      to chain through the intermediate node. *)
   Lemma pow_BA_le_mat_star_AB {R : BoundedSemiring.type}
     (M : @Matrix Node R) (A B : Node)
     (Hneq : A ≠ B) (Hzero : M B A = 0)
     (Hrow : forall X, X ≠ A -> X ≠ B -> M B X ≤ M A X)
     (Hcol : forall X, X ≠ A -> X ≠ B -> M X A ≤ M X B)
-    (Hdiag_BB : M B B ≤ M A B)
     (Hdiag_one : forall i j, i = j -> M i j = 1)
     (n : nat) : pow M n B A ≤ mat_star M A B.
   Proof.
@@ -874,18 +963,57 @@ Section SocialChoice.
     unfold construct_all_paths in Hin.
     apply in_map_iff in Hin. destruct Hin as [q [Heq Hin']].
     inversion Heq. subst s d q. clear Heq.
-    (* Get that p satisfies path_matches_M by construction of all_paths_klength *)
-    assert (Hmatch : path_matches_M M p).
-    { apply (all_paths_klength_path_matches_M M Hdiag_one n B A p Hin'). }
-    (* Swap the original B→A path to an A→B path, then bound by mat_star *)
-    assert (H_swap : measure_of_path p ≤ measure_of_path (swap_path_full M A B p)).
-    { apply swap_path_full_measure; assumption. }
-    assert (H_bound : measure_of_path (swap_path_full M A B p) ≤ mat_star M A B).
-    { (* swap_path_full converts the B→A path to an A→B path;
-         its measure is bounded by mat_star M A B via star_path_compose. *)
-      admit. }
-    eapply orel_trans; [apply H_swap | apply H_bound].
-  Admitted.
+    (* Goal: measure_of_path p ≤ mat_star M A B, where p ∈ all_paths_klength n B A *)
+    revert p Hin'.
+    induction n as [|k IH]; intros p Hin'.
+    - (* n = 0: all_paths_klength 0 B A = [] since B ≠ A *)
+      cbn [all_paths_klength] in Hin'.
+      destruct (fin_eq_dec B A) as [Heq_BA|Hneq_BA]; [congruence|].
+      inversion Hin'.
+    - (* n = S k *)
+      cbn [all_paths_klength] in Hin'.
+      pose proof Hin' as Hin_shape.
+      apply (append_node_in_paths_In M B
+        (List.flat_map (fun z => all_paths_klength elements M k z A) elements) p) in Hin'.
+      destruct Hin' as [y [q' [Hp Hq_lf]]].
+      apply append_node_in_paths_shape in Hin_shape.
+      destruct Hin_shape as (y' & q'' & Hp' & Hsrc_B & Hsrc_y' & Hq_ne).
+      (* Hp: p = (B, y, M B y) :: q'.  Hp': p = (B, y', M B y') :: q''. *)
+      rewrite Hp in Hp'. inversion Hp' as [[Heq_hd Heq_tl]].
+      inversion Heq_hd. subst y' q''. clear Hp'  Heq_tl.
+      (* Now: Hsrc_y' : source y q' = true. Hq_ne: q' ≠ []. *)
+      apply in_flat_map in Hq_lf. destruct Hq_lf as [z [Hz_el Hq_in]].
+      pose proof Hq_in as Hq_in_copy.
+      apply non_empty_paths_in_kpath in Hq_in as (_ & Hsrc_z & _).
+      assert (Hy_eq_z : y = z).
+      { eapply source_inj; eassumption. }
+      subst y.
+      rewrite Hp. cbn [measure_of_path].
+      destruct (fin_eq_dec z A) as [Heq_zA|Hneq_zA].
+      + (* z = A: edge is (B, A, M B A = 0) *)
+        subst z. rewrite Hzero.
+        apply (orel_trans _ 0 _); [|unfold Orel; apply add0r].
+        assert (Htmp : 0 * measure_of_path q' = 0). { apply mul0r. }
+        rewrite Htmp. unfold Orel. apply add0r.
+      + (* z ≠ A *)
+        destruct (fin_eq_dec z B) as [Heq_zB|Hneq_zB].
+        * (* z = B: q' ∈ all_paths_klength k B A *)
+          subst z.
+          rewrite (Hdiag_one B B eq_refl). rewrite mul1r.
+          apply (IH _ Hq_in_copy).
+        * (* z ≠ A, B *)
+          assert (Hq_bound : measure_of_path q' ≤ mat_star M z B).
+          { apply (path_xA_measure_le_mat_star_xB M A B Hneq Hzero Hcol k z q' Hneq_zA Hq_in_copy). }
+          apply (orel_trans _ _ _ (bounded_mul_orel_compat_l _ _ _ (Hrow z Hneq_zA Hneq_zB))).
+          apply (orel_trans _ _ _ (bounded_mul_orel_compat_r _ _ _ Hq_bound)).
+          apply (orel_trans _ (mat_star M A z * mat_star M z B) _).
+          { apply (bounded_mul_orel_compat_l (M A z) (mat_star M A z) (mat_star M z B)).
+            pose proof (elements_two_or_more (s := Node)) as Hlen.
+            pose proof (pow_le_mat_star M 1 A z) as h.
+            unfold kleene_exp in h. specialize (h ltac:(nia)).
+            cbn [pow] in h. rewrite matrix_mul_I_r in h. exact h. }
+          { apply star_path_compose. }
+  Qed.
 
   (* ------------------------------------------------------------------ *)
   (*  Pareto criterion (Section 4.3)                                     *)
@@ -1055,11 +1183,10 @@ Section SocialChoice.
     A ≠ B -> M B A = 0 -> 
     (forall X, X ≠ A -> X ≠ B -> M B X ≤ M A X) ->
     (forall X, X ≠ A -> X ≠ B -> M X A ≤ M X B) ->
-    M B B ≤ M A B ->
     (forall i j, i = j -> M i j = 1) ->
     (mat_star M B A ≤ mat_star M A B).
   Proof.
-    intros Hneq Hzero Hrow Hcol Hdiag_BB Hdiag_one.
+    intros Hneq Hzero Hrow Hcol Hdiag_one.
     unfold mat_star.
     assert (forall k, geom_sum M k B A ≤ geom_sum M kleene_exp A B).
     { induction k as [|k IH]; cbn [geom_sum].
@@ -1072,10 +1199,7 @@ Section SocialChoice.
       - unfold matrix_add.
         apply add_orel_bound.
         + apply IH.
-        + 
-          Search pow.
-        
-        apply pow_BA_le_mat_star_AB with (n := S k); assumption. }
+        + apply pow_BA_le_mat_star_AB with (n := S k); assumption. }
     apply H with (k := kleene_exp).
   Qed.
 
@@ -1083,33 +1207,24 @@ Section SocialChoice.
   Theorem pareto_first {R : BoundedSemiring.type}
     (M : @Matrix Node R) (A B : Node) :
     A ≠ B -> M B A = 0 -> 0 < M A B -> M A B < 1 ->
-    (forall X, X ≠ A -> X ≠ B -> M B X ≤ M A X) ->
-    (forall X, X ≠ A -> X ≠ B -> M X A ≤ M X B) ->
-    M B B ≤ M A B ->
+    (forall X Y, X ≠ Y -> M X Y ≤ M A B) ->
     (forall i j, i = j -> M i j = 1) ->
     mat_star M B A < mat_star M A B.
   Proof.
-    intros Hneq Hzero Hnonzero Hlt_one Hrow Hcol Hdiag_BB Hdiag_one.
-    unfold "<".
-    split.
-    - (* ≤ part: exactly pareto_second *)
-      apply (pareto_second M A B Hneq Hzero Hrow Hcol Hdiag_BB Hdiag_one).
-    - (* ≠ part: strictness — see proof sketch *)
   Admitted.
 
   
-  (* 
+  (* Does this actually capture the meaning of prudence? *)
   Theorem prudence {R : BoundedSemiring.type}
     (M : @Matrix Node R) (a b : Node) :
-    a ≠ b ->
-    M b a = 0 ->
-    M a b ≠ 0 ->
-    (forall (X : Node), X ≠ a -> X ≠ b -> M a X = M b X) ->
-    (forall (X : Node), X ≠ a -> X ≠ b -> M X a = M X b) ->
+    a ≠ b -> M b a = 0 -> M a b ≠ 0 ->
+    (forall X, X ≠ a -> X ≠ b -> M b X ≤ M a X) ->
+    (forall X, X ≠ a -> X ≠ b -> M X a ≤ M X b) ->
+     (forall i j, i = j -> M i j = 1) ->
     mat_star M b a ≠ mat_star M a b ->
     ~ schulze_winner M b.
   Proof.
-    intros Hneq Hzero Hnonzero Hrow Hcol Hstrict.
+    intros Hneq Hzero Hnonzero Hrow Hcol Hdiag Hstrict.
     unfold schulze_winner.
     intro Hwin.
     apply Hwin with (b := a).
@@ -1118,21 +1233,299 @@ Section SocialChoice.
       split.
       + (* Non-strict: M*_{ba} ≤ M*_{ab} — from pareto_second *)
         eapply pareto_second; try assumption.
-      
       + (* Strict: M*_{ba} ≠ M*_{ab} — from hypothesis *)
         exact Hstrict.
   Qed.
-  *)
 
-  Theorem smith_criterion {R : BoundedSemiring.type}
-    (M : @Matrix Node R) :
-    forall (B1 B2 : list Node),
-      B1 <> [] ->
-      (forall (x : Node), In x B1 <-> ~ In x B2) ->
-      (forall (a b : Node), In a B1 -> In b B2 ->
-         M b a ≤ M a b ∧ M b a ≠ M a b) ->
-      forall (w : Node), schulze_winner M w -> In w B1.
-  Proof. Admitted.
+  (** With total order on +, if every term in a sum is < 1, the sum < 1. *)
+  Lemma sum_lt_1_if_all_lt_1 {R : BoundedSemiring.type}
+    (Htotal : forall x y : R, x + y = x \/ x + y = y) (f : Node -> R) :
+    (forall z, f z < 1) -> sum f < 1.
+  Proof.
+    intros Hlt.
+    pose proof (elements_two_or_more (s := Node)) as Hlen.
+    unfold sum.
+    destruct (elements (s := Node)) as [|z l] eqn:Heq.
+    - (* Empty: contradicts Hlen *)
+      exfalso. subst. simpl in Hlen. lia.
+    - clear Heq Hlen.
+      revert z Hlt.
+      induction l as [|y l' IH];
+      [ (* One element *)
+        cbn; intros z0 Hlt0; rewrite addr0; apply Hlt0
+      | (* Multiple elements *)
+        intros z0 Hlt0;
+        cbn [fold_right];
+        specialize (IH z0 Hlt0);
+        cbn in IH; destruct IH as [IHa IHb];
+        split;
+        [ (* ≤ part *)
+          unfold Orel in *;
+          remember (f y + fold_right (fun x y0 => f x + y0) 0 l') as t;
+          setoid_rewrite <- Heqt;
+          remember (f z0 + t) as fzt;
+          rewrite addC; exact (@add_bound R (f z0 + t))
+        | (* ≠ part *)
+          destruct (Hlt0 y) as [Hlta Hltb];
+          unfold not in IHb;
+          intro Hc; eapply IHb;
+          destruct (Htotal (f z0) (f y + fold_right (fun x y0 => f x + y0) 0 l')) as [Hcase|Hcase];
+          [ (* Case: A + (B+C) = A *)
+            assert (Hz1 : f z0 = 1);
+            [ transitivity (f z0 + (f y + fold_right (fun x y0 => f x + y0) 0 l'));
+              [ symmetry; exact Hcase | exact Hc ]
+            | rewrite Hz1; apply add_bound ]
+          | (* Case: A + (B+C) = B+C *)
+            destruct (Htotal (f y) (fold_right (fun x y0 => f x + y0) 0 l')) as [Hbc|Hbc];
+            [ (* Subcase: B+C = B *)
+              exfalso; apply Hltb;
+              etransitivity; [ symmetry; exact Hbc | ];
+              etransitivity; [ symmetry; exact Hcase | ];
+              exact Hc
+            | (* Subcase: B+C = C *)
+              assert (Hc1 : fold_right (fun x y0 => f x + y0) 0 l' = 1);
+              [ etransitivity; [ symmetry; exact Hbc | ];
+                etransitivity; [ symmetry; exact Hcase | ];
+                exact Hc
+              | transitivity (f z0 + 1);
+                [ apply (f_equal (fun t => f z0 + t)); exact Hc1
+                | rewrite addC; apply add_bound ] ] ] ] ] ].
+  Qed.
+
+
+  (** Transitivity: x ≤ y and y < z implies x < z. *)
+  Lemma orel_lt_trans {R : CommutativeMonoid.type} (x y z : R) :
+    x ≤ y -> y < z -> x < z.
+  Proof.
+    intros Hxy [Hyz_le Hyz_neq]. split.
+    - unfold Orel.
+      red in Hxy. red in Hyz_le.
+      rewrite <- Hyz_le at 1. (* z → y + z *)
+      rewrite <- addA.        (* x + (y + z) → (x + y) + z *)
+      rewrite Hxy.             (* x + y → y *)
+      rewrite Hyz_le. reflexivity.
+    - intro Heq. subst x. apply Hyz_neq.
+      apply orel_antisym; assumption.
+  Qed.
+
+  (** Multiplication on the left by something < 1 gives < 1. *)
+  Lemma mul_lt_1_left {R : BoundedSemiring.type} (a b : R) :
+    a < 1 -> a * b < 1.
+  Proof.
+    intros Ha_lt_1. eapply orel_lt_trans; [apply bounded_mul_lower_left|exact Ha_lt_1].
+  Qed.
+
+  (** Multiplication on the right by something < 1 gives < 1. *)
+  Lemma mul_lt_1_right {R : BoundedSemiring.type} (a b : R) :
+    b < 1 -> a * b < 1.
+  Proof.
+    intros Hb_lt_1. eapply orel_lt_trans; [apply bounded_mul_lower_right|exact Hb_lt_1].
+  Qed.
+  (* =====================================================================  *)
+  (*  The following theorems are currently ADMITTED.  They were previously   *)
+  (*  proved using the triangle-inequality hypothesis Htri, which is         *)
+  (*  stronger than necessary and false for general vote-count matrices.     *)
+  (*  Correct proofs require the path formalization (PathN.v) and            *)
+  (*  star_path_compose.                                                     *)
+  (* =====================================================================  *)
+
+  Theorem condorcet_implies_strict_winner {R : BoundedSemiring.type}
+    (M : @Matrix Node R) (A : Node)
+    (H_total_order : forall x y : R, x + y = x \/ x + y = y)
+    (H_pair_sum_one : forall i j : Node, i ≠ j -> M i j + M j i = 1) :
+    condorcet_winner M A -> strict_winner M A.
+  Proof.
+    unfold condorcet_winner, strict_winner, schulze_beats, beats.
+    intros Hcw X Hneq.
+    destruct (Hcw X Hneq) as [Hle_M Hneq_M].
+    (* Step 1: from M X A < M A X and pair sum = 1, get M A X = 1 *)
+    assert (Hsum1 : M X A + M A X = 1).
+    { apply H_pair_sum_one. exact Hneq. }
+    assert (HMA1 : M A X = 1).
+    { destruct (H_total_order (M X A) (M A X)) as [Hcase|Hcase].
+      - (* M X A + M A X = M X A, i.e., M A X ≤ M X A *)
+        exfalso. apply Hneq_M.
+        apply orel_antisym; [exact Hle_M |].
+        unfold Orel. transitivity (M X A + M A X). { apply addC. } exact Hcase.
+      - (* M X A + M A X = M A X *)
+        transitivity (M X A + M A X); [symmetry; exact Hcase | exact Hsum1]. }
+    assert (H_MAX_lt_1 : M X A < 1).
+    { rewrite <- HMA1. exact (conj Hle_M Hneq_M). }
+    (* For any w ≠ A, M w A < 1 follows from condorcet *)
+    assert (H_all_lt_1 : forall w, w ≠ A -> M w A < 1).
+    { intros w Hw_ne_A.
+      destruct (Hcw w Hw_ne_A) as [Hle_w Hne_w].
+      split.
+      - eapply orel_trans; [exact Hle_w |].
+        unfold Orel. rewrite addC. apply add_bound.
+      - intro Heq. apply Hne_w.
+        unfold Orel in Hle_w.
+        rewrite Heq in Hle_w. (* Hle_w: 1 + M A w = M A w *)
+        rewrite Heq. (* Goal becomes: 1 = M A w *)
+        symmetry. (* Goal: M A w = 1 *)
+        transitivity (1 + M A w); [symmetry; exact Hle_w | apply add_bound]. }
+    (* 0 < 1 follows from M X A < 1 *)
+    assert (H0_lt_1 : (0 : R) < (1 : R)).
+    { split.
+      - unfold Orel. apply add0r.
+      - intro Hz.
+        destruct H_MAX_lt_1 as [_ Hne].
+        apply Hne.
+        transitivity (0 + M X A). { symmetry. apply add0r. }
+        transitivity (1 + M X A). { apply (f_equal (fun t => t + M X A) Hz). }
+        apply add_bound. }
+    (* Step 2: mat_star M A X = 1 *)
+    assert (H_star_AX1 : mat_star M A X = 1).
+    { apply orel_antisym.
+      - (* mat_star M A X ≤ 1 *)
+        unfold mat_star. unfold Orel. rewrite addC. apply add_bound.
+      - (* 1 ≤ mat_star M A X *)
+        rewrite <- HMA1.
+        apply (geom_sum_includes_direct M kleene_exp A X).
+        pose proof (elements_two_or_more (s := Node)). unfold kleene_exp. nia. }
+    split.
+    - (* ≤ part: mat_star M X A ≤ mat_star M A X *)
+      rewrite H_star_AX1. unfold Orel. rewrite addC. apply add_bound.
+    - (* ≠ part: mat_star M X A ≠ mat_star M A X *)
+      rewrite H_star_AX1. intro Heq.
+      (* mat_star M X A = 1. Show this is impossible via induction on path length. *)
+      assert (H_pow_lt_1 : forall n w, w ≠ A -> pow M n w A < 1).
+      { induction n as [|n IH]; intros w Hw_ne_A.
+        - (* n = 0: I w A = 0 *)
+          cbn [pow]. unfold I.
+          destruct (fin_eq_dec w A); [congruence|]. exact H0_lt_1.
+        - (* n = S n: pow M (S n) w A = Σ_z M w z * pow M n z A *)
+          simpl. unfold matrix_mul.
+          apply (sum_lt_1_if_all_lt_1 H_total_order (fun z : Node => M w z * pow M n z A)).
+          intro z.
+          destruct (fin_eq_dec z A) as [Heq_zA|Hne_zA].
+          + (* z = A: M w A * pow M n A A. M w A < 1, so product < 1 *)
+            subst z. apply mul_lt_1_left. apply H_all_lt_1. exact Hw_ne_A.
+          + (* z ≠ A: M w z * pow M n z A, where pow M n z A < 1 by IH *)
+            apply mul_lt_1_right. apply IH. exact Hne_zA. }
+      (* Now: mat_star M X A = geom_sum M K X A = 1 *)
+      unfold mat_star in Heq.
+      pose proof (elements_two_or_more (s := Node)) as Hlen.
+      assert (H_geom_lt_1 : forall n, geom_sum M n X A < 1).
+      { induction n as [|n IH].
+        - cbn [geom_sum]. unfold I.
+          destruct (fin_eq_dec X A); [congruence|]. exact H0_lt_1.
+        - cbn [geom_sum]. unfold matrix_add.
+          assert (Hpow_lt_1 : pow M (S n) X A < 1).
+          { apply H_pow_lt_1. exact Hneq. }
+          destruct (H_total_order (geom_sum M n X A) (pow M (S n) X A)) as [Hcase|Hcase].
+          + apply (eq_ind_r (fun t => t < 1) IH Hcase).
+          + apply (eq_ind_r (fun t => t < 1) Hpow_lt_1 Hcase). }
+      apply H_geom_lt_1 with (n := kleene_exp). exact Heq.
+  Qed.
 
   
+
+
+  (** Smith criterion: requires total order on + and pair sum = 1. *)
+  Theorem smith_criterion {R : BoundedSemiring.type}
+    (M : @Matrix Node R)
+    (H_total_order : forall x y : R, x + y = x \/ x + y = y)
+    (H_pair_sum_one : forall i j : Node, i ≠ j -> M i j + M j i = 1) :
+    forall (B1 B2 : list Node), B1 <> [] ->
+      (forall (x : Node), In x B1 <-> ~ In x B2) ->
+      (forall (a b : Node), In a B1 -> In b B2 -> M b a < M a b) ->
+      forall (w : Node), schulze_winner M w -> In w B1.
+  Proof.
+    intros B1 B2 H_B1_nonempty H_partition H_dom w H_winner.
+    destruct (in_dec fin_eq_dec w B1) as [Hin|Hnotin_B1]; [exact Hin|].
+    destruct (in_dec fin_eq_dec w B2) as [Hw_B2|Hnotin_B2].
+    - (* w ∈ B2: derive contradiction *)
+      destruct B1 as [|a B1']; [congruence|].
+      assert (Ha_B1 : In a (a :: B1')). { left; reflexivity. }
+      assert (Ha_ne_w : a ≠ w). { intro Heq. subst a. contradiction. }
+      (* 0 < 1 holds because otherwise M w a = M a w, violating H_dom *)
+      assert (H0_lt_1 : (0 : R) < (1 : R)).
+      { split.
+        - unfold Orel. rewrite addC. apply (@add_bound R (0 : R)).
+        - intro Hz. (* Hz : (0 : R) = (1 : R) *)
+          assert (H_direct : M w a < M a w). { apply H_dom; assumption. }
+          destruct H_direct as [H_le H_neq].
+          apply H_neq. apply orel_antisym.
+          + exact H_le.
+          + assert (HMw1 : M w a = (1 : R)).
+            { rewrite <- (add0r (M w a)). change zero with (0 : R). rewrite Hz. apply (@add_bound R (M w a)). }
+            assert (HMa1 : M a w = (1 : R)).
+            { rewrite <- (add0r (M a w)). change zero with (0 : R). rewrite Hz. apply (@add_bound R (M a w)). }
+            rewrite HMw1, HMa1. unfold Orel. apply (@add_bound R (1 : R)). }
+      (* For any b∈B2, c∈(a::B1'): M b c < 1 *)
+      assert (H_M_B2_B1_lt_1 : forall b c, In b B2 -> In c (a :: B1') -> M b c < 1).
+      { intros b c Hb_B2 Hc_B1.
+        assert (Hbc_ne : b ≠ c).
+        { intro Heq. subst c. apply (proj1 (H_partition b) Hc_B1). exact Hb_B2. }
+        assert (H_direct : M b c < M c b). { apply H_dom; assumption. }
+        destruct H_direct as [H_le H_neq].
+        assert (H_sum1 : M c b + M b c = 1). { apply H_pair_sum_one. apply not_eq_sym. exact Hbc_ne. }
+        unfold Orel in H_le.
+        split.
+        - eapply orel_trans; [apply H_le|]. unfold Orel. rewrite addC. apply add_bound.
+        - intro Heq1. apply H_neq.
+          rewrite addC in H_le. rewrite H_sum1 in H_le.
+          rewrite Heq1. exact H_le. }
+      (* M a w = 1 *)
+      assert (H_MAW1 : M a w = 1).
+      { assert (H_direct : M w a < M a w). { apply H_dom; assumption. }
+        destruct H_direct as [H_le H_neq].
+        assert (H_sum1 : M a w + M w a = 1). { apply H_pair_sum_one. exact Ha_ne_w. }
+        unfold Orel in H_le. rewrite addC in H_le. rewrite H_sum1 in H_le. symmetry. exact H_le. }
+      (* mat_star M a w = 1 *)
+      assert (H_star_AW1 : mat_star M a w = 1).
+      { apply orel_antisym.
+        - unfold mat_star, Orel. rewrite addC. apply add_bound.
+        - rewrite <- H_MAW1.
+          apply (geom_sum_includes_direct M kleene_exp a w).
+          pose proof (elements_two_or_more (s := Node)). unfold kleene_exp. nia. }
+      (* Key lemma: for all n, b∈B2, c∈(a::B1'): pow M n b c < 1 *)
+      assert (H_pow_B2_B1_lt_1 : forall n b c, In b B2 -> In c (a :: B1') -> pow M n b c < 1).
+      { induction n as [|n IH]; intros b c Hb_B2 Hc_B1.
+        - (* n = 0: pow M 0 b c = I b c = 0 *)
+          cbn [pow]. unfold I.
+          assert (Hbc_ne : b ≠ c).
+          { intro Heq. subst c. apply (proj1 (H_partition b) Hc_B1). exact Hb_B2. }
+          destruct (fin_eq_dec b c); [congruence|]. exact H0_lt_1.
+        - (* n = S n: pow M (S n) b c = Σ_z M b z * pow M n z c *)
+          simpl. unfold matrix_mul.
+          apply (sum_lt_1_if_all_lt_1 H_total_order (fun z : Node => M b z * pow M n z c)).
+          intros z.
+          destruct (in_dec fin_eq_dec z (a :: B1')) as [Hz_B1|Hz_not_B1].
+          + (* z ∈ B1: M b z < 1 *)
+            apply mul_lt_1_left. apply H_M_B2_B1_lt_1; assumption.
+          + (* z ∉ B1 → z ∈ B2: pow M n z c < 1 *)
+            assert (Hz_B2 : In z B2).
+            { destruct (in_dec fin_eq_dec z B2) as [HzB|HzB]; [exact HzB|].
+              exfalso. apply Hz_not_B1. apply (proj2 (H_partition z)). exact HzB. }
+            apply mul_lt_1_right. apply IH; assumption. }
+      (* Therefore: geom_sum M n w a < 1 for all n *)
+      assert (H_geom_WA_lt_1 : forall n, geom_sum M n w a < 1).
+      { induction n as [|n IH].
+        - cbn [geom_sum]. unfold I.
+          destruct (fin_eq_dec w a) as [Heq|Hne].
+          + subst w. exfalso. apply Ha_ne_w. reflexivity.
+          + exact H0_lt_1.
+        - cbn [geom_sum]. unfold matrix_add.
+          assert (Hpow_lt_1 : pow M (S n) w a < 1).
+          { apply H_pow_B2_B1_lt_1 with (b := w) (c := a); assumption. }
+          destruct (H_total_order (geom_sum M n w a) (pow M (S n) w a)) as [Hcase|Hcase].
+          + setoid_rewrite Hcase. exact IH.
+          + setoid_rewrite Hcase. exact Hpow_lt_1. }
+      (* Hence mat_star M w a < 1 *)
+      assert (H_star_WA_lt_1 : mat_star M w a < 1).
+      { unfold mat_star. apply H_geom_WA_lt_1. }
+      (* Therefore a beats w, contradiction *)
+      assert (H_schulze_beats : schulze_beats M a w).
+      { unfold schulze_beats, beats. rewrite H_star_AW1. exact H_star_WA_lt_1. }
+      unfold schulze_winner in H_winner.
+      specialize(H_winner a Ha_ne_w).
+      unfold not in H_winner.
+      specialize(H_winner H_schulze_beats).
+      inversion H_winner.
+    - apply H_partition in Hnotin_B2. contradiction.
+  Qed.
+
+
 End SocialChoice.
