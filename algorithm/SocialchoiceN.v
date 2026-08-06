@@ -34,6 +34,23 @@ Section SocialChoice.
     : @Matrix Node R :=
     geom_sum M kleene_exp.
 
+
+  (* =====================================================================  *)
+  (*  Relationship between the four definitions (all built from beats):      *)
+  (*                                                                          *)
+  (*    beats N a b          := N_{ba} < N_{ab}     (fundamental)            *)
+  (*    condorcet_winner M a := ∀X≠a, beats M a X   (direct matrix)         *)
+  (*    schulze_beats M a b  := beats (mat_star M) a b  (Kleene star order) *)
+  (*    strict_winner M a    := ∀X≠a, schulze_beats M a X  (beats all)     *)
+  (*    schulze_winner M a   := ∀b≠a, ~ schulze_beats M b a  (undefeated)  *)
+  (*                                                                          *)
+  (*  The paper's Definition 2.2.1 (relation O) is schulze_beats.            *)
+  (*  The paper's Definition 2.2.2 (winner set S) is schulze_winner.         *)
+  (* =====================================================================  *)
+  (*  Stabilization lemma: pow (M+I) stabilizes after |N|-1 steps.           *)
+  (* =====================================================================  *)
+
+
   (* =====================================================================  *)
   (*  Fundamental: a beats b in matrix N if N_{ba} < N_{ab}                 *)
   (*  — i.e., N b a ≤ N a b  ∧  N b a ≠ N a b.                      *)
@@ -386,21 +403,6 @@ Section SocialChoice.
   Qed.
 
 
-  (* =====================================================================  *)
-  (*  Relationship between the four definitions (all built from beats):      *)
-  (*                                                                          *)
-  (*    beats N a b          := N_{ba} < N_{ab}     (fundamental)            *)
-  (*    condorcet_winner M a := ∀X≠a, beats M a X   (direct matrix)         *)
-  (*    schulze_beats M a b  := beats (mat_star M) a b  (Kleene star order) *)
-  (*    strict_winner M a    := ∀X≠a, schulze_beats M a X  (beats all)     *)
-  (*    schulze_winner M a   := ∀b≠a, ~ schulze_beats M b a  (undefeated)  *)
-  (*                                                                          *)
-  (*  The paper's Definition 2.2.1 (relation O) is schulze_beats.            *)
-  (*  The paper's Definition 2.2.2 (winner set S) is schulze_winner.         *)
-  (* =====================================================================  *)
-  (*  Stabilization lemma: pow (M+I) stabilizes after |N|-1 steps.           *)
-  (* =====================================================================  *)
-
   Lemma pow_pointwise {R : Semiring.type} (A B : @Matrix Node R) (n : nat) (x y : Node) :
     (forall i j, A i j = B i j) -> pow A n x y = pow B n x y.
   Proof.
@@ -641,13 +643,137 @@ Section SocialChoice.
   Qed.
 
 
+  (** Each power term is ≤ the full mat_star (idempotent addition). *)
+  Lemma pow_le_mat_star {R : BoundedSemiring.type} (M : @Matrix Node R) (m : nat) 
+    (A B : Node) :
+    (m <= kleene_exp)%nat -> pow M m A B ≤ mat_star M A B.
+  Proof.
+    unfold mat_star. revert m.
+    induction kleene_exp as [|K IH]; intros m Hle; cbn [geom_sum].
+    - assert (m = 0)%nat by lia. subst m. cbn [pow].
+      unfold I, Orel. destruct (fin_eq_dec A B); apply bounded_add_idem.
+    - destruct (Compare_dec.lt_eq_lt_dec m (S K)) as [[Hlt|Heq]|Hgt].
+      + assert (m <= K)%nat by lia. specialize (IH m H).
+        unfold matrix_add. eapply orel_trans; [apply IH |]. apply bounded_plus_upper_left.
+      + subst m. unfold matrix_add. apply orel_plus_upper_right.
+      + lia.
+  Qed.
+
   Theorem monotonicity {R : BoundedSemiring.type}
-    (M M' : @Matrix Node R) (A : Node) :
+    (M M' : @Matrix Node R) (A : Node)
+    (H_total_order : forall x y : R, x + y = x \/ x + y = y) :
     (forall (Y : Node), M A Y ≤ M' A Y) ->
     (forall (X : Node), M' X A ≤ M X A) ->
     (forall (X Y : Node), X ≠ A -> Y ≠ A -> (M X Y) = (M' X Y)) ->
     forall (C : Node), mat_star M A C ≤ mat_star M' A C.
-  Proof. Admitted.
+  Proof.
+    intros Hrow Hcol Heq C.
+    unfold mat_star.
+    pose proof (elements_two_or_more (s := Node)) as Hlen.
+    (* Mutual induction: P(n) = (pow M n A C ≤ star') ∧ (∀z≠A, pow M n z C ≤ star' A C + star' z C) *)
+    assert (Hmutual : forall n,
+      (pow M n A C ≤ geom_sum M' kleene_exp A C) /\
+      (forall z, z ≠ A -> pow M n z C ≤ geom_sum M' kleene_exp A C + geom_sum M' kleene_exp z C)).
+    { induction n as [|n IH]; split.
+      - (* part 1, base: I A C *)
+        cbn [pow]. unfold I.
+        destruct (fin_eq_dec A C);
+        [subst C; rewrite geom_sum_diag_one; apply bounded_orel_refl
+        |unfold Orel; apply add0r].
+      - (* part 2, base: I z C for z ≠ A *)
+        intros z HzneA. cbn [pow]. unfold I.
+        destruct (fin_eq_dec z C); [subst C|].
+        + rewrite (geom_sum_diag_one M' kleene_exp z).
+          (* 1 ≤ star' A C + star' z z = star' A C + 1 *)
+          unfold Orel.
+          transitivity (1 : R); [apply (@add_bound R (geom_sum M' kleene_exp A z + 1)) |].
+          symmetry. rewrite addC. apply (@add_bound R (geom_sum M' kleene_exp A z)).
+        + (* 0 ≤ star' A C + star' z C *)
+          unfold Orel; apply add0r.
+      - (* part 1, inductive: pow M (S n) A C *)
+        simpl. unfold matrix_mul.
+        apply sum_orel_bound. intro z.
+        destruct (fin_eq_dec z A) as [HeqzA|HnezA].
+        + (* z = A *)
+          subst z. destruct IH as [IH1 _].
+          apply (orel_trans _ (M A A * geom_sum M' kleene_exp A C)).
+          { apply bounded_mul_orel_compat_r. apply IH1. }
+          { 
+            apply (orel_trans _ (mat_star M' A A * mat_star M' A C)).
+            { apply bounded_mul_orel_compat_l.
+              unfold mat_star. rewrite (geom_sum_diag_one M' kleene_exp A).
+              unfold Orel. rewrite addC. apply add_bound. }
+            { apply star_path_compose. } }
+        + (* z ≠ A *)
+          destruct IH as [_ IH2].
+          pose proof (IH2 z HnezA) as Hz_bound.
+          (* M A z * pow M n z C ≤ M A z * (star' A C + star' z C) *)
+          apply (orel_trans _ (M A z * (geom_sum M' kleene_exp A C + geom_sum M' kleene_exp z C))).
+          { apply bounded_mul_orel_compat_r. apply Hz_bound. }
+          (* distribute and use total order *)
+          setoid_rewrite (mulDl (M A z) (geom_sum M' kleene_exp A C) (geom_sum M' kleene_exp z C)).
+          destruct (H_total_order (M A z * geom_sum M' kleene_exp A C) 
+                                  (M A z * geom_sum M' kleene_exp z C)) as [Hcase|Hcase].
+          * setoid_rewrite Hcase.
+            apply (orel_trans _ (1 * geom_sum M' kleene_exp A C)).
+            { apply bounded_mul_orel_compat_l. unfold Orel; rewrite addC; apply add_bound. }
+            rewrite mul1r. apply bounded_orel_refl.
+          * setoid_rewrite Hcase.
+            apply (orel_trans _ (M' A z * geom_sum M' kleene_exp z C)).
+            { apply bounded_mul_orel_compat_l. apply Hrow. }
+            apply (orel_trans _ (mat_star M' A z * mat_star M' z C)).
+            { apply bounded_mul_orel_compat_l.
+              pose proof (pow_le_mat_star M' 1 A z) as Hp.
+              unfold kleene_exp in Hp. specialize (Hp ltac:(nia)).
+              cbn [pow] in Hp. rewrite matrix_mul_I_r in Hp. exact Hp. }
+            { apply star_path_compose. }
+      - (* part 2, inductive: pow M (S n) z C for z ≠ A *)
+        intros z HzneA. simpl. unfold matrix_mul.
+        apply sum_orel_bound. intro w.
+        destruct (fin_eq_dec w A) as [HeqwA|HnewA].
+        + (* w = A *)
+          subst w. destruct IH as [IH1 _].
+          apply (orel_trans _ (M z A * geom_sum M' kleene_exp A C)).
+          { apply bounded_mul_orel_compat_r. apply IH1. }
+          apply (orel_trans _ (1 * geom_sum M' kleene_exp A C)).
+          { apply bounded_mul_orel_compat_l. unfold Orel; rewrite addC; apply add_bound. }
+          rewrite mul1r.
+          (* star' A C ≤ star' A C + star' z C *)
+          apply bounded_plus_upper_left.
+        + (* w ≠ A *)
+          destruct IH as [_ IH2].
+          pose proof (IH2 w HnewA) as Hw_bound.
+          rewrite (Heq z w HzneA HnewA). (* M z w = M' z w *)
+          apply (orel_trans _ (M' z w * (geom_sum M' kleene_exp A C + geom_sum M' kleene_exp w C))).
+          { apply bounded_mul_orel_compat_r. apply Hw_bound. }
+          setoid_rewrite (mulDl (M' z w) (geom_sum M' kleene_exp A C) (geom_sum M' kleene_exp w C)).
+          destruct (H_total_order (M' z w * geom_sum M' kleene_exp A C) 
+                                  (M' z w * geom_sum M' kleene_exp w C)) as [Hcase|Hcase].
+          * setoid_rewrite Hcase.
+            apply (orel_trans _ (1 * geom_sum M' kleene_exp A C)).
+            { apply bounded_mul_orel_compat_l. unfold Orel; rewrite addC; apply add_bound. }
+            rewrite mul1r. apply bounded_plus_upper_left.
+          * setoid_rewrite Hcase.
+            apply (orel_trans _ (mat_star M' z w * mat_star M' w C)).
+            { apply bounded_mul_orel_compat_l.
+              pose proof (pow_le_mat_star M' 1 z w) as Hp.
+              unfold kleene_exp in Hp. specialize (Hp ltac:(nia)).
+              cbn [pow] in Hp. rewrite matrix_mul_I_r in Hp. exact Hp. }
+            (* mat_star M' z w * mat_star M' w C ≤ mat_star M' z C ≤ star' A C + star' z C *)
+            apply (orel_trans _ (mat_star M' z C)).
+            { apply star_path_compose. }
+            apply orel_plus_upper_right. }
+    (* Now use the mutual IH to prove the main result *)
+    assert (Hgeom : forall n, geom_sum M n A C ≤ geom_sum M' kleene_exp A C).
+    { induction n as [|n IHn]; cbn [geom_sum].
+      - destruct (fin_eq_dec A C).
+        + subst C. unfold I. destruct (fin_eq_dec A A); [|congruence]. rewrite (geom_sum_diag_one M' kleene_exp A). apply bounded_orel_refl.
+        + unfold I. destruct (fin_eq_dec A C); [congruence|]. unfold Orel. apply add0r.
+      - unfold matrix_add. apply add_orel_bound.
+        + apply IHn.
+        + apply Hmutual. }
+    apply Hgeom with (n := kleene_exp).
+  Qed.
 
   (* =====================================================================  *)
   (*  Helper lemmas for the Pareto proofs                                   *)
@@ -665,20 +791,7 @@ Section SocialChoice.
       + apply IH. intros x Hx. apply H. right; exact Hx.
   Qed.
 
-  (** Each power term is ≤ the full mat_star (idempotent addition). *)
-  Lemma pow_le_mat_star {R : BoundedSemiring.type} (M : @Matrix Node R) (m : nat) (A B : Node) :
-    (m <= kleene_exp)%nat -> pow M m A B ≤ mat_star M A B.
-  Proof.
-    unfold mat_star. revert m.
-    induction kleene_exp as [|K IH]; intros m Hle; cbn [geom_sum].
-    - assert (m = 0)%nat by lia. subst m. cbn [pow].
-      unfold I, Orel. destruct (fin_eq_dec A B); apply bounded_add_idem.
-    - destruct (Compare_dec.lt_eq_lt_dec m (S K)) as [[Hlt|Heq]|Hgt].
-      + assert (m <= K)%nat by lia. specialize (IH m H).
-        unfold matrix_add. eapply orel_trans; [apply IH |]. apply bounded_plus_upper_left.
-      + subst m. unfold matrix_add. apply orel_plus_upper_right.
-      + lia.
-  Qed.
+  
 
   (** Strip leading triples whose first component is [u]. *)
   Fixpoint strip_leading {R : Semiring.type} (u : Node) (p : list (Node * Node * R)) : list (Node * Node * R) :=
