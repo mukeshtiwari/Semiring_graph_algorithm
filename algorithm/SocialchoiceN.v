@@ -890,6 +890,146 @@ Section SocialChoice.
       inversion H_ab_ne. }
   Qed.
 
+  (** * Transitivity of Schulze beats — meet-semiring proof
+
+      Same conclusion as [schulze_trans] (if [a] beats [b] and [b] beats [c]
+      then [a] beats [c]), but replacing the strong normalisation hypothesis
+      [H_pair_sum_one] with a meet-lower-bound axiom:
+
+        H_meet_lower_bound : m ≤ a → m ≤ b → m ≤ a * b
+
+      This axiom says that if [m] is a lower bound of both [a] and [b], then
+      [m] is also a lower bound of their product [a * b].  Together with the
+      bounded-semiring facts [a * b ≤ a] and [a * b ≤ b], this makes [*]
+      into a greatest-lower-bound (meet) operation.
+
+      ------------------------------------------------------------
+      # Proof strategy
+      ------------------------------------------------------------
+
+      The proof mirrors the paper's combinatorial case analysis:
+
+        1. Set [m := S a b * S b c] (the meet of the two path strengths).
+           By [star_path_compose], [m ≤ S a c].
+
+        2. Prove that [S a c ≤ S c a] is impossible.  Assume it holds.
+           Then [m ≤ S c a] (since [m ≤ S a c ≤ S c a]).
+           Case-split on [S a b] vs [S b c] via total order:
+
+           Case A: [S a b ≤ S b c].  Then [m = S a b] (meet property).
+             From [S a b = m ≤ S c a] and [S b c ≥ S a b = m], apply
+             [H_meet_lower_bound] to get [m ≤ S b c * S c a].
+             [star_path_compose M b c a] chains to [S b a], so [m ≤ S b a],
+             i.e., [S a b ≤ S b a].  But [beats a b] gives [S b a < S a b],
+             contradiction.
+
+           Case B: [S b c ≤ S a b].  Symmetric, using [star_path_compose M c a b]
+             and [beats b c] for the contradiction.
+
+        3. Since [S a c ≤ S c a] is impossible, the total order forces
+           [S c a ≤ S a c].  And [S c a ≠ S a c] (otherwise equality
+           would put us back in the impossible case).  Hence [S c a < S a c].
+
+      ------------------------------------------------------------
+      # Comparison with [schulze_trans]
+      ------------------------------------------------------------
+
+      - [schulze_trans]: requires [H_pair_sum_one] (M i j + M j i = 1),
+        a strong normalisation that forces all entries to 1, collapsing
+        the problem to trivial chain inequalities.  Works in any bounded
+        commutative semiring.
+
+      - [schulze_trans_weaker]: requires [H_meet_lower_bound] instead,
+        which makes [*] into a meet.  The proof mirrors the paper's
+        combinatorial case analysis.  Does NOT need [H_pair_sum_one].
+
+      The two proofs illuminate different algebraic structures that suffice
+      for the Schulze method.                                      *)
+  Theorem schulze_trans_weaker {R : BoundedCommutativeSemiring.type}
+    (M : @Matrix Node R)
+    (H_total_order : forall x y : R, x + y = x \/ x + y = y)
+    (Hdec : forall x y : R, {x = y} + {x ≠ y})
+    (H_meet_lower_bound : forall m a b : R, m ≤ a -> m ≤ b -> m ≤ a * b) :
+    forall (a b c : Node),
+      schulze_beats M a b -> schulze_beats M b c -> schulze_beats M a c.
+  Proof.
+    intros a b c H_ab H_bc.
+    unfold schulze_beats, beats in *.
+    destruct H_ab as [H_ab_le H_ab_ne].   (* S b a ≤ S a b ∧ S b a ≠ S a b *)
+    destruct H_bc as [H_bc_le H_bc_ne].   (* S c b ≤ S b c ∧ S c b ≠ S b c *)
+    (* m := S a b * S b c *)
+    (* m ≤ S a c by star_path_compose *)
+    pose proof (star_path_compose M a b c) as Hm_Sac.
+    (* H_total_order gives total preorder on Orel *)
+    assert (H_total_orel : forall x y : R, x ≤ y \/ y ≤ x).
+    { intros x y.
+      destruct (H_total_order x y) as [Hcase | Hcase].
+      - right. unfold Orel. rewrite addC. exact Hcase.
+      - left. unfold Orel. exact Hcase. }
+    (* Lemma: mat_star M a c ≤ mat_star M c a is impossible *)
+    assert (H_not_ac_le_ca : ~ (mat_star M a c ≤ mat_star M c a)).
+    { intro H_ac_le_ca.
+      (* Then m ≤ S c a via Hm_Sac and H_ac_le_ca *)
+      assert (Hm_Sca : mat_star M a b * mat_star M b c ≤ mat_star M c a).
+      { eapply orel_trans; [exact Hm_Sac | exact H_ac_le_ca]. }
+      (* Case split on S a b vs S b c *)
+      destruct (H_total_orel (mat_star M a b) (mat_star M b c))
+        as [Hab_le_Hbc | Hbc_le_Hab].
+      - (* Case A: S a b ≤ S b c.  Then m = S a b. *)
+        assert (Hm_eq_Sab : mat_star M a b * mat_star M b c = mat_star M a b).
+        { apply orel_antisym.
+          - apply (@bounded_mul_lower_left R (mat_star M a b) (mat_star M b c)).
+          - apply H_meet_lower_bound.
+            + apply (@bounded_orel_refl R (mat_star M a b)).
+            + exact Hab_le_Hbc. }
+        rewrite Hm_eq_Sab in Hm_Sca.             (* S a b ≤ S c a *)
+        (* S b c ≥ S a b = m *)
+        assert (H_Sbc_ge_m : mat_star M a b ≤ mat_star M b c).
+        { rewrite <- Hm_eq_Sab.
+          apply (@bounded_mul_lower_right R (mat_star M a b) (mat_star M b c)). }
+        (* H_meet_lower_bound: m ≤ S b c and m ≤ S c a → m ≤ S b c * S c a *)
+        assert (Hm_Sbc_Sca : mat_star M a b ≤
+                             mat_star M b c * mat_star M c a).
+        { apply H_meet_lower_bound; [exact H_Sbc_ge_m | exact Hm_Sca]. }
+        (* star_path_compose: S b c * S c a ≤ S b a *)
+        pose proof (star_path_compose M b c a) as H_comp.
+        assert (Hm_Sba : mat_star M a b ≤ mat_star M b a).
+        { eapply orel_trans; [exact Hm_Sbc_Sca | exact H_comp]. }
+        (* Antisymmetry with S b a ≤ S a b from beats a b *)
+        assert (Heq : mat_star M b a = mat_star M a b).
+        { apply orel_antisym; [exact H_ab_le | exact Hm_Sba]. }
+        exact (H_ab_ne Heq).
+      - (* Case B: S b c ≤ S a b.  Then m = S b c. *)
+        assert (Hm_eq_Sbc : mat_star M a b * mat_star M b c = mat_star M b c).
+        { apply orel_antisym.
+          - apply (@bounded_mul_lower_right R (mat_star M a b) (mat_star M b c)).
+          - apply H_meet_lower_bound.
+            + exact Hbc_le_Hab.
+            + apply (@bounded_orel_refl R (mat_star M b c)). }
+        rewrite Hm_eq_Sbc in Hm_Sca.             (* S b c ≤ S c a *)
+        (* S a b ≥ S b c = m *)
+        assert (H_Sab_ge_m : mat_star M b c ≤ mat_star M a b).
+        { rewrite <- Hm_eq_Sbc.
+          apply (@bounded_mul_lower_left R (mat_star M a b) (mat_star M b c)). }
+        (* H_meet_lower_bound: m ≤ S c a and m ≤ S a b → m ≤ S c a * S a b *)
+        assert (Hm_Sca_Sab : mat_star M b c ≤
+                             mat_star M c a * mat_star M a b).
+        { apply H_meet_lower_bound; [exact Hm_Sca | exact H_Sab_ge_m]. }
+        pose proof (star_path_compose M c a b) as H_comp.
+        assert (Hm_Scb : mat_star M b c ≤ mat_star M c b).
+        { eapply orel_trans; [exact Hm_Sca_Sab | exact H_comp]. }
+        assert (Heq : mat_star M c b = mat_star M b c).
+        { apply orel_antisym; [exact H_bc_le | exact Hm_Scb]. }
+        exact (H_bc_ne Heq). }
+    (* Now: S a c ≤ S c a is impossible, so by total order, S c a ≤ S a c *)
+    destruct (H_total_orel (mat_star M a c) (mat_star M c a))
+      as [Hac_le_Sca | Hca_le_Sac].
+    - exfalso. exact (H_not_ac_le_ca Hac_le_Sca).
+    - split; [exact Hca_le_Sac |].
+      intro Heq. apply H_not_ac_le_ca. rewrite Heq.
+      apply (@bounded_orel_refl R (mat_star M a c)).
+  Qed.
+
   (* =====================================================================  *)
   (*  Theorem — WINNER EXISTENCE (Corollary of §4.1)                          *)
   (*                                                                          *)
@@ -1066,6 +1206,69 @@ Section SocialChoice.
             { subst x. exact H_not_aw. }
             { apply (Hw_undefeated x Hx_in_tail Hx_neq_w). } }
     (* Apply lemma to the full elements list *)
+    assert (Hnonempty : @elements Node <> []).
+    { intro Hnil.
+      pose proof (elements_two_or_more (s := Node)) as Hlen.
+      rewrite Hnil in Hlen. simpl in Hlen. lia. }
+    destruct (Hmax (@elements Node) Hnonempty) as [w [Hin_w Hw_undefeated]].
+    exists w. unfold schulze_winner.
+    intros b Hb_neq_w.
+    apply (Hw_undefeated b).
+    - apply (elements_complete b).
+    - exact Hb_neq_w.
+  Qed.
+
+  (** * Winner existence — meet-semiring version
+
+      Same statement as [winner_exists] but using [schulze_trans_weaker]
+      (which requires [H_meet_lower_bound]) instead of [schulze_trans]
+      (which requires [H_pair_sum_one]).
+
+      The proof is identical to [winner_exists]: a Schulze winner is a
+      maximal element of the strict partial order [schulze_beats], and
+      such an element always exists on a finite set.  The only change is
+      which transitivity lemma is invoked in the induction step.
+
+      Hypothesis summary:
+      - [H_total_order]    : addition is a total order (x+y = x ∨ x+y = y)
+      - [Hdec]            : decidable equality on R
+      - [H_meet_lower_bound]: m ≤ a → m ≤ b → m ≤ a * b                    *)
+  Theorem winner_exists_weaker {R : BoundedCommutativeSemiring.type}
+    (M : @Matrix Node R)
+    (H_total_order : forall x y : R, x + y = x \/ x + y = y)
+    (Hdec : forall x y : R, {x = y} + {x ≠ y})
+    (H_meet_lower_bound : forall m a b : R, m ≤ a -> m ≤ b -> m ≤ a * b) :
+    exists (a : Node), schulze_winner M a.
+  Proof.
+    assert (Hmax : forall (l : list Node), l <> [] -> exists w,
+      In w l /\ (forall b, In b l -> b <> w -> ~ schulze_beats M b w)).
+    { intro l. induction l as [|a l IH]; intros Hnonempty.
+      - exfalso. apply Hnonempty. reflexivity.
+      - destruct l as [|b l].
+        + exists a. split; [left; reflexivity |].
+          intros b0 Hb0 Hneq. inversion Hb0 as [Heq|Hfalse].
+          * exfalso. apply Hneq. symmetry. exact Heq.
+          * inversion Hfalse.
+        + assert (Hnonempty_tail : b :: l <> []) by discriminate.
+          destruct (IH Hnonempty_tail) as [w [Hin_w Hw_undefeated]].
+          destruct (schulze_beats_dec M a w Hdec) as [H_aw | H_not_aw].
+          * exists a. split; [left; reflexivity |].
+            intros x Hx_in Hx_neq_a.
+            inversion Hx_in as [Heq_a | Hx_in_tail].
+            { exfalso. apply Hx_neq_a. symmetry. exact Heq_a. }
+            intro Hx_beats_a.
+            pose proof (@schulze_trans_weaker R M
+              H_total_order Hdec H_meet_lower_bound
+              x a w Hx_beats_a H_aw) as Hxw.
+            destruct (fin_eq_dec x w) as [Heq_xw | Hneq_xw].
+            { subst x. apply (schulze_beats_irrefl M w). exact Hxw. }
+            { apply (Hw_undefeated x Hx_in_tail Hneq_xw). exact Hxw. }
+          * exists w. split.
+            { right. exact Hin_w. }
+            intros x Hx_in Hx_neq_w.
+            inversion Hx_in as [Heq_a | Hx_in_tail].
+            { subst x. exact H_not_aw. }
+            { apply (Hw_undefeated x Hx_in_tail Hx_neq_w). } }
     assert (Hnonempty : @elements Node <> []).
     { intro Hnil.
       pose proof (elements_two_or_more (s := Node)) as Hlen.
@@ -2332,3 +2535,4 @@ Section SocialChoice.
 
 
 End SocialChoice.
+
