@@ -1755,7 +1755,7 @@ Section SocialChoice.
       M X A < M A X *)
     destruct hc as (hcl & hcr).
     Search (_ ≤ _ -> _).
-
+  Admitted.
 
 
   
