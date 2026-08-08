@@ -2557,5 +2557,145 @@ Lemma transpose_list_length_square {R : Semiring.type} : forall (lb : list (list
   Qed.
 
 
+  (** * Monotonicity and structural lemmas for Schulze-method reasoning
+      ----------------------------------------------------------------
+      The following theorems capture matrix-level properties needed
+      for the Schulze beatpath computation.  They are stated as
+      [Admitted] placeholders — most are straightforward inductions
+      that follow from the path-based characterisations above
+      ([matrix_path_equation], [connect_partial_sum_mat_paths]). *)
+
+  (** ** 1.  Monotonicity of [pow] in the matrix argument
+
+      If every entry of [m₁] is below the corresponding entry of [m₂]
+      (in the [Orel] preorder), then the same holds for every power.
+      This lets us compare beatpath strengths under matrix
+      perturbations (e.g., adding a voter). *)
+  Lemma pow_monotone {R : BoundedSemiring.type} (m₁ m₂ : @Matrix R) (n : nat) :
+    (forall i j, Orel (m₁ i j) (m₂ i j)) ->
+    forall c d, Orel (pow m₁ n c d) (pow m₂ n c d).
+  Proof.
+    intros Hle. induction n as [|n IH]; intros c d.
+    - cbn. unfold Orel. apply bounded_add_idem.
+    - cbn [pow]. unfold matrix_mul, Orel.
+      assert (HR : forall u v w : R, u + v = v -> w * u + w * v = w * v).
+      { intros u v w Huv. transitivity (w * (u + v)).
+        - apply eq_sym. apply (mulDl (s := R) w u v).
+        - rewrite Huv. reflexivity. }
+      assert (HL : forall u v w : R, u + v = v -> u * w + v * w = v * w).
+      { intros u v w Huv. transitivity ((u + v) * w).
+        - apply eq_sym. apply (mulDr (s := R) u v w).
+        - rewrite Huv; reflexivity. }
+      assert (HS : forall (f g : Node -> R),
+        (forall x, f x + g x = g x) -> sum f + sum g = sum g).
+      { intros f g Hfg. unfold sum.
+        induction (elements (s := Node)) as [|a l IHl]; cbn.
+        { apply addr0. }
+        { setoid_rewrite (add_swap_mid (f a)
+            (fold_right (λ (x : Node) (y : R), f x + y) 0 l)
+            (g a)
+            (fold_right (λ (x : Node) (y : R), g x + y) 0 l)).
+          transitivity (g a + (fold_right (λ (x : Node) (y : R), f x + y) 0 l +
+            fold_right (λ (x : Node) (y : R), g x + y) 0 l)).
+          - apply (f_equal2 add (Hfg a) eq_refl).
+          - apply (f_equal (fun t => g a + t) IHl). } }
+      apply HS. intro y.
+      apply (orel_trans (R := R) (m₁ c y * pow m₁ n y d)
+        (m₂ c y * pow m₁ n y d) (m₂ c y * pow m₂ n y d)).
+      { unfold Orel. apply HL. apply Hle. }
+      { unfold Orel. apply HR. apply IH. }
+  Qed.
+
+  (** ** 2.  Monotonicity of [geom_sum] in the matrix argument
+
+      Pointwise dominance lifts to geometric sums.  This is the key
+      lemma for proving monotonicity of the Schulze method: adding
+      support to a candidate can only increase their beatpath
+      strengths. *)
+  Lemma geom_sum_monotone {R : BoundedSemiring.type} (m₁ m₂ : @Matrix R) (n : nat) :
+    (forall i j, Orel (m₁ i j) (m₂ i j)) ->
+    forall c d, Orel (geom_sum m₁ n c d) (geom_sum m₂ n c d).
+  Proof.
+    intros Hle. induction n as [|n IH]; intros c d.
+    - cbn. unfold Orel. apply bounded_add_idem.
+    - cbn [geom_sum]. unfold matrix_add, Orel.
+      rewrite (add_swap_mid (geom_sum m₁ n c d) (pow m₁ (S n) c d)
+        (geom_sum m₂ n c d) (pow m₂ (S n) c d)).
+      unfold Orel in IH. rewrite IH.
+      rewrite (pow_monotone m₁ m₂ (S n) Hle c d). reflexivity.
+  Qed.
+
+  (** ** 3.  Each power term is below the geometric sum
+
+      [pow m k c d ≤ geom_sum m n c d] whenever [k ≤ n].
+      This is the matrix-level analogue of [pow_le_mat_star]
+      from [SocialchoiceN.v]. *)
+  Lemma pow_le_geom_sum {R : BoundedSemiring.type} (m : @Matrix R) (n k : nat) c d :
+    (k <= n)%nat ->
+    Orel (pow m k c d) (geom_sum m n c d).
+  Proof.
+    intros Hle. revert k Hle. induction n as [|n IH]; intros k Hle.
+    - destruct k; [| inversion Hle].
+      cbn. unfold Orel. apply bounded_add_idem.
+    - assert (Hcases : k <= n \/ k = S n) by lia.
+      destruct Hcases as [Hk_le_n | Hk_eq_Sn].
+      + cbn [geom_sum]. unfold matrix_add, Orel.
+        rewrite <- addA.
+        unfold Orel in IH. rewrite (IH k Hk_le_n). reflexivity.
+      + subst k.
+        cbn [geom_sum]. unfold matrix_add, Orel.
+        transitivity ((pow m (S n) c d + geom_sum m n c d) + pow m (S n) c d).
+        { rewrite addA. reflexivity. }
+        rewrite (addC (pow m (S n) c d) (geom_sum m n c d)).
+        rewrite addA.
+        apply (f_equal (fun t => geom_sum m n c d + t)).
+        apply (bounded_add_idem (R := R) (pow m (S n) c d)).
+  Qed.
+
+  (** ** 4.  Geometric sum is monotone in [n]
+
+      Adding more terms to the geometric sum can only increase
+      (or keep equal) each entry: [geom_sum m n ≤ geom_sum m (S n)]. *)
+  Lemma geom_sum_increasing {R : BoundedSemiring.type} (m : @Matrix R) (n : nat) c d :
+    Orel (geom_sum m n c d) (geom_sum m (S n) c d).
+  Proof.
+    cbn [geom_sum]. unfold matrix_add, Orel.
+    rewrite <- addA.
+    setoid_rewrite (bounded_add_idem (R := R) (geom_sum m n c d)).
+    reflexivity.
+  Qed.
+
+  (** ** 5.  Closure matrix has [1] on the diagonal
+
+      [(m + I)[c,c] = 1] for every node [c].  This ensures that the
+      beatpath from a candidate to itself is always the strongest
+      possible (the top element in a bounded semiring). *)
+  Lemma closure_diag_one {R : BoundedSemiring.type} (m : @Matrix R) (c : Node) :
+    (m +M I) c c = 1.
+  Proof. 
+    unfold matrix_add, I.
+    destruct (fin_eq_dec c c); 
+    try congruence.
+    rewrite addC. 
+    setoid_rewrite add_bound.
+    exact eq_refl.
+  Qed.
+
+  (** ** 6.  [I] is the top element for the [Orel] preorder on the diagonal
+
+      For every matrix [m], [I[i,i] = 1] is the top element, so in a
+      bounded semiring every entry satisfies [m c d ≤ 1 = I c d] when
+      [c = d]. *)
+  Lemma I_is_top_diag {R : BoundedSemiring.type} (m : @Matrix R) (c : Node) : Orel (m c c) (I c c).
+  Proof. 
+    intros *.
+    unfold Orel, I.
+    destruct (fin_eq_dec c c); 
+    try congruence.
+    rewrite addC. 
+    setoid_rewrite add_bound.
+    exact eq_refl.
+  Qed.
+
 End Matrix.
 
