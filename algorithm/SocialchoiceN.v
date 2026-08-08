@@ -110,21 +110,19 @@ Section SocialChoice.
     (M : @Matrix Node R) (k : nat) (i j : Node) :
     pow (fun x y => M y x) k i j = pow M k j i.
   Proof.
-    revert i j. induction k as [|k IH]; intros i j; cbn [pow].
+    revert i j. 
+    induction k as [|k IH]; intros i j; cbn [pow].
     - (* Base: I i j = I j i *)
       unfold I.
       destruct (fin_eq_dec i j) as [Heq|Hneq];
-      destruct (fin_eq_dec j i) as [Heq'|Hneq'].
-      + reflexivity.
-      + congruence.
-      + congruence.
-      + reflexivity.
+      destruct (fin_eq_dec j i) as [Heq'|Hneq'];
+      try reflexivity; try congruence.
     - (* Inductive step *)
       unfold matrix_mul.
       rewrite (sum_ext (fun X => M X i * pow (fun x y => M y x) k X j)
-                       (fun X => M X i * pow M k j X)).
+      (fun X => M X i * pow M k j X)).
       + rewrite (sum_ext (fun X => M X i * pow M k j X)
-                         (fun X => pow M k j X * M X i)).
+        (fun X => pow M k j X * M X i)).
         * symmetry. apply (pow_comm k M j i).
         * intro X. apply mulC.
       + intro X. rewrite (IH X j). reflexivity.
@@ -147,6 +145,7 @@ Section SocialChoice.
       rewrite (pow_transpose M (S n) i j).
       reflexivity.
   Qed.
+
 
   Lemma mat_star_transpose {R : CommutativeSemiring.type} : 
     forall (M : @Matrix Node R) (i j : Node),
@@ -438,38 +437,6 @@ Section SocialChoice.
   Qed.
 
 
-  
-  (* =====================================================================  *)
-  (*  Theorem — INDEPENDENCE OF CLONES                                       *)
-  (*                                                                          *)
-  (*  Adding a clone C' of candidate C (identical pairwise comparisons with  *)
-  (*  all other candidates) does not change the ranking among non-clones.    *)
-  (*                                                                          *)
-  (*  NOTE: This theorem requires extending the Node type, which is beyond   *)
-  (*  the scope of the current framework (Node is fixed).  A proper          *)
-  (*  statement would use a second Node' type with an injection.             *)
-  (*                                                                          *)
-  (*  Simplified version: if C and C' have identical pairwise strengths      *)
-  (*  and the clone-clone edge is symmetric, then for any X,Y distinct       *)
-  (*  from C and C', the domination relation is unchanged.                   *)
-  (* =====================================================================  *)
-
-  Theorem independence_of_clones {R : Semiring.type} :
-    forall (M : @Matrix Node R) (C C' : Node),
-      C ≠ C' ->
-      (* C and C' have identical pairwise strengths *)
-      (forall (X : Node), X ≠ C -> X ≠ C' ->  M C X = M C' X ∧ M X C = M X C') ->
-      (* The clone-clone edge is symmetric *)
-      M C C' = M C' C ->
-      (* Then for any X,Y ≠ C,C', the domination relation is unchanged *)
-      forall (X Y : Node), X ≠ C -> X ≠ C' -> Y ≠ C -> Y ≠ C' ->
-        mat_star M Y X ≤ mat_star M X Y <->
-        mat_star M Y X ≤ mat_star M X Y.
-  Proof.
-    intros M C C' Hneq Hclone Hsym X Y HXc HXc' HYc HYc'.
-    split; auto.
-  Qed.
-
 
   Lemma pow_pointwise {R : Semiring.type} (A B : @Matrix Node R) (n : nat) (x y : Node) :
     (forall i j, A i j = B i j) -> pow A n x y = pow B n x y.
@@ -613,10 +580,7 @@ Section SocialChoice.
   Qed.
 
   (** Helper: if (x*y)*y < x then x*y < x, in a bounded semiring with
-      total order and decidable equality.
-      NOTE: This lemma is not needed for [schulze_trans] (which uses the
-      stronger [H_pair_sum_one] hypothesis).  It is kept as an independent
-      result that may be useful for weakenings of the theorem. *)
+      total order and decidable equality. *)
   Lemma xy2_lt_x_implies_xy_lt_x {R : BoundedSemiring.type}
     (H_total_order : forall x y : R, x + y = x \/ x + y = y)
     (Hdec : forall x y : R, {x = y} + {x ≠ y})
@@ -638,108 +602,11 @@ Section SocialChoice.
 
 
   
-  (** * Transitivity of the Schulze beat relation
-
-      If [a] beats [b] and [b] beats [c] in the Schulze sense (i.e., via the
-      Kleene star [mat_star M]), then [a] beats [c].
-
-      ------------------------------------------------------------
-      # How the proof in this file works (algebraic approach)
-      ------------------------------------------------------------
-
-      This proof uses [star_path_compose] (Kleene-star idempotence):
-        S_ab * S_bc ≤ S_ac
-      where S = mat_star M = M*.
-
-      Combined with the normalisation hypothesis [H_pair_sum_one]
-        (M i j + M j i = 1 for i ≠ j),
-      the proof collapses the chain to an inequality between [1]'s:
-
-        Step 1 — Force the interior star entries to [1].
-          From [beats a b] we get [a ≠ b] (irreflexivity).
-          [H_pair_sum_one a b] gives [M a b + M b a = 1].
-          With total order on [+], either [M a b = 1] or [M b a = 1].
-          If [M b a = 1] then [S b a = 1], contradicting [beats a b].
-          Hence [M a b = 1] and therefore [S a b = 1].
-          Symmetrically, [M b c = 1] and [S b c = 1].
-
-        Step 2 — Case split on S a c vs S c a via total order.
-          In both cases, [star_path_compose] chains give [1 ≤ S b a].
-          Since [S b a ≤ 1] (bounded semiring), we get [S b a = 1],
-          which contradicts [beats a b] (which says [S b a ≠ 1]).
-          Therefore [S c a ≠ S a c], yielding [beats a c].
-
-      ------------------------------------------------------------
-      # How the proof works in the Schulze paper (2011)
-      ------------------------------------------------------------
-
-      The paper (Schulze, Social Choice and Welfare 38, 2011, §2.2)
-      works in the max-min semiring on natural numbers (vote counts).
-      Define p[x,y] as the maximum over all paths from x to y of the
-      minimum edge weight along the path.  Then [a ≻ b] iff p[a,b] > p[b,a].
-
-      The combinatorial proof: assume p[a,b] > p[b,a] and p[b,c] > p[c,b].
-        Let m := min(p[a,b], p[b,c]).  Then:
-
-        1. p[a,c] ≥ m (concatenate the best a→b and b→c paths;
-           their bottleneck is min(p[a,b], p[b,c]) = m).
-
-        2. p[c,a] < m.  Reason: any path from c to a must cross the
-           "boundary" between the set of vertices reachable from {a,b}
-           with strength ≥ m and the rest.  Since p[b,a] < m and
-           p[c,b] < m, the crossing edge has weight < m, so the whole
-           path's bottleneck < m.
-
-        Hence p[a,c] > p[c,a], i.e., a ≻ c.
-
-      ------------------------------------------------------------
-      # Key differences between the two proofs
-      ------------------------------------------------------------
-
-      1. GENERICITY.
-         - Paper: specific to the max-min semiring (explicit path
-           bottlenecks, min/max reasoning on natural numbers).
-         - Rocq: works in ANY bounded commutative semiring with a
-           total order on addition.  The proof uses only the abstract
-           semiring axioms, never unfolding the concrete max-min
-           structure.
-
-      2. HYPOTHESIS STRENGTH.
-         - Paper: uses only the input matrix d[i,j] (vote counts) and
-           the max-min path definition.  No normalisation needed.
-         - Rocq: requires [H_pair_sum_one] (M i j + M j i = 1), a
-           strong normalisation that rules out indifference/tied votes.
-           In exchange, the proof is purely algebraic and compact.
-
-      3. PROOF TECHNIQUE.
-         - Paper: combinatorial — construct a path, reason about
-           bottlenecks and edge crossings on explicit walks.
-         - Rocq: algebraic — use the Kleene star as a black box via
-           [star_path_compose]; the normalisation [H_pair_sum_one]
-           forces all relevant entries to [1], reducing the problem
-           to trivial chain inequalities between the top element.
-
-      4. CENTRAL LEMMA.
-         - Paper: the path-concatenation lemma
-           p[a,c] ≥ min(p[a,b], p[b,c]) (Lemma 2.2.1 in Schulze).
-         - Rocq: [star_path_compose] S_ab * S_bc ≤ S_ac, which
-           is the algebraic analogue stating that matrix multiplication
-           of star entries is bounded by the star entry.
-
-      The Rocq proof is a faithful but more abstract rendering: where
-      the paper says "concatenate two paths", we use Kleene-star
-      idempotence; where the paper says "the bottleneck is less than m",
-      we use [H_pair_sum_one] to force the numeric value to exactly [1]
-      and derive a contradiction from the boundedness axiom.
-
-      Hypothesis summary:
-      - [H_total_order] : addition is a total order (x+y = x ∨ x+y = y)
-      - [Hdec]         : decidable equality on R
-      - [H_pair_sum_one]: M i j + M j i = 1 for all i ≠ j
-
-      N.B.  The [1] in [H_pair_sum_one] is the semiring's multiplicative
-      identity (which is also the top element of the bounded semiring),
-      not the concrete integer 1.                                  *)
+  (* (H_total_order : forall x y : R, x + y = x \/ x + y = y)  and 
+    (H_pair_sum_one : forall i j : Node, i ≠ j -> M i j + M j i = 1) 
+    are very strong assumption. These two combined only allow 
+    strict ballots such A > B > C 
+  *)
   Theorem schulze_trans {R : BoundedCommutativeSemiring.type}
     (M : @Matrix Node R)
     (H_total_order : forall x y : R, x + y = x \/ x + y = y)
@@ -750,19 +617,10 @@ Section SocialChoice.
   Proof.
     intros a b c H_ab H_bc.
     unfold schulze_beats, beats in *.
-    destruct H_ab as [H_ab_le H_ab_ne].   (* S b a ≤ S a b ∧ S b a ≠ S a b *)
-    destruct H_bc as [H_bc_le H_bc_ne].   (* S c b ≤ S b c ∧ S c b ≠ S b c *)
+    destruct H_ab as [H_ab_le H_ab_ne]. 
+    destruct H_bc as [H_bc_le H_bc_ne].
     set (x := mat_star M a b) in *.
     set (y := mat_star M b c) in *.
-    (* =================================================================  *)
-    (*  Step 1: from beats and H_pair_sum_one, deduce x = 1 and y = 1.   *)
-    (*                                                                     *)
-    (*  beats a b  ⇒  a ≠ b  (otherwise S a a < S a a = 1 < 1).          *)
-    (*  H_pair_sum_one a b : M a b + M b a = 1.                           *)
-    (*  Total order: either M a b = 1 or M b a = 1.                       *)
-    (*  If M b a = 1 ⇒ S b a = 1 ⇒ 1 ≤ S a b ⇒ S a b = 1 ⇒ contradiction *)
-    (*  So M a b = 1 ⇒ S a b = 1 (since 1 = M a b ≤ S a b ≤ 1).          *)
-    (* =================================================================  *)
     assert (Ha_ne_b : a ≠ b).
     { intro Heq. subst b. apply H_ab_ne. apply orel_antisym; [exact H_ab_le |].
       unfold Orel. apply (@bounded_add_idem R (mat_star M a a)). }
@@ -815,22 +673,7 @@ Section SocialChoice.
       - rewrite <- H_Mbc_1. apply (geom_sum_includes_direct M kleene_exp b c).
         pose proof (elements_two_or_more (s := Node)). unfold kleene_exp. nia. }
     (* Rewrite x and y as 1 everywhere *)
-    rewrite Hx_1, Hy_1 in *.                        (* everywhere: x→1, y→1 *)
-    (* =================================================================  *)
-    (*  Step 2: case split on S a c vs S c a via total order.             *)
-    (*                                                                     *)
-    (*  Since S a b = 1 and S b c = 1, star_path_compose gives:           *)
-    (*    1*1 ≤ S a c          (i.e., 1 ≤ S a c)                          *)
-    (*    1 * S c a ≤ S b a    (i.e., S c a ≤ S b a)                      *)
-    (*                                                                     *)
-    (*  Good case (S c a ≤ S a c): need S c a ≠ S a c.  If equal, chain   *)
-    (*    1 ≤ S a c = S c a ≤ S b a   ⇒   1 ≤ S b a                       *)
-    (*  Bad case (S a c ≤ S c a): chain gives                              *)
-    (*    1 ≤ S a c ≤ S c a ≤ S b a   ⇒   1 ≤ S b a                       *)
-    (*                                                                     *)
-    (*  In both cases: 1 ≤ S b a.  But bounded: S b a ≤ 1.                *)
-    (*  So S b a = 1, contradicting S b a ≠ 1 from beats a b.             *)
-    (* =================================================================  *)
+    rewrite Hx_1, Hy_1 in *. 
     destruct (H_total_order (mat_star M a c) (mat_star M c a)) as [H_ca_le_ac | H_ac_le_ca].
     { (* Good case: S c a ≤ S a c.  Need S c a ≠ S a c. *)
       split; [unfold Orel; rewrite addC; exact H_ca_le_ac |].
@@ -902,53 +745,11 @@ Section SocialChoice.
       [m] is also a lower bound of their product [a * b].  Together with the
       bounded-semiring facts [a * b ≤ a] and [a * b ≤ b], this makes [*]
       into a greatest-lower-bound (meet) operation.
-
-      ------------------------------------------------------------
-      # Proof strategy
-      ------------------------------------------------------------
-
-      The proof mirrors the paper's combinatorial case analysis:
-
-        1. Set [m := S a b * S b c] (the meet of the two path strengths).
-           By [star_path_compose], [m ≤ S a c].
-
-        2. Prove that [S a c ≤ S c a] is impossible.  Assume it holds.
-           Then [m ≤ S c a] (since [m ≤ S a c ≤ S c a]).
-           Case-split on [S a b] vs [S b c] via total order:
-
-           Case A: [S a b ≤ S b c].  Then [m = S a b] (meet property).
-             From [S a b = m ≤ S c a] and [S b c ≥ S a b = m], apply
-             [H_meet_lower_bound] to get [m ≤ S b c * S c a].
-             [star_path_compose M b c a] chains to [S b a], so [m ≤ S b a],
-             i.e., [S a b ≤ S b a].  But [beats a b] gives [S b a < S a b],
-             contradiction.
-
-           Case B: [S b c ≤ S a b].  Symmetric, using [star_path_compose M c a b]
-             and [beats b c] for the contradiction.
-
-        3. Since [S a c ≤ S c a] is impossible, the total order forces
-           [S c a ≤ S a c].  And [S c a ≠ S a c] (otherwise equality
-           would put us back in the impossible case).  Hence [S c a < S a c].
-
-      ------------------------------------------------------------
-      # Comparison with [schulze_trans]
-      ------------------------------------------------------------
-
-      - [schulze_trans]: requires [H_pair_sum_one] (M i j + M j i = 1),
-        a strong normalisation that forces all entries to 1, collapsing
-        the problem to trivial chain inequalities.  Works in any bounded
-        commutative semiring.
-
-      - [schulze_trans_weaker]: requires [H_meet_lower_bound] instead,
-        which makes [*] into a meet.  The proof mirrors the paper's
-        combinatorial case analysis.  Does NOT need [H_pair_sum_one].
-
-      The two proofs illuminate different algebraic structures that suffice
-      for the Schulze method.                                      *)
+  *)
   Theorem schulze_trans_weaker {R : BoundedCommutativeSemiring.type}
     (M : @Matrix Node R)
     (H_total_order : forall x y : R, x + y = x \/ x + y = y)
-    (Hdec : forall x y : R, {x = y} + {x ≠ y})
+    (* H_meet_lower_bound is simply max-min semiring in disguise *)
     (H_meet_lower_bound : forall m a b : R, m ≤ a -> m ≤ b -> m ≤ a * b) :
     forall (a b c : Node),
       schulze_beats M a b -> schulze_beats M b c -> schulze_beats M a c.
@@ -1061,107 +862,8 @@ Section SocialChoice.
     - right. intros [H H']. apply Hnle. exact H.
   Qed.
 
-  (** * Winner existence
-
-      On a finite set, a strict partial order (irreflexive + transitive)
-      always has a maximal element.  Since [schulze_beats] is irreflexive
-      (Lemma [schulze_beats_irrefl]) and transitive (Theorem [schulze_trans]),
-      a Schulze winner (an undefeated candidate) always exists.
-
-      ------------------------------------------------------------
-      # How the proof in this file works (constructive)
-      ------------------------------------------------------------
-
-      The proof constructs a maximal element by induction on the
-      enumeration [elements] of the finite type [Node]:
-
-        1. Lemma [Hmax]: every non-empty sublist has a maximal element
-           (a candidate [w] such that no other member of the sublist
-           beats [w] in the Schulze sense).
-
-           - Base case (singleton): the single element is maximal.
-           - Inductive case ([a :: b :: l]): by IH, the tail [b :: l]
-             has a maximal element [w].  Two subcases:
-
-             * If [a] beats [w] ([schulze_beats M a w]), then [a] is
-               maximal in the whole list: any [x] in the tail that beats
-               [a] would, by transitivity ([schulze_trans]), also beat
-               [w], contradicting the maximality of [w].
-
-             * If [a] does NOT beat [w], then [w] remains maximal:
-               [a] does not beat [w] by assumption, and no element in
-               the tail beats [w] by IH.
-
-        2. Apply [Hmax] to the full list [elements] (which is non-empty
-           by [elements_two_or_more]).  The resulting [w] satisfies,
-           for every [b ≠ w], [¬ schulze_beats M b w], which is exactly
-           the definition of [schulze_winner].
-
-      The proof relies on [Hdec] (decidable equality on the semiring)
-      to decide [schulze_beats M a w] via [schulze_beats_dec], avoiding
-      classical axioms.
-
-      ------------------------------------------------------------
-      # How the proof works in the Schulze paper (2011)
-      ------------------------------------------------------------
-
-      The paper (Schulze, Social Choice and Welfare 38, 2011, §2.2)
-      states winner existence as an immediate corollary of transitivity:
-
-        "Since the relation ≻_D is a strict partial order (irreflexive
-         and transitive) on a finite set, it has at least one maximal
-         element.  This maximal element is called a Schulze winner."
-
-      The paper's proof is a one-line appeal to the standard set-theoretic
-      fact that any strict partial order on a finite set has a maximal
-      element.  No explicit construction is given; the reasoning is
-      classical (non-constructive).
-
-      ------------------------------------------------------------
-      # Key differences between the two proofs
-      ------------------------------------------------------------
-
-      1. CONSTRUCTIVITY.
-         - Paper: classical — invokes the set-theoretic principle that
-           a finite strict partial order has a maximal element, without
-           constructing it.
-         - Rocq: constructive — builds the maximal element explicitly
-           by induction on the enumeration [elements].  No classical
-           axioms are used.
-
-      2. DECIDABILITY.
-         - Paper: assumes the relation ≻_D is decidable implicitly
-           (it is defined from real numbers / integers).
-         - Rocq: makes decidability explicit via [Hdec] and the lemma
-           [schulze_beats_dec], which reduces [schulze_beats] to
-           equality checks on the semiring.
-
-      3. CENTRAL DEPENDENCY.
-         - Paper: winner existence depends only on transitivity and
-           irreflexivity of ≻_D (plus finiteness).
-         - Rocq: same dependencies — [schulze_trans] for transitivity,
-           [schulze_beats_irrefl] for irreflexivity, [elements_two_or_more]
-           for finiteness.  The proof is a faithful rendering of the
-           paper's argument in constructive type theory.
-
-      4. STRUCTURE.
-         - Paper: one sentence ("a strict partial order on a finite set
-           has a maximal element").
-         - Rocq: ~30 lines of constructive induction that spell out
-           exactly how to find the maximal element by walking through
-           the list and resolving each comparison.
-
-      The Rocq proof is a constructive unfolding of the paper's one-line
-      classical argument: where the paper says "has a maximal element",
-      we build it.  The transitivity of [schulze_beats] is the essential
-      ingredient in both proofs — it is what makes the induction step
-      work (if [x] beats [a] and [a] beats [w], then [x] beats [w],
-      contradicting the maximality of [w]).
-
-      Hypothesis summary:
-      - [H_total_order] : addition is a total order (x+y = x ∨ x+y = y)
-      - [Hdec]         : decidable equality on R
-      - [H_pair_sum_one]: M i j + M j i = 1 for all i ≠ j                *)
+ 
+  (* Again H_total_order and H_pair_sum combined are very strong assumption. *)
   Theorem winner_exists {R : BoundedCommutativeSemiring.type}
     (M : @Matrix Node R)
     (H_total_order : forall x y : R, x + y = x \/ x + y = y)
@@ -1258,7 +960,7 @@ Section SocialChoice.
             { exfalso. apply Hx_neq_a. symmetry. exact Heq_a. }
             intro Hx_beats_a.
             pose proof (@schulze_trans_weaker R M
-              H_total_order Hdec H_meet_lower_bound
+              H_total_order H_meet_lower_bound
               x a w Hx_beats_a H_aw) as Hxw.
             destruct (fin_eq_dec x w) as [Heq_xw | Hneq_xw].
             { subst x. apply (schulze_beats_irrefl M w). exact Hxw. }
@@ -1310,107 +1012,7 @@ Section SocialChoice.
         [Hrow]:  M A Y  ≤ M' A Y   (A's outgoing edges increase)
         [Hcol]:  M' X A ≤ M X A    (A's incoming edges decrease)
         [Heq]:   M X Y  = M' X Y   for X≠A, Y≠A (everything else unchanged)
-
-      ------------------------------------------------------------
-      # How the proof in this file works (algebraic)
-      ------------------------------------------------------------
-
-      The proof uses a mutual induction on powers of [M]:
-
-        P(n) = (pow M n A C ≤ mat_star M' A C)
-             ∧ (∀ z≠A, pow M n z C ≤ mat_star M' A C + mat_star M' z C)
-
-      The second conjunct (cross terms) is needed because when expanding
-      pow M (S n) z C = Σ_w M z w * pow M n w C, the intermediate node
-      [w] might equal [A], pulling in the first conjunct.
-
-      Base case (n = 0): [pow M 0 = I].  If A=C then I A A = 1 and
-        mat_star M' A A = 1 (by [geom_sum_diag_one]).  If A≠C then
-        I A C = 0 ≤ anything.  For z≠A, I z C is either 1 (if z=C,
-        and 1 ≤ star' A C + 1) or 0.
-
-      Inductive step for the A→C conjunct:
-        pow M (S n) A C = Σ_w M A w * pow M n w C.
-        - If w = A: use IH's first conjunct (pow M n A C ≤ star' A C)
-          and chain via [star_path_compose] M' A A * M' A C ≤ M' A C.
-        - If w ≠ A: use IH's second conjunct (pow M n w C ≤ star' A C + star' w C).
-          Distribute M A w over the sum.  Total order on + collapses
-          one of the two branches: either M A w * star' A C (bounded by
-          1 * star' A C = star' A C) or M A w * star' w C (bounded by
-          M' A w * star' w C, then chained via [star_path_compose]).
-
-      Inductive step for the cross-term conjunct (z ≠ A):
-        pow M (S n) z C = Σ_w M z w * pow M n w C.
-        - If w = A: M z A * pow M n A C.  By IH first conjunct,
-          pow M n A C ≤ star' A C.  M z A ≤ 1, so bounded by star' A C.
-        - If w ≠ A: M z w * pow M n w C.  By [Heq], M z w = M' z w.
-          Use IH second conjunct, distribute, and chain via [star_path_compose].
-
-      Finally, [geom_sum M n A C] is a sum of pow terms, each bounded
-      by [mat_star M' A C], so the whole sum is bounded.
-
-      ------------------------------------------------------------
-      # How the proof works in the Schulze paper (2011)
-      ------------------------------------------------------------
-
-      The paper (Schulze, Social Choice and Welfare 38, 2011, §4.2)
-      proves monotonicity in the max-min semiring via path reasoning:
-
-        Let p_M[x,y] be the maximum bottleneck over all paths from x to y
-        in matrix M.  Suppose M' is obtained from M by strengthening A:
-        M A Y ≤ M' A Y (A's wins increase) and M' X A ≤ M X A (A's losses
-        decrease), with all other entries equal.
-
-        Then for any path A = v₀ → v₁ → ... → vₖ = C:
-        - Each edge weight in M is ≤ the corresponding weight in M'
-          (either unchanged, or increased if it starts at A, or decreased
-          if it ends at A — but for A→C paths, edges ending at A only
-          appear if the path revisits A, which can be short-cut).
-        - Therefore the bottleneck of any A→C path in M is ≤ the
-          bottleneck of the same path in M'.
-        - Hence p_M'[A,C] ≥ p_M[A,C].
-
-        Similarly, p_M'[C,A] ≤ p_M[C,A] by symmetric reasoning.
-
-      The paper's proof is a short paragraph; it relies on the concrete
-      max-min structure to compare paths element-wise.
-
-      ------------------------------------------------------------
-      # Key differences between the two proofs
-      ------------------------------------------------------------
-
-      1. GENERICITY.
-         - Paper: specific to the max-min semiring (compares paths
-           by their edge-wise minima).
-         - Rocq: works in ANY bounded semiring with a total order on
-           addition.  Never inspects individual paths or edges.
-
-      2. PROOF TECHNIQUE.
-         - Paper: path-based — "every A→C path in M is an A→C path
-           in M' with at least as large a bottleneck."
-         - Rocq: mutual induction on matrix powers — treats the
-           Kleene star via its power-series expansion (geom_sum).
-           The induction must handle cross terms (z≠A) because matrix
-           multiplication sums over all intermediate nodes.
-
-      3. COMPLEXITY.
-         - Paper: one paragraph, essentially trivial once the max-min
-           path definition is understood.
-         - Rocq: ~60 lines of mutual induction with careful case
-           analysis on whether the intermediate node equals A or not,
-           and distributive case splits via total order.
-
-      4. CENTRAL LEMMA.
-         - Paper: path monotonicity — if every edge weight increases
-           (or stays same), the max-min path value cannot decrease.
-         - Rocq: [star_path_compose] S_ab * S_bc ≤ S_ac, used to
-           chain through intermediate nodes in the inductive step.
-
-      The Rocq proof is a faithful algebraic rendering: where the paper
-      says "the same path has a larger bottleneck", we compute the
-      power series expansion and bound each term.  The mutual induction
-      is the price of working at the semiring level rather than the
-      path level.                                                         *)
+  *)
   Theorem monotonicity {R : BoundedSemiring.type}
     (M M' : @Matrix Node R) (A : Node)
     (H_total_order : forall x y : R, x + y = x \/ x + y = y) :
@@ -1915,88 +1517,7 @@ Section SocialChoice.
   (*                        also have X≻B (since A≻B)                     *)
   (*    M i i = 1         — diagonal is the multiplicative identity       *)
   (*                                                                      *)
-  (*  ------------------------------------------------------------        *)
-  (*  # How the proof in this file works                                  *)
-  (*  ------------------------------------------------------------        *)
-  (*                                                                      *)
-  (*  The proof decomposes [mat_star M B A = geom_sum M K B A] into a     *)
-  (*  sum of power terms [pow M n B A] and bounds each one:               *)
-  (*                                                                      *)
-  (*    1. For each n, [pow M n B A ≤ mat_star M A B] is proved by        *)
-  (*       the auxiliary lemma [pow_BA_le_mat_star_AB].                    *)
-  (*                                                                      *)
-  (*    2. [pow_BA_le_mat_star_AB] works by expanding [pow M n B A]       *)
-  (*       into a sum over all length-n paths from B to A (via            *)
-  (*       [matrix_path_equation]).  For each path:                        *)
-  (*                                                                      *)
-  (*       - First edge (B, A): measure = M B A = 0, contributes zero.    *)
-  (*       - First edge (B, B): uses the diagonal [M B B = 1] and         *)
-  (*         recurses on the shorter path.                                 *)
-  (*       - First edge (B, z) with z ≠ A,B: uses                          *)
-  (*         [path_xA_measure_le_mat_star_xB] to bound the z→A subpath    *)
-  (*         by [mat_star M z B], then applies [Hrow] to bound M B z      *)
-  (*         by M A z, and chains via [star_path_compose]:                *)
-  (*           M A z * mat_star M z B ≤ mat_star M A z * mat_star M z B   *)
-  (*                                  ≤ mat_star M A B.                    *)
-  (*                                                                      *)
-  (*    3. Since every power term is bounded, the whole [geom_sum] is     *)
-  (*       bounded: [mat_star M B A ≤ mat_star M A B].                    *)
-  (*                                                                      *)
-  (*  ------------------------------------------------------------        *)
-  (*  # How the proof works in the Schulze paper (2011, §4.3)             *)
-  (*  ------------------------------------------------------------        *)
-  (*                                                                      *)
-  (*  The paper proves the stronger form (strict beating): if every       *)
-  (*  voter strictly prefers A over B, then p[A,B] > p[B,A] in the        *)
-  (*  max-min semiring.  The proof:                                        *)
-  (*                                                                      *)
-  (*    - p[A,B] ≥ M[A,B] > 0 (the direct edge is a path).               *)
-  (*    - Any path from B to A must start with an edge (B, x).            *)
-  (*      By ballot transitivity, M[B,x] ≤ M[A,x] (since any voter       *)
-  (*      with B≻x also has A≻x because A≻B).  Thus we can swap B→A      *)
-  (*      paths to A→B paths with at least as large a bottleneck.         *)
-  (*    - Therefore p[B,A] ≤ p[A,B], and the strictness follows           *)
-  (*      because M[A,B] > 0 while M[B,A] = 0.                            *)
-  (*                                                                      *)
-  (*  The paper's proof is path-based and relies on the max-min           *)
-  (*  operation to compare bottlenecks.                                    *)
-  (*                                                                      *)
-  (*  ------------------------------------------------------------        *)
-  (*  # Key differences between the two proofs                            *)
-  (*  ------------------------------------------------------------        *)
-  (*                                                                      *)
-  (*  1. GENERICITY.                                                       *)
-  (*     - Paper: max-min semiring on vote counts.  Uses explicit         *)
-  (*       min/max on edge weights.                                        *)
-  (*     - Rocq: any bounded semiring.  Uses [star_path_compose] and      *)
-  (*       [matrix_path_equation] to stay within the algebraic framework. *)
-  (*                                                                      *)
-  (*  2. PROOF TECHNIQUE.                                                  *)
-  (*     - Paper: "swap the B→A path to an A→B path."  Direct             *)
-  (*       manipulation of paths in the max-min semiring.                  *)
-  (*     - Rocq: hybrid — the [pow_BA_le_mat_star_AB] lemma does          *)
-  (*       explicit path decomposition via [matrix_path_equation], but    *)
-  (*       chains subpaths algebraically via [star_path_compose] rather   *)
-  (*       than concatenating them.                                        *)
-  (*                                                                      *)
-  (*  3. STRICTNESS.                                                       *)
-  (*     - Paper: proves the full strict beating p[A,B] > p[B,A].         *)
-  (*     - Rocq: [pareto_second] only proves the ≤ direction.  The        *)
-  (*       strict form [pareto_first] is currently Admitted — it          *)
-  (*       requires the additional hypothesis [0 < M A B < 1] to rule     *)
-  (*       out degenerate semirings where all non-zero values collapse.   *)
-  (*                                                                      *)
-  (*  4. CENTRAL LEMMA.                                                    *)
-  (*     - Paper: the path-swapping argument (ballot transitivity).        *)
-  (*     - Rocq: [pow_BA_le_mat_star_AB], which decomposes a matrix       *)
-  (*       power into paths, then bounds each path's measure using        *)
-  (*       [star_path_compose] and the Pareto hypotheses.                  *)
-  (*                                                                      *)
-  (*  The Rocq proof follows the paper's intuition (swap B→A to A→B)      *)
-  (*  but executes it at the level of matrix powers and Kleene-star       *)
-  (*  composition rather than explicit path concatenation.                 *)
-  (* ------------------------------------------------------------------ *)
-
+  
 
   Theorem pareto_weaker {R : BoundedSemiring.type}
     (M : @Matrix Node R) (A B : Node) :
@@ -2128,107 +1649,8 @@ Section SocialChoice.
   (*  — proved using H_total_order and H_pair_sum_one.                      *)
   (* =====================================================================  *)
 
-  (** * Condorcet winner implies strict Schulze winner
 
-      If [A] is a Condorcet winner — i.e., [A] beats every other candidate
-      in the DIRECT pairwise matrix [M] — then [A] also beats everyone in
-      the Schulze (Kleene-star) sense:
-        condorcet_winner M A → strict_winner M A.
-
-      A Condorcet winner is the strongest possible candidate: no indirect
-      path can overcome the direct advantage.
-
-      ------------------------------------------------------------
-      # How the proof in this file works (algebraic)
-      ------------------------------------------------------------
-
-      For any [X ≠ A], from Condorcet we have [M X A < M A X].
-      The proof shows [mat_star M X A < mat_star M A X] in two steps:
-
-        Step 1 — [mat_star M A X = 1].
-          [H_pair_sum_one] gives [M X A + M A X = 1].  With total order
-          on [+], either [M A X = 1] or [M X A = 1].  If [M X A = 1],
-          then [1 = M X A < M A X ≤ 1] — impossible.  Hence [M A X = 1].
-          Since [1 = M A X ≤ mat_star M A X ≤ 1] (bounded), we get
-          [mat_star M A X = 1].
-
-        Step 2 — [mat_star M X A < 1].
-          First, establish that [M w A < 1] for all [w ≠ A]:
-            From Condorcet, [M w A < M A w].  If [M w A = 1], then
-            [1 < M A w ≤ 1], contradiction.  Hence [M w A < 1].
-
-          Then prove by induction on [n] that [pow M n w A < 1] for
-          all [w ≠ A]:
-            - Base (n=0): [I w A = 0 < 1] since [w ≠ A].
-            - Step (n=S n): [pow M (S n) w A = Σ_z M w z * pow M n z A].
-              If [z = A]: [M w A < 1] ⇒ product < 1.
-              If [z ≠ A]: [pow M n z A < 1] by IH ⇒ product < 1.
-              Sum of terms all < 1 is < 1 by [sum_lt_1_if_all_lt_1].
-
-          Since [mat_star M X A = geom_sum M K X A] is a sum of such
-          power terms, each < 1, the whole sum < 1.
-
-        Therefore [mat_star M X A < 1 = mat_star M A X], i.e.,
-        [schulze_beats M A X].
-
-      ------------------------------------------------------------
-      # How the proof works in the Schulze paper (2011, §4.1)
-      ------------------------------------------------------------
-
-      The paper proves: if A is a Condorcet winner (d[A,X] > d[X,A] for
-      all X ≠ A in the vote-count matrix), then A is a Schulze winner.
-
-      The paper's argument in the max-min semiring:
-        - p[A,X] ≥ d[A,X] (the direct edge A→X is a path).
-        - Any path X → v₁ → ... → vₖ = A: consider the first edge
-          (X, v₁).  Its weight is d[X,v₁].  By the Condorcet property
-          and the fact that individual preferences are transitive total
-          orders, one can show d[X,v₁] ≤ d[X,A].  Hence the bottleneck
-          of the entire path ≤ d[X,A].
-        - Therefore p[X,A] ≤ d[X,A] < d[A,X] ≤ p[A,X], so A beats X.
-
-      (The paper's proof is terse; some versions simply observe that
-      p[X,A] ≤ d[X,A] follows from the fact that every path X→A must
-      contain an edge whose weight is bounded by d[X,A] via the
-      Condorcet property, though the rigorous justification requires
-      ballot transitivity.)
-
-      ------------------------------------------------------------
-      # Key differences between the two proofs
-      ------------------------------------------------------------
-
-      1. GENERICITY.
-         - Paper: specific to the max-min semiring on vote counts.
-         - Rocq: works in ANY bounded semiring with total order on
-           addition.  Never inspects individual paths or voters.
-
-      2. HYPOTHESIS STRENGTH.
-         - Paper: uses only the Condorcet property d[A,X] > d[X,A].
-           No normalisation of the vote matrix is required.
-         - Rocq: additionally requires [H_pair_sum_one]
-           (M i j + M j i = 1).  This normalisation is what allows
-           the algebraic collapse [M A X = 1] and the clean induction
-           on powers.
-
-      3. PROOF TECHNIQUE.
-         - Paper: path-based — bound p[X,A] by d[X,A] using the
-           structure of individual preference orders.
-         - Rocq: induction on matrix powers — show every [pow M n X A]
-           is < 1 by induction on n, using [sum_lt_1_if_all_lt_1] to
-           aggregate.  The Kleene star is treated via its power series.
-
-      4. CENTRAL LEMMA.
-         - Paper: p[X,A] ≤ d[X,A] (any path X→A has bottleneck ≤ the
-           direct X→A edge weight).
-         - Rocq: [pow M n w A < 1] for all w ≠ A, proved by induction
-           on n using the Condorcet bounds [M w A < 1].
-
-      Both proofs share the same high-level intuition: a Condorcet
-      winner's direct advantage cannot be overcome by any chain of
-      indirect comparisons.  The paper argues this at the path level;
-      the Rocq proof argues it at the power-series level.              *)
-
-
+  (* Again very strong assumption. *)
   Theorem condorcet_implies_strict_winner {R : BoundedSemiring.type}
     (M : @Matrix Node R) (A : Node)
     (H_total_order : forall x y : R, x + y = x \/ x + y = y)
@@ -2319,116 +1741,24 @@ Section SocialChoice.
       apply H_geom_lt_1 with (n := kleene_exp). exact Heq.
   Qed.
 
+
+  Theorem condorcet_implies_strict_winner_weaker  {R : BoundedSemiring.type}
+    (M : @Matrix Node R) (A : Node) :
+    condorcet_winner M A -> strict_winner M A.
+  Proof.
+    unfold condorcet_winner, strict_winner.
+    intros ha * hb.
+    pose proof (ha _ hb) as hc. 
+    unfold schulze_beats.
+    unfold beats in ha, hc |- *.
+    (* A beats X in head-to-head 
+      M X A < M A X *)
+    destruct hc as (hcl & hcr).
+    Search (_ ≤ _ -> _).
+
+
+
   
-
-
-  (** * Smith criterion (Section 4.5 of the Schulze paper)
-
-      If the candidates are partitioned into two non-empty sets [B1] and
-      [B2] such that every candidate in [B1] beats every candidate in
-      [B2] in the DIRECT matrix (pairwise domination), then every Schulze
-      winner belongs to [B1].
-
-      This is a generalisation of "Condorcet winner ⇒ Schulze winner":
-      it says that a Schulze winner cannot come from a dominated set.
-      The Smith set (the smallest non-empty dominating set) therefore
-      always contains the Schulze winner(s).
-
-      ------------------------------------------------------------
-      # How the proof in this file works (algebraic)
-      ------------------------------------------------------------
-
-      Suppose [w] is a Schulze winner but [w ∈ B2].  Since [B1] is
-      non-empty, pick [a ∈ B1].  The domination hypothesis gives
-      [M w a < M a w].  The proof then follows the same pattern as
-      [condorcet_implies_strict_winner]:
-
-        Step 1 — [mat_star M a w = 1].
-          [H_pair_sum_one a w] gives [M a w + M w a = 1].
-          Total order: cannot have [M w a = 1] (would contradict
-          [M w a < M a w ≤ 1]).  Hence [M a w = 1].
-          Then [1 = M a w ≤ mat_star M a w ≤ 1], so [mat_star M a w = 1].
-
-        Step 2 — [mat_star M w a < 1].
-          First show that for all [b ∈ B2] and [c ∈ B1], [M b c < 1]:
-            From domination, [M b c < M c b] and [H_pair_sum_one] gives
-            [M c b + M b c = 1].  Total order: [M b c ≠ 1] (since then
-            [1 < M c b ≤ 1]).  Hence [M b c < 1].
-
-          Then prove by induction on [n] that [pow M n b c < 1] for
-          all [b ∈ B2], [c ∈ B1]:
-            - Base (n=0): [I b c = 0 < 1] since [b ∈ B2] and [c ∈ B1]
-              implies [b ≠ c].
-            - Step: [pow M (S n) b c = Σ_z M b z * pow M n z c].
-              If [z ∈ B1]: [M b z < 1] ⇒ product < 1.
-              If [z ∉ B1] then [z ∈ B2]: [pow M n z c < 1] by IH
-              (since z ∈ B2, c ∈ B1) ⇒ product < 1.
-              Sum of terms all < 1 is < 1 by [sum_lt_1_if_all_lt_1].
-
-          In particular, for [b = w] and [c = a], every [pow M n w a]
-          is < 1, so [mat_star M w a = geom_sum M K w a < 1].
-
-        Therefore [schulze_beats M a w], contradicting that [w] is a
-        Schulze winner.  Hence [w] cannot be in [B2] and must be in [B1].
-
-      ------------------------------------------------------------
-      # How the proof works in the Schulze paper (2011, §4.5)
-      ------------------------------------------------------------
-
-      The paper defines the Smith set as the smallest non-empty set S
-      such that every candidate in S beats every candidate outside S
-      in pairwise comparisons.  The theorem: the Schulze winner(s) are
-      always in the Smith set.
-
-      The paper's proof is a corollary of the Condorcet→Schulze lemma:
-        If a Schulze winner w were outside the Smith set S, then every
-        s ∈ S beats w pairwise.  By the same argument as in §4.1 (or
-        by applying the Condorcet→Schulze result on the restricted set
-        S ∪ {w}), some candidate in S would beat w in the Schulze
-        sense, contradicting that w is a Schulze winner.
-
-      The paper's proof is short (a few lines) and relies on the
-      already-established fact that pairwise domination implies
-      Schulze domination.
-
-      ------------------------------------------------------------
-      # Key differences between the two proofs
-      ------------------------------------------------------------
-
-      1. STATEMENT.
-         - Paper: the Schulze winner belongs to the Smith set (the
-           minimal dominating set).
-         - Rocq: a slightly more general statement — for ANY partition
-           B1/B2 where B1 dominates B2, the winner is in B1.  The
-           Smith criterion follows by instantiating B1 = Smith set.
-
-      2. PROOF TECHNIQUE.
-         - Paper: reduces to the Condorcet→Schulze lemma (a known
-           result from §4.1).
-         - Rocq: a direct algebraic proof mirroring the structure of
-           [condorcet_implies_strict_winner] — force the star entry
-           to [1] via [H_pair_sum_one], then show the reverse entry
-           is < 1 by induction on powers using [sum_lt_1_if_all_lt_1].
-
-      3. HYPOTHESIS STRENGTH.
-         - Paper: uses the Smith set definition and the Condorcet
-           property within that set.
-         - Rocq: requires [H_pair_sum_one] (the normalisation), same
-           as all other theorems in this development.  The proof works
-           uniformly for any dominating partition, not just the
-           minimal one.
-
-      4. CENTRAL LEMMA.
-         - Paper: the Condorcet→Schulze lemma (if A beats B pairwise,
-           then A beats B in the Schulze sense).
-         - Rocq: the induction [pow M n b c < 1] for b ∈ B2, c ∈ B1,
-           which generalises the [pow M n w A < 1] lemma from
-           [condorcet_implies_strict_winner] to arbitrary dominating
-           partitions.
-
-      The Rocq proof is self-contained: it does not call
-      [condorcet_implies_strict_winner] but re-proves the same
-      algebraic pattern in the more general setting of a partition.    *)
   Theorem smith_criterion {R : BoundedSemiring.type}
     (M : @Matrix Node R)
     (H_total_order : forall x y : R, x + y = x \/ x + y = y)
