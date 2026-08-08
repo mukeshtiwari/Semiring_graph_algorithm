@@ -2557,14 +2557,6 @@ Lemma transpose_list_length_square {R : Semiring.type} : forall (lb : list (list
   Qed.
 
 
-  (** * Monotonicity and structural lemmas for Schulze-method reasoning
-      ----------------------------------------------------------------
-      The following theorems capture matrix-level properties needed
-      for the Schulze beatpath computation.  They are stated as
-      [Admitted] placeholders — most are straightforward inductions
-      that follow from the path-based characterisations above
-      ([matrix_path_equation], [connect_partial_sum_mat_paths]). *)
-
   (** ** 1.  Monotonicity of [pow] in the matrix argument
 
       If every entry of [m₁] is below the corresponding entry of [m₂]
@@ -2670,8 +2662,8 @@ Lemma transpose_list_length_square {R : Semiring.type} : forall (lb : list (list
       [(m + I)[c,c] = 1] for every node [c].  This ensures that the
       beatpath from a candidate to itself is always the strongest
       possible (the top element in a bounded semiring). *)
-  Lemma closure_diag_one {R : BoundedSemiring.type} (m : @Matrix R) (c : Node) :
-    (m +M I) c c = 1.
+  Lemma closure_diag_one {R : BoundedSemiring.type} 
+    (m : @Matrix R) (c : Node) : (m +M I) c c = 1.
   Proof. 
     unfold matrix_add, I.
     destruct (fin_eq_dec c c); 
@@ -2686,7 +2678,8 @@ Lemma transpose_list_length_square {R : Semiring.type} : forall (lb : list (list
       For every matrix [m], [I[i,i] = 1] is the top element, so in a
       bounded semiring every entry satisfies [m c d ≤ 1 = I c d] when
       [c = d]. *)
-  Lemma I_is_top_diag {R : BoundedSemiring.type} (m : @Matrix R) (c : Node) : Orel (m c c) (I c c).
+  Lemma I_is_top_diag {R : BoundedSemiring.type} (m : @Matrix R) 
+  (c : Node) : Orel (m c c) (I c c).
   Proof. 
     intros *.
     unfold Orel, I.
@@ -2695,6 +2688,108 @@ Lemma transpose_list_length_square {R : Semiring.type} : forall (lb : list (list
     rewrite addC. 
     setoid_rewrite add_bound.
     exact eq_refl.
+  Qed.
+
+  (** * Supplementary matrix facts
+
+      Reusable structural facts about [transpose], [zeroM], and the
+      monotonicity of [matrix_mul] under the [Orel] preorder.  These
+      are stated at the matrix level so that [pow_monotone] and the
+      reversal-symmetry arguments in [SocialchoiceN.v] can reuse them
+      rather than reproving the sum-monotonicity machinery inline. *)
+
+  (** ** 7.  Transpose is involutive
+
+      [(m^T)^T = m] for every matrix [m].  Pure function algebra —
+      holds in any [Semiring]. *)
+  Lemma transpose_involutive {R : Semiring.type} (m : @Matrix R) c d :
+    transpose (transpose m) c d = m c d.
+  Proof.
+    unfold transpose. reflexivity.
+  Qed.
+
+  (** ** 8.  Transpose is monotone in the matrix argument
+
+      If [m₁ ≤ m₂] pointwise, then [transpose m₁ ≤ transpose m₂]
+      pointwise.  Composes with reversal-symmetry arguments. *)
+  Lemma transpose_monotone {R : BoundedSemiring.type} (m₁ m₂ : @Matrix R) :
+    (forall i j, Orel (m₁ i j) (m₂ i j)) ->
+    forall c d, Orel (transpose m₁ c d) (transpose m₂ c d).
+  Proof.
+    intros Hle c d.
+    unfold transpose. apply Hle.
+  Qed.
+
+  (** ** 9.  The identity matrix is its own transpose
+
+      [I^T = I]. *)
+  Lemma transpose_I {R : Semiring.type} (c d : Node) :
+    transpose (I (R := R)) c d = I c d.
+  Proof.
+    unfold transpose, I.
+    destruct (fin_eq_dec c d), (fin_eq_dec d c);
+      try reflexivity; try congruence.
+  Qed.
+
+  (** ** 10.  Matrix multiplication is monotone in both arguments
+
+      If [A ≤ A'] and [B ≤ B'] pointwise, then [A *M B ≤ A' *M B']
+      pointwise.  This is the general, reusable form of the sum
+      monotonicity argument used inside [pow_monotone]. *)
+  Lemma matrix_mul_monotone {R : BoundedSemiring.type} (A A' B B' : @Matrix R) :
+    (forall i j, Orel (A i j) (A' i j)) ->
+    (forall i j, Orel (B i j) (B' i j)) ->
+    forall c d, Orel (matrix_mul A B c d) (matrix_mul A' B' c d).
+  Proof.
+    intros HleA HleB c d.
+    unfold matrix_mul, Orel.
+    assert (HR : forall u v w : R, u + v = v -> w * u + w * v = w * v).
+    { intros u v w Huv. transitivity (w * (u + v)).
+      - apply eq_sym. apply (mulDl (s := R) w u v).
+      - rewrite Huv. reflexivity. }
+    assert (HL : forall u v w : R, u + v = v -> u * w + v * w = v * w).
+    { intros u v w Huv. transitivity ((u + v) * w).
+      - apply eq_sym. apply (mulDr (s := R) u v w).
+      - rewrite Huv; reflexivity. }
+    assert (HS : forall (f g : Node -> R),
+      (forall x, f x + g x = g x) -> sum f + sum g = sum g).
+    { intros f g Hfg. unfold sum.
+      induction (elements (s := Node)) as [|a l IHl]; cbn.
+      { apply addr0. }
+      { setoid_rewrite (add_swap_mid (f a)
+          (fold_right (λ (x : Node) (y : R), f x + y) 0 l)
+          (g a)
+          (fold_right (λ (x : Node) (y : R), g x + y) 0 l)).
+        transitivity (g a + (fold_right (λ (x : Node) (y : R), f x + y) 0 l +
+          fold_right (λ (x : Node) (y : R), g x + y) 0 l)).
+        - apply (f_equal2 add (Hfg a) eq_refl).
+        - apply (f_equal (fun t => g a + t) IHl). } }
+    apply HS. intro y.
+    apply (orel_trans (R := R) (A c y * B y d) (A' c y * B y d)
+      (A' c y * B' y d)).
+    { unfold Orel. apply HL. apply HleA. }
+    { unfold Orel. apply HR. apply HleB. }
+  Qed.
+
+  (** ** 11.  Transpose reverses matrix products
+
+      [(A *M B)^T = B^T *M A^T].  Requires commutative
+      multiplication ([mulC]) — without it the factors cannot be
+      reordered inside the sum. *)
+  Lemma matrix_mul_transpose {R : CommutativeSemiring.type} (A B : @Matrix R) c d :
+    transpose (matrix_mul A B) c d = matrix_mul (transpose B) (transpose A) c d.
+  Proof.
+    unfold transpose, matrix_mul.
+    apply sum_ext. intro y. apply mulC.
+  Qed.
+
+  (** ** 12.  The zero matrix is the [Orel]-bottom
+
+      [0 ≤ m] pointwise for every matrix [m]. *)
+  Lemma zeroM_bottom {R : Semiring.type} (m : @Matrix R) c d :
+    Orel (zeroM c d) (m c d).
+  Proof.
+    unfold Orel, zeroM. apply add0r.
   Qed.
 
 End Matrix.
