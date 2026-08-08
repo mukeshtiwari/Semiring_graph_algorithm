@@ -2523,4 +2523,112 @@ Section Path.
   Qed.
   
 
+
+  (** ** 1.  Path bottleneck bound
+
+      If every edge weight of the matrix [m] lies below [v] (in the
+      [Orel] preorder), then the measure of any non-empty well-formed
+      path is also below [v].  This holds in the max-min semiring
+      (where multiplication is [min]) and more generally in any bounded
+      semiring where multiplication is sub-idempotent with respect
+      to [v].
+
+      The [l ≠ []] hypothesis is necessary: for the empty path the
+      measure is [1], and [1 ≤ v] is not true in general (it requires
+      [v = 1] by [add_bound]).  In the Schulze-method context all
+      paths are non-empty (they carry at least a terminal [(d, d, 1)]
+      edge). *)
+  Lemma path_bottleneck_bound {R : Semiring.type} :
+    forall (m : @Matrix R) (l : list (Node * Node * R)) (v : R),
+      well_formed_path_aux m l ->
+      l <> [] ->
+      (forall (x y : Node), Orel (m x y) v) ->
+      (forall (a b : R), Orel a v -> Orel b v -> Orel (a * b) v) ->
+      Orel (measure_of_path l) v.
+  Proof.
+    intros m l v Hwf Hne Hedge Hclose.
+    induction l as [|h t IH].
+    - contradiction.
+    - destruct h as [[c x] w].
+      cbn [measure_of_path].
+      cbn [well_formed_path_aux] in Hwf.
+      destruct Hwf as [Hw_eq Hconn].
+      assert (Hw_le_v : Orel w v).
+      { subst w. apply Hedge. }
+      destruct t as [|h2 t2].
+      + cbn [measure_of_path]. rewrite mulr1. exact Hw_le_v.
+      + destruct h2 as [[c2 x2] w2].
+        destruct Hconn as [Heq_x Hwf_t].
+        assert (Ht_meas : Orel (measure_of_path ((c2, x2, w2) :: t2)) v).
+        { apply IH.
+          - exact Hwf_t.
+          - intro Hnil; inversion Hnil. }
+        apply (Hclose w (measure_of_path ((c2, x2, w2) :: t2))
+                Hw_le_v Ht_meas).
+  Qed.
+
+  (** ** 2.  Path concatenation bound
+
+      Concatenating two well-formed paths that meet at node [c] yields
+      a path whose measure is bounded by the product of the individual
+      measures.  This is the path-level analogue of
+      [star_path_compose] in [SocialchoiceN.v]. *)
+  Lemma path_concat_measure_bound {R : BoundedSemiring.type} :
+    forall (m : @Matrix R) (p q : list (Node * Node * R)) (c : Node),
+      well_formed_path_aux m p ->
+      well_formed_path_aux m q ->
+      source c q = true ->
+      target c p = true ->
+      Orel (measure_of_path (p ++ q)) (measure_of_path p * measure_of_path q).
+  Proof.
+    intros m p q c Hwf_p Hwf_q Hsrc Htgt.
+    rewrite (measure_of_path_app (p ++ q) p q eq_refl).
+    unfold Orel. apply bounded_add_idem.
+  Qed.
+
+  (** ** 3.  Weakest-edge realisation
+
+      In the max-min semiring ([*] = [min]), the measure of a path is
+      exactly the minimum edge weight along the path.  In a general
+      bounded semiring we only obtain an upper bound: there exists an
+      edge [(x, y)] on the path such that the path measure is below
+      [m x y]. *)
+  Lemma measure_bounded_by_some_edge {R : BoundedSemiring.type} :
+    forall (m : @Matrix R) (l : list (Node * Node * R)),
+      well_formed_path_aux m l -> l <> [] ->
+      exists (x y : Node),
+        List.In (x, y, m x y) l /\
+        Orel (measure_of_path l) (m x y).
+  Proof.
+    intros m l Hwf Hne.
+    induction l as [|h t IH].
+    - contradiction.
+    - destruct h as [[c x] w].
+      cbn [measure_of_path well_formed_path_aux] in *.
+      destruct Hwf as [Hw_eq Hconn].
+      destruct t as [|h2 t2].
+      + (* singleton path: witness is the only edge *)
+        exists c, x.
+        split.
+        { left. rewrite Hw_eq. reflexivity. }
+        { cbn [measure_of_path]. rewrite mulr1. rewrite Hw_eq.
+          unfold Orel. apply bounded_add_idem. }
+      + (* multi-edge path: use the edge from the tail *)
+        destruct h2 as [[c2 x2] w2].
+        destruct Hconn as [Heq_x Hwf_t].
+        assert (Ht_ne : (c2, x2, w2) :: t2 <> [])
+          by (intro Hnil; inversion Hnil).
+        destruct (IH Hwf_t Ht_ne) as [x' [y' [Hin_t Hmeas_t]]].
+        exists x', y'.
+        split.
+        { right. exact Hin_t. }
+        { pose proof (path_weight_rel (R := R) 1 w
+            (measure_of_path ((c2, x2, w2) :: t2))) as Hpw.
+          cbn in Hpw.
+          rewrite !mul1r in Hpw.
+          eapply orel_trans; [exact Hpw | exact Hmeas_t]. }
+  Qed.
+
+  
+
 End Path.
