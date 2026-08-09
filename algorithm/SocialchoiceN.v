@@ -1652,20 +1652,101 @@ Section SocialChoice.
   Qed.
 
 
+  (** Two-term join stays below a bound if both summands do (needs totality:
+      without it, two incomparable elements can join to something exceeding
+      both, as happens in a non-chain lattice). *)
+  Lemma orel_lt_add_lt {R : BoundedSemiring.type}
+    (Htotal : forall x y : R, x + y = x \/ x + y = y) (a b c : R) :
+    a < c -> b < c -> (a + b) < c.
+  Proof.
+    intros [Hale Hane] [Hble Hbne].
+    destruct (Htotal a b) as [Hcase|Hcase]; rewrite Hcase; split; assumption.
+  Qed.
+
+  (** Finite sums stay strictly below a bound if every summand does
+      (generalizes [sum_lt_1_if_all_lt_1] from the fixed bound [1] to an
+      arbitrary [c]; only needs totality, not boundedness at [c]). *)
+  Lemma sum_lt_bound_if_all_lt {R : BoundedSemiring.type}
+    (Htotal : forall x y : R, x + y = x \/ x + y = y) (f : Node -> R) (c : R) :
+    (forall z, f z < c) -> sum f < c.
+  Proof.
+    intros Hlt. unfold sum.
+    pose proof (elements_two_or_more (s := Node)) as Hlen.
+    assert (Hgen : forall (l : list Node), l <> [] ->
+      fold_right (fun x acc => f x + acc) 0 l < c).
+    { induction l as [|x l' IH]; intros Hne.
+      - contradiction.
+      - destruct l' as [|y l''].
+        + cbn. rewrite addr0. apply Hlt.
+        + apply orel_lt_add_lt; [exact Htotal | apply Hlt | apply IH; discriminate]. }
+    apply Hgen.
+    destruct (elements (s := Node)) as [|z l]; [simpl in Hlen; lia | discriminate].
+  Qed.
+
+  (** Mixed transitivity: strict below then weakly below is still strict. *)
+  Lemma orel_lt_le_trans {R : CommutativeMonoid.type} (x y z : R) :
+    x < y -> y ≤ z -> x < z.
+  Proof.
+    intros [Hxy_le Hxy_ne] Hyz.
+    split.
+    - eapply orel_trans; [exact Hxy_le | exact Hyz].
+    - intro Heq. subst z. apply Hxy_ne. apply (orel_antisym x y Hxy_le Hyz).
+  Qed.
+
+  (** * [condorcet_implies_strict_winner], with [H_pair_sum_one] replaced by
+      [H_dominance] — every edge *into* the Condorcet winner [A] is strictly
+      below every edge *out of* [A], rather than forcing every outgoing edge
+      to equal the semiring's top [1].  
+  *)
   Theorem condorcet_implies_strict_winner_weaker  {R : BoundedSemiring.type}
-    (M : @Matrix Node R) (A : Node) :
+    (M : @Matrix Node R) (A : Node)
+    (H_total_order : forall x y : R, x + y = x \/ x + y = y)
+    (H_dominance : forall Z X, Z <> A -> X <> A -> M Z A < M A X) :
     condorcet_winner M A -> strict_winner M A.
   Proof.
-    unfold condorcet_winner, strict_winner.
-    intros ha * hb.
-    pose proof (ha _ hb) as hc. 
-    unfold schulze_beats.
-    unfold beats in ha, hc |- *.
-    (* A beats X in head-to-head 
-      M X A < M A X *)
-    destruct hc as (hcl & hcr).
-    Search (_ ≤ _ -> _).
-  Admitted.
+    intros Hcw X0 HX0.
+    unfold schulze_beats, beats.
+    (* Every walk of length n into A, from any w <> A, stays strictly below
+       the fixed target margin M A X0. *)
+    assert (H_pow_lt : forall n w, w <> A -> pow M n w A < M A X0).
+    { induction n as [|n IH]; intros w Hw.
+      - (* n = 0: pow M 0 w A = I w A = 0, since w <> A *)
+        cbn [pow]. unfold I.
+        destruct (fin_eq_dec w A) as [Heq|Hneq]; [congruence|].
+        split.
+        + apply zero_is_bottom.
+        + intro Heq0.
+          destruct (H_dominance X0 X0 HX0 HX0) as [Hd_le Hd_ne].
+          apply Hd_ne. unfold Orel in Hd_le.
+          rewrite <- Heq0 in Hd_le. rewrite addr0 in Hd_le.
+          rewrite Hd_le. exact Heq0.
+      - (* n = S n: pow M (S n) w A = sum_z M w z * pow M n z A *)
+        simpl. unfold matrix_mul.
+        apply sum_lt_bound_if_all_lt; [exact H_total_order |].
+        intro z.
+        destruct (fin_eq_dec z A) as [Heqz|Hneqz].
+        + (* z = A: bound via the first factor, M w A < M A X0 directly *)
+          subst z.
+          apply (orel_lt_trans (M w A * pow M n A A) (M w A) (M A X0)).
+          * apply bounded_mul_lower_left.
+          * apply H_dominance; assumption.
+        + (* z <> A: bound via the second factor, IH gives pow M n z A < M A X0 *)
+          apply (orel_lt_trans (M w z * pow M n z A) (pow M n z A) (M A X0)).
+          * apply bounded_mul_lower_right.
+          * apply IH. exact Hneqz. }
+    assert (H_geom_lt : forall n, geom_sum M n X0 A < M A X0).
+    { induction n as [|n IH].
+      - change (geom_sum M 0 X0 A) with (pow M 0 X0 A).
+        apply H_pow_lt. exact HX0.
+      - cbn [geom_sum]. unfold matrix_add.
+        apply orel_lt_add_lt; [exact H_total_order | exact IH | apply H_pow_lt; exact HX0]. }
+    unfold mat_star.
+    apply (orel_lt_le_trans (geom_sum M kleene_exp X0 A) (M A X0)
+      (geom_sum M kleene_exp A X0)).
+    - apply H_geom_lt.
+    - apply (geom_sum_includes_direct M kleene_exp A X0).
+      pose proof (elements_two_or_more (s := Node)) as Hlen. unfold kleene_exp. nia.
+  Qed.
 
 
   
