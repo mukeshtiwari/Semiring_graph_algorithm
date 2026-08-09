@@ -18,16 +18,32 @@ let string_value : coq_R -> string = function
   | Left n   -> string_of_int n
 
 
+
+let rank (n : coq_Node) : int =
+  match n with A -> 0 | B -> 1 | C -> 2 | D -> 3
+
+let matrix : coq_R array array =
+  [|
+    [| oneR;     Left 8;  Left 14; Left 10 |];
+    [| Left 13;  oneR;    Left 6;  Left 2  |];
+    [| Left 7;   Left 15; oneR;    Left 12 |];
+    [| Left 11;  Left 19; Left 9;  oneR    |]
+  |]
+
+let arraymat (x : coq_Node) (y : coq_Node) : coq_R =
+  matrix.(rank x).(rank y)
+
+
 (* All candidates (candidates is not extracted, so we define it here) *)
-let candidates : coq_Node list = [A; B; C; D]
+let finN : coq_Node list = [A; B; C; D] 
 
 (* -------------------------------------------------------------------- *)
 (*  Concrete example: the preference matrix M from Schulzepath           *)
 (*  (the paper's 21-voter profile; M[a,b] = # voters preferring a to b)  *)
 (* -------------------------------------------------------------------- *)
 
-let arraymat (u : coq_Node) (v : coq_Node) : coq_R =
-  coq_M u v
+(* let arraymat (u : coq_Node) (v : coq_Node) : coq_R =
+  coq_M u v *)
 
 
 (* -------------------------------------------------------------------- *)
@@ -40,8 +56,8 @@ let print_matrix () =
     Stdlib.List.iter (fun v ->
       Printf.printf "  %-2s → %-2s : %s\n"
         (string_node u) (string_node v) (string_value (arraymat u v))
-    ) candidates
-  ) candidates
+    ) finN
+  ) finN
 
 
 (* -------------------------------------------------------------------- *)
@@ -57,8 +73,8 @@ let print_star () =
     Stdlib.List.iter (fun v ->
       Printf.printf "  %-2s → %-2s : %s\n"
         (string_node u) (string_node v) (string_value (star u v))
-    ) candidates
-  ) candidates
+    ) finN
+  ) finN
 
 
 (* -------------------------------------------------------------------- *)
@@ -76,8 +92,8 @@ let print_winners () =
             Printf.printf "  %-2s beats %-2s  (%d > %d)\n"
               (string_node u) (string_node v) pu pv
         | _ -> ()
-    ) candidates
-  ) candidates
+    ) finN
+  ) finN
 
 
 (* -------------------------------------------------------------------- *)
@@ -92,7 +108,7 @@ let print_vector (label : string) (v : coq_Node -> coq_R) =
   print_endline ("\n  " ^ label ^ ":");
   Stdlib.List.iter (fun u ->
     Printf.printf "    %-2s : %s\n" (string_node u) (string_value (v u))
-  ) candidates
+  ) finN
 
 let print_mva () =
   print_endline "\n=== Matrix-Vector Action of the Closure (A*·b) ===";
@@ -101,7 +117,7 @@ let print_mva () =
   let func = mva_star_func     arraymat b in
   print_vector "eff  (mva_star_eff_fun, list-based)" eff;
   print_vector "func (mva_star_func, functional)"    func;
-  let ok = Stdlib.List.for_all (fun u -> eff u = func u) candidates in
+  let ok = Stdlib.List.for_all (fun u -> eff u = func u) finN in
   print_endline ("\n  eff = func ?  " ^ (if ok then "yes ✓" else "no ✗"))
 
 
@@ -176,7 +192,8 @@ let print_witness_demo () =
     Printf.printf "    witness value = %-4s  schulze_star value = %-4s  %s\n"
       (string_value wit_val) (string_value star_val)
       (if wit_val = star_val then "✓" else "✗")
-  ) [ (A, A); (A, B); (A, C); (A, D); (B, A); (B, B); (B, C); (B, D); (C, A); (C, B); (C, C); (C, D); (D, A); (D, B); (D, C); (D, D) ]
+  ) [ (A, A); (A, B); (A, C); (A, D); (B, A); (B, B); (B, C); 
+  (B, D); (C, A); (C, B); (C, C); (C, D); (D, A); (D, B); (D, C); (D, D) ]
 
 
 (* -------------------------------------------------------------------- *)

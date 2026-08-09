@@ -720,27 +720,6 @@ Section LiftBridge.
 
 End LiftBridge.
 
-(* ===================================================================== *)
-(*  Concrete example: the 21-voter profile from the paper (Sect. 3)      *)
-(*                                                                        *)
-(*    8 voters  a ≻ c ≻ d ≻ b                                            *)
-(*    2 voters  b ≻ a ≻ d ≻ c                                            *)
-(*    4 voters  c ≻ d ≻ b ≻ a                                            *)
-(*    4 voters  d ≻ b ≻ a ≻ c                                            *)
-(*    3 voters  d ≻ c ≻ b ≻ a                                            *)
-(*                                                                        *)
-(*  M[a,b] = number of voters strictly preferring a to b; the diagonal   *)
-(*  is the top element [oneR] (a candidate never faces itself).          *)
-(* ===================================================================== *)
-
-Definition M : Node -> Node -> R :=
-  fun a b =>
-    match a, b with
-    | A, A => oneR | A, B => Left 8  | A, C => Left 14 | A, D => Left 10
-    | B, A => Left 13 | B, B => oneR | B, C => Left 9  | B, D => Left 2
-    | C, A => Left 7  | C, B => Left 12 | C, C => oneR | C, D => Left 12
-    | D, A => Left 11 | D, B => Left 19 | D, C => Left 9  | D, D => oneR
-    end.
 
 (* ===================================================================== *)
 (*  Schulze beatpath strengths via the Kleene closure                    *)
