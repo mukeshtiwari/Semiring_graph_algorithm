@@ -22,6 +22,12 @@ let string_value : coq_R -> string = function
 let rank (n : coq_Node) : int =
   match n with A -> 0 | B -> 1 | C -> 2 | D -> 3
 
+(* -------------------------------------------------------------------- *)
+(*  Concrete example: the preference matrix M from Schulzepath           *)
+(*  (the paper's 21-voter profile; M[a,b] = # voters preferring a to b)  *)
+(* -------------------------------------------------------------------- *)
+
+
 let matrix : coq_R array array =
   [|
     [| oneR;     Left 8;  Left 14; Left 10 |];
@@ -36,14 +42,6 @@ let arraymat (x : coq_Node) (y : coq_Node) : coq_R =
 
 (* All candidates (candidates is not extracted, so we define it here) *)
 let finN : coq_Node list = [A; B; C; D] 
-
-(* -------------------------------------------------------------------- *)
-(*  Concrete example: the preference matrix M from Schulzepath           *)
-(*  (the paper's 21-voter profile; M[a,b] = # voters preferring a to b)  *)
-(* -------------------------------------------------------------------- *)
-
-(* let arraymat (u : coq_Node) (v : coq_Node) : coq_R =
-  coq_M u v *)
 
 
 (* -------------------------------------------------------------------- *)
