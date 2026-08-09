@@ -18,6 +18,28 @@
     (name schulze)
     (wrapped false)))
 
+(subdir schulzepath
+ (rocq.extraction
+  (prelude Extraction)
+  (extracted_files
+    BinNums.ml BinNums.mli
+    Datatypes.ml Datatypes.mli
+    List.ml List.mli
+    ListDef.ml ListDef.mli
+    MatN.ml MatN.mli
+    Nat.ml Nat.mli
+    OrelN.ml OrelN.mli
+    PathN.ml PathN.mli
+    Schulze.ml Schulze.mli
+    Schulzepath.ml Schulzepath.mli
+    SemimoduleN.ml SemimoduleN.mli
+    Specif.ml Specif.mli
+    Structures.ml Structures.mli)
+  (theories Stdlib HB elpi_elpi elpi Semiring Examples))
+  (library 
+    (name schulzepath)
+    (wrapped false)))
+
 (subdir widestshortestpath
  (rocq.extraction
   (prelude Extraction)
