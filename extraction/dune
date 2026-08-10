@@ -102,31 +102,6 @@
     (name wikimedia)
     (wrapped false)))
 
-(subdir viterbi
- (rocq.extraction
-  (prelude Extraction)
-  (extracted_files
-    BinInt.ml BinInt.mli
-    BinNums.ml BinNums.mli
-    BinPos.ml BinPos.mli
-    Datatypes.ml Datatypes.mli
-    List.ml List.mli
-    ListDef.ml ListDef.mli
-    MatN.ml MatN.mli
-    Nat.ml Nat.mli
-    OrelN.ml OrelN.mli
-    PosDef.ml PosDef.mli
-    QArith_base.ml QArith_base.mli
-    Qreduction.ml Qreduction.mli
-    SemimoduleN.ml SemimoduleN.mli
-    Specif.ml Specif.mli
-    Structures.ml Structures.mli
-    Viterbi.ml Viterbi.mli)
-  (theories Stdlib HB elpi_elpi elpi Semiring Examples))
-  (library
-    (name viterbi)
-    (wrapped false)))
-
 (subdir fivegslicing
  (rocq.extraction
   (prelude Extraction)

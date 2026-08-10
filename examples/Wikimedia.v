@@ -108,10 +108,21 @@ Section HBInstances.
     [TC; SK; KW; MR; LG; CB; HC; JSR; PL; JG; JF; FSS; GM; MP; EZ; WHD; UW; TM].
 
   Lemma elements_nodup_proof : NoDup elements_list.
-  Proof. Admitted.
+  Proof.
+    unfold elements_list.
+    repeat match goal with
+           | |- NoDup [] => apply NoDup_nil
+           | |- NoDup (_ :: _) =>
+               apply NoDup_cons; [ intros H; simpl in H; firstorder discriminate | ]
+           end.
+  Qed.
 
   Lemma elements_complete_proof : forall x : Node, In x elements_list.
-  Proof. Admitted.
+  Proof.
+    unfold elements_list.
+    intros [| | | | | | | | | | | | | | | | |].
+    all: simpl; firstorder congruence.
+  Qed.
 
   Lemma elements_two_or_more_proof : (2 <= List.length elements_list)%nat.
   Proof.

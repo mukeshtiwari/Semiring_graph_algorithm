@@ -960,7 +960,7 @@ Section Semimodule.
   (** Kleene star idempotence (vector-action level):
       [A*·(A*·b) = A*·b].  Requires the full strength of Kozen's
       [star_induction] with an inequality hypothesis; [star_post_fixpoint]
-      alone is insufficient.  Admitted as an open problem. *)
+      alone is insufficient. *)
   Lemma geom_sum_idempotent_action {R : BoundedSemiring.type} {U : Semimodule.type R} :
     forall (A : Node -> Node -> R) (b : @Vector R U),
     (forall (A : Node -> Node -> R) (x b : Node -> U),
