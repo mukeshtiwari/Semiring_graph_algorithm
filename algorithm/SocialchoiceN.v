@@ -1578,14 +1578,15 @@ Section SocialChoice.
             exact (Htop_trans x z A Hxz_top (Hq_top Hq_eq)). }
   Qed.
 
-  (** No route from [B] back to [A] can match the link [A → B]: matching it
-      would make [M B A] maximal, but unanimity gives [M B A = 0]. *)
+  (** No route from [B] back to [A] can match the link [A → B], as long as the
+      link [B → A] is not itself maximal.  Unanimity gives that for free:
+      [M B A = 0 ≠ M A B]. *)
   Lemma path_BA_measure_lt {R : BoundedSemiring.type}
     (M : @Matrix Node R) (A B : Node)
     (Htop_trans : forall X Y Z, M X Y = M A B -> M Y Z = M A B -> M X Z = M A B)
     (Hmax : forall X Y, X ≠ Y -> M X Y ≤ M A B)
     (Hdiag_one : forall i j, i = j -> M i j = 1)
-    (Hneq : A ≠ B) (Hzero : M B A = 0) (Hpos : 0 < M A B) :
+    (Hneq : A ≠ B) (Hne_top : M B A ≠ M A B) :
     forall (k : nat) (p : list (Node * Node * R)),
       List.In p (all_paths_klength elements M k B A) ->
       measure_of_path p < M A B.
@@ -1595,10 +1596,8 @@ Section SocialChoice.
     { intro Habs. apply Hneq. symmetry. exact Habs. }
     destruct (path_to_A_measure_top M A B Htop_trans Hmax Hdiag_one
       k B p HB_ne_A Hin) as [Hle Htop].
-    destruct Hpos as [_ Hzero_ne].
     split; [exact Hle |].
-    intro Heq. apply Hzero_ne.
-    rewrite <- Hzero. exact (Htop Heq).
+    intro Heq. exact (Hne_top (Htop Heq)).
   Qed.
 
   (** Each power of [M] is therefore strictly below the link [A → B] at [B, A]. *)
@@ -1608,7 +1607,7 @@ Section SocialChoice.
     (Htop_trans : forall X Y Z, M X Y = M A B -> M Y Z = M A B -> M X Z = M A B)
     (Hmax : forall X Y, X ≠ Y -> M X Y ≤ M A B)
     (Hdiag_one : forall i j, i = j -> M i j = 1)
-    (Hneq : A ≠ B) (Hzero : M B A = 0) (Hpos : 0 < M A B)
+    (Hneq : A ≠ B) (Hne_top : M B A ≠ M A B) (Hpos : 0 < M A B)
     (n : nat) : pow M n B A < M A B.
   Proof.
     rewrite (matrix_path_equation n M B A).
@@ -1620,7 +1619,7 @@ Section SocialChoice.
     apply in_map_iff in Hin. destruct Hin as [q [Heq Hin']].
     inversion Heq. subst s d q. clear Heq.
     exact (path_BA_measure_lt M A B Htop_trans Hmax Hdiag_one
-      Hneq Hzero Hpos n p Hin').
+      Hneq Hne_top n p Hin').
   Qed.
 
   (** …and so is the whole closure. *)
@@ -1631,7 +1630,7 @@ Section SocialChoice.
       M Y Z = M A B -> M X Z = M A B)
     (Hmax : forall X Y, X ≠ Y -> M X Y ≤ M A B)
     (Hdiag_one : forall i j, i = j -> M i j = 1)
-    (Hneq : A ≠ B) (Hzero : M B A = 0) (Hpos : 0 < M A B) :
+    (Hneq : A ≠ B) (Hne_top : M B A ≠ M A B) (Hpos : 0 < M A B) :
     mat_star M B A < M A B.
   Proof.
     unfold mat_star.
@@ -1643,7 +1642,7 @@ Section SocialChoice.
       - unfold matrix_add.
         apply (add_lt_bound Htotal); [exact IHk |].
         exact (pow_BA_lt_link M A B Htotal Htop_trans Hmax Hdiag_one
-          Hneq Hzero Hpos (S k)). }
+          Hneq Hne_top Hpos (S k)). }
     apply Hgen.
   Qed.
 
@@ -1658,14 +1657,147 @@ Section SocialChoice.
     mat_star M B A < mat_star M A B.
   Proof.
     intros Hneq Hzero Hpos Hmax Hdiag_one.
+    (* unanimity makes the reverse link [B → A] non-maximal *)
+    assert (Hne_top : M B A ≠ M A B).
+    { rewrite Hzero. exact (proj2 Hpos). }
     eapply orel_lt_le_trans.
     - exact (mat_star_BA_lt_link M A B Htotal Htop_trans Hmax Hdiag_one
-        Hneq Hzero Hpos).
+        Hneq Hne_top Hpos).
     - (* M A B ≤ mat_star M A B: the link itself is a path of length one *)
       pose proof (elements_two_or_more (s := Node)) as Hlen.
       pose proof (@pow_le_mat_star R M 1 A B) as h.
       unfold kleene_exp in h. specialize (h ltac:(nia)).
       cbn [pow] in h. rewrite matrix_mul_I_r in h. exact h.
+  Qed.
+
+  (* ------------------------------------------------------------------ *)
+  (*  The converse                                                        *)
+  (*                                                                      *)
+  (*  Unanimity itself is not recoverable from the conclusion: the        *)
+  (*  Schulze order ranks candidates strictly in profiles that contain no *)
+  (*  unanimous pair at all (the paper's own Example 1, formalised in     *)
+  (*  examples/Schulze.v, has d ≻ a with every pairwise count non-zero).  *)
+  (*  What does reverse is the property the proof actually turns on:      *)
+  (*  under the standing hypotheses, [A] beats [B] in the closure exactly *)
+  (*  when the reverse link [B → A] is not itself of maximal strength.    *)
+  (*  [pareto_stronger] is the instance [M B A = 0].                      *)
+  (* ------------------------------------------------------------------ *)
+
+  (** A path between two distinct nodes is bounded by the strongest link: it
+      must contain a non-loop edge, and a product lies below each factor. *)
+  Lemma path_measure_le_link {R : BoundedSemiring.type}
+    (M : @Matrix Node R) (A B : Node)
+    (Hmax : forall X Y, X ≠ Y -> M X Y ≤ M A B)
+    (Hdiag_one : forall i j, i = j -> M i j = 1) :
+    forall (k : nat) (x y : Node) (p : list (Node * Node * R)),
+      x ≠ y ->
+      List.In p (all_paths_klength elements M k x y) ->
+      measure_of_path p ≤ M A B.
+  Proof.
+    induction k as [|k IH]; intros x y p Hxy Hin.
+    - cbn [all_paths_klength] in Hin.
+      destruct (fin_eq_dec x y) as [Heq|_]; [congruence | inversion Hin].
+    - cbn [all_paths_klength] in Hin.
+      pose proof Hin as Hin_shape.
+      apply (append_node_in_paths_In M x
+        (List.flat_map (fun z => all_paths_klength elements M k z y) elements) p) in Hin.
+      destruct Hin as [w [q [Hp Hq_lf]]].
+      apply append_node_in_paths_shape in Hin_shape.
+      destruct Hin_shape as (w' & q' & Hp' & Hsrc_x & Hsrc_w' & Hq_ne).
+      subst p.
+      inversion Hp' as [[Heq_hd Heq_tl]].
+      inversion Heq_hd. subst w' q'. clear Hp'.
+      apply in_flat_map in Hq_lf. destruct Hq_lf as [z [Hz_el Hq_in]].
+      pose proof Hq_in as Hq_in_copy.
+      apply non_empty_paths_in_kpath in Hq_in as (_ & Hsrc_z & _).
+      assert (Hw_eq_z : w = z). { eapply source_inj; eassumption. }
+      subst w.
+      cbn [measure_of_path].
+      destruct (fin_eq_dec x z) as [Hxz|Hxz].
+      + (* self-loop of weight 1: the tail is still a path from x to y *)
+        subst z. rewrite (Hdiag_one x x eq_refl), mul1r.
+        exact (IH x y q Hxy Hq_in_copy).
+      + exact (orel_trans _ _ _ (bounded_mul_lower_left _ _) (Hmax x z Hxz)).
+  Qed.
+
+  Lemma pow_xy_le_link {R : BoundedSemiring.type}
+    (M : @Matrix Node R) (A B : Node)
+    (Hmax : forall X Y, X ≠ Y -> M X Y ≤ M A B)
+    (Hdiag_one : forall i j, i = j -> M i j = 1)
+    (n : nat) (x y : Node) : x ≠ y -> pow M n x y ≤ M A B.
+  Proof.
+    intros Hxy.
+    rewrite (matrix_path_equation n M x y).
+    unfold sum_all_rvalues, get_all_rvalues.
+    apply fold_right_orel_bound.
+    intros v Hv. apply in_map_iff in Hv. destruct Hv as [path [Hm Hin]].
+    destruct path as [[s d] p]. cbn in Hm. subst v.
+    unfold construct_all_paths in Hin.
+    apply in_map_iff in Hin. destruct Hin as [q [Heq Hin']].
+    inversion Heq. subst s d q. clear Heq.
+    exact (path_measure_le_link M A B Hmax Hdiag_one n x y p Hxy Hin').
+  Qed.
+
+  Lemma mat_star_le_link {R : BoundedSemiring.type}
+    (M : @Matrix Node R) (A B : Node)
+    (Hmax : forall X Y, X ≠ Y -> M X Y ≤ M A B)
+    (Hdiag_one : forall i j, i = j -> M i j = 1)
+    (x y : Node) : x ≠ y -> mat_star M x y ≤ M A B.
+  Proof.
+    intros Hxy. unfold mat_star.
+    assert (Hgen : forall k, geom_sum M k x y ≤ M A B).
+    { induction k as [|k IHk]; cbn [geom_sum].
+      - unfold I.
+        destruct (fin_eq_dec x y) as [Heq|_];
+          [congruence | apply zero_is_bottom].
+      - unfold matrix_add. apply add_orel_bound; [exact IHk |].
+        exact (pow_xy_le_link M A B Hmax Hdiag_one (S k) x y Hxy). }
+    apply Hgen.
+  Qed.
+
+  (** The strongest link is its own closure — no detour improves on it. *)
+  Lemma mat_star_link_eq {R : BoundedSemiring.type}
+    (M : @Matrix Node R) (A B : Node)
+    (Hmax : forall X Y, X ≠ Y -> M X Y ≤ M A B)
+    (Hdiag_one : forall i j, i = j -> M i j = 1)
+    (Hneq : A ≠ B) : mat_star M A B = M A B.
+  Proof.
+    apply orel_antisym.
+    - exact (mat_star_le_link M A B Hmax Hdiag_one A B Hneq).
+    - pose proof (elements_two_or_more (s := Node)) as Hlen.
+      pose proof (@pow_le_mat_star R M 1 A B) as h.
+      unfold kleene_exp in h. specialize (h ltac:(nia)).
+      cbn [pow] in h. rewrite matrix_mul_I_r in h. exact h.
+  Qed.
+
+  (** Both directions.  [pareto_stronger] is the special case [M B A = 0]. *)
+  Theorem pareto_stronger_iff {R : BoundedSemiring.type}
+    (M : @Matrix Node R) (A B : Node)
+    (Htotal : forall x y : R, x + y = x \/ x + y = y)
+    (Htop_trans : forall X Y Z, M X Y = M A B ->
+      M Y Z = M A B -> M X Z = M A B) :
+    A ≠ B -> 0 < M A B ->
+    (forall X Y, X ≠ Y -> M X Y ≤ M A B) ->
+    (forall i j, i = j -> M i j = 1) ->
+    (mat_star M B A < mat_star M A B <-> M B A ≠ M A B).
+  Proof.
+    intros Hneq Hpos Hmax Hdiag_one.
+    assert (Hstar_AB : mat_star M A B = M A B).
+    { exact (mat_star_link_eq M A B Hmax Hdiag_one Hneq). }
+    split.
+    - (* a maximal reverse link would already tie the two closures *)
+      intros [Hle Hne] Habs.
+      apply Hne, orel_antisym; [exact Hle |].
+      rewrite Hstar_AB, <- Habs.
+      pose proof (elements_two_or_more (s := Node)) as Hlen.
+      pose proof (@pow_le_mat_star R M 1 B A) as h.
+      unfold kleene_exp in h. specialize (h ltac:(nia)).
+      cbn [pow] in h. rewrite matrix_mul_I_r in h. exact h.
+    - intros Hne_top.
+      eapply orel_lt_le_trans.
+      + exact (mat_star_BA_lt_link M A B Htotal Htop_trans Hmax Hdiag_one
+          Hneq Hne_top Hpos).
+      + rewrite Hstar_AB. apply bounded_orel_refl.
   Qed.
 
 
