@@ -15,6 +15,7 @@ Local Infix "<" := (fun x y => x ≤ y ∧ x ≠ y) (at level 70).
 (*    monotonicity                     — Qed                               *)
 (*    smith_criterion                  — Qed                               *)
 (*    pareto_weaker                    — Qed                               *)
+(*    pareto_stronger                  — Qed                               *)
 (*    reversal_symmetry                — Qed                               *)
 (*    winner_exists                    — Qed                               *)
 (* ======================================================================= *)
@@ -1416,7 +1417,8 @@ Section SocialChoice.
   (*  If every voter strictly prefers A over B, then A is at least as    *)
   (*  strong as B in the Schulze ranking: mat_star M B A ≤ mat_star M A B.*)
   (*                                                                      *)
-  (*  The stronger form (pareto_first, strict <) is Admitted below.       *)
+  (*  The stronger form (strict <) is [pareto_stronger] below; it needs   *)
+  (*  two extra hypotheses, see the comment there.                        *)
   (*                                                                      *)
   (*  Hypotheses:                                                          *)
   (*    A ≠ B            — distinct candidates                            *)
@@ -1455,16 +1457,216 @@ Section SocialChoice.
   Qed.
 
 
-  (* I am not able to encode this because the langauage of semiring is *)
-  (* not very expressive.                                              *)
+  (* ------------------------------------------------------------------ *)
+  (*  Version 2 — pareto_stronger (strict form):  a ≻ᵥ b ∀v  →  a ≻ b   *)
+  (*                                                                      *)
+  (*  The semiring alone does not decide this: with [M A B] the strongest *)
+  (*  link, a route B → C → A built from equally strong links can match   *)
+  (*  it, and in the max-min semiring of the Schulze example the two      *)
+  (*  closures then coincide.  Schulze rules such a route out in §4.3.1   *)
+  (*  by an argument outside the algebra: the links of maximal strength   *)
+  (*  are exactly the unanimous ones, and unanimous preference cannot     *)
+  (*  cycle because individual ballots are transitive.  That is the       *)
+  (*  content of [Htop_trans] below — maximal links compose — and it is   *)
+  (*  a constraint on the ballot matrix [M], not on the semiring, so the  *)
+  (*  max-min instance is still covered.  [Htotal] says the natural       *)
+  (*  order is total, as in [condorcet_implies_strict_winner].            *)
+  (* ------------------------------------------------------------------ *)
+
+  (** [x < y] and [y ≤ z] give [x < z]. *)
+  Lemma orel_lt_le_trans {R : CommutativeMonoid.type} (x y z : R) :
+    x < y -> y ≤ z -> x < z.
+  Proof.
+    intros [Hxy_le Hxy_neq] Hyz. split.
+    - exact (orel_trans _ _ _ Hxy_le Hyz).
+    - intro Heq. apply Hxy_neq.
+      apply orel_antisym; [exact Hxy_le | rewrite Heq; exact Hyz].
+  Qed.
+
+  (** When the order is total, a strict upper bound survives addition. *)
+  Lemma add_lt_bound {R : CommutativeMonoid.type}
+    (Htotal : forall x y : R, x + y = x \/ x + y = y) (a b v : R) :
+    a < v -> b < v -> a + b < v.
+  Proof.
+    intros Ha Hb.
+    destruct (Htotal a b) as [Hcase|Hcase]; rewrite Hcase; assumption.
+  Qed.
+
+  (** …and hence a finite sum of terms each strictly below [v] stays below [v]. *)
+  Lemma fold_right_lt_bound {R : CommutativeMonoid.type}
+    (Htotal : forall x y : R, x + y = x \/ x + y = y) (l : list R) (v : R) :
+    0 < v ->
+    (forall x, In x l -> x < v) ->
+    fold_right (fun a b => a + b) (0 : R) l < v.
+  Proof.
+    intros H0 Hall. induction l as [|a l IH]; cbn [fold_right].
+    - exact H0.
+    - apply (add_lt_bound Htotal).
+      + apply Hall. left; reflexivity.
+      + apply IH. intros x Hx. apply Hall. right; exact Hx.
+  Qed.
+
+  (** Key lemma.  Every path into [A] starting from some [x ≠ A] has measure
+      at most the strongest link [M A B], and it attains [M A B] only when the
+      direct link [x → A] is itself of maximal strength.
+
+      This is the algebraic form of Schulze's observation that a route made
+      entirely of unanimous links is itself a unanimous link: at each step the
+      head edge either loses strength (so the whole product does) or is
+      maximal, and [Htop_trans] composes it with the maximal tail. *)
+  Lemma path_to_A_measure_top {R : BoundedSemiring.type}
+    (M : @Matrix Node R) (A B : Node)
+    (Htop_trans : forall X Y Z, M X Y = M A B ->
+      M Y Z = M A B -> M X Z = M A B)
+    (Hmax : forall X Y, X ≠ Y -> M X Y ≤ M A B)
+    (Hdiag_one : forall i j, i = j -> M i j = 1) :
+    forall (k : nat) (x : Node) (p : list (Node * Node * R)),
+      x ≠ A ->
+      List.In p (all_paths_klength elements M k x A) ->
+      measure_of_path p ≤ M A B
+      /\ (measure_of_path p = M A B -> M x A = M A B).
+  Proof.
+    induction k as [|k IH]; intros x p Hx_ne_A Hin.
+    - (* k = 0: no path, since x ≠ A *)
+      cbn [all_paths_klength] in Hin.
+      destruct (fin_eq_dec x A) as [Heq|Heq]; [congruence|].
+      inversion Hin.
+    - (* k = S k: peel off the head edge (x, z, M x z) *)
+      cbn [all_paths_klength] in Hin.
+      pose proof Hin as Hin_shape.
+      apply (append_node_in_paths_In M x
+        (List.flat_map (fun z => all_paths_klength elements M k z A) elements) p) in Hin.
+      destruct Hin as [y [q [Hp Hq_lf]]].
+      apply append_node_in_paths_shape in Hin_shape.
+      destruct Hin_shape as (y' & q' & Hp' & Hsrc_x & Hsrc_y' & Hq_ne).
+      subst p.
+      inversion Hp' as [[Heq_hd Heq_tl]].
+      inversion Heq_hd. subst y' q'. clear Hp'.
+      apply in_flat_map in Hq_lf. destruct Hq_lf as [z [Hz_el Hq_in]].
+      pose proof Hq_in as Hq_in_copy.
+      apply non_empty_paths_in_kpath in Hq_in as (_ & Hsrc_z & _).
+      assert (Hy_eq_z : y = z). { eapply source_inj; eassumption. }
+      subst y.
+      cbn [measure_of_path].
+      destruct (fin_eq_dec z A) as [Heq_zA|Hneq_zA].
+      + (* head edge already lands on A *)
+        subst z.
+        assert (HxA_le : M x A ≤ M A B) by (apply Hmax; exact Hx_ne_A).
+        assert (Hlow : M x A * measure_of_path q ≤ M x A)
+          by apply bounded_mul_lower_left.
+        split.
+        * exact (orel_trans _ _ _ Hlow HxA_le).
+        * intro Heq.
+          apply orel_antisym; [exact HxA_le | rewrite <- Heq; exact Hlow].
+      + (* head edge goes to a third node z, so the tail is a path z ⇝ A *)
+        destruct (IH z q Hneq_zA Hq_in_copy) as [Hq_le Hq_top].
+        destruct (fin_eq_dec x z) as [Hxz|Hxz].
+        * (* self-loop: weight 1, the measure is unchanged *)
+          subst z. rewrite (Hdiag_one x x eq_refl), mul1r.
+          split; [exact Hq_le | exact Hq_top].
+        * assert (Hxz_le : M x z ≤ M A B) by (apply Hmax; exact Hxz).
+          split.
+          { exact (orel_trans _ _ _ (bounded_mul_lower_left _ _) Hxz_le). }
+          { intro Heq.
+            (* the product attains the top, so both factors do *)
+            assert (Hxz_top : M x z = M A B).
+            { apply orel_antisym;
+              [exact Hxz_le | rewrite <- Heq; apply bounded_mul_lower_left]. }
+            assert (Hq_eq : measure_of_path q = M A B).
+            { apply orel_antisym;
+              [exact Hq_le | rewrite <- Heq; apply bounded_mul_lower_right]. }
+            exact (Htop_trans x z A Hxz_top (Hq_top Hq_eq)). }
+  Qed.
+
+  (** No route from [B] back to [A] can match the link [A → B]: matching it
+      would make [M B A] maximal, but unanimity gives [M B A = 0]. *)
+  Lemma path_BA_measure_lt {R : BoundedSemiring.type}
+    (M : @Matrix Node R) (A B : Node)
+    (Htop_trans : forall X Y Z, M X Y = M A B -> M Y Z = M A B -> M X Z = M A B)
+    (Hmax : forall X Y, X ≠ Y -> M X Y ≤ M A B)
+    (Hdiag_one : forall i j, i = j -> M i j = 1)
+    (Hneq : A ≠ B) (Hzero : M B A = 0) (Hpos : 0 < M A B) :
+    forall (k : nat) (p : list (Node * Node * R)),
+      List.In p (all_paths_klength elements M k B A) ->
+      measure_of_path p < M A B.
+  Proof.
+    intros k p Hin.
+    assert (HB_ne_A : B ≠ A).
+    { intro Habs. apply Hneq. symmetry. exact Habs. }
+    destruct (path_to_A_measure_top M A B Htop_trans Hmax Hdiag_one
+      k B p HB_ne_A Hin) as [Hle Htop].
+    destruct Hpos as [_ Hzero_ne].
+    split; [exact Hle |].
+    intro Heq. apply Hzero_ne.
+    rewrite <- Hzero. exact (Htop Heq).
+  Qed.
+
+  (** Each power of [M] is therefore strictly below the link [A → B] at [B, A]. *)
+  Lemma pow_BA_lt_link {R : BoundedSemiring.type}
+    (M : @Matrix Node R) (A B : Node)
+    (Htotal : forall x y : R, x + y = x \/ x + y = y)
+    (Htop_trans : forall X Y Z, M X Y = M A B -> M Y Z = M A B -> M X Z = M A B)
+    (Hmax : forall X Y, X ≠ Y -> M X Y ≤ M A B)
+    (Hdiag_one : forall i j, i = j -> M i j = 1)
+    (Hneq : A ≠ B) (Hzero : M B A = 0) (Hpos : 0 < M A B)
+    (n : nat) : pow M n B A < M A B.
+  Proof.
+    rewrite (matrix_path_equation n M B A).
+    unfold sum_all_rvalues, get_all_rvalues.
+    apply (fold_right_lt_bound Htotal); [exact Hpos |].
+    intros x Hx. apply in_map_iff in Hx. destruct Hx as [path [Hm Hin]].
+    destruct path as [[s d] p]. cbn in Hm. subst x.
+    unfold construct_all_paths in Hin.
+    apply in_map_iff in Hin. destruct Hin as [q [Heq Hin']].
+    inversion Heq. subst s d q. clear Heq.
+    exact (path_BA_measure_lt M A B Htop_trans Hmax Hdiag_one
+      Hneq Hzero Hpos n p Hin').
+  Qed.
+
+  (** …and so is the whole closure. *)
+  Lemma mat_star_BA_lt_link {R : BoundedSemiring.type}
+    (M : @Matrix Node R) (A B : Node)
+    (Htotal : forall x y : R, x + y = x \/ x + y = y)
+    (Htop_trans : forall X Y Z, M X Y = M A B -> 
+      M Y Z = M A B -> M X Z = M A B)
+    (Hmax : forall X Y, X ≠ Y -> M X Y ≤ M A B)
+    (Hdiag_one : forall i j, i = j -> M i j = 1)
+    (Hneq : A ≠ B) (Hzero : M B A = 0) (Hpos : 0 < M A B) :
+    mat_star M B A < M A B.
+  Proof.
+    unfold mat_star.
+    assert (Hgen : forall k, geom_sum M k B A < M A B).
+    { induction k as [|k IHk]; cbn [geom_sum].
+      - unfold I.
+        destruct (fin_eq_dec B A) as [Heq|_];
+          [exfalso; apply Hneq; symmetry; exact Heq | exact Hpos].
+      - unfold matrix_add.
+        apply (add_lt_bound Htotal); [exact IHk |].
+        exact (pow_BA_lt_link M A B Htotal Htop_trans Hmax Hdiag_one
+          Hneq Hzero Hpos (S k)). }
+    apply Hgen.
+  Qed.
+
   Theorem pareto_stronger {R : BoundedSemiring.type}
-    (M : @Matrix Node R) (A B : Node) :
-    A ≠ B -> M B A = 0 -> 0 < M A B -> M A B < 1 ->
+    (M : @Matrix Node R) (A B : Node)
+    (Htotal : forall x y : R, x + y = x \/ x + y = y)
+    (Htop_trans : forall X Y Z, M X Y = M A B -> 
+      M Y Z = M A B -> M X Z = M A B) :
+    A ≠ B -> M B A = 0 -> 0 < M A B ->
     (forall X Y, X ≠ Y -> M X Y ≤ M A B) ->
     (forall i j, i = j -> M i j = 1) ->
     mat_star M B A < mat_star M A B.
   Proof.
-  Admitted.
+    intros Hneq Hzero Hpos Hmax Hdiag_one.
+    eapply orel_lt_le_trans.
+    - exact (mat_star_BA_lt_link M A B Htotal Htop_trans Hmax Hdiag_one
+        Hneq Hzero Hpos).
+    - (* M A B ≤ mat_star M A B: the link itself is a path of length one *)
+      pose proof (elements_two_or_more (s := Node)) as Hlen.
+      pose proof (@pow_le_mat_star R M 1 A B) as h.
+      unfold kleene_exp in h. specialize (h ltac:(nia)).
+      cbn [pow] in h. rewrite matrix_mul_I_r in h. exact h.
+  Qed.
 
 
 
@@ -1683,15 +1885,8 @@ Section SocialChoice.
     destruct (elements (s := Node)) as [|z l]; [simpl in Hlen; lia | discriminate].
   Qed.
 
-  (** Mixed transitivity: strict below then weakly below is still strict. *)
-  Lemma orel_lt_le_trans {R : CommutativeMonoid.type} (x y z : R) :
-    x < y -> y ≤ z -> x < z.
-  Proof.
-    intros [Hxy_le Hxy_ne] Hyz.
-    split.
-    - eapply orel_trans; [exact Hxy_le | exact Hyz].
-    - intro Heq. subst z. apply Hxy_ne. apply (orel_antisym x y Hxy_le Hyz).
-  Qed.
+  (* Mixed transitivity ([orel_lt_le_trans]) is proved above, with the
+     helper lemmas for [pareto_stronger]. *)
 
   (** * [condorcet_implies_strict_winner], with [H_pair_sum_one] replaced by
       [H_dominance] — every edge *into* the Condorcet winner [A] is strictly
