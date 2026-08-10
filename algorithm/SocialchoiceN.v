@@ -19,6 +19,9 @@ Local Infix "<" := (fun x y => x ≤ y ∧ x ≠ y) (at level 70).
 (*    pareto_stronger_iff              — Qed                               *)
 (*    prudence          (§4.9)         — Qed                               *)
 (*    minmax_beats      (§4.8)         — Qed                               *)
+(*    reversal_symmetry_O (4.4.2)      — Qed                               *)
+(*    schulze_beats_asym, strict_winner_unique, condorcet_winner_unique,   *)
+(*    strict_winner_is_schulze_winner  — Qed                               *)
 (*    reversal_symmetry                — Qed                               *)
 (*    winner_exists                    — Qed                               *)
 (* ======================================================================= *)
@@ -307,47 +310,106 @@ Section SocialChoice.
 
 
   
+  (* ==================================================================== *)
+  (*  Order-theoretic facts about O and the two notions of winner          *)
+  (* ==================================================================== *)
+
+  (** With at least two alternatives, every alternative has a rival. *)
+  Lemma exists_other (x : Node) : exists y : Node, y ≠ x.
+  Proof.
+    pose proof (elements_two_or_more (s := Node)) as Hlen.
+    pose proof (elements_nodup (s := Node)) as Hnd.
+    destruct (elements (s := Node)) as [|z1 [|z2 l]] eqn:He;
+      cbn in Hlen; try lia.
+    inversion Hnd as [|u0 l0 Hnin Hnd'].
+    assert (Hz12 : z1 ≠ z2).
+    { intro Habs. apply Hnin. rewrite Habs. left. reflexivity. }
+    destruct (fin_eq_dec z1 x) as [Heq|Hne].
+    - exists z2. intro Habs. apply Hz12. rewrite Habs. exact Heq.
+    - exists z1. exact Hne.
+  Qed.
+
+  (** Asymmetry of O (§2.2): it follows from the asymmetry of the strict
+      order on path strengths, exactly as in the paper. *)
+  Lemma schulze_beats_asym {R : Semiring.type}
+    (M : @Matrix Node R) (a b : Node) :
+    schulze_beats M a b -> ~ schulze_beats M b a.
+  Proof.
+    unfold schulze_beats, beats.
+    intros [Hab_le Hab_ne] [Hba_le _].
+    apply Hab_ne, orel_antisym; assumption.
+  Qed.
+
+  (** Beating everybody implies being unbeaten: [strict_winner ⊆ schulze_winner]. *)
+  Lemma strict_winner_is_schulze_winner {R : Semiring.type}
+    (M : @Matrix Node R) (a : Node) :
+    strict_winner M a -> schulze_winner M a.
+  Proof.
+    intros Hstrict b Hb_ne_a.
+    exact (schulze_beats_asym M a b (Hstrict b Hb_ne_a)).
+  Qed.
+
+  (** A strict winner leaves no other winner. *)
+  Lemma strict_winner_excludes_others {R : Semiring.type}
+    (M : @Matrix Node R) (a b : Node) :
+    strict_winner M a -> b ≠ a -> ~ schulze_winner M b.
+  Proof.
+    intros Ha Hb Hwin.
+    exact (Hwin a (fun h => Hb (eq_sym h)) (Ha b Hb)).
+  Qed.
+
+  (** Hence there is at most one strict winner. *)
+  Lemma strict_winner_unique {R : Semiring.type}
+    (M : @Matrix Node R) (a b : Node) :
+    strict_winner M a -> strict_winner M b -> a = b.
+  Proof.
+    intros Ha Hb.
+    destruct (fin_eq_dec a b) as [Heq|Hne]; [exact Heq | exfalso].
+    exact (schulze_beats_asym M a b
+      (Ha b (fun h => Hne (eq_sym h))) (Hb a Hne)).
+  Qed.
+
+  (** The same argument one level down, on [M] itself. *)
+  Lemma condorcet_winner_unique {R : Semiring.type}
+    (M : @Matrix Node R) (a b : Node) :
+    condorcet_winner M a -> condorcet_winner M b -> a = b.
+  Proof.
+    intros Ha Hb.
+    destruct (fin_eq_dec a b) as [Heq|Hne]; [exact Heq | exfalso].
+    destruct (Ha b (fun h => Hne (eq_sym h))) as [Hab_le Hab_ne].
+    destruct (Hb a Hne) as [Hba_le _].
+    apply Hab_ne, orel_antisym; assumption.
+  Qed.
+
+  (* ==================================================================== *)
+  (*  Reversal symmetry (Section 4.4)                                      *)
+  (* ==================================================================== *)
+
+  (** Reversal symmetry (4.4.2): reversing every ballot reverses the whole
+      relation O.  This is the paper's statement, and it is immediate from
+      [mat_star_transpose]. *)
+  Theorem reversal_symmetry_O {R : CommutativeSemiring.type}
+    (M : @Matrix Node R) (a b : Node) :
+    schulze_beats M a b <-> schulze_beats (fun i j => M j i) b a.
+  Proof.
+    unfold schulze_beats, beats.
+    rewrite (mat_star_transpose M a b), (mat_star_transpose M b a).
+    reflexivity.
+  Qed.
+
+  (** The winner-level consequence: a strict winner cannot stay one when the
+      ballots are reversed. *)
   Theorem reversal_symmetry {R : CommutativeSemiring.type} :
     forall (M : @Matrix Node R) (A : Node),
       strict_winner M A -> ~ strict_winner (fun i j => M j i) A.
   Proof.
-    intros M A H_win.
-    unfold strict_winner, schulze_beats, beats.
-    intro H_win_rev.
-    (* FinType guarantees ≥2 elements via elements_two_or_more.             *)
-    (* From that, NoDup, and completeness, derive ∃B ≠ A.                   *)
-    assert (H_exists : exists (B : Node), B ≠ A).
-    { pose proof (elements_two_or_more (s := Node)) as Hlen.
-      pose proof (elements_nodup (s := Node)) as Hnd.
-      pose proof (elements_complete A) as HinA.
-      (* Destruct elements — must have at least 2 due to elements_two_or_more. *)
-      destruct (@elements Node) as [|a [|b tl]].
-      - inversion HinA.
-      - simpl in Hlen. lia.
-      - (* a :: b :: tl: either a ≠ A or b ≠ A (NoDup ensures distinctness) *)
-        destruct (fin_eq_dec a A) as [Heqa|Hneq_a].
-        + subst a. exists b.
-          simpl in Hnd. inversion Hnd as [|? ? Hn1 _]. 
-          intro ha. unfold not in Hn1. eapply Hn1.
-          subst. cbn; left; reflexivity.
-        + exists a. exact Hneq_a. }
-    destruct H_exists as [B H_BA].
-    (* H_win says: M*_{BA} ≤ M*_{AB} ∧ M*_{BA} ≠ M*_{AB}                   *)
-    destruct (H_win B H_BA) as [H_win_le H_win_neq].
-    (* H_win_rev says: (M^T)*_{BA} ≤ (M^T)*_{AB}                           *)
-    (*                  ∧ (M^T)*_{BA} ≠ (M^T)*_{AB}                         *)
-    destruct (H_win_rev B H_BA) as [H_rev_le H_rev_neq].
-    (* mat_star_transpose: (M^T)*_{BA} = M*_{AB}                           *)
-    rewrite (mat_star_transpose M B A) in H_rev_le, H_rev_neq.
-    (* mat_star_transpose: (M^T)*_{AB} = M*_{BA}                           *)
-    rewrite (mat_star_transpose M A B) in H_rev_le, H_rev_neq.
-    (* Now we have:                                                          *)
-    (*   H_win_le  : M*_{BA} ≤ M*_{AB}  i.e., M*_{BA} ≤ M*_{AB}     *)
-    (*   H_rev_le  : M*_{AB} ≤ M*_{BA}  i.e., M*_{AB} ≤ M*_{BA}     *)
-    (*   H_win_neq : M*_{BA} ≠ M*_{AB}                                       *)
-    (* Antisymmetry gives M*_{BA} = M*_{AB}, contradicting H_win_neq.       *)
-    apply H_win_neq.
-    apply (orel_antisym (R := R) _ _ H_win_le H_rev_le).
+    intros M A H_win H_win_rev.
+    destruct (exists_other A) as [B H_BA].
+    (* [A] beats [B] originally, and beating [B] in the reversed profile is
+       exactly being beaten by [B] in the original one *)
+    exact (schulze_beats_asym M A B
+      (H_win B H_BA)
+      (proj2 (reversal_symmetry_O M B A) (H_win_rev B H_BA))).
   Qed.
 
 
@@ -1673,6 +1735,22 @@ Section SocialChoice.
       cbn [pow] in h. rewrite matrix_mul_I_r in h. exact h.
   Qed.
 
+  (** Pareto (4.3.1.3): the unanimously dominated alternative is not a winner. *)
+  Corollary pareto_stronger_loser {R : BoundedSemiring.type}
+    (M : @Matrix Node R) (A B : Node)
+    (Htotal : forall x y : R, x + y = x \/ x + y = y)
+    (Htop_trans : forall X Y Z, M X Y = M A B ->
+      M Y Z = M A B -> M X Z = M A B) :
+    A ≠ B -> M B A = 0 -> 0 < M A B ->
+    (forall X Y, X ≠ Y -> M X Y ≤ M A B) ->
+    (forall i j, i = j -> M i j = 1) ->
+    ~ schulze_winner M B.
+  Proof.
+    intros Hneq Hzero Hpos Hmax Hdiag_one Hwin.
+    exact (Hwin A Hneq (pareto_stronger M A B Htotal Htop_trans
+      Hneq Hzero Hpos Hmax Hdiag_one)).
+  Qed.
+
   (* ------------------------------------------------------------------ *)
   (*  The converse                                                        *)
   (*                                                                      *)
@@ -2525,21 +2603,6 @@ Section SocialChoice.
       { apply existsb_exists. exists f. split; [apply elements_complete |].
         apply existsb_exists. exists g. split; [apply elements_complete | exact HP]. }
       rewrite E in Htrue. discriminate.
-  Qed.
-
-  (** With at least two alternatives, every node has a companion. *)
-  Lemma exists_other (x : Node) : exists y : Node, y ≠ x.
-  Proof.
-    pose proof (elements_two_or_more (s := Node)) as Hlen.
-    pose proof (elements_nodup (s := Node)) as Hnd.
-    destruct (elements (s := Node)) as [|z1 [|z2 l]] eqn:He;
-      cbn in Hlen; try lia.
-    inversion Hnd as [|u0 l0 Hnin Hnd'].
-    assert (Hz12 : z1 ≠ z2).
-    { intro Habs. apply Hnin. rewrite Habs. left. reflexivity. }
-    destruct (fin_eq_dec z1 x) as [Heq|Hne].
-    - exists z2. intro Habs. apply Hz12. rewrite Habs. exact Heq.
-    - exists z1. exact Hne.
   Qed.
 
   (** Claim #2 (4.8.11).  The closure out of [a] reaches [b] with strength
