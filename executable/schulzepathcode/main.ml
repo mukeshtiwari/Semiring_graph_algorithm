@@ -127,11 +127,6 @@ let print_mva () =
 let edge (u : coq_Node) (v : coq_Node) (w : coq_R) =
   Coq_pair (Coq_pair (u, v), w)
 
-(* Decidable equality via the extracted Rocq predicates, rather than
-   OCaml's polymorphic [=] -- safe here since [coq_Edge] is plain data,
-   but polymorphic [=] silently breaks the moment an extracted type gains
-   a function-typed field (e.g. a semimodule/semiring record), so it's
-   worth not relying on it even where it happens to work today. *)
 let edge_eq (Coq_pair (Coq_pair (u1, v1), w1)) (Coq_pair (Coq_pair (u2, v2), w2)) : bool =
   coq_Node_eqb u1 u2 && coq_Node_eqb v1 v2 && coq_R_eqb w1 w2
 
@@ -161,14 +156,6 @@ let print_lang_demo () =
   Printf.printf "  lang_one [] = true ?  %s\n" (if lang_one [] then "yes ✓" else "no");
   Printf.printf "  lang_zero [] = true ?  %s\n" (if lang_zero [] then "yes" else "no ✓")
 
-
-(* -------------------------------------------------------------------- *)
-(*  Computable witness path: pow_witness_spec (proved in Rocq) says      *)
-(*  measure_of_path (schulze_witness m i j) = schulze_witness_value,     *)
-(*  and that this equals pow (M+I) 3 i j -- which coincides with         *)
-(*  schulze_star m i j since the closure has already stabilised by 3    *)
-(*  hops.  Not just the strength value: the actual path.                 *)
-(* -------------------------------------------------------------------- *)
 
 let string_edge (Coq_pair (Coq_pair (u, v), w)) : string =
   Printf.sprintf "%s→%s(%s)" (string_node u) (string_node v) (string_value w)

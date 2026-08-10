@@ -333,25 +333,14 @@ Section LangInstances.
       [MatN] applies to Lang-valued matrices.
 
       Deliberately NOT [BoundedSemiring]: there is no single "biggest
-      language" for [1 + L = 1] to hold against. That means [Lang] can't
-      reuse [geom_sum_stable_after_node_bound]'s stopping-bound argument
-      (which needs [add_bound]) the way the numeric [R] closure below
-      does -- there's no semiring-level guarantee that [pow (lift m) n]
-      stabilises past some fixed [n]. Below, [pow_witness]/[pow] are always
-      called at the concrete bound [3] (= |Node| - 1) instead, which is
-      sound only because no *optimal* walk needs to revisit a node --
-      a [PathN]-level fact about simple paths, not a [Semiring]-level one,
-      and not proved generically here. *)
+      language" for [1 + L = 1] to hold against. 
+ *)
 
 End LangInstances.
 
 Section LiftBridge.
 
-  (* Hand-rolled rather than [Nat.eqb]: [Nat.eqb] extracts to OCaml code
-     that references an unbound "PeanoNat" module in this project's
-     extraction setup, breaking [dune build] even though the .v itself
-     compiles fine -- matches this codebase's existing style of writing
-     concrete-instance arithmetic by hand rather than via Stdlib. *)
+  
   Fixpoint nat_eqb (n k : nat) : bool :=
     match n, k with
     | O, O => true
@@ -583,8 +572,6 @@ Section LiftBridge.
   (*  ([R_leb]) standing in for [R_total_order]'s bare disjunction.       *)
   (* ===================================================================== *)
 
-  (* Hand-rolled rather than [Nat.leb], for the same extraction-safety
-     reason as [nat_eqb] above. *)
   Fixpoint nat_leb (n k : nat) : bool :=
     match n, k with
     | O, _ => true
