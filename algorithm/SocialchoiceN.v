@@ -16,6 +16,9 @@ Local Infix "<" := (fun x y => x ≤ y ∧ x ≠ y) (at level 70).
 (*    smith_criterion                  — Qed                               *)
 (*    pareto_weaker                    — Qed                               *)
 (*    pareto_stronger                  — Qed                               *)
+(*    pareto_stronger_iff              — Qed                               *)
+(*    prudence          (§4.9)         — Qed                               *)
+(*    minmax_beats      (§4.8)         — Qed                               *)
 (*    reversal_symmetry                — Qed                               *)
 (*    winner_exists                    — Qed                               *)
 (* ======================================================================= *)
@@ -2252,6 +2255,420 @@ Section SocialChoice.
     { intro Heq. subst w. apply (proj1 (H_partition a0) Ha0_B1). exact Hw_B2. }
     apply (H_winner a0 H_a0_ne_w).
     unfold schulze_beats, beats. exact H_star_lt.
+  Qed.
+
+  (* ==================================================================== *)
+  (*  Shared helpers for prudence (§4.9) and the MinMax set (§4.8)         *)
+  (* ==================================================================== *)
+
+  (** Every term of a finite sum lies below the sum. *)
+  Lemma fold_right_in_le {R : BoundedSemiring.type}
+    (f : Node -> R) (l : list Node) (x : Node) :
+    In x l -> f x ≤ fold_right (fun a b => f a + b) (0 : R) l.
+  Proof.
+    induction l as [|a l IH]; cbn [fold_right]; [contradiction |].
+    intros [Heq|Hin].
+    - subst a. apply bounded_plus_upper_left.
+    - exact (orel_trans _ _ _ (IH Hin) (orel_plus_upper_right _ _)).
+  Qed.
+
+  Lemma le_sum {R : BoundedSemiring.type} (f : Node -> R) (x : Node) :
+    f x ≤ sum f.
+  Proof.
+    unfold sum. apply fold_right_in_le. apply elements_complete.
+  Qed.
+
+  (** [sum_orel_bound] at the bounded-semiring coercion path. *)
+  Lemma bounded_sum_orel_bound {R : BoundedSemiring.type} (f : Node -> R) (v : R) :
+    (forall x, f x ≤ v) -> sum f ≤ v.
+  Proof.
+    intros * ha. 
+    eapply sum_orel_bound; 
+    assumption. 
+  Qed.
+
+  (** [1] is the top of the natural order. *)
+  Lemma le_one {R : BoundedSemiring.type} (x : R) : x ≤ 1.
+  Proof. unfold Orel. rewrite addC. apply (add_bound (s := R) x). Qed.
+
+  (** A link is a path of length one. *)
+  Lemma link_le_mat_star {R : BoundedSemiring.type}
+    (M : @Matrix Node R) (x y : Node) : M x y ≤ mat_star M x y.
+  Proof.
+    pose proof (elements_two_or_more (s := Node)) as Hlen.
+    pose proof (@pow_le_mat_star R M 1 x y) as h.
+    unfold kleene_exp in h. specialize (h ltac:(nia)).
+    cbn [pow] in h. rewrite matrix_mul_I_r in h. exact h.
+  Qed.
+
+  (** The diagonal of the closure is the top. *)
+  Lemma mat_star_diag_one {R : BoundedSemiring.type}
+    (M : @Matrix Node R) (x : Node) : mat_star M x x = 1.
+  Proof. unfold mat_star. apply geom_sum_diag_one. Qed.
+
+  (* ==================================================================== *)
+  (*  Prudence (Section 4.9)                                              *)
+  (*                                                                      *)
+  (*  [λ_D] is the strength of the strongest directed cycle.  A cycle      *)
+  (*  through the link [a → b] (with [a ≠ b], since the paper's paths      *)
+  (*  never repeat a node consecutively) is that link followed by a path   *)
+  (*  back, so its strength is [M a b * mat_star M b a]; joining over all  *)
+  (*  ordered pairs of distinct nodes gives λ_D.  The [a ≠ b] guard is     *)
+  (*  essential: with [M i i = 1] a self-loop would be a cycle of maximal  *)
+  (*  strength and λ_D would collapse to the top.                          *)
+  (*                                                                      *)
+  (*  [Hmeet] — multiplication is the meet of the natural order — is the   *)
+  (*  algebraic content of the slogan that the strength of a path is the   *)
+  (*  strength of its weakest link.  It holds in the max-min semiring of   *)
+  (*  the Schulze instance.  Without it the statement fails: in max-times  *)
+  (*  a link can dominate every cycle while a two-step detour ties it.     *)
+  (* ==================================================================== *)
+
+  Definition cycle_strength {R : Semiring.type} (M : @Matrix Node R) : R :=
+    sum (fun a => sum (fun b =>
+      if fin_eq_dec a b then 0 else M a b * mat_star M b a)).
+
+  (** Each cycle through a link is bounded by the strongest cycle. *)
+  Lemma cycle_strength_ge {R : BoundedSemiring.type}
+    (M : @Matrix Node R) (a b : Node) :
+    a ≠ b -> M a b * mat_star M b a ≤ cycle_strength M.
+  Proof.
+    intros Hab. unfold cycle_strength.
+    eapply orel_trans; [| exact (le_sum _ a)]. cbv beta.
+    eapply orel_trans; [| exact (le_sum _ b)]. cbv beta.
+    destruct (fin_eq_dec a b) as [Heq|_]; [contradiction | apply bounded_orel_refl].
+  Qed.
+
+  (** Prudence (4.9.3): a link strictly stronger than every directed cycle is
+      respected by the Schulze relation. *)
+  Theorem prudence {R : BoundedSemiring.type}
+    (M : @Matrix Node R) (a b : Node)
+    (* Htotal and Hmeet are both satisfied by max-min semiring 
+    but not in general *)
+    (Htotal : forall x y : R, x + y = x \/ x + y = y)
+    (Hmeet : forall x y : R, x ≤ y -> x * y = x /\ y * x = x) :
+    a ≠ b -> cycle_strength M < M a b -> schulze_beats M a b.
+  Proof.
+    intros Hab Hlam.
+    assert (Hcyc : M a b * mat_star M b a ≤ cycle_strength M)
+      by (apply cycle_strength_ge; exact Hab).
+    (* the reverse closure cannot even reach the link's strength: if it did,
+       the link together with the return path would be a cycle as strong as
+       the link itself *)
+    assert (Hstar_le : mat_star M b a ≤ M a b).
+    { destruct (Htotal (mat_star M b a) (M a b)) as [Hcase|Hcase]; [| exact Hcase].
+      exfalso.
+      assert (Hge : M a b ≤ mat_star M b a).
+      { unfold Orel. rewrite addC. exact Hcase. }
+      destruct Hlam as [Hle Hne]. apply Hne, orel_antisym; [exact Hle |].
+      assert (Heq : M a b * mat_star M b a = M a b) by (apply (Hmeet _ _ Hge)).
+      rewrite <- Heq. exact Hcyc. }
+    assert (Hstar_ne : mat_star M b a ≠ M a b).
+    { intro Heq.
+      destruct Hlam as [Hle Hne]. apply Hne, orel_antisym; [exact Hle |].
+      assert (Hself : M a b * mat_star M b a = M a b).
+      { rewrite Heq. apply (Hmeet (M a b) (M a b) (bounded_orel_refl _)). }
+      rewrite <- Hself. exact Hcyc. }
+    unfold schulze_beats, beats.
+    apply (orel_lt_le_trans (mat_star M b a) (M a b) (mat_star M a b)).
+    - split; [exact Hstar_le | exact Hstar_ne].
+    - apply link_le_mat_star.
+  Qed.
+
+  (** Prudence (4.9.4): the loser of such a link is not a winner. *)
+  Corollary prudence_not_winner {R : BoundedSemiring.type}
+    (M : @Matrix Node R) (a b : Node)
+    (Htotal : forall x y : R, x + y = x \/ x + y = y)
+    (Hmeet : forall x y : R, x ≤ y -> x * y = x /\ y * x = x) :
+    a ≠ b -> cycle_strength M < M a b -> ~ schulze_winner M b.
+  Proof.
+    intros Hab Hlam Hwin.
+    exact (Hwin a Hab (prudence M a b Htotal Hmeet Hab Hlam)).
+  Qed.
+
+  (* ==================================================================== *)
+  (*  MinMax set (Section 4.8)                                            *)
+  (*                                                                      *)
+  (*  Γ_D(B) — [cut_in M B] — is the strength of the strongest link        *)
+  (*  entering the set [B] from outside, β_D its minimum over the proper   *)
+  (*  non-empty sets, and 𝔅_D the union of the minimising sets.  We take   *)
+  (*  subsets as boolean predicates and keep β_D as a parameter [beta]     *)
+  (*  constrained by hypotheses, rather than as a minimum computed over    *)
+  (*  the powerset: the semiring has joins but no meets, so a minimum      *)
+  (*  over subsets is not an operation of the algebra.  [Hmin] says beta   *)
+  (*  is a lower bound for every cut (β_D is the minimum), [Ba] with       *)
+  (*  [cut_in M Ba = beta] witnesses [a ∈ 𝔅_D], and [Hb_out] says no cut   *)
+  (*  around [b] attains beta, i.e. [b ∉ 𝔅_D].                            *)
+  (* ==================================================================== *)
+
+  Definition proper_nonempty (B : Node -> bool) : Prop :=
+    (exists x, B x = true) /\ (exists y, B y = false).
+
+  Definition cut_in {R : Semiring.type}
+    (M : @Matrix Node R) (B : Node -> bool) : R :=
+    sum (fun y => sum (fun x => if andb (negb (B y)) (B x) then M y x else 0)).
+
+  (** Every link entering [B] is below the cut. *)
+  Lemma cut_in_ge {R : BoundedSemiring.type} (M : @Matrix Node R)
+    (B : Node -> bool) (y x : Node) :
+    B y = false -> B x = true -> M y x ≤ cut_in M B.
+  Proof.
+    intros Hy Hx. unfold cut_in.
+    eapply orel_trans; [| exact (le_sum _ y)]. cbv beta.
+    eapply orel_trans; [| exact (le_sum _ x)]. cbv beta.
+    rewrite Hy, Hx. cbn. apply bounded_orel_refl.
+  Qed.
+
+  (** Claim #1 (4.8.7).  A path that starts outside [B] and ends inside it
+      must cross the boundary, and its measure is below the crossing link. *)
+  Lemma path_into_B_le_cut {R : BoundedSemiring.type}
+    (M : @Matrix Node R) (B : Node -> bool) :
+    forall (k : nat) (x y : Node) (p : list (Node * Node * R)),
+      B x = false -> B y = true ->
+      List.In p (all_paths_klength elements M k x y) ->
+      measure_of_path p ≤ cut_in M B.
+  Proof.
+    induction k as [|k IH]; intros x y p Hx Hy Hin.
+    - cbn [all_paths_klength] in Hin.
+      destruct (fin_eq_dec x y) as [Heq|_]; [subst y; congruence | inversion Hin].
+    - cbn [all_paths_klength] in Hin.
+      pose proof Hin as Hin_shape.
+      apply (append_node_in_paths_In M x
+        (List.flat_map (fun z => all_paths_klength elements M k z y) elements) p) in Hin.
+      destruct Hin as [w [q [Hp Hq_lf]]].
+      apply append_node_in_paths_shape in Hin_shape.
+      destruct Hin_shape as (w' & q' & Hp' & Hsrc_x & Hsrc_w' & Hq_ne).
+      subst p.
+      inversion Hp' as [[Heq_hd Heq_tl]].
+      inversion Heq_hd. subst w' q'. clear Hp'.
+      apply in_flat_map in Hq_lf. destruct Hq_lf as [z [Hz_el Hq_in]].
+      pose proof Hq_in as Hq_in_copy.
+      apply non_empty_paths_in_kpath in Hq_in as (_ & Hsrc_z & _).
+      assert (Hw_eq_z : w = z). { eapply source_inj; eassumption. }
+      subst w.
+      cbn [measure_of_path].
+      destruct (B z) eqn:Hz.
+      + (* the head edge already crosses the boundary *)
+        exact (orel_trans _ _ _ (bounded_mul_lower_left _ _)
+          (cut_in_ge M B x z Hx Hz)).
+      + (* still outside [B]: the tail crosses it *)
+        exact (orel_trans _ _ _ (bounded_mul_lower_right _ _)
+          (IH z y q Hz Hy Hq_in_copy)).
+  Qed.
+
+  Lemma pow_into_B_le_cut {R : BoundedSemiring.type}
+    (M : @Matrix Node R) (B : Node -> bool) (n : nat) (x y : Node) :
+    B x = false -> B y = true -> pow M n x y ≤ cut_in M B.
+  Proof.
+    intros Hx Hy.
+    rewrite (matrix_path_equation n M x y).
+    unfold sum_all_rvalues, get_all_rvalues.
+    apply fold_right_orel_bound.
+    intros v Hv. apply in_map_iff in Hv. destruct Hv as [path [Hm Hin]].
+    destruct path as [[s d] p]. cbn in Hm. subst v.
+    unfold construct_all_paths in Hin.
+    apply in_map_iff in Hin. destruct Hin as [q [Heq Hin']].
+    inversion Heq. subst s d q. clear Heq.
+    exact (path_into_B_le_cut M B n x y p Hx Hy Hin').
+  Qed.
+
+  Lemma mat_star_into_B_le_cut {R : BoundedSemiring.type}
+    (M : @Matrix Node R) (B : Node -> bool) (x y : Node) :
+    B x = false -> B y = true -> mat_star M x y ≤ cut_in M B.
+  Proof.
+    intros Hx Hy. unfold mat_star.
+    assert (Hgen : forall k, geom_sum M k x y ≤ cut_in M B).
+    { induction k as [|k IHk]; cbn [geom_sum].
+      - unfold I.
+        destruct (fin_eq_dec x y) as [Heq|_];
+          [subst y; congruence | apply zero_is_bottom].
+      - unfold matrix_add. apply add_orel_bound; [exact IHk |].
+        exact (pow_into_B_le_cut M B (S k) x y Hx Hy). }
+    apply Hgen.
+  Qed.
+
+  (** Order helpers available once the order is total. *)
+  Lemma not_le_lt {R : BoundedSemiring.type}
+    (Htotal : forall x y : R, x + y = x \/ x + y = y) (x y : R) :
+    ~ (x ≤ y) -> y < x.
+  Proof.
+    intro Hn. split.
+    - destruct (Htotal x y) as [Hc|Hc].
+      + unfold Orel. rewrite addC. exact Hc.
+      + exfalso. exact (Hn Hc).
+    - intro Heq. apply Hn. rewrite Heq. apply bounded_orel_refl.
+  Qed.
+
+  (** A product stays strictly above a bound that both factors clear — this
+      is where multiplication has to be the meet. *)
+  Lemma lt_mul {R : BoundedSemiring.type}
+    (Htotal : forall x y : R, x + y = x \/ x + y = y)
+    (Hmeet : forall x y : R, x ≤ y -> x * y = x /\ y * x = x) (c x y : R) :
+    c < x -> c < y -> c < x * y.
+  Proof.
+    intros Hx Hy. destruct (Htotal x y) as [Hc|Hc].
+    - assert (Hyx : y ≤ x) by (unfold Orel; rewrite addC; exact Hc).
+      destruct (Hmeet y x Hyx) as [_ Hxy]. rewrite Hxy. exact Hy.
+    - destruct (Hmeet x y Hc) as [Hxy _]. rewrite Hxy. exact Hx.
+  Qed.
+
+  (** Decidable search for a link satisfying a boolean test. *)
+  Lemma exists_edge_dec (P : Node -> Node -> bool) :
+    (forall f g, P f g = false) \/ (exists f g, P f g = true).
+  Proof.
+    destruct (existsb (fun f => existsb (fun g => P f g) elements) elements) eqn:E.
+    - right. apply existsb_exists in E as [f [_ Hf]].
+      apply existsb_exists in Hf as [g [_ Hg]]. exists f, g. exact Hg.
+    - left. intros f g. destruct (P f g) eqn:HP; [exfalso | reflexivity].
+      assert (Htrue :
+        existsb (fun f' => existsb (fun g' => P f' g') elements) elements = true).
+      { apply existsb_exists. exists f. split; [apply elements_complete |].
+        apply existsb_exists. exists g. split; [apply elements_complete | exact HP]. }
+      rewrite E in Htrue. discriminate.
+  Qed.
+
+  (** With at least two alternatives, every node has a companion. *)
+  Lemma exists_other (x : Node) : exists y : Node, y ≠ x.
+  Proof.
+    pose proof (elements_two_or_more (s := Node)) as Hlen.
+    pose proof (elements_nodup (s := Node)) as Hnd.
+    destruct (elements (s := Node)) as [|z1 [|z2 l]] eqn:He;
+      cbn in Hlen; try lia.
+    inversion Hnd as [|u0 l0 Hnin Hnd'].
+    assert (Hz12 : z1 ≠ z2).
+    { intro Habs. apply Hnin. rewrite Habs. left. reflexivity. }
+    destruct (fin_eq_dec z1 x) as [Heq|Hne].
+    - exists z2. intro Habs. apply Hz12. rewrite Habs. exact Heq.
+    - exists z1. exact Hne.
+  Qed.
+
+  (** Claim #2 (4.8.11).  The closure out of [a] reaches [b] with strength
+      above beta.  The paper grows a set greedily; equivalently, take the set
+      of nodes that [a] does *not* reach above beta — if [b] were in it, that
+      set would be a proper non-empty cut whose strongest entering link is
+      itself above beta, and following that link would reach a node of the
+      set above beta, a contradiction. *)
+  Lemma minmax_reach {R : BoundedSemiring.type}
+    (M : @Matrix Node R) (a b : Node) (beta : R)
+    (Htotal : forall x y : R, x + y = x \/ x + y = y)
+    (Hmeet : forall x y : R, x ≤ y -> x * y = x /\ y * x = x)
+    (Hdec : forall x y : R, {x = y} + {x ≠ y})
+    (Hmin : forall B : Node -> bool, proper_nonempty B -> beta ≤ cut_in M B)
+    (Hb_out : forall B : Node -> bool,
+      proper_nonempty B -> B b = true -> cut_in M B ≠ beta) :
+    ~ (mat_star M a b ≤ beta).
+  Proof.
+    intro Hab_le.
+    set (C := fun h : Node =>
+      if Hdec (mat_star M a h + beta) beta then true else false).
+    assert (HC_true : forall h, C h = true -> mat_star M a h ≤ beta).
+    { intros h Hh. unfold C in Hh.
+      destruct (Hdec (mat_star M a h + beta) beta) as [He|_];
+        [exact He | discriminate]. }
+    assert (HC_false : forall h, C h = false -> ~ (mat_star M a h ≤ beta)).
+    { intros h Hh Hle. unfold C in Hh.
+      destruct (Hdec (mat_star M a h + beta) beta) as [_|Hne];
+        [discriminate | exact (Hne Hle)]. }
+    assert (HCb : C b = true).
+    { unfold C. destruct (Hdec (mat_star M a b + beta) beta) as [_|Hne];
+        [reflexivity | exfalso; exact (Hne Hab_le)]. }
+    destruct (C a) eqn:HCa.
+    - (* [a] itself is not reached above beta, so beta is the top and every
+         cut attains it — contradicting [b ∉ 𝔅_D] *)
+      exfalso.
+      assert (Hone_le : (1 : R) ≤ beta).
+      { rewrite <- (mat_star_diag_one M a). exact (HC_true a HCa). }
+      assert (Hbeta_one : beta = 1)
+        by (apply orel_antisym; [apply le_one | exact Hone_le]).
+      destruct (exists_other b) as [y Hy].
+      pose (Bb := fun z : Node => if fin_eq_dec z b then true else false).
+      assert (HBb : Bb b = true).
+      { unfold Bb. destruct (fin_eq_dec b b) as [_|Hc]; [reflexivity | congruence]. }
+      assert (Hpn : proper_nonempty Bb).
+      { split; [exists b; exact HBb | exists y].
+        unfold Bb. destruct (fin_eq_dec y b) as [Hc|_]; [congruence | reflexivity]. }
+      apply (Hb_out Bb Hpn HBb).
+      apply orel_antisym; [rewrite Hbeta_one; apply le_one | exact (Hmin Bb Hpn)].
+    - (* [C] is a proper non-empty set containing [b] *)
+      assert (Hpn : proper_nonempty C)
+        by (split; [exists b; exact HCb | exists a; exact HCa]).
+      assert (Hcut_gt : beta < cut_in M C).
+      { split; [exact (Hmin C Hpn) | intro Heq; exact (Hb_out C Hpn HCb (eq_sym Heq))]. }
+      destruct (exists_edge_dec (fun f g =>
+        andb (andb (negb (C f)) (C g))
+             (if Hdec (M f g + beta) beta then false else true)))
+        as [Hnone | [f [g Hfg]]].
+      + (* every link into [C] is below beta, so the cut is too *)
+        exfalso. destruct Hcut_gt as [Hle Hne]. apply Hne, orel_antisym; [exact Hle |].
+        unfold cut_in.
+        apply bounded_sum_orel_bound. intro y. cbv beta.
+        apply bounded_sum_orel_bound. intro x. cbv beta.
+        destruct (andb (negb (C y)) (C x)) eqn:Hguard; [| apply zero_is_bottom].
+        specialize (Hnone y x). rewrite Hguard in Hnone. cbn in Hnone.
+        destruct (Hdec (M y x + beta) beta) as [He|_]; [exact He | discriminate].
+      + (* the crossing link reaches a node of [C] above beta *)
+        exfalso.
+        destruct (C f) eqn:Hf; cbn in Hfg; [discriminate |].
+        destruct (C g) eqn:Hg; cbn in Hfg; [| discriminate].
+        assert (HMfg : ~ (M f g ≤ beta)).
+        { destruct (Hdec (M f g + beta) beta) as [_|Hne];
+            [discriminate Hfg | exact Hne]. }
+        assert (Hprod : beta < mat_star M a f * M f g).
+        { apply (lt_mul Htotal Hmeet).
+          - exact (not_le_lt Htotal _ _ (HC_false f Hf)).
+          - exact (not_le_lt Htotal _ _ HMfg). }
+        assert (Hle_g : mat_star M a f * M f g ≤ mat_star M a g).
+        { eapply orel_trans; [| apply star_path_compose].
+          apply bounded_mul_orel_compat_r. apply link_le_mat_star. }
+        destruct Hprod as [Hbx Hbx_ne].
+        apply Hbx_ne, orel_antisym; [exact Hbx |].
+        exact (orel_trans _ _ _ Hle_g (HC_true g Hg)).
+  Qed.
+
+  (** MinMax (4.8.1): every member of the MinMax set beats every non-member. *)
+  Theorem minmax_beats {R : BoundedSemiring.type}
+    (M : @Matrix Node R) (a b : Node) (beta : R) (Ba : Node -> bool)
+    (Htotal : forall x y : R, x + y = x \/ x + y = y)
+    (Hmeet : forall x y : R, x ≤ y -> x * y = x /\ y * x = x)
+    (Hdec : forall x y : R, {x = y} + {x ≠ y})
+    (Hpn_a : proper_nonempty Ba) (Ha : Ba a = true) (Hcut_a : cut_in M Ba = beta)
+    (Hmin : forall B : Node -> bool, proper_nonempty B -> beta ≤ cut_in M B)
+    (Hb_out : forall B : Node -> bool,
+      proper_nonempty B -> B b = true -> cut_in M B ≠ beta) :
+    schulze_beats M a b.
+  Proof.
+    (* [b] cannot lie in a minimising set *)
+    assert (Hb : Ba b = false).
+    { destruct (Ba b) eqn:Hbb; [exfalso | reflexivity].
+      exact (Hb_out Ba Hpn_a Hbb Hcut_a). }
+    assert (Hrev : mat_star M b a ≤ beta).
+    { rewrite <- Hcut_a. exact (mat_star_into_B_le_cut M Ba b a Hb Ha). }
+    assert (Hfwd : beta < mat_star M a b).
+    { apply (not_le_lt Htotal).
+      exact (minmax_reach M a b beta Htotal Hmeet Hdec Hmin Hb_out). }
+    unfold schulze_beats, beats.
+    exact (orel_lt_trans _ _ _ Hrev Hfwd).
+  Qed.
+
+  (** MinMax (4.8.2): [S ⊆ 𝔅_D] — a node outside the MinMax set is no winner. *)
+  Corollary minmax_winner {R : BoundedSemiring.type}
+    (M : @Matrix Node R) (a b : Node) (beta : R) (Ba : Node -> bool)
+    (Htotal : forall x y : R, x + y = x \/ x + y = y)
+    (Hmeet : forall x y : R, x ≤ y -> x * y = x /\ y * x = x)
+    (Hdec : forall x y : R, {x = y} + {x ≠ y})
+    (Hpn_a : proper_nonempty Ba) (Ha : Ba a = true) (Hcut_a : cut_in M Ba = beta)
+    (Hmin : forall B : Node -> bool, proper_nonempty B -> beta ≤ cut_in M B)
+    (Hb_out : forall B : Node -> bool,
+      proper_nonempty B -> B b = true -> cut_in M B ≠ beta) : 
+    ~ schulze_winner M b.
+  Proof.
+    intro Hwin.
+    assert (Hab : a ≠ b).
+    { intro Heq. rewrite Heq in Ha.
+      destruct (Ba b) eqn:Hbb; [| discriminate].
+      exact (Hb_out Ba Hpn_a Hbb Hcut_a). }
+    exact (Hwin a Hab (minmax_beats M a b beta Ba Htotal Hmeet Hdec
+      Hpn_a Ha Hcut_a Hmin Hb_out)).
   Qed.
 
 
