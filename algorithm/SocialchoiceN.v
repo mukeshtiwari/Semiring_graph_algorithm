@@ -2417,8 +2417,50 @@ Section SocialChoice.
     destruct (fin_eq_dec a b) as [Heq|_]; [contradiction | apply bounded_orel_refl].
   Qed.
 
-  (** Prudence (4.9.3): a link strictly stronger than every directed cycle is
-      respected by the Schulze relation. *)
+  (** Prudence (4.9.3, local form): a link strictly stronger than every cycle
+      through that very link is respected by the Schulze relation.  This is the
+      paper's exact statement: [ab ∈ O] unless [ab] lies in a directed cycle
+      whose links are each at least as strong as [ab].  The hypothesis
+      [M a b * mat_star M b a < M a b] says the strongest cycle through [a → b]
+      (the link followed by the strongest return path) is strictly weaker than
+      the link itself. *)
+  Theorem prudence_local {R : BoundedSemiring.type}
+    (M : @Matrix Node R) (a b : Node)
+    (* Htotal and Hmeet are both satisfied by max-min semiring 
+    but not in general *)
+    (Htotal : forall x y : R, x + y = x \/ x + y = y)
+    (Hmeet : forall x y : R, x ≤ y -> x * y = x /\ y * x = x) :
+    a ≠ b -> M a b * mat_star M b a < M a b -> schulze_beats M a b.
+  Proof.
+    intros Hab Hlam.
+    (* the reverse closure cannot even reach the link's strength: if it did,
+       the link together with the return path would be a cycle as strong as
+       the link itself *)
+    assert (Hstar_le : mat_star M b a ≤ M a b).
+    { destruct (Htotal (mat_star M b a) (M a b)) as [Hcase|Hcase]; [| exact Hcase].
+      exfalso.
+      assert (Hge : M a b ≤ mat_star M b a).
+      { unfold Orel. rewrite addC. exact Hcase. }
+      destruct Hlam as [Hle Hne].
+      assert (Heq : M a b * mat_star M b a = M a b) by (apply (Hmeet _ _ Hge)).
+      apply Hne. exact Heq. }
+    assert (Hstar_ne : mat_star M b a ≠ M a b).
+    { intro Heq.
+      destruct Hlam as [Hle Hne].
+      assert (Hself : M a b * mat_star M b a = M a b).
+      { rewrite Heq. apply (Hmeet (M a b) (M a b) (bounded_orel_refl _)). }
+      apply Hne. exact Hself. }
+    unfold schulze_beats, beats.
+    apply (orel_lt_le_trans (mat_star M b a) (M a b) (mat_star M a b)).
+    - split; [exact Hstar_le | exact Hstar_ne].
+    - apply link_le_mat_star.
+  Qed.
+
+  (** Prudence (4.9.3, global form): a link strictly stronger than every
+      directed cycle — stronger than [λ_D = cycle_strength M] — is respected
+      by the Schulze relation.  This follows from [prudence_local], because the
+      strongest cycle through [a → b] is bounded by the strongest cycle
+      anywhere, which is itself strictly weaker than the link. *)
   Theorem prudence {R : BoundedSemiring.type}
     (M : @Matrix Node R) (a b : Node)
     (* Htotal and Hmeet are both satisfied by max-min semiring 
@@ -2428,29 +2470,12 @@ Section SocialChoice.
     a ≠ b -> cycle_strength M < M a b -> schulze_beats M a b.
   Proof.
     intros Hab Hlam.
-    assert (Hcyc : M a b * mat_star M b a ≤ cycle_strength M)
-      by (apply cycle_strength_ge; exact Hab).
-    (* the reverse closure cannot even reach the link's strength: if it did,
-       the link together with the return path would be a cycle as strong as
-       the link itself *)
-    assert (Hstar_le : mat_star M b a ≤ M a b).
-    { destruct (Htotal (mat_star M b a) (M a b)) as [Hcase|Hcase]; [| exact Hcase].
-      exfalso.
-      assert (Hge : M a b ≤ mat_star M b a).
-      { unfold Orel. rewrite addC. exact Hcase. }
-      destruct Hlam as [Hle Hne]. apply Hne, orel_antisym; [exact Hle |].
-      assert (Heq : M a b * mat_star M b a = M a b) by (apply (Hmeet _ _ Hge)).
-      rewrite <- Heq. exact Hcyc. }
-    assert (Hstar_ne : mat_star M b a ≠ M a b).
-    { intro Heq.
-      destruct Hlam as [Hle Hne]. apply Hne, orel_antisym; [exact Hle |].
-      assert (Hself : M a b * mat_star M b a = M a b).
-      { rewrite Heq. apply (Hmeet (M a b) (M a b) (bounded_orel_refl _)). }
-      rewrite <- Hself. exact Hcyc. }
-    unfold schulze_beats, beats.
-    apply (orel_lt_le_trans (mat_star M b a) (M a b) (mat_star M a b)).
-    - split; [exact Hstar_le | exact Hstar_ne].
-    - apply link_le_mat_star.
+    apply (prudence_local M a b Htotal Hmeet Hab).
+    destruct Hlam as [Hle Hne]. split.
+    - eapply orel_trans; [ exact (cycle_strength_ge M a b Hab) | exact Hle ].
+    - intro Heq.
+      apply Hne. apply orel_antisym; [ exact Hle | ].
+      rewrite <- Heq. exact (cycle_strength_ge M a b Hab).
   Qed.
 
   (** Prudence (4.9.4): the loser of such a link is not a winner. *)
