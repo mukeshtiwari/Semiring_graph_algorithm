@@ -1,8 +1,8 @@
 From Stdlib Require Import List BinNatDef
   Psatz Utf8 EqNat. 
 From HB Require Import structures.
-From Semiring Require Import MatN 
-  SemimoduleN Structures.
+From Semiring Require Import MatN
+  SemimoduleN Structures OrderSemiring.
 Import ListNotations SemiringNotations.
 
 
@@ -363,50 +363,15 @@ Section HBInstances.
           apply r_le_trans with (w2 := w2); assumption.
   Qed.
 
-  (** [plusWS x y] is the maximum of [x] and [y] under [ws_le]. *)
-  Lemma ws_join_lub (x y : WS) : ws_le x (plusWS x y) = true.
-  Proof.
-    unfold plusWS. destruct (ws_le y x) eqn:E.
-    - apply ws_le_refl.
-    - destruct (ws_le_total x y) as [H | H']; [exact H | rewrite H' in E; discriminate].
-  Qed.
-
-  Lemma ws_join_lub2 (x y : WS) : ws_le y (plusWS x y) = true.
-  Proof.
-    unfold plusWS. destruct (ws_le y x) eqn:E; [exact E | apply ws_le_refl].
-  Qed.
-
-  Lemma ws_join_least (x y z : WS) : ws_le x z = true -> ws_le y z = true -> ws_le (plusWS x y) z = true.
-  Proof.
-    intros Hx Hy. unfold plusWS. destruct (ws_le y x) eqn:E; assumption.
-  Qed.
+  (* [plusWS] is literally [add_max ws_le], so the additive commutative     *)
+  (* monoid comes from OrderSemiring: nothing about WS is involved beyond   *)
+  (* [ws_le] being a total order.                                           *)
 
   Lemma addA_proof : forall x y z : WS, plusWS (plusWS x y) z = plusWS x (plusWS y z).
-  Proof.
-    intros x y z. apply ws_le_antisym.
-    - (* plusWS (plusWS x y) z <= plusWS x (plusWS y z)  =: d *)
-      apply (ws_join_least (plusWS x y) z (plusWS x (plusWS y z))).
-      + apply (ws_join_least x y (plusWS x (plusWS y z))).
-        * apply ws_join_lub.
-        * apply (ws_le_trans y (plusWS y z) (plusWS x (plusWS y z)));
-          [apply ws_join_lub | apply ws_join_lub2].
-      + apply (ws_le_trans z (plusWS y z) (plusWS x (plusWS y z)));
-        [apply ws_join_lub2 | apply ws_join_lub2].
-    - (* plusWS x (plusWS y z) <= plusWS (plusWS x y) z  =: c *)
-      apply (ws_join_least x (plusWS y z) (plusWS (plusWS x y) z)).
-      + apply (ws_le_trans x (plusWS x y) (plusWS (plusWS x y) z));
-        [apply ws_join_lub | apply (ws_join_lub (plusWS x y) z)].
-      + apply (ws_join_least y z (plusWS (plusWS x y) z)).
-        * apply (ws_le_trans y (plusWS x y) (plusWS (plusWS x y) z));
-          [apply ws_join_lub2 | apply (ws_join_lub (plusWS x y) z)].
-        * apply (ws_join_lub2 (plusWS x y) z).
-  Qed.
+  Proof. exact (add_max_assoc ws_le ws_le_trans ws_le_antisym ws_le_total). Qed.
 
   Lemma addC_proof : forall x y : WS, plusWS x y = plusWS y x.
-  Proof. intros x y. apply ws_le_antisym.
-    - apply ws_join_least; [apply ws_join_lub2 | apply ws_join_lub].
-    - apply ws_join_least; [apply ws_join_lub2 | apply ws_join_lub].
-  Qed.
+  Proof. exact (add_max_comm ws_le ws_le_antisym ws_le_total). Qed.
 
   Lemma add0r_proof : forall x : WS, plusWS zeroWS x = x.
   Proof. intros x. destruct x; unfold plusWS, zeroWS; cbn; reflexivity. Qed.
@@ -559,76 +524,37 @@ Section HBInstances.
   Proof. intros a. unfold zeroWS. destruct a; cbn; reflexivity. Qed.
 
   (** [plusWS X Y] is the maximum of [X] and [Y] under [ws_le]. *) 
-  Lemma plusWS_ge : forall X Y : WS, ws_le X Y = true -> plusWS X Y = Y.
-  Proof.
-    intros X Y H. unfold plusWS. destruct (ws_le Y X) eqn:E2.
-    - apply ws_le_antisym; assumption.
-    - reflexivity.
-  Qed.
-
-  Lemma plusWS_ge_l : forall X Y : WS, ws_le Y X = true -> plusWS X Y = X.
-  Proof.
-    intros X Y H. unfold plusWS. destruct (ws_le Y X) eqn:E2.
-    - reflexivity.
-    - rewrite H in E2. discriminate.
-  Qed.
+  (* Both distributive laws follow from monotonicity of [mulWS] alone.  This *)
+  (* is the one obligation OrderSemiring leaves: the naive R×R encoding      *)
+  (* rejected at the top of this file is exactly a failure of monotonicity.  *)
 
   Lemma mulDl_proof : forall a b c : WS, mulWS a (plusWS b c) = plusWS (mulWS a b) (mulWS a c).
   Proof.
-    intros a b c.
-    destruct (ws_le_total b c) as [Hbc | Hcb].
-    - (* ws_le b c = true : plusWS b c = c, and a*b <= a*c *)
-      assert (Hmono : ws_le (mulWS a b) (mulWS a c) = true)
-        by (apply mulWS_mono_r; exact Hbc).
-      rewrite (plusWS_ge b c Hbc).
-      rewrite (plusWS_ge (mulWS a b) (mulWS a c) Hmono).
-      reflexivity.
-    - (* ws_le c b = true : plusWS b c = b, and a*c <= a*b *)
-      assert (Hmono : ws_le (mulWS a c) (mulWS a b) = true)
-        by (apply mulWS_mono_r; exact Hcb).
-      rewrite (plusWS_ge_l b c Hcb).
-      rewrite (plusWS_ge_l (mulWS a b) (mulWS a c) Hmono).
-      reflexivity.
+    exact (mul_add_max_distr_l ws_le ws_le_antisym ws_le_total mulWS mulWS_mono_r).
   Qed.
 
   Lemma mulDr_proof : forall a b c : WS, mulWS (plusWS a b) c = plusWS (mulWS a c) (mulWS b c).
   Proof.
-    intros a b c.
-    destruct (ws_le_total a b) as [Hab | Hba].
-    - (* ws_le a b = true : plusWS a b = b, and a*c <= b*c *)
-      assert (Hmono : ws_le (mulWS a c) (mulWS b c) = true)
-        by (apply mulWS_mono_l; exact Hab).
-      rewrite (plusWS_ge a b Hab).
-      rewrite (plusWS_ge (mulWS a c) (mulWS b c) Hmono).
-      reflexivity.
-    - (* ws_le b a = true : plusWS a b = a, and b*c <= a*c *)
-      assert (Hmono : ws_le (mulWS b c) (mulWS a c) = true)
-        by (apply mulWS_mono_l; exact Hba).
-      rewrite (plusWS_ge_l a b Hba).
-      rewrite (plusWS_ge_l (mulWS a c) (mulWS b c) Hmono).
-      reflexivity.
+    exact (mul_add_max_distr_r ws_le ws_le_antisym ws_le_total mulWS mulWS_mono_l).
   Qed.
 
   HB.instance Definition _ := IsSemiring.Build WS
     oneWS mulWS mulA_proof mul1r_proof mulr1_proof
     mulDr_proof mulDl_proof mul0r_proof mulr0_proof.
 
-  (** Bounded: [1] (length 0, width ∞) is the top of the order. *)
-  Lemma add_bound_proof : forall a : WS, plusWS oneWS a = oneWS.
+  (** [oneWS] (length 0, width ∞) is the greatest element of the order. *)
+  Lemma ws_le_top : forall a : WS, ws_le a oneWS = true.
   Proof.
-    intros [|l w]; unfold plusWS, oneWS.
-    - cbn. reflexivity.
-    - change ((if ws_le (SomeW l w) (SomeW 0 Infinity) then SomeW 0 Infinity else SomeW l w)
-              = SomeW 0 Infinity).
-      rewrite ws_le_unfold.
-      destruct (PeanoNat.Nat.ltb l 0) eqn:E1.
-      + apply PeanoNat.Nat.ltb_lt in E1. lia.
-      + destruct (PeanoNat.Nat.ltb 0 l) eqn:E2.
-        * apply PeanoNat.Nat.ltb_lt in E2. cbn. reflexivity.
-        * apply PeanoNat.Nat.ltb_ge in E2. assert (Hl : l = 0%nat) by lia. subst l.
-          change ((if r_le w Infinity then SomeW 0 Infinity else SomeW 0 w) = SomeW 0 Infinity).
-          rewrite r_le_top. reflexivity.
+    intros [|l w]; unfold oneWS; [reflexivity |].
+    rewrite ws_le_unfold.
+    destruct (PeanoNat.Nat.ltb l 0) eqn:E1.
+    - apply PeanoNat.Nat.ltb_lt in E1. lia.
+    - destruct (PeanoNat.Nat.ltb 0 l) eqn:E2; [reflexivity | apply r_le_top].
   Qed.
+
+  (** Bounded: the greatest element absorbs. *)
+  Lemma add_bound_proof : forall a : WS, plusWS oneWS a = oneWS.
+  Proof. exact (add_max_top_l ws_le oneWS ws_le_top). Qed.
 
   HB.instance Definition _ := IsBoundedSemiring.Build WS add_bound_proof.
 
@@ -688,16 +614,21 @@ Definition mva_func (m : Node -> Node -> WS) (v : Node -> WS) : Node -> WS :=
 (*    there, the tiebreaker compared the widths of two length-Infinity       *)
 (*    "no path" pairs and distributivity broke.                              *)
 (*                                                                           *)
-(*  PROOFS (all axioms are proved directly on WS, no admitted goals):        *)
+(*  PROOFS (no admitted goals):                                              *)
 (*    Commutative monoid: addA_proof addC_proof add0r_proof addr0_proof      *)
 (*    Semiring:           mulA_proof mul1r_proof mulr1_proof                 *)
 (*                        mulDr_proof mulDl_proof mul0r_proof mulr0_proof    *)
 (*    Bounded:            add_bound_proof   (oneWS + a = oneWS)              *)
 (*    Semimodule:         IsSemimodule instance of WS acting on itself.      *)
-(*    Backbone: the total order ws_le — ws_le_total, ws_le_antisym,          *)
-(*    ws_le_trans, ws_join_* — together with monotonicity of mulWS           *)
-(*    (mulWS_mono_r, mulWS_mono_l) and the scalar facts muls_le_r,           *)
-(*    muls_le_l over the max-min width semiring R.                           *)
+(*                                                                           *)
+(*    [plusWS] is [add_max ws_le], so associativity, commutativity, both     *)
+(*    distributive laws and boundedness are discharged by the generic        *)
+(*    results in algorithm/OrderSemiring.v.  What remains specific to WS is  *)
+(*    the backbone those results consume: ws_le is a total order             *)
+(*    (ws_le_total, ws_le_antisym, ws_le_trans, ws_le_top), multiplication   *)
+(*    is monotone in it (mulWS_mono_r, mulWS_mono_l), and the scalar facts   *)
+(*    muls_le_r, muls_le_l over the max-min width semiring R.  Monotonicity  *)
+(*    is the whole content: it is exactly what the naive R×R encoding lacks. *)
 (* ========================================================================= *)
   
 
