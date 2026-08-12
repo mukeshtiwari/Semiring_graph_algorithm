@@ -517,28 +517,6 @@ Section SocialChoice.
     exact Hmul.
   Qed.
 
-  (** Helper: if (x*y)*y < x then x*y < x, in a bounded semiring with
-      total order and decidable equality. *)
-  Lemma xy2_lt_x_implies_xy_lt_x {R : BoundedSemiring.type}
-    (H_total_order : forall x y : R, x + y = x \/ x + y = y)
-    (Hdec : forall x y : R, {x = y} + {x ≠ y})
-    (x y : R) : (x * y) * y < x -> x * y < x.
-  Proof.
-    intros [Hle Hne].
-    assert (Hxy_le_x : x * y ≤ x) by apply bounded_mul_lower_left.
-    destruct (H_total_order (x * y) x) as [Hcase | Hcase].
-    - (* x ≤ x*y, with x*y ≤ x → x = x*y, then (x*y)*y = x*y, Hne gives x*y ≠ x *)
-      assert (Hx_le_xy : x ≤ x * y).
-      { change (x + (x * y) = x * y). rewrite addC. exact Hcase. }
-      assert (Heq : x * y = x) by (apply orel_antisym; [exact Hxy_le_x | exact Hx_le_xy]).
-      rewrite Heq in Hle, Hne. exact (conj Hxy_le_x Hne).
-    - (* x*y ≤ x, check if = or < *)
-      destruct (Hdec (x * y) x) as [Heq | Hneq].
-      + rewrite Heq in Hle, Hne. exfalso. apply Hne. exact Heq.
-      + exact (conj Hxy_le_x Hneq).
-  Qed.
-
-
   (** * Transitivity of Schulze beats — meet-semiring proof
 
       Same conclusion as [schulze_trans] (if [a] beats [b] and [b] beats [c]
@@ -1565,62 +1543,6 @@ Section SocialChoice.
 
 
 
-  (** With total order on +, if every term in a sum is < 1, the sum < 1. *)
-  Lemma sum_lt_1_if_all_lt_1 {R : BoundedSemiring.type}
-    (Htotal : forall x y : R, x + y = x \/ x + y = y) (f : Node -> R) :
-    (forall z, f z < 1) -> sum f < 1.
-  Proof.
-    intros Hlt.
-    pose proof (elements_two_or_more (s := Node)) as Hlen.
-    unfold sum.
-    destruct (elements (s := Node)) as [|z l] eqn:Heq.
-    - (* Empty: contradicts Hlen *)
-      exfalso. subst. simpl in Hlen. lia.
-    - clear Heq Hlen.
-      revert z Hlt.
-      induction l as [|y l' IH];
-      [ (* One element *)
-        cbn; intros z0 Hlt0; rewrite addr0; apply Hlt0
-      | (* Multiple elements *)
-        intros z0 Hlt0;
-        cbn [fold_right];
-        specialize (IH z0 Hlt0);
-        cbn in IH; destruct IH as [IHa IHb];
-        split;
-        [ (* ≤ part *)
-          unfold Orel in *;
-          remember (f y + fold_right (fun x y0 => f x + y0) 0 l') as t;
-          setoid_rewrite <- Heqt;
-          remember (f z0 + t) as fzt;
-          rewrite addC; exact (@add_bound R (f z0 + t))
-        | (* ≠ part *)
-          destruct (Hlt0 y) as [Hlta Hltb];
-          unfold not in IHb;
-          intro Hc; eapply IHb;
-          destruct (Htotal (f z0) (f y + fold_right (fun x y0 => f x + y0) 0 l')) as [Hcase|Hcase];
-          [ (* Case: A + (B+C) = A *)
-            assert (Hz1 : f z0 = 1);
-            [ transitivity (f z0 + (f y + fold_right (fun x y0 => f x + y0) 0 l'));
-              [ symmetry; exact Hcase | exact Hc ]
-            | rewrite Hz1; apply add_bound ]
-          | (* Case: A + (B+C) = B+C *)
-            destruct (Htotal (f y) (fold_right (fun x y0 => f x + y0) 0 l')) as [Hbc|Hbc];
-            [ (* Subcase: B+C = B *)
-              exfalso; apply Hltb;
-              etransitivity; [ symmetry; exact Hbc | ];
-              etransitivity; [ symmetry; exact Hcase | ];
-              exact Hc
-            | (* Subcase: B+C = C *)
-              assert (Hc1 : fold_right (fun x y0 => f x + y0) 0 l' = 1);
-              [ etransitivity; [ symmetry; exact Hbc | ];
-                etransitivity; [ symmetry; exact Hcase | ];
-                exact Hc
-              | transitivity (f z0 + 1);
-                [ apply (f_equal (fun t => f z0 + t)); exact Hc1
-                | rewrite addC; apply add_bound ] ] ] ] ] ].
-  Qed.
-
-
   (** Transitivity: x ≤ y and y < z implies x < z. *)
   Lemma orel_lt_trans {R : CommutativeMonoid.type} (x y z : R) :
     x ≤ y -> y < z -> x < z.
@@ -1653,8 +1575,8 @@ Section SocialChoice.
   Qed.
 
   (** Finite sums stay strictly below a bound if every summand does
-      (generalizes [sum_lt_1_if_all_lt_1] from the fixed bound [1] to an
-      arbitrary [c]; only needs totality, not boundedness at [c]). *)
+      (the bound [c] is arbitrary; this only needs totality, not
+      boundedness at [c]). *)
   Lemma sum_lt_bound_if_all_lt {R : BoundedSemiring.type}
     (Htotal : forall x y : R, x + y = x \/ x + y = y) (f : Node -> R) (c : R) :
     (forall z, f z < c) -> sum f < c.
