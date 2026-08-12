@@ -41,15 +41,15 @@ Section SchulzeOnNT.
     forall a b c : Node,
       schulze_beats M a b -> schulze_beats M b c -> schulze_beats M a c.
   Proof.
-    exact (schulze_trans_weaker_necessary M (NT_selective cs) (NT_meet_lower_bound cs)).
+    exact (schulze_trans_weaker_necessary (NT_selective cs) (NT_meet_lower_bound cs) M).
   Qed.
 
   (** …hence the winner set is non-empty (Schulze's corollary 4.1.14). *)
   Theorem winner_exists_normalized (M : @Matrix Node (NT cs)) :
     exists a : Node, schulze_winner M a.
   Proof.
-    exact (winner_exists_weaker_necessary M (NT_selective cs) (NT_eq_dec cs)
-             (NT_meet_lower_bound cs)).
+    exact (winner_exists_weaker_necessary (NT_selective cs) (NT_eq_dec cs)
+    (NT_meet_lower_bound cs) M).
   Qed.
 
   (** The Smith criterion keeps its hypothesis about the matrix — a strength
