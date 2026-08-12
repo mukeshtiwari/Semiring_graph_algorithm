@@ -165,15 +165,6 @@ Section Semimodule.
 
 
 
-  (** Combine of two maps over [elements] equals a map of pairs. *)
-  Lemma combine_map_map {X Y : Type} (f : Node -> X) (g : Node -> Y) :
-    List.combine (List.map f elements) (List.map g elements) =
-    List.map (fun c => (f c, g c)) elements.
-  Proof.
-    induction elements as [|j js IH]; simpl; auto.
-    rewrite IH. reflexivity.
-  Qed.
-
   (** Lookup in a tabulated vector returns the function value. *)
   Lemma list_lookup_map {R : Semiring.type} {U : Semimodule.type R} :
     forall (f : Node -> U) (i : Node),
@@ -649,33 +640,6 @@ Section Semimodule.
     reflexivity.
   Qed.
 
-  (** Orel transitivity for any commutative monoid (generalizes
-      [orel_trans] in [OrelN.v] from [Semiring] to [CommutativeMonoid]). *)
-  Lemma orel_trans_cm {V : CommutativeMonoid.type} (a b c : V) :
-    Orel a b -> Orel b c -> Orel a c.
-  Proof.
-    unfold Orel. intros Hab Hbc.
-    rewrite <- Hbc at 1.
-    rewrite <- addA, Hab, Hbc.
-    reflexivity.
-  Qed.
-
-  (** Matrix-vector action distributes over vector addition:
-      [A·(u + v) = A·u + A·v]. *)
-  Lemma mva_add_distr {R : Semiring.type} {U : Semimodule.type R} :
-    forall (A : Node -> Node -> R) (u v : @Vector R U) (i : Node),
-    matrix_vector_action A (vec_add u v) i =
-    vec_add (matrix_vector_action A u) (matrix_vector_action A v) i.
-  Proof.
-    intros A u v i.
-    unfold matrix_vector_action, vec_add.
-    apply (eq_trans (fold_right_congr elements
-      (fun j => scale (A i j) (u j + v j))
-      (fun j => add (scale (A i j) (u j)) (scale (A i j) (v j)))
-      (fun j => scale_distr_v (s := U) (A i j) (u j) (v j)))).
-    apply fold_right_split.
-  Qed.
-
   (** Matrix-vector action is monotone with respect to the Orel order.
       If [v ≤ u] pointwise, then [A·v ≤ A·u] pointwise. *)
   Lemma mva_monotone_Orel {R : Semiring.type} {U : Semimodule.type R} :
@@ -906,16 +870,6 @@ Section Semimodule.
     - apply (H_all (length (@elements Node) - 1)%nat).
   Qed.
 
-  (** Orel antisymmetry holds in any commutative monoid:
-      [a ≤ b] and [b ≤ a] imply [a = b].  The proof uses only commutativity. *)
-  Lemma orel_antisym_cm {V : CommutativeMonoid.type} (a b : V) :
-    Orel a b -> Orel b a -> a = b.
-  Proof.
-    unfold Orel. intros Hab Hba.
-    rewrite <- Hba, addC.
-    exact Hab.
-  Qed.
-
   (** Post-fixpoint induction axiom for the Kleene star.  If [x] is a
       post-fixpoint of [z ↦ A·z + b] (i.e., [x ≤ A·x + b]), then [x] is
       bounded above by [A*·b].  This is the dual of [kleene_fixed_point_least]
@@ -1027,7 +981,7 @@ Section Semimodule.
     unfold Astar in H_star.
 
     (* 7. Antisymmetry: A*·x = x *)
-    apply (orel_antisym_cm _ _ H_least H_star).
+    apply (orel_antisym _ _ H_least H_star).
   Qed.
 
 
