@@ -80,194 +80,6 @@ Section GenericDefProofs.
         eapply ih.
   Qed.
 
-  
-  (** Transpose of a column of singletons is a row: transpose [[a₁];[a₂];…] = [[a₁;a₂;…]]. *)
-  Theorem transpose_map {A : Type} : ∀ (xs : list A ), 
-    xs <> [] -> transpose_list (map (λ y : A, [y]) xs) = [xs].
-  Proof.
-    induction xs as [|xsh xst ih]; intros ha; try congruence.
-    destruct xst as [|xsth xstt].
-    ++
-      cbn; reflexivity.
-    ++
-      remember (xsth :: xstt) as xst.
-      assert(hb : map (λ y : A, [y]) xst = [xsth] :: map (λ y : A, [y]) xstt).
-      rewrite Heqxst. cbn. reflexivity.
-      cbn. rewrite hb; clear hb.
-      assert (hb : xst <> []). rewrite Heqxst. 
-      intro hb. congruence.
-      specialize(ih hb).
-      rewrite Heqxst in ih.
-      assert (hc : map (λ y : A, [y]) (xsth :: xstt) = [xsth] :: 
-        map (λ y : A, [y]) xstt).
-      cbn. reflexivity. rewrite hc in ih; clear hc.
-      rewrite ih. subst. reflexivity.
-  Qed.
-
-  
-  
-
-  (** Transpose distributes over [zip_with cons]: prepending a row then transposing equals the row followed by the transposed rest. *)
-  Theorem transpose_zip {A : Type} : ∀ (xss : list (list A)) (xs : list A),
-    xss <> [] -> length xs = length xss -> 
-    transpose_list (zip_with cons xs xss) = xs :: transpose_list xss.
-  Proof. 
-    induction xss as [|xssh xsst ih].
-    +
-      intros * ha hb.
-      congruence.
-    +
-      intros * ha hb.
-      destruct xsst as [|xssth xsttt].
-      ++
-        cbn in hb |- *.
-        assert (hc : ∃ y : A, xs = [y]).
-        {
-          destruct xs as [|xsh xst]; 
-          cbn in hb; try nia.
-          exists xsh.
-          destruct xst. cbn in hb.
-          reflexivity.
-          cbn in hb. nia.
-        }
-        destruct hc as (y & hc).
-        subst. cbn.
-        reflexivity.
-      ++
-        remember (xssth :: xsttt) as xst.
-        cbn in hb |- *.
-        rewrite Heqxst.
-        rewrite <- Heqxst.
-        destruct xs as [|xsa xsb]; 
-        [cbn in hb; nia | ].
-        assert (hc : zip_with cons (xsa :: xsb) (xssh :: xst) = 
-          cons xsa xssh :: zip_with cons xsb xst). reflexivity.
-        rewrite hc; clear hc.
-        inversion hb as [hbb]; clear hb.
-        rewrite Heqxst in hbb |- * .
-        assert (hb : transpose_list ((xsa :: xssh) :: 
-          zip_with cons xsb (xssth :: xsttt)) = 
-          zip_with cons (xsa :: xssh) 
-          (transpose_list (zip_with cons xsb (xssth :: xsttt)))). 
-        {
-           destruct xsb as [|xsbh xsbt];
-          [cbn in hbb; try nia | reflexivity].
-        }
-        rewrite hb; clear hb.
-        assert (hb : xst <> []). subst. 
-        intro hb; congruence.
-        rewrite <-Heqxst in hbb |- *.
-        pose proof (ih xsb hb hbb) as hc.
-        rewrite hc. cbn; reflexivity.
-  Qed.
-
-
-
-  (** [zip_with cons] of two non-empty lists is non-empty. *)
-  Theorem zip_non_empty {A : Type} :
-    ∀ (xss : list (list A)) (xs : list A), 
-    xss <> [] -> xs <> [] ->
-    zip_with cons xs xss ≠ [].
-  Proof.
-    destruct xss as [|xssh xsst].
-    +
-      intros * ha hb.
-      congruence.
-    +
-      intros [|xsh xst] ha hb.
-      ++
-        congruence.
-      ++
-        intro hc. cbn in hc.
-        congruence.
-  Qed.
-
-
-
-  (** The transpose of a non-empty rectangular matrix is non-empty. *)
-  Theorem transpose_eff_non_empty {A : Type} : 
-    ∀ (xss : list (list A)), xss <> [] -> 
-    (∀ (xs : list A), In xs xss -> ∀ (ys : list A), 
-      In ys xss -> List.length xs = List.length ys ∧ 0 < List.length xs) -> 
-     transpose_list xss ≠ [].
-  Proof.
-    induction xss as [|xssh xsst ih].
-    +
-      intros ha hb; try congruence.
-    +
-      destruct xsst as [|xssth xsstt].
-      ++
-        intros ha hb.
-        cbn. intro hc.
-        specialize (hb xssh (or_introl eq_refl)
-          xssh (or_introl eq_refl)).
-        destruct hb as (_ & hbr).
-        assert(hb : xssh <> []).
-        { 
-          destruct xssh as [|xsshh xssht];
-          cbn in hbr; try nia.
-          intro hb. congruence.
-        }
-        eapply hb.
-        eapply map_eq_nil; exact hc.
-      ++
-        (* inductive case *)
-        remember (xssth :: xsstt) as xst.
-        intros * ha hb.
-        assert(hc : xst <> []).
-        {
-          subst; intro hc; congruence.
-        }
-        assert(hd : ∀ xs : list A, In xs xst → ∀ ys : list A, In ys xst →
-          length xs = length ys ∧ 0 < length xs).
-        {
-          intros * he * hf.
-          eapply hb; cbn; right; 
-          assumption.
-        }
-        (* i know that  transpose_eff xst ≠ [] 
-        and xssh <> [] *)
-        specialize(ih hc hd).
-        pose proof (hb xssh (or_introl eq_refl) xssh 
-        (or_introl eq_refl)) as he.
-        destruct he as (_ & her).
-        assert (he : xssh <> []).
-        {
-          destruct xssh as [|xsshh xssht];
-          cbn in her; try nia.
-          intro he; congruence.
-        }
-        assert (hf : transpose_list (xssh :: xst) = 
-        zip_with List.cons xssh (transpose_list xst)).
-        { 
-          rewrite Heqxst; reflexivity.
-        }
-        rewrite hf; clear hf.
-        eapply zip_non_empty; assumption.
-  Qed.
-
-
-
-  (** [zip_with cons ys (map singleton zs)] has the same length as [ys] when [|ys|=|zs|]. *)
-  Theorem zip_length_map {A : Type} : 
-    ∀ (ys zs : list A), 
-    List.length ys = List.length zs -> 
-    length (zip_with cons ys (map (λ y : A, [y]) zs)) = length ys.
-  Proof.
-    induction ys as [|ysh yst ih].
-    +
-      intros * ha. cbn; reflexivity.
-    +
-      intros [|zsh zst] ha.
-      ++
-        cbn in ha; nia.
-      ++
-        cbn. rewrite ih.
-        reflexivity.
-        cbn in ha. inversion ha; subst;
-        reflexivity.
-  Qed.
-
 
   (** If three lists have equal length, [zip_with cons] preserves that length. *)
   Theorem zip_transpose_length {A : Type} : 
@@ -350,68 +162,9 @@ Section GenericDefProofs.
         rewrite <-Heqxst.
         nia.
   Qed.
-   
 
 
 
-  (** Transpose is involutive for rectangular matrices: [transpose (transpose M) = M]. *)
-  Theorem transpose_eff_involutive {A : Type} :
-    ∀ (xss : list (list A)), 
-    (forall (xs : list A), In xs xss -> ∀ (ys : list A), 
-      In ys xss -> List.length xs = List.length ys ∧ 0 < List.length xs) -> 
-    transpose_list (transpose_list xss) = xss.
-  Proof.
-    induction xss as [| xsh xsst ih].
-    +
-      intro ha. reflexivity.
-    +
-      destruct xsst as [|xssth xsstt].
-      ++
-        intro ha. cbn.
-        eapply transpose_map.
-        specialize (ha xsh (or_introl eq_refl)).
-        intro hb. subst. simpl in ha.
-        specialize (ha [] (or_introl eq_refl)). 
-        nia.
-      ++
-        intro ha.
-        assert (hb : transpose_list (xsh :: xssth :: xsstt) = 
-          zip_with List.cons xsh (transpose_list (xssth :: xsstt))).
-        cbn. reflexivity.
-        rewrite hb; clear hb.
-        (* induction part *)
-        remember (xssth :: xsstt) as xst.
-        rewrite transpose_zip.
-        *
-          rewrite ih;
-          [reflexivity | intros * hb * hc].
-          eapply ha; cbn; right; assumption.
-        *
-          eapply transpose_eff_non_empty;
-          [intro hb; congruence | intros * hb * hc].
-          eapply ha; cbn; right; assumption.
-        *
-          assert(hb : (∀ xs : list A, In xs xst → ∀ ys : list A, 
-          In ys xst → length xs = length ys ∧ 0 < length xs)).
-          {
-            intros * hb * hc.
-            eapply ha; cbn; right;
-            assumption.
-          }
-          specialize(ih hb).
-          assert(hc : 0 < List.length xsh).
-          {
-            destruct (ha xsh (or_introl eq_refl) 
-            xsh (or_introl eq_refl)) as (hal & har);
-            assumption.
-          }
-          assert(hd : 0 < List.length xst).
-          {
-            subst; cbn; nia.
-          }
-          eapply transpose_length; 
-          assumption.
-  Qed.
 
   (* Helper: nth does not depend on default when index is in bounds.    *)
   Lemma nth_default_indep :
@@ -428,19 +181,6 @@ Section GenericDefProofs.
         eapply IH. nia.
   Qed.
 
-  (* Lemma: transpose swaps indices under nth, as a plain equality.      *)
-  Lemma nth_nil (A : Type) (n : nat) (d : A) : List.nth n [] d = d.
-  Proof.
-    induction n; simpl; reflexivity.
-  Qed.
-
-
-  (** Looking up any index in a singleton containing the empty list yields the empty list. *)
-  Lemma nth_singleton_nil (A : Type) (n : nat) : List.nth n [ [] ] ([] : list A) = [].
-  Proof.
-    induction n; simpl; [reflexivity | destruct n; reflexivity].
-  Qed.
-
   (* Helper lemma: nth 0 of nth i on map singletons = nth i on original *)
   Lemma nth_0_map_singleton :
     forall (A : Type) (l : list A) (i : nat) (d : A),
@@ -452,7 +192,7 @@ Section GenericDefProofs.
     - destruct i; reflexivity.
     - destruct i as [|i']; simpl; [reflexivity | apply IHl].
   Qed.
-  
+
 End GenericDefProofs.
 
 Section Matrix.
@@ -484,18 +224,18 @@ Section Matrix.
     | right _ => 0 
     end.
 
-  
+
   (* transpose the matrix m *)
   Definition transpose {R : Semiring.type} (m : @Matrix R) : @Matrix R  := 
     fun (c d : Node) => m d c.
 
-  
+
 
   (* pointwise addition to two matrices *)
   Definition matrix_add {R : Semiring.type} (m₁ m₂ : @Matrix R) : @Matrix R :=
     fun c d => (m₁ c d + m₂ c d).
 
- 
+
 
   (** Finite sum of a [Node]-indexed family over the semiring. *)
   Definition sum {R : Semiring.type} (f : Node -> R) : R :=
@@ -652,11 +392,6 @@ Section Matrix.
       list_lookup 0 elements row c.
 
 
-  (** Functional matrix multiplication via the list-based implementation. *)
-  Definition mul_fun {R : Semiring.type} (m₁ m₂ : Node -> Node -> R) : Node -> Node -> R :=
-    of_list (mul_list (to_list m₁) (to_list m₂)).
-
-
   (** Functional matrix exponentiation via the list-based implementation. *)
   Definition pow_fun {R : Semiring.type} (m : Node -> Node -> R) (n : nat)
     : Node -> Node -> R :=
@@ -754,56 +489,6 @@ Section Matrix.
       + subst; simpl; nia.
       + simpl in Hin. destruct Hin as [Heq' | Hin']; [exfalso; apply Hneq; symmetry; exact Heq' |].
         simpl. specialize (IH k Hin'). nia.
-  Qed.
-
-  (* Helper: nth at index_of position returns the element itself *)
-  Lemma index_of_aux_nth_same : forall (xs : list Node) (k : Node),
-    In k xs -> List.nth (index_of_aux k xs) xs k = k.
-  Proof.
-    induction xs as [|e es IH]; intros k Hin; simpl in *.
-    - inversion Hin.
-    - destruct Hin as [Hk | Hin'].
-      + (* k = e *)
-        subst k.
-        destruct (fin_eq_dec e e).
-        * reflexivity.
-        * exfalso. apply n. reflexivity.
-      + (* k ∈ es *)
-        destruct (fin_eq_dec k e).
-        * (* k = e, but also k ∈ es: this means e ∈ es, which is fine *)
-          subst k. simpl. reflexivity.
-        * (* k ≠ e *)
-          simpl. apply IH. exact Hin'.
-  Qed.
-
-
-  (** Distinct nodes have distinct indices (injectivity). *)
-  Lemma index_of_nodup : forall (k1 k2 : Node),
-    index_of k1 = index_of k2 -> k1 = k2.
-  Proof.
-    intros k1 k2 Hidx.
-    unfold index_of in Hidx.
-    set (elts := elements (s := Node)) in *.
-    assert (Hin1 : In k1 elts) by apply elements_complete.
-    assert (Hin2 : In k2 elts) by apply elements_complete.
-    pose proof (index_of_aux_nth_same elts k1 Hin1) as Hnth1.
-    pose proof (index_of_aux_nth_same elts k2 Hin2) as Hnth2.
-    rewrite Hidx in Hnth1.
-    (* Hnth1 : nth (index_of_aux k2 elts) elts k1 = k1 *)
-    (* Hnth2 : nth (index_of_aux k2 elts) elts k2 = k2 *)
-    set (i := index_of_aux k2 elts) in *.
-    assert (Hbound : (i < List.length elts)%nat).
-    { unfold i. subst elts. apply index_of_bound. }
-    rewrite (nth_default_indep Node i elts k1 k2 Hbound) in Hnth1.
-    rewrite Hnth2 in Hnth1. symmetry. exact Hnth1.
-  Qed.
-
-
-  (** Equality of nodes is equivalent to equality of their indices. *)
-  Lemma index_of_inj : forall (k1 k2 : Node),
-    k1 = k2 <-> index_of k1 = index_of k2.
-  Proof.
-    split; [intros; subst; reflexivity | apply index_of_nodup].
   Qed.
 
   (* ----------------------------------------------------------------- *)
@@ -980,20 +665,6 @@ Section Matrix.
     - destruct xs as [|x xs]; [simpl in Hxs; nia |].
       destruct yss as [|ys yss]; [simpl in Hyss; nia |].
       simpl. apply IH; simpl in Hxs, Hyss; nia.
-  Qed.
-
-
-  (** When the index is out of bounds, [nth] of [zip_with cons] returns []. *)
-  Lemma nth_zip_with_cons_overflow {A : Type} (xs : list A) (yss : list (list A)) (i : nat) :
-    (List.length xs <= i \/ List.length yss <= i)%nat ->
-    List.nth i (zip_with cons xs yss) [] = [].
-  Proof.
-    intros Hle.
-    apply List.nth_overflow.  (* use nth_overflow from Rocq stdlib *)
-    rewrite zip_with_length.
-    destruct Hle as [Hle | Hle].
-    - refine (Nat.le_trans _ _ _ (Nat.le_min_l _ _) Hle).
-    - refine (Nat.le_trans _ _ _ (Nat.le_min_r _ _) Hle).
   Qed.
 
 
@@ -1618,7 +1289,7 @@ Lemma transpose_list_length_square {R : Semiring.type} : forall (lb : list (list
       setoid_rewrite mulDl.
       f_equal. exact IH.
   Qed.
-  
+
   (* Generalized sum_add: works on any list, not just elements *)
   Lemma fold_right_add_gen {R : Semiring.type} : forall (g h : Node -> R) (l : list Node),
     fold_right (fun x acc => g x + acc) 0 l + fold_right (fun x acc => h x + acc) 0 l =
@@ -1764,43 +1435,6 @@ Lemma transpose_list_length_square {R : Semiring.type} : forall (lb : list (list
       { apply to_list_row_length. }
   Qed.
 
-  (* Helper: of_list is injective on square lists                       *)
-  Lemma of_list_inj_square {R : Semiring.type} : forall (L1 L2 : list (list R)),
-    length L1 = length (elements (s := Node)) ->
-    (forall row, In row L1 -> length row = length (elements (s := Node))) ->
-    length L2 = length (elements (s := Node)) ->
-    (forall row, In row L2 -> length row = length (elements (s := Node))) ->
-    (forall r c, of_list L1 r c = of_list L2 r c) ->
-    L1 = L2.
-  Proof.
-    intros L1 L2 Hlen1 Hrow1 Hlen2 Hrow2 Heq.
-    pose proof (elements_nodup (s := Node)) as Hnd.
-    assert (Hlen_row1 : forall r, length (list_lookup [] elements L1 r) = length (elements (s := Node))).
-    { intros r. rewrite list_lookup_nth_gen.
-      assert (Hbound : (index_of r < length L1)%nat).
-      { rewrite Hlen1. apply index_of_bound. }
-      apply nth_In with (d := [] : list R) in Hbound as Hin.
-      apply Hrow1. exact Hin. }
-    assert (Hlen_row2 : forall r, length (list_lookup [] elements L2 r) = length (elements (s := Node))).
-    { intros r. rewrite list_lookup_nth_gen.
-      assert (Hbound : (index_of r < length L2)%nat).
-      { rewrite Hlen2. apply index_of_bound. }
-      apply nth_In with (d := [] : list R) in Hbound as Hin.
-      apply Hrow2. exact Hin. }
-    assert (Hlookup_eq : forall r, list_lookup [] elements L1 r = list_lookup [] elements L2 r).
-    { intro r.
-      pose proof (list_lookup_tabulate R 0 (list_lookup [] elements L1 r) Hnd (Hlen_row1 r)) as Htab1.
-      pose proof (list_lookup_tabulate R 0 (list_lookup [] elements L2 r) Hnd (Hlen_row2 r)) as Htab2.
-      rewrite <- Htab1, <- Htab2.
-      apply map_ext. intro c.
-      unfold of_list in Heq. apply Heq. }
-    pose proof (list_lookup_tabulate (list R) ([] : list R) L1 Hnd Hlen1) as HtabL1.
-    pose proof (list_lookup_tabulate (list R) ([] : list R) L2 Hnd Hlen2) as HtabL2.
-    rewrite <- HtabL1, <- HtabL2.
-    apply map_ext. intro r.
-    apply Hlookup_eq.
-  Qed.
-
   (* Helper: of_list (pow_pos_list (to_list m) p) = pow_pos m p          *)
   Lemma of_list_pow_pos_list {R : Semiring.type} : forall (m : @Matrix R) (p : positive) (c d : Node),
     of_list (pow_pos_list (to_list m) p) c d = pow_pos m p c d.
@@ -1844,129 +1478,6 @@ Lemma transpose_list_length_square {R : Semiring.type} : forall (lb : list (list
 
   (* List-level analogue of pow_pos_correct.
      Only holds for square lists (same length and row length as elements). *)
-
-  (* Generalized squareness: pow_list preserves square shape for any square L *)
-  Lemma pow_list_square_gen {R : Semiring.type} : forall (L : list (list R)) (n : nat),
-    length L = length (elements (s := Node)) ->
-    (forall row, In row L -> length row = length (elements (s := Node))) ->
-    length (pow_list L n) = length (elements (s := Node))
-    /\ (forall row, In row (pow_list L n) -> length row = length (elements (s := Node))).
-  Proof.
-    intros L n HlenL HrowL. revert L HlenL HrowL.
-    induction n as [|n IH]; intros L HlenL HrowL; simpl.
-    - split.
-      { unfold pow_list. rewrite List.length_map. reflexivity. }
-      { intros row Hin. unfold pow_list in Hin.
-        rewrite in_map_iff in Hin. destruct Hin as (r & Hrow & Hin_r).
-        subst row. rewrite List.length_map. reflexivity. }
-    - destruct (IH L HlenL HrowL) as (IHlen & IHrow).
-      apply (mul_list_square L (pow_list L n) HlenL HrowL IHlen IHrow).
-  Qed.
-
-  (* Generalized squareness: pow_pos_list preserves square shape for any square L *)
-  Lemma pow_pos_list_square_gen {R : Semiring.type} : forall (L : list (list R)) (p : positive),
-    length L = length (elements (s := Node)) ->
-    (forall row, In row L -> length row = length (elements (s := Node))) ->
-    length (pow_pos_list L p) = length (elements (s := Node))
-    /\ (forall row, In row (pow_pos_list L p) -> length row = length (elements (s := Node))).
-  Proof.
-    intros L p HlenL HrowL. revert L HlenL HrowL.
-    induction p as [p IH | p IH |]; intros L HlenL HrowL.
-    - (* xI p *)
-      simpl (pow_pos_list L (p~1)).
-      destruct (IH L HlenL HrowL) as (IHlen & IHrow).
-      destruct (mul_list_square (pow_pos_list L p) (pow_pos_list L p) IHlen IHrow IHlen IHrow)
-        as (Hlen_PP & Hrow_PP).
-      split.
-      { rewrite mul_list_length. exact HlenL. }
-      { intros row Hin. eapply mul_list_row_length; eauto. }
-    - (* xO p *)
-      simpl (pow_pos_list L (p~0)).
-      destruct (IH L HlenL HrowL) as (IHlen & IHrow).
-      apply (mul_list_square (pow_pos_list L p) (pow_pos_list L p) IHlen IHrow IHlen IHrow).
-    - (* xH *)
-      split; [exact HlenL | exact HrowL].
-  Qed.
-
-  (* Bridge: of_list (pow_list L n) = pow (of_list L) n for square L *)
-  Lemma of_list_pow_list_gen {R : Semiring.type} : forall (L : list (list R)) (n : nat) (r c : Node),
-    length L = length (elements (s := Node)) ->
-    (forall row, In row L -> length row = length (elements (s := Node))) ->
-    of_list (pow_list L n) r c = pow (of_list L) n r c.
-  Proof.
-    intros L n r c HlenL HrowL.
-    revert L HlenL HrowL r c.
-    induction n as [|n IH]; intros L HlenL HrowL r c; simpl.
-    - unfold pow, pow_list.
-      change (List.map (fun r : Node => List.map (fun c0 : Node => I r c0) elements) elements)
-        with (to_list (@I R)).
-      apply of_list_to_list.
-    - unfold pow. fold (@pow R).
-      destruct (pow_list_square_gen L n HlenL HrowL) as (Hsq_len & Hsq_row).
-      rewrite (of_list_mul_list_gen L (pow_list L n) r c HlenL HrowL Hsq_len Hsq_row).
-      unfold matrix_mul at 1.
-      apply sum_ext. intro y.
-      f_equal.
-      apply (IH L HlenL HrowL y c).
-  Qed.
-
-  (* Bridge: of_list (pow_pos_list L p) = pow_pos (of_list L) p for square L *)
-  Lemma of_list_pow_pos_list_gen {R : Semiring.type} : forall (L : list (list R)) (p : positive) (r c : Node),
-    length L = length (elements (s := Node)) ->
-    (forall row, In row L -> length row = length (elements (s := Node))) ->
-    of_list (pow_pos_list L p) r c = pow_pos (of_list L) p r c.
-  Proof.
-    intros L p r c HlenL HrowL. revert L HlenL HrowL r c.
-    induction p as [p IH | p IH |]; intros L HlenL HrowL r c.
-    - (* xI p *)
-      simpl (pow_pos_list L (p~1)).
-      destruct (pow_pos_list_square_gen L p HlenL HrowL) as (Hlen_P & Hrow_P).
-      destruct (mul_list_square (pow_pos_list L p) (pow_pos_list L p) Hlen_P Hrow_P Hlen_P Hrow_P)
-        as (Hlen_PP & Hrow_PP).
-      rewrite (of_list_mul_list_gen L (mul_list (pow_pos_list L p) (pow_pos_list L p)) r c
-        HlenL HrowL Hlen_PP Hrow_PP).
-      unfold matrix_mul at 1.
-      apply sum_ext. intro y.
-      f_equal.
-      rewrite (of_list_mul_list_gen (pow_pos_list L p) (pow_pos_list L p) y c
-        Hlen_P Hrow_P Hlen_P Hrow_P).
-      unfold matrix_mul.
-      apply sum_ext. intro z.
-      rewrite (IH L HlenL HrowL y z).
-      rewrite (IH L HlenL HrowL z c).
-      reflexivity.
-    - (* xO p *)
-      simpl (pow_pos_list L (p~0)).
-      destruct (pow_pos_list_square_gen L p HlenL HrowL) as (Hlen_P & Hrow_P).
-      rewrite (of_list_mul_list_gen (pow_pos_list L p) (pow_pos_list L p) r c
-        Hlen_P Hrow_P Hlen_P Hrow_P).
-      unfold matrix_mul.
-      apply sum_ext. intro z.
-      rewrite (IH L HlenL HrowL r z).
-      rewrite (IH L HlenL HrowL z c).
-      reflexivity.
-    - (* xH *)
-      reflexivity.
-  Qed.
-
-    (** List-level analogue of [pow_pos_correct]: binary = linear list exponentiation (for square lists). *)
-
-  Lemma pow_list_powN_list_eqv {R : Semiring.type} : forall (L : list (list R)) (p : positive),
-    length L = length (elements (s := Node)) ->
-    (forall row, In row L -> length row = length (elements (s := Node))) ->
-    pow_list L (Pos.to_nat p) = powN_list L (Npos p).
-  Proof.
-    intros L p HlenL HrowL.
-    unfold powN_list.
-    pose proof (pow_list_square_gen L (Pos.to_nat p) HlenL HrowL) as [Hlen1 Hrow1].
-    pose proof (pow_pos_list_square_gen L p HlenL HrowL) as [Hlen2 Hrow2].
-    apply of_list_inj_square; try assumption.
-    intros r c.
-    rewrite of_list_pow_list_gen; [| exact HlenL | exact HrowL].
-    rewrite pow_pos_correct.
-    rewrite of_list_pow_pos_list_gen; [| exact HlenL | exact HrowL].
-    reflexivity.
-  Qed.
 
     (** [pow_fun] via [N.to_nat] equals [powN_fun]. *)
 
@@ -2167,32 +1678,6 @@ Lemma transpose_list_length_square {R : Semiring.type} : forall (lb : list (list
   Qed.
 
 
-  (* A * A^k = A^k * A : powers of a matrix commute with the matrix     *)
-  Lemma geom_sum_stable {R : Semiring.type} (q : nat) : 
-    forall (m : @Matrix R),
-    (forall (c d : Node), 
-      geom_sum m q c d = geom_sum m (S q) c d) -> 
-    forall (t : nat)  (u v : Node), 
-    geom_sum m (t + q) u v = geom_sum m q u v.
-  Proof.
-    intros m Hgeom t u v.
-    revert u v.
-    induction t as [|t IH]; intros u v.
-    - (* t = 0 *) reflexivity.
-    - (* t = S t *)
-      assert (Hplus : ((S t) + q = S (t + q))%nat) by nia.
-      rewrite Hplus.
-      rewrite (geom_sum_S (t + q) m u v).
-      rewrite (matrix_add_unfold I (m *M geom_sum m (t + q)) u v).
-      assert (Hinner : (m *M geom_sum m (t + q)) u v = (m *M geom_sum m q) u v).
-      { unfold matrix_mul, sum. apply sum_ext. intro y. rewrite (IH y v). reflexivity. }
-      rewrite Hinner.
-      rewrite <- (matrix_add_unfold I (m *M geom_sum m q) u v).
-      rewrite <- (geom_sum_S q m u v).
-      rewrite (Hgeom u v).
-      reflexivity.
-  Qed.
-
   (** Powers of a matrix commute with the matrix: [m * m^k = m^k * m].
       Proved by induction using associativity of matrix multiplication.
       Compare [matrix_exp_unary_comm_A] in [algorithm/Mat.v]. *)
@@ -2245,81 +1730,6 @@ Lemma transpose_list_length_square {R : Semiring.type} : forall (lb : list (list
       rewrite (matrix_mul_add_distr_r (geom_sum m t) (pow m (S t)) m c d).
       rewrite matrix_add_unfold.
       reflexivity.
-  Qed.
-
-
-  Lemma geom_sum_idem_recurrence {R : IdempotentSemiring.type} : 
-    forall (n : nat) (m : @Matrix R) (c d : Node),  
-    (m *M geom_sum m n +M geom_sum m n) c d = geom_sum m (S n) c d.
-  Proof.
-    (* Helper: in an idempotent semiring, x+y+x = x+y. *)
-    assert (add_absorb : forall (x y : R), x + y + x = x + y).
-    { intros x y. rewrite (addA x y x). rewrite (addC y x).
-      rewrite <- (addA x x y). rewrite (add_idem x) at 1. reflexivity. }
-    induction n as [|n IH]; intros m c d.
-    - (* n = 0 *)
-      cbn. rewrite !matrix_add_unfold. rewrite (matrix_mul_I_r m c d). apply addC.
-    - (* n = S n *)
-      cbn [geom_sum].
-      rewrite !matrix_add_unfold.
-      rewrite (matrix_mul_add_distr_l m (geom_sum m n) (pow m (S n)) c d).
-      rewrite matrix_add_unfold.
-      cbn [pow].
-      (* Introduce abbreviations for readability *)
-      set (A := matrix_mul m (geom_sum m n) c d).
-      set (G := geom_sum m n c d).
-      set (P := matrix_mul m (pow m n) c d).
-      set (PP := matrix_mul m (matrix_mul m (pow m n)) c d).
-      (* Extract the induction hypothesis as a scalar equality *)
-      pose proof (IH m c d) as IHscalar.
-      unfold matrix_add in IHscalar.
-      cbn [geom_sum] in IHscalar.
-      rewrite matrix_add_unfold in IHscalar.
-      cbn [pow] in IHscalar.
-      (* IHscalar : A + G = G + P *)
-      (* Goal : A + PP + (G + P) = G + P + PP *)
-      rewrite (addA A PP (G + P)).
-      rewrite (addC PP (G + P)).
-      rewrite <- (addA A (G + P) PP).
-      rewrite <- (addA A G P).
-      unfold A, G.
-      rewrite IHscalar at 1.
-      (* Goal now: (G' + P') + P' + PP = G' + P' + PP *)
-      unfold P, PP.
-      replace ((geom_sum m n c d + matrix_mul m (pow m n) c d)
-               + matrix_mul m (pow m n) c d)
-        with (geom_sum m n c d + matrix_mul m (pow m n) c d)
-        by (rewrite (addA (geom_sum m n c d) (matrix_mul m (pow m n) c d)
-                  (matrix_mul m (pow m n) c d));
-            rewrite (add_idem (matrix_mul m (pow m n) c d)) at 1;
-            reflexivity).
-      reflexivity.
-  Qed.
-
-
-  (** In an idempotent semiring, [(m + I)^n = I + m + m² + ... + mⁿ].
-      The idempotence collapses all the binomial-coefficient duplicates. 
-  *)
-  Lemma matrix_pow_idempotence {R : IdempotentSemiring.type} :
-    forall (n : nat) (m : @Matrix R) (c d : Node),
-    pow (m +M I) n c d = geom_sum m n c d.
-  Proof.
-    induction n as [|n IH]; intros m c d.
-    - cbn. reflexivity.
-    - cbn [pow].
-      unfold matrix_mul.
-      rewrite (sum_ext (fun y => (m +M I) c y * pow (m +M I) n y d)
-        (fun y => m c y * geom_sum m n y d + I c y * geom_sum m n y d)).
-      + rewrite sum_add.
-        change (sum (fun y => m c y * geom_sum m n y d)) with (matrix_mul m (geom_sum m n) c d).
-        change (sum (fun y => I c y * geom_sum m n y d)) with (matrix_mul I (geom_sum m n) c d).
-        rewrite (matrix_mul_I_l (geom_sum m n) c d).
-        rewrite <- matrix_add_unfold.
-        apply geom_sum_idem_recurrence.
-      + intro y.
-        rewrite matrix_add_unfold.
-        rewrite (IH m y d).
-        apply mulDr.
   Qed.
 
 
@@ -2530,32 +1940,6 @@ Lemma transpose_list_length_square {R : Semiring.type} : forall (lb : list (list
     apply zero_stable_partial_sum_path.
     exact Hdiag.
   Qed.
-
-  (** The partial path sum equals the sum over the flattened enumeration
-      of all paths: [Σ_{p ≤ n} paths = Σ (enum_all_paths_flat)]. *)
-  Lemma partial_sum_paths_enum_flat {R : Semiring.type} :
-    forall n (m : @Matrix R) c d,
-    partial_sum_paths elements m n c d =
-    sum_all_rvalues (get_all_rvalues (enum_all_paths_flat elements m n c d)).
-  Proof.
-    intros n m c d.
-    rewrite sum_all_rvalues_get_all_rvalues.
-    apply flat_map_path_partial_sum.
-  Qed.
-
-
-  (** The matrix geometric sum equals the sum over the flattened
-      enumeration of all paths. *)
-  Lemma connect_geom_sum_enum_flat {R : Semiring.type} :
-    forall n (m : @Matrix R) c d,
-    geom_sum m n c d = sum_all_rvalues (get_all_rvalues
-      (enum_all_paths_flat elements m n c d)).
-  Proof.
-    intros n m c d.
-    rewrite connect_partial_sum_mat_paths.
-    apply partial_sum_paths_enum_flat.
-  Qed.
-
 
   (** ** 1.  Monotonicity of [pow] in the matrix argument
 
