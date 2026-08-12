@@ -20,21 +20,6 @@ Local Infix "<" := (fun x y => x ≤ y ∧ x ≠ y) (at level 70).
 (*    prudence          (§4.9)         — Qed                               *)
 (*    minmax_beats      (§4.8)         — Qed                               *)
 (*    reversal_symmetry_O (4.4.2)      — Qed                               *)
-(*                                                                          *)
-(*  WHICH VARIANT TO USE.  Four theorems below — schulze_trans,             *)
-(*  winner_exists, condorcet_implies_strict_winner, smith_criterion —       *)
-(*  assume H_pair_sum_one (M i j + M j i = 1).  Combined with a total       *)
-(*  order that forces one direction of every pair to be the top, i.e. a     *)
-(*  STRICT BALLOT such as A > B > C; it does not hold of a profile with     *)
-(*  genuine disagreement.  Prefer the [_weaker] variants, which are the     *)
-(*  general statements.  For a carrier built by NormalizedOrder their       *)
-(*  remaining algebraic hypotheses are discharged outright — see            *)
-(*  SchulzeOnNT.v, where transitivity and winner existence come out with    *)
-(*  no hypotheses at all.                                                    *)
-(*    schulze_beats_asym, strict_winner_unique, condorcet_winner_unique,   *)
-(*    strict_winner_is_schulze_winner  — Qed                               *)
-(*    reversal_symmetry                — Qed                               *)
-(*    winner_exists                    — Qed                               *)
 (* ======================================================================= *)
 
 Section SocialChoice.
@@ -437,40 +422,6 @@ Section SocialChoice.
       rewrite (Heq x z). rewrite (IH z y Heq). reflexivity.
   Qed.
 
-  Lemma idem_plus_upper_left {R : IdempotentSemiring.type} (a b : R) : a ≤ a + b.
-  Proof.
-    red. rewrite <- addA. assert (Hadd : a + a = a) by apply add_idem.
-    rewrite Hadd. reflexivity.
-  Qed.
-
-  Lemma idem_plus_upper_right {R : IdempotentSemiring.type} (a b : R) : a ≤ b + a.
-  Proof.
-    red. rewrite (addC b a). apply idem_plus_upper_left.
-  Qed.
-
-  Lemma pow_orel {R : IdempotentSemiring.type} (A B : @Matrix Node R) (n : nat) (x y : Node) :
-    (forall i j, A i j ≤ B i j) -> pow A n x y ≤ pow B n x y.
-  Proof.
-    revert x y. induction n as [|n IH]; intros x y Hle; cbn.
-    - apply orel_refl.
-    - unfold matrix_mul. apply sum_orel_bound. intro z.
-      assert (H1a : A x z * pow A n z y ≤ B x z * pow A n z y).
-      { apply mul_orel_compat_l. apply Hle. }
-      assert (H1b : B x z * pow A n z y ≤ B x z * pow B n z y).
-      { apply mul_orel_compat_r. apply IH. exact Hle. }
-      assert (H1 : A x z * pow A n z y ≤ B x z * pow B n z y).
-      { eapply orel_trans; [exact H1a | exact H1b]. }
-      assert (H2 : B x z * pow B n z y ≤ sum (fun k : Node => B x k * pow B n k y)).
-      { unfold sum. set (f := fun k : Node => B x k * pow B n k y).
-        assert (Hin : In z (@elements Node)) by apply elements_complete.
-        induction (@elements Node) as [|w ws IHws]; [inversion Hin |].
-        cbn. destruct (fin_eq_dec w z) as [Heq|Hneq].
-        - subst w. apply idem_plus_upper_left.
-        - assert (Hin' : In z ws) by (inversion Hin; [congruence | assumption]).
-          specialize (IHws Hin').
-          eapply orel_trans; [exact IHws | apply idem_plus_upper_right]. }
-      eapply orel_trans; [exact H1 | exact H2].
-  Qed.
 
   Lemma pow_MplusI_stable {R : BoundedSemiring.type}
     (M : @Matrix Node R) (n : nat) (a c : Node) :
@@ -1015,168 +966,6 @@ Section SocialChoice.
   Qed.
 
   
-
-  (** Strip leading triples whose first component is [u]. *)
-  Fixpoint strip_leading {R : Semiring.type} (u : Node) (p : list (Node * Node * R)) : list (Node * Node * R) :=
-    match p with
-    | ((x, _, _) as t) :: rest => if fin_eq_dec x u then strip_leading u rest else t :: rest
-    | [] => []
-    end.
-
-  (** Strip trailing triples whose second component is [u]. *)
-  Fixpoint strip_trailing {R : Semiring.type} (u : Node) (p : list (Node * Node * R)) : list (Node * Node * R) :=
-    match p with
-    | [] => []
-    | [t] => let '(_, y, _) := t in if fin_eq_dec y u then [] else [t]
-    | t :: rest =>
-        match strip_trailing u rest with
-        | [] => let '(_, y, _) := t in if fin_eq_dec y u then [] else [t]
-        | r => t :: r
-        end
-    end.
-
-  (** Stripping leading B's does not decrease measure. *)
-  Lemma strip_leading_measure {R : BoundedSemiring.type} u p :
-    measure_of_path p ≤ measure_of_path (strip_leading (R := R) u p).
-  Proof.
-    induction p as [|[[x y] w] p IH]; cbn [strip_leading].
-    - apply bounded_orel_refl.
-    - destruct (fin_eq_dec x u); cbn.
-      + eapply orel_trans; [apply bounded_mul_lower_right | apply IH].
-      + cbn. apply bounded_mul_orel_compat_r. apply bounded_orel_refl.
-  Qed.
-
-  (** Stripping trailing A's does not decrease measure. *)
-  Lemma strip_trailing_measure {R : BoundedSemiring.type} u p :
-    measure_of_path p ≤ measure_of_path (strip_trailing (R := R) u p).
-  Proof.
-    induction p as [|[[x y] w] p IH]; cbn [strip_trailing].
-    - apply bounded_orel_refl.
-    - destruct p as [|[[x2 y2] w2] p'].
-      + (* single triple *)
-        destruct (fin_eq_dec y u); cbn.
-        * cbn [measure_of_path]. rewrite !mulr1. unfold Orel. rewrite addC. apply (@add_bound R _).
-        * apply bounded_orel_refl.
-      + (* multi-element *)
-        remember (strip_trailing (R := R) u ((x2, y2, w2) :: p')) as s eqn:Hs.
-        destruct s as [|t r]; cbn.
-        * (* strip_trailing rest = [] *)
-          destruct (fin_eq_dec y u); cbn.
-          { (* y = u *)
-            cbn [measure_of_path].
-            eapply orel_trans; [apply bounded_mul_lower_right |].
-            cbn [measure_of_path] in IH. apply IH. }
-          { (* y /= u *)
-            cbn [measure_of_path].
-            apply bounded_mul_orel_compat_r.
-            cbn [measure_of_path] in IH. apply IH. }
-        * (* strip_trailing rest = t :: r *)
-          cbn [measure_of_path].
-          apply bounded_mul_orel_compat_r. apply IH.
-  Qed.
-
-  (** Full swap: B→A path becomes A→B path (changes first and last edge). *)
-  Fixpoint swap_path_full {R : Semiring.type} (M : @Matrix Node R) (A B : Node)
-    (p : list (Node * Node * R)) : list (Node * Node * R) :=
-    match p with
-    | [] => []
-    | [(u, v, _)] =>
-        if fin_eq_dec u B then
-          if fin_eq_dec v A then [(A, B, M A B)] else [(A, v, M A v)]
-        else [(u, v, M u v)]
-    | (u, v, _) :: rest =>
-        if fin_eq_dec u B then (A, v, M A v) :: swap_path_full M A B rest
-        else (u, v, M u v) :: swap_path_full M A B rest
-    end.
-
-  (** Simple well-formedness: each triple's weight matches the matrix entry. *)
-  Fixpoint path_matches_M {R : Semiring.type} (M : @Matrix Node R)
-    (p : list (Node * Node * R)) : Prop :=
-    match p with
-    | [] => True
-    | (u, v, w) :: rest => w = M u v ∧ path_matches_M M rest
-    end.
-
-  (** The swapped path has ≥ measure under Pareto hypotheses,
-      assuming [M B B ≤ M A B] (true in Schulze: diagonal is zero). *)
-  Lemma swap_path_full_measure {R : BoundedSemiring.type}
-    (M : @Matrix Node R) (A B : Node)
-    (Hneq : A ≠ B) (Hzero : M B A = 0)
-    (Hrow : forall X, X ≠ A -> X ≠ B -> M B X ≤ M A X)
-    (Hcol : forall X, X ≠ A -> X ≠ B -> M X A ≤ M X B)
-    (Hdiag_BB : M B B ≤ M A B)
-    (p : list (Node * Node * R)) :
-    path_matches_M M p ->
-    measure_of_path p ≤ measure_of_path (swap_path_full M A B p).
-  Proof.
-    induction p as [|[[u v] w] p IH]; cbn [swap_path_full path_matches_M].
-    - intros _. apply bounded_orel_refl.
-    - intros [Hw Hmatch].
-      destruct p as [|[[u2 v2] w2] p'].
-      + (* single triple *)
-        destruct (fin_eq_dec u B); cbn.
-        * (* u = B *)
-          subst u.
-          destruct (fin_eq_dec v A); cbn.
-          { (* (B, A, w) → (A, B, M A B).  w = M B A = 0 *)
-            subst v. rewrite Hw, Hzero. simpl measure_of_path.
-            apply (bounded_mul_orel_compat_l 0 (M A B) 1).
-            unfold Orel. apply add0r. }
-          { (* (B, v, M B v) with v≠A → (A, v, M A v).  Need M B v ≤ M A v *)
-            simpl measure_of_path. rewrite !mulr1. rewrite Hw.
-            destruct (fin_eq_dec v B).
-            - subst v. (* (B, B) case: use Hdiag_BB *)
-              exact Hdiag_BB.
-            - apply Hrow; assumption. }
-        * (* u≠B: keep unchanged *)
-          rewrite Hw. apply bounded_orel_refl.
-      + (* multi-element *)
-        destruct (fin_eq_dec u B); cbn.
-        * subst u. rewrite Hw.
-          destruct (fin_eq_dec v A).
-          { (* (B, A, M B A=0) :: rest *)
-            subst v. rewrite Hzero. cbn [measure_of_path].
-            eapply orel_trans; [apply (bounded_mul_lower_left 0 _) |].
-            unfold Orel. apply add0r. }
-          { (* (B, v, M B v) with v≠A *)
-            cbn [measure_of_path].
-            destruct (fin_eq_dec v B).
-            - subst v. (* (B, B) case: use Hdiag_BB *)
-              apply (orel_trans _ _ _ (bounded_mul_orel_compat_l
-                (M B B) (M A B) _ Hdiag_BB)).
-              apply bounded_mul_orel_compat_r. apply IH. exact Hmatch.
-            - apply (orel_trans _ _ _ (bounded_mul_orel_compat_l
-                (M B v) (M A v) _ (Hrow v n n0))).
-              apply bounded_mul_orel_compat_r. apply IH. exact Hmatch. }
-        * (* u≠B: keep first triple, recurse *)
-          cbn [measure_of_path]. rewrite Hw.
-          apply bounded_mul_orel_compat_r. apply IH. exact Hmatch.
-  Qed.
-
-  (** Paths from [all_paths_klength] satisfy [path_matches_M] by construction
-      (each edge is [(c, x, M c x)] from [append_node_in_paths]).
-      The base case [(c, d, 1)] requires the diagonal condition [Hdiag_one]. *)
-  Lemma all_paths_klength_path_matches_M {R : Semiring.type}
-    (M : @Matrix Node R) (Hdiag_one : forall i j, i = j -> M i j = 1) :
-    forall n c d (p : list (Node * Node * R)),
-    List.In p (all_paths_klength elements M n c d) ->
-    path_matches_M M p.
-  Proof.
-    induction n as [|n IH]; intros c d p Hin; cbn [all_paths_klength] in Hin.
-    - (* n = 0 *)
-      destruct (fin_eq_dec c d); cbn in Hin; [| inversion Hin].
-      inversion Hin as [Heq | Hfalse]; [| inversion Hfalse]. subst p.
-      cbn. split; [| auto].
-      symmetry. apply Hdiag_one. assumption.
-    - (* S n *)
-      apply (append_node_in_paths_In M c
-        (List.flat_map (fun x => all_paths_klength elements M n x d) elements) p) in Hin.
-      destruct Hin as [y [q [Hp Hq]]]. subst p. cbn.
-      split; [reflexivity |].
-      apply in_flat_map in Hq. destruct Hq as [x [Hx_elements Hq']].
-      apply IH with (c := x) (d := d). exact Hq'.
-  Qed.
-
   (** In a BoundedSemiring, any path measure is ≤ 1. *)
   Lemma measure_of_path_le_one {R : BoundedSemiring.type}
     (p : list (Node * Node * R)) :
@@ -1847,19 +1636,7 @@ Section SocialChoice.
       apply orel_antisym; assumption.
   Qed.
 
-  (** Multiplication on the left by something < 1 gives < 1. *)
-  Lemma mul_lt_1_left {R : BoundedSemiring.type} (a b : R) :
-    a < 1 -> a * b < 1.
-  Proof.
-    intros Ha_lt_1. eapply orel_lt_trans; [apply bounded_mul_lower_left|exact Ha_lt_1].
-  Qed.
 
-  (** Multiplication on the right by something < 1 gives < 1. *)
-  Lemma mul_lt_1_right {R : BoundedSemiring.type} (a b : R) :
-    b < 1 -> a * b < 1.
-  Proof.
-    intros Hb_lt_1. eapply orel_lt_trans; [apply bounded_mul_lower_right|exact Hb_lt_1].
-  Qed.
 
 
 
