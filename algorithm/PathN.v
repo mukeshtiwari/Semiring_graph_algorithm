@@ -404,13 +404,13 @@ Section Path.
        path [ys], the result is well-formed.  The condition [source y ys]
        ensures the new edge connects properly to the first edge of [ys]. *)
    Lemma well_formed_by_extending {R : Semiring.type} : 
-    forall (xs ys : list (Node * Node * R)) (c y : Node) (m : @Matrix R), 
-    ys <> [] ->  xs = ((c, y, m c y) :: ys)-> 
-    source c xs = true -> source y ys = true ->
-    well_formed_path_aux m (List.tl xs) -> 
+    forall (xs ys : list (Node * Node * R)) (c y : Node) (m : @Matrix R),
+    ys <> [] ->  xs = ((c, y, m c y) :: ys)->
+    source y ys = true ->
+    well_formed_path_aux m (List.tl xs) ->
     well_formed_path_aux m xs.
   Proof.
-    intros xs ys c y m Hys_ne Heq Hsrc_xs Hsrc_ys Htl.
+    intros xs ys c y m Hys_ne Heq Hsrc_ys Htl.
     subst xs. cbn.
     split; [reflexivity | ].
     destruct ys as [|h ys']; [exfalso; apply Hys_ne; reflexivity | ].
@@ -459,7 +459,7 @@ Section Path.
       apply (IH m x d ys Hdiag) in Hin_ys.
       (* Assemble using the extension lemma *)
       apply (well_formed_by_extending ((c, y, m c y) :: ys) ys c y m
-        Hys_ne eq_refl Hsrc_xs Hsrc_ys Hin_ys).
+        Hys_ne eq_refl Hsrc_ys Hin_ys).
   Qed.
 
 
@@ -1921,19 +1921,16 @@ Section Path.
 
   (** ** 2.  Path concatenation bound
 
-      Concatenating two well-formed paths that meet at node [c] yields
-      a path whose measure is bounded by the product of the individual
-      measures.  This is the path-level analogue of
-      [star_path_compose] in [SocialchoiceN.v]. *)
+      The measure of a concatenation is bounded by the product of the
+      measures — the path-level analogue of [star_path_compose] in
+      [SocialchoiceN.v].  No well-formedness or matching-endpoint condition
+      is needed: [measure_of_path_app] already makes the two sides equal for
+      arbitrary lists, and this is its order-theoretic weakening. *)
   Lemma path_concat_measure_bound {R : BoundedSemiring.type} :
-    forall (m : @Matrix R) (p q : list (Node * Node * R)) (c : Node),
-      well_formed_path_aux m p ->
-      well_formed_path_aux m q ->
-      source c q = true ->
-      target c p = true ->
+    forall (p q : list (Node * Node * R)),
       Orel (measure_of_path (p ++ q)) (measure_of_path p * measure_of_path q).
   Proof.
-    intros m p q c Hwf_p Hwf_q Hsrc Htgt.
+    intros p q.
     rewrite (measure_of_path_app (p ++ q) p q eq_refl).
     unfold Orel. apply bounded_add_idem.
   Qed.

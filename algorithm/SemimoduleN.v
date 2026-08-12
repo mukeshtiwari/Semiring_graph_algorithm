@@ -819,12 +819,11 @@ Section Semimodule.
       [A*·b ≤ x] in the Orel order, i.e., [A*·b] is below every solution. *)
   Theorem kleene_fixed_point_least {R : BoundedSemiring.type} {U : Semimodule.type R} :
     forall (A : Node -> Node -> R) (b x : @Vector R U),
-    (forall u v : Node, u = v -> A u v = 1) ->
     (forall i : Node, x i = vec_add (matrix_vector_action A x) b i) ->
     forall (i : Node),
     Orel (matrix_vector_action (geom_sum A (length (@elements Node) - 1)%nat) b i) (x i).
   Proof.
-    intros A b x Hdiag Hfix i.
+    intros A b x Hfix i.
     unfold Orel, vec_add in *.
     set (Astar := fun n => geom_sum A n).
 
@@ -883,16 +882,15 @@ Section Semimodule.
     (forall (A : Node -> Node -> R) (x b : Node -> U),
     (forall i, Orel (x i) (vec_add (matrix_vector_action A x) b i)) ->
     forall i, Orel (x i)
-      (matrix_vector_action (geom_sum A (length (@elements Node) - 1)) b i)) -> 
-    (forall u v : Node, u = v -> A u v = 1) ->
+      (matrix_vector_action (geom_sum A (length (@elements Node) - 1)) b i)) ->
     (forall i, x i = vec_add (matrix_vector_action A x) b i) ->
     (forall i, y i = vec_add (matrix_vector_action A y) b i) ->
     forall i, x i = y i.
   Proof.
-    intros A b x y star_post_fixpoint Hdiag Hx Hy i.
+    intros A b x y star_post_fixpoint Hx Hy i.
     (* From the fixpoint: A*·b ≤ x (by kleene_fixed_point_least) *)
-    pose proof (kleene_fixed_point_least A b x Hdiag Hx i) as Hx_least.
-    pose proof (kleene_fixed_point_least A b y Hdiag Hy i) as Hy_least.
+    pose proof (kleene_fixed_point_least A b x Hx i) as Hx_least.
+    pose proof (kleene_fixed_point_least A b y Hy i) as Hy_least.
     (* Also: x ≤ A·x + b = x, so x ≤ A·x + b holds (by idempotence) *)
     assert (Hx_post : forall i, Orel (x i) (vec_add (matrix_vector_action A x) b i)).
     { intro j. unfold Orel, vec_add in *.
@@ -957,7 +955,7 @@ Section Semimodule.
       reflexivity. }
 
     (* 3. kleene_fixed_point_least with (b:=x, x:=x) gives A*·x ≤ x *)
-    pose proof (kleene_fixed_point_least A x x Hdiag Hx_fix_self i) as H_least.
+    pose proof (kleene_fixed_point_least A x x Hx_fix_self i) as H_least.
     unfold x, Astar in H_least.
 
     (* 4. b ≤ x via absorb_b_fixpoint *)

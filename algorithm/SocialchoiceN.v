@@ -790,18 +790,16 @@ Section SocialChoice.
 
       Hypotheses:
         [Hrow]:  M A Y  ≤ M' A Y   (A's outgoing edges increase)
-        [Hcol]:  M' X A ≤ M X A    (A's incoming edges decrease)
         [Heq]:   M X Y  = M' X Y   for X≠A, Y≠A (everything else unchanged)
   *)
   Theorem monotonicity {R : BoundedSemiring.type}
     (M M' : @Matrix Node R) (A : Node)
     (H_total_order : forall x y : R, x + y = x \/ x + y = y) :
     (forall (Y : Node), M A Y ≤ M' A Y) ->
-    (forall (X : Node), M' X A ≤ M X A) ->
     (forall (X Y : Node), X ≠ A -> Y ≠ A -> (M X Y) = (M' X Y)) ->
     forall (C : Node), mat_star M A C ≤ mat_star M' A C.
   Proof.
-    intros Hrow Hcol Heq C.
+    intros Hrow Heq C.
     unfold mat_star.
     pose proof (elements_two_or_more (s := Node)) as Hlen.
     (* Mutual induction: P(n) = (pow M n A C ≤ star') ∧ (∀z≠A, pow M n z C ≤ star' A C + star' z C) *)
@@ -895,6 +893,71 @@ Section SocialChoice.
     apply mat_star_bound. intro n. apply Hmutual.
   Qed.
 
+
+  (** * Monotonicity — reverse direction (strength INTO [A])
+  *)
+  Lemma monotonicity_rev {R : BoundedCommutativeSemiring.type}
+    (M M' : @Matrix Node R) (A : Node)
+    (H_total_order : forall x y : R, x + y = x \/ x + y = y) :
+    (forall (X : Node), M' X A ≤ M X A) ->
+    (forall (X Y : Node), X ≠ A -> Y ≠ A -> (M X Y) = (M' X Y)) ->
+    forall (C : Node), mat_star M' C A ≤ mat_star M C A.
+  Proof.
+    intros Hcol Heq C.
+    (* put both sides in transposed form: mat_star N A C with N = M'ᵀ, Mᵀ *)
+    setoid_rewrite (eq_sym (mat_star_transpose M' A C)).
+    setoid_rewrite (eq_sym (mat_star_transpose M A C)).
+    (* the transposed pair is exactly a "raise A" pair for [monotonicity]:
+       its row-hypothesis is [Hcol] and its agreement-hypothesis is [Heq] *)
+    apply (monotonicity (fun x y => M' y x) (fun x y => M y x) A H_total_order).
+    - intro Y. exact (Hcol Y).
+    - intros X Y HX HY. exact (eq_sym (Heq Y X HY HX)).
+  Qed.
+
+  (** * Monotonicity — winner level (paper §4.2: "a winner stays a winner")
+
+      Raising [A] cannot harm a winner: if [A] is a Schulze winner in the
+      original profile, then [A] is still a Schulze winner after [A] is
+      raised.  Both directions are used: the forward theorem bounds [A]'s
+      outgoing strengths below, and [monotonicity_rev] bounds the incoming
+      strengths above, so the strict comparison [beats] is preserved.
+
+      Hypotheses (exactly the pairwise-matrix content of "raise [A]"):
+        [Hrow]:  M A Y  ≤ M' A Y   (A's outgoing edges increase)
+        [Hcol]:  M' X A ≤ M X A    (A's incoming edges decrease)
+        [Heq]:   M X Y  = M' X Y   for X≠A, Y≠A (everything else unchanged)
+  *)
+  Theorem winner_monotonicity {R : BoundedCommutativeSemiring.type}
+    (M M' : @Matrix Node R) (A : Node)
+    (H_total_order : forall x y : R, x + y = x \/ x + y = y) :
+    (forall (Y : Node), M A Y ≤ M' A Y) ->
+    (forall (X : Node), M' X A ≤ M X A) ->
+    (forall (X Y : Node), X ≠ A -> Y ≠ A -> (M X Y) = (M' X Y)) ->
+    schulze_winner M A -> schulze_winner M' A.
+  Proof.
+    intros Hrow Hcol Heq Hwin b Hb_ne_A.
+    pose proof (monotonicity M M' A H_total_order Hrow Heq b) as Hout.
+    pose proof (monotonicity_rev M M' A H_total_order Hcol Heq b) as Hin.
+    intro Hbeats.
+    apply (Hwin b Hb_ne_A).
+    unfold schulze_beats, beats in Hbeats |- *.
+    destruct Hbeats as [Hle Hne].
+    split.
+    - (* mat_star M A b ≤ mat_star M b A, chained through the raised profile *)
+      apply (orel_trans _ _ _ Hout).
+      apply (orel_trans _ _ _ Hle).
+      exact Hin.
+    - (* mat_star M A b ≠ mat_star M b A: otherwise the raised comparison ties *)
+      intro Heq0.
+      apply Hne.
+      apply orel_antisym.
+      + exact Hle.
+      + eapply orel_trans; [exact Hin |].
+        rewrite <- Heq0. exact Hout.
+  Qed.
+
+
+  
   (* =====================================================================  *)
   (*  Helper lemmas for the Pareto proofs                                   *)
   (* =====================================================================  *)
@@ -1100,7 +1163,7 @@ Section SocialChoice.
   (*    M X A ≤ M X B    — ballot transitivity: viewers who have X≻A      *)
   (*                        also have X≻B (since A≻B)                     *)
   (*    M i i = 1         — diagonal is the multiplicative identity       *)
-  (*                                                                      *)
+  (* ------------------------------------------------------------------   *)
   
 
   Theorem pareto_weaker {R : BoundedSemiring.type}
@@ -1506,18 +1569,30 @@ Section SocialChoice.
      helper lemmas for [pareto_stronger]. *)
 
   (** * [condorcet_implies_strict_winner], with [H_pair_sum_one] replaced by
-      [H_dominance] — every edge *into* the Condorcet winner [A] is strictly
-      below every edge *out of* [A], rather than forcing every outgoing edge
-      to equal the semiring's top [1].  
-  *)
+      [H_cross] — every edge *into* the Condorcet winner [A] is strictly below
+      every edge *out of* [A], rather than forcing every outgoing edge to equal
+      the semiring's top [1].
+
+      [H_cross] is restricted to distinct endpoints [Z ≠ X] on purpose.  Stated
+      for all [Z] and [X] it would also assert [M X A < M A X] for every
+      [X ≠ A], which is exactly [condorcet_winner M A] — the Condorcet premise
+      would then be implied by the side condition and contribute nothing.  With
+      the diagonal excluded, the two hypotheses are independent: [H_cross]
+      handles [Z ≠ X] and the Condorcet property supplies [Z = X].  *)
   Theorem condorcet_implies_strict_winner_weaker  {R : BoundedSemiring.type}
     (M : @Matrix Node R) (A : Node)
     (H_total_order : forall x y : R, x + y = x \/ x + y = y)
-    (H_dominance : forall Z X, Z <> A -> X <> A -> M Z A < M A X) :
+    (H_cross : forall Z X, Z <> A -> X <> A -> Z <> X -> M Z A < M A X) :
     condorcet_winner M A -> strict_winner M A.
   Proof.
     intros Hcw X0 HX0.
     unfold schulze_beats, beats.
+    (* Every edge into [A] is strictly below the target margin [M A X0]:
+       off-diagonal by [H_cross], diagonal by the Condorcet hypothesis. *)
+    assert (Hdom : forall w, w <> A -> M w A < M A X0).
+    { intros w Hw. destruct (fin_eq_dec w X0) as [->|Hne].
+      - exact (Hcw X0 HX0).
+      - exact (H_cross w X0 Hw HX0 Hne). }
     (* Every walk of length n into A, from any w <> A, stays strictly below
        the fixed target margin M A X0. *)
     assert (H_pow_lt : forall n w, w <> A -> pow M n w A < M A X0).
@@ -1528,7 +1603,7 @@ Section SocialChoice.
         split.
         + apply zero_is_bottom.
         + intro Heq0.
-          destruct (H_dominance X0 X0 HX0 HX0) as [Hd_le Hd_ne].
+          destruct (Hcw X0 HX0) as [Hd_le Hd_ne].
           apply Hd_ne. unfold Orel in Hd_le.
           rewrite <- Heq0 in Hd_le. rewrite addr0 in Hd_le.
           rewrite Hd_le. exact Heq0.
@@ -1541,7 +1616,7 @@ Section SocialChoice.
           subst z.
           apply (orel_lt_trans (M w A * pow M n A A) (M w A) (M A X0)).
           * apply bounded_mul_lower_left.
-          * apply H_dominance; assumption.
+          * apply Hdom; assumption.
         + (* z <> A: bound via the second factor, IH gives pow M n z A < M A X0 *)
           apply (orel_lt_trans (M w z * pow M n z A) (pow M n z A) (M A X0)).
           * apply bounded_mul_lower_right.
@@ -1689,16 +1764,21 @@ Section SocialChoice.
       whose links are each at least as strong as [ab].  The hypothesis
       [M a b * mat_star M b a < M a b] says the strongest cycle through [a → b]
       (the link followed by the strongest return path) is strictly weaker than
-      the link itself. *)
+      the link itself.
+
+      The paper's [a ≠ b] side condition is not needed here and is therefore
+      not assumed: the cycle hypothesis already fails when [a = b], since
+      [mat_star M a a = 1] makes the two sides equal.  [prudence] below still
+      takes [a ≠ b], which it needs for [cycle_strength_ge]. *)
   Theorem prudence_local {R : BoundedSemiring.type}
     (M : @Matrix Node R) (a b : Node)
     (* Htotal and Hmeet are both satisfied by max-min semiring 
     but not in general *)
     (Htotal : forall x y : R, x + y = x \/ x + y = y)
     (Hmeet : forall x y : R, x ≤ y -> x * y = x /\ y * x = x) :
-    a ≠ b -> M a b * mat_star M b a < M a b -> schulze_beats M a b.
+    M a b * mat_star M b a < M a b -> schulze_beats M a b.
   Proof.
-    intros Hab Hlam.
+    intros Hlam.
     (* the reverse closure cannot even reach the link's strength: if it did,
        the link together with the return path would be a cycle as strong as
        the link itself *)
@@ -1736,7 +1816,7 @@ Section SocialChoice.
     a ≠ b -> cycle_strength M < M a b -> schulze_beats M a b.
   Proof.
     intros Hab Hlam.
-    apply (prudence_local M a b Htotal Hmeet Hab).
+    apply (prudence_local M a b Htotal Hmeet).
     destruct Hlam as [Hle Hne]. split.
     - eapply orel_trans; [ exact (cycle_strength_ge M a b Hab) | exact Hle ].
     - intro Heq.
