@@ -733,7 +733,7 @@ Section SocialChoice.
       bounded-semiring facts [a * b ≤ a] and [a * b ≤ b], this makes [*]
       into a greatest-lower-bound (meet) operation.
   *)
-  Theorem schulze_trans_weaker {R : BoundedCommutativeSemiring.type}
+  Theorem schulze_trans_weaker_necessary {R : BoundedCommutativeSemiring.type}
     (M : @Matrix Node R)
     (H_total_order : forall x y : R, x + y = x \/ x + y = y)
     (* H_meet_lower_bound is simply max-min semiring in disguise *)
@@ -816,6 +816,29 @@ Section SocialChoice.
     - split; [exact Hca_le_Sac |].
       intro Heq. apply H_not_ac_le_ca. rewrite Heq.
       apply (@bounded_orel_refl R (mat_star M a c)).
+  Qed.
+
+
+  Theorem schulze_trans_weaker_sufficient {R : BoundedCommutativeSemiring.type}
+    (M : @Matrix Node R) : 
+    (forall (a b c : Node),
+      schulze_beats M a b -> schulze_beats M b c -> schulze_beats M a c) ->
+    (forall x y : R, x + y = x ∨ x + y = y) ∧
+    (forall m a b : R, m ≤ a -> m ≤ b -> m ≤ a * b).
+  Proof. 
+  Admitted.
+
+  Theorem transitivity_characterisation {R : BoundedCommutativeSemiring.type} 
+    (M : @Matrix Node R) :
+    (forall a b c,
+     schulze_beats M a b -> schulze_beats M b c -> schulze_beats M a c) <-> 
+    (forall x y : R, x + y = x ∨ x + y = y) ∧
+    (forall m a b : R, m ≤ a -> m ≤ b -> m ≤ a * b).
+  Proof.
+    split.
+    + intros ha. eapply schulze_trans_weaker_sufficient; exact ha.
+    + intros [ha hb] * hc hd. eapply schulze_trans_weaker_necessary; 
+      try assumption;[exact hc | exact hd].
   Qed.
 
   (* =====================================================================  *)
@@ -922,7 +945,7 @@ Section SocialChoice.
       - [H_total_order]    : addition is a total order (x+y = x ∨ x+y = y)
       - [Hdec]            : decidable equality on R
       - [H_meet_lower_bound]: m ≤ a → m ≤ b → m ≤ a * b                    *)
-  Theorem winner_exists_weaker {R : BoundedCommutativeSemiring.type}
+  Theorem winner_exists_weaker_necessary {R : BoundedCommutativeSemiring.type}
     (M : @Matrix Node R)
     (H_total_order : forall x y : R, x + y = x \/ x + y = y)
     (Hdec : forall x y : R, {x = y} + {x ≠ y})
@@ -946,7 +969,7 @@ Section SocialChoice.
             inversion Hx_in as [Heq_a | Hx_in_tail].
             { exfalso. apply Hx_neq_a. symmetry. exact Heq_a. }
             intro Hx_beats_a.
-            pose proof (@schulze_trans_weaker R M
+            pose proof (@schulze_trans_weaker_necessary R M
               H_total_order H_meet_lower_bound
               x a w Hx_beats_a H_aw) as Hxw.
             destruct (fin_eq_dec x w) as [Heq_xw | Hneq_xw].
