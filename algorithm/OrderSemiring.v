@@ -178,4 +178,64 @@ Section OrderMax.
     meet (add_max a b) c = add_max (meet a c) (meet b c).
   Proof. exact (mul_add_max_distr_r meet meet_mono_l). Qed.
 
+  (* ----------------------------------------------------------------- *)
+  (*  [meet] as the multiplicative structure                            *)
+  (*                                                                     *)
+  (*  Dual to the [add_max] laws above, and together with the two        *)
+  (*  distributivity corollaries these are exactly the obligations of a  *)
+  (*  bounded commutative semiring with + = join and * = meet.           *)
+  (* ----------------------------------------------------------------- *)
+
+  Lemma meet_l : forall u v, le u v = true -> meet u v = u.
+  Proof. intros u v Huv. unfold meet. rewrite Huv. reflexivity. Qed.
+
+  Lemma meet_r : forall u v, le v u = true -> meet u v = v.
+  Proof.
+    intros u v Hvu. unfold meet. destruct (le u v) eqn:Huv.
+    - exact (le_antisym u v Huv Hvu).
+    - reflexivity.
+  Qed.
+
+  Lemma meet_comm : forall u v, meet u v = meet v u.
+  Proof.
+    intros u v. unfold meet.
+    destruct (le u v) eqn:Huv; destruct (le v u) eqn:Hvu.
+    - exact (le_antisym u v Huv Hvu).
+    - reflexivity.
+    - reflexivity.
+    - destruct (le_total u v) as [H|H]; congruence.
+  Qed.
+
+  Lemma meet_assoc : forall u v w, meet (meet u v) w = meet u (meet v w).
+  Proof.
+    intros u v w.
+    destruct (le_total u v) as [Huv|Hvu]; destruct (le_total v w) as [Hvw|Hwv].
+    - rewrite (meet_l u v Huv), (meet_l v w Hvw).
+      rewrite (meet_l u w (le_trans u v w Huv Hvw)), (meet_l u v Huv).
+      reflexivity.
+    - rewrite (meet_l u v Huv), (meet_r v w Hwv). reflexivity.
+    - rewrite (meet_r u v Hvu), (meet_l v w Hvw).
+      symmetry. exact (meet_r u v Hvu).
+    - rewrite (meet_r u v Hvu), (meet_r v w Hwv).
+      rewrite (meet_r u w (le_trans w v u Hwv Hvu)). reflexivity.
+  Qed.
+
+  (** A greatest element is the multiplicative identity. *)
+  Lemma meet_top_l (top : A) (Htop : forall a, le a top = true) :
+    forall a, meet top a = a.
+  Proof. intro a. exact (meet_r top a (Htop a)). Qed.
+
+  Lemma meet_top_r (top : A) (Htop : forall a, le a top = true) :
+    forall a, meet a top = a.
+  Proof. intro a. exact (meet_l a top (Htop a)). Qed.
+
+  (** A least element is the multiplicative annihilator. *)
+  Lemma meet_bot_l (bot : A) (Hbot : forall a, le bot a = true) :
+    forall a, meet bot a = bot.
+  Proof. intro a. exact (meet_l bot a (Hbot a)). Qed.
+
+  Lemma meet_bot_r (bot : A) (Hbot : forall a, le bot a = true) :
+    forall a, meet a bot = bot.
+  Proof. intro a. exact (meet_r a bot (Hbot a)). Qed.
+
 End OrderMax.
