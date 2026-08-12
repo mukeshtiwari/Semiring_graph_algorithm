@@ -594,7 +594,7 @@ Section SocialChoice.
     are very strong assumption. These two combined only allow 
     strict ballots such A > B > C 
   *)
-  Theorem schulze_trans {R : BoundedCommutativeSemiring.type}
+  Theorem schulze_trans {R : BoundedSemiring.type}
     (M : @Matrix Node R)
     (H_total_order : forall x y : R, x + y = x \/ x + y = y)
     (Hdec : forall x y : R, {x = y} + {x ≠ y})
@@ -733,15 +733,13 @@ Section SocialChoice.
       bounded-semiring facts [a * b ≤ a] and [a * b ≤ b], this makes [*]
       into a greatest-lower-bound (meet) operation.
   *)
-  Theorem schulze_trans_weaker_necessary {R : BoundedCommutativeSemiring.type}
-    (M : @Matrix Node R)
+  Theorem schulze_trans_weaker_necessary {R : BoundedSemiring.type}
     (H_total_order : forall x y : R, x + y = x \/ x + y = y)
-    (* H_meet_lower_bound is simply max-min semiring in disguise *)
     (H_meet_lower_bound : forall m a b : R, m ≤ a -> m ≤ b -> m ≤ a * b) :
-    forall (a b c : Node),
+    forall (M : @Matrix Node R) (a b c : Node),
       schulze_beats M a b -> schulze_beats M b c -> schulze_beats M a c.
   Proof.
-    intros a b c H_ab H_bc.
+    intros M a b c H_ab H_bc.
     unfold schulze_beats, beats in *.
     destruct H_ab as [H_ab_le H_ab_ne].   (* S b a ≤ S a b ∧ S b a ≠ S a b *)
     destruct H_bc as [H_bc_le H_bc_ne].   (* S c b ≤ S b c ∧ S c b ≠ S b c *)
@@ -819,27 +817,92 @@ Section SocialChoice.
   Qed.
 
 
-  Theorem schulze_trans_weaker_sufficient {R : BoundedCommutativeSemiring.type}
-    (M : @Matrix Node R) : 
-    (forall (a b c : Node),
-      schulze_beats M a b -> schulze_beats M b c -> schulze_beats M a c) ->
-    (forall x y : R, x + y = x ∨ x + y = y) ∧
+
+  Theorem schulze_trans_weaker_sufficient {R : BoundedSemiring.type} :
+    (3 <= List.length (@elements Node))%nat ->
+    (forall x y : R, {x = y} + {x <> y}) ->
+    (forall (M : @Matrix Node R) (a b c : Node),
+      schulze_beats M a b -> schulze_beats M b c ->  schulze_beats M a c) ->
+    (forall x y : R, x + y = x \/ x + y = y) /\
     (forall m a b : R, m ≤ a -> m ≤ b -> m ≤ a * b).
   Proof. 
   Admitted.
-
-  Theorem transitivity_characterisation {R : BoundedCommutativeSemiring.type} 
-    (M : @Matrix Node R) :
-    (forall a b c,
-     schulze_beats M a b -> schulze_beats M b c -> schulze_beats M a c) <-> 
+  
+  
+  Theorem transitivity_characterisation {R : BoundedSemiring.type} :
+    (3 <= length (@elements Node))%nat ->
+    (forall x y : R, {x = y} + {x <> y}) ->
+    (forall (M : @Matrix Node R) (a b c : Node),
+     schulze_beats M a b -> schulze_beats M b c -> schulze_beats M a c) <->
     (forall x y : R, x + y = x ∨ x + y = y) ∧
     (forall m a b : R, m ≤ a -> m ≤ b -> m ≤ a * b).
   Proof.
-    split.
-    + intros ha. eapply schulze_trans_weaker_sufficient; exact ha.
-    + intros [ha hb] * hc hd. eapply schulze_trans_weaker_necessary; 
+    intros ha hdec.
+    split; intros * hb *.
+    + eapply  schulze_trans_weaker_sufficient;
+    [exact ha | exact hdec | exact hb].
+    + intros hc hd. destruct hb as (hbl & hbr).
+      eapply schulze_trans_weaker_necessary; 
       try assumption;[exact hc | exact hd].
   Qed.
+  
+  
+
+
+  (** Each power term is ≤ the full mat_star (idempotent addition). *)
+  Lemma pow_le_mat_star {R : BoundedSemiring.type} (M : @Matrix Node R) (m : nat) 
+    (A B : Node) :
+    (m <= kleene_exp)%nat -> pow M m A B ≤ mat_star M A B.
+  Proof.
+    unfold mat_star. revert m.
+    induction kleene_exp as [|K IH]; intros m Hle; cbn [geom_sum].
+    - assert (m = 0)%nat by lia. subst m. cbn [pow].
+      unfold I, Orel. destruct (fin_eq_dec A B); apply bounded_add_idem.
+    - destruct (Compare_dec.lt_eq_lt_dec m (S K)) as [[Hlt|Heq]|Hgt].
+      + assert (m <= K)%nat by lia. specialize (IH m H).
+        unfold matrix_add. eapply orel_trans; [apply IH |]. apply bounded_plus_upper_left.
+      + subst m. unfold matrix_add. apply orel_plus_upper_right.
+      + lia.
+  Qed.
+
+  (** A link is a path of length one. *)
+  Lemma link_le_mat_star {R : BoundedSemiring.type}
+    (M : @Matrix Node R) (x y : Node) : M x y ≤ mat_star M x y.
+  Proof.
+    pose proof (elements_two_or_more (s := Node)) as Hlen.
+    pose proof (@pow_le_mat_star R M 1 x y) as h.
+    unfold kleene_exp in h. specialize (h ltac:(nia)).
+    cbn [pow] in h. rewrite matrix_mul_I_r in h. exact h.
+  Qed.
+
+  (** [sum_orel_bound] at the bounded-semiring coercion path. *)
+  Lemma bounded_sum_orel_bound {R : BoundedSemiring.type} (f : Node -> R) (v : R) :
+    (forall x, f x ≤ v) -> sum f ≤ v.
+  Proof.
+    intros * ha. 
+    eapply sum_orel_bound; 
+    assumption. 
+  Qed.
+
+  
+
+  
+
+  (** Commutativity is not an assumption of the characterisation — it is a
+      consequence of the right-hand side.  [a * b] is always a lower bound of
+      [a] and [b]; the meet-lower-bound property makes it the GREATEST one,
+      and greatest lower bounds are unique. *)
+  Corollary meet_lower_bound_implies_comm {R : BoundedSemiring.type} :
+    (forall m a b : R, m ≤ a -> m ≤ b -> m ≤ a * b) ->
+    forall a b : R, a * b = b * a.
+  Proof.
+    intros Hmlb a b. apply orel_antisym.
+    - exact (Hmlb (a * b) b a (bounded_mul_lower_right a b)
+               (bounded_mul_lower_left a b)).
+    - exact (Hmlb (b * a) a b (bounded_mul_lower_right b a)
+               (bounded_mul_lower_left b a)).
+  Qed.
+  
 
   (* =====================================================================  *)
   (*  Theorem — WINNER EXISTENCE (Corollary of §4.1)                          *)
@@ -874,7 +937,7 @@ Section SocialChoice.
 
  
   (* Again H_total_order and H_pair_sum combined are very strong assumption. *)
-  Theorem winner_exists {R : BoundedCommutativeSemiring.type}
+  Theorem winner_exists {R : BoundedSemiring.type}
     (M : @Matrix Node R)
     (H_total_order : forall x y : R, x + y = x \/ x + y = y)
     (Hdec : forall x y : R, {x = y} + {x ≠ y})
@@ -945,13 +1008,13 @@ Section SocialChoice.
       - [H_total_order]    : addition is a total order (x+y = x ∨ x+y = y)
       - [Hdec]            : decidable equality on R
       - [H_meet_lower_bound]: m ≤ a → m ≤ b → m ≤ a * b                    *)
-  Theorem winner_exists_weaker_necessary {R : BoundedCommutativeSemiring.type}
-    (M : @Matrix Node R)
+  Theorem winner_exists_weaker_necessary {R : BoundedSemiring.type} 
     (H_total_order : forall x y : R, x + y = x \/ x + y = y)
     (Hdec : forall x y : R, {x = y} + {x ≠ y})
     (H_meet_lower_bound : forall m a b : R, m ≤ a -> m ≤ b -> m ≤ a * b) :
-    exists (a : Node), schulze_winner M a.
+    forall (M : @Matrix Node R), exists (a : Node), schulze_winner M a.
   Proof.
+    intro M.
     assert (Hmax : forall (l : list Node), l <> [] -> exists w,
       In w l /\ (forall b, In b l -> b <> w -> ~ schulze_beats M b w)).
     { intro l. induction l as [|a l IH]; intros Hnonempty.
@@ -969,9 +1032,9 @@ Section SocialChoice.
             inversion Hx_in as [Heq_a | Hx_in_tail].
             { exfalso. apply Hx_neq_a. symmetry. exact Heq_a. }
             intro Hx_beats_a.
-            pose proof (@schulze_trans_weaker_necessary R M
+            pose proof (@schulze_trans_weaker_necessary R 
               H_total_order H_meet_lower_bound
-              x a w Hx_beats_a H_aw) as Hxw.
+              M x a w Hx_beats_a H_aw) as Hxw.
             destruct (fin_eq_dec x w) as [Heq_xw | Hneq_xw].
             { subst x. apply (schulze_beats_irrefl M w). exact Hxw. }
             { apply (Hw_undefeated x Hx_in_tail Hneq_xw). exact Hxw. }
@@ -993,22 +1056,7 @@ Section SocialChoice.
     - exact Hb_neq_w.
   Qed.
 
-
-  (** Each power term is ≤ the full mat_star (idempotent addition). *)
-  Lemma pow_le_mat_star {R : BoundedSemiring.type} (M : @Matrix Node R) (m : nat) 
-    (A B : Node) :
-    (m <= kleene_exp)%nat -> pow M m A B ≤ mat_star M A B.
-  Proof.
-    unfold mat_star. revert m.
-    induction kleene_exp as [|K IH]; intros m Hle; cbn [geom_sum].
-    - assert (m = 0)%nat by lia. subst m. cbn [pow].
-      unfold I, Orel. destruct (fin_eq_dec A B); apply bounded_add_idem.
-    - destruct (Compare_dec.lt_eq_lt_dec m (S K)) as [[Hlt|Heq]|Hgt].
-      + assert (m <= K)%nat by lia. specialize (IH m H).
-        unfold matrix_add. eapply orel_trans; [apply IH |]. apply bounded_plus_upper_left.
-      + subst m. unfold matrix_add. apply orel_plus_upper_right.
-      + lia.
-  Qed.
+ 
 
   (** * Monotonicity (Section 4.2 of the Schulze paper)
 
@@ -2390,28 +2438,9 @@ Section SocialChoice.
     unfold sum. apply fold_right_in_le. apply elements_complete.
   Qed.
 
-  (** [sum_orel_bound] at the bounded-semiring coercion path. *)
-  Lemma bounded_sum_orel_bound {R : BoundedSemiring.type} (f : Node -> R) (v : R) :
-    (forall x, f x ≤ v) -> sum f ≤ v.
-  Proof.
-    intros * ha. 
-    eapply sum_orel_bound; 
-    assumption. 
-  Qed.
-
   (** [1] is the top of the natural order. *)
   Lemma le_one {R : BoundedSemiring.type} (x : R) : x ≤ 1.
   Proof. unfold Orel. rewrite addC. apply (add_bound (s := R) x). Qed.
-
-  (** A link is a path of length one. *)
-  Lemma link_le_mat_star {R : BoundedSemiring.type}
-    (M : @Matrix Node R) (x y : Node) : M x y ≤ mat_star M x y.
-  Proof.
-    pose proof (elements_two_or_more (s := Node)) as Hlen.
-    pose proof (@pow_le_mat_star R M 1 x y) as h.
-    unfold kleene_exp in h. specialize (h ltac:(nia)).
-    cbn [pow] in h. rewrite matrix_mul_I_r in h. exact h.
-  Qed.
 
   (** The diagonal of the closure is the top. *)
   Lemma mat_star_diag_one {R : BoundedSemiring.type}
