@@ -1565,37 +1565,53 @@ Section SocialChoice.
     destruct (elements (s := Node)) as [|z l]; [simpl in Hlen; lia | discriminate].
   Qed.
 
-  (* Mixed transitivity ([orel_lt_le_trans]) is proved above, with the
-     helper lemmas for [pareto_stronger]. *)
 
   (** * [condorcet_implies_strict_winner], with [H_pair_sum_one] replaced by
       [H_cross] — every edge *into* the Condorcet winner [A] is strictly below
-      every edge *out of* [A], rather than forcing every outgoing edge to equal
-      the semiring's top [1].
+      the closure strength *out of* [A], rather than forcing every outgoing
+      edge to equal the semiring's top [1].
 
-      [H_cross] is restricted to distinct endpoints [Z ≠ X] on purpose.  Stated
-      for all [Z] and [X] it would also assert [M X A < M A X] for every
-      [X ≠ A], which is exactly [condorcet_winner M A] — the Condorcet premise
-      would then be implied by the side condition and contribute nothing.  With
-      the diagonal excluded, the two hypotheses are independent: [H_cross]
-      handles [Z ≠ X] and the Condorcet property supplies [Z = X].  *)
+      Two things about the shape of [H_cross] are deliberate.
+
+      It is restricted to distinct endpoints [Z ≠ X].  Stated for all [Z] and
+      [X] against the direct link it would also assert [M X A < M A X] for
+      every [X ≠ A], which is exactly [condorcet_winner M A] — the Condorcet
+      premise would then be implied by the side condition and contribute
+      nothing.  With the diagonal excluded the two hypotheses are independent:
+      [H_cross] handles [Z ≠ X] and the Condorcet property supplies [Z = X],
+      via [M X A < M A X ≤ mat_star M A X].
+
+      Its right-hand side is the closure [mat_star M A X], not the direct link
+      [M A X].  This is strictly weaker — [M A X ≤ mat_star M A X] always — and
+      it is what the proof actually needs, since the conclusion compares
+      closures.  The difference matters: [A] may beat [X] only weakly head to
+      head while dominating it through a beatpath, which is the very situation
+      the Schulze method exists to handle.  On three nodes in the max-min
+      semiring (top [3]), take [M A B = 1], [M B A = 0], [M A C = 3],
+      [M C A = 2], [M C B = 3], [M B C = 0].  Then [A] is a Condorcet winner
+      and a strict Schulze winner, because [mat_star M A B = 3] via the
+      beatpath [A → C → B] even though the direct link [M A B] is only [1].
+      The direct-link form of the hypothesis rejects this profile at
+      [Z = C, X = B] (since [M C A = 2 ≥ 1 = M A B]), while the closure form
+      accepts it ([2 < 3 = mat_star M A B]).  *)
   Theorem condorcet_implies_strict_winner_weaker  {R : BoundedSemiring.type}
     (M : @Matrix Node R) (A : Node)
     (H_total_order : forall x y : R, x + y = x \/ x + y = y)
-    (H_cross : forall Z X, Z <> A -> X <> A -> Z <> X -> M Z A < M A X) :
+    (H_cross : forall Z X, Z <> A -> X <> A -> Z <> X ->
+       M Z A < mat_star M A X) :
     condorcet_winner M A -> strict_winner M A.
   Proof.
     intros Hcw X0 HX0.
     unfold schulze_beats, beats.
-    (* Every edge into [A] is strictly below the target margin [M A X0]:
+    (* Every edge into [A] is strictly below the target [mat_star M A X0]:
        off-diagonal by [H_cross], diagonal by the Condorcet hypothesis. *)
-    assert (Hdom : forall w, w <> A -> M w A < M A X0).
+    assert (Hdom : forall w, w <> A -> M w A < mat_star M A X0).
     { intros w Hw. destruct (fin_eq_dec w X0) as [->|Hne].
-      - exact (Hcw X0 HX0).
+      - eapply orel_lt_le_trans; [exact (Hcw X0 HX0) | apply link_le_mat_star].
       - exact (H_cross w X0 Hw HX0 Hne). }
     (* Every walk of length n into A, from any w <> A, stays strictly below
-       the fixed target margin M A X0. *)
-    assert (H_pow_lt : forall n w, w <> A -> pow M n w A < M A X0).
+       that same target. *)
+    assert (H_pow_lt : forall n w, w <> A -> pow M n w A < mat_star M A X0).
     { induction n as [|n IH]; intros w Hw.
       - (* n = 0: pow M 0 w A = I w A = 0, since w <> A *)
         cbn [pow]. unfold I.
@@ -1603,7 +1619,7 @@ Section SocialChoice.
         split.
         + apply zero_is_bottom.
         + intro Heq0.
-          destruct (Hcw X0 HX0) as [Hd_le Hd_ne].
+          destruct (Hdom X0 HX0) as [Hd_le Hd_ne].
           apply Hd_ne. unfold Orel in Hd_le.
           rewrite <- Heq0 in Hd_le. rewrite addr0 in Hd_le.
           rewrite Hd_le. exact Heq0.
@@ -1612,20 +1628,21 @@ Section SocialChoice.
         apply sum_lt_bound_if_all_lt; [exact H_total_order |].
         intro z.
         destruct (fin_eq_dec z A) as [Heqz|Hneqz].
-        + (* z = A: bound via the first factor, M w A < M A X0 directly *)
+        + (* z = A: bound via the first factor, M w A < mat_star M A X0 *)
           subst z.
-          apply (orel_lt_trans (M w A * pow M n A A) (M w A) (M A X0)).
+          apply (orel_lt_trans (M w A * pow M n A A) (M w A) (mat_star M A X0)).
           * apply bounded_mul_lower_left.
           * apply Hdom; assumption.
-        + (* z <> A: bound via the second factor, IH gives pow M n z A < M A X0 *)
-          apply (orel_lt_trans (M w z * pow M n z A) (pow M n z A) (M A X0)).
+        + (* z <> A: bound via the second factor, IH gives the bound on the tail *)
+          apply (orel_lt_trans (M w z * pow M n z A) (pow M n z A)
+                   (mat_star M A X0)).
           * apply bounded_mul_lower_right.
           * apply IH. exact Hneqz. }
-    apply (orel_lt_le_trans (mat_star M X0 A) (M A X0) (mat_star M A X0)).
-    - apply (mat_star_lt_bound H_total_order). intro n.
-      apply H_pow_lt. exact HX0.
-    - apply link_le_mat_star.
+    (* The target is already the closure, so no final chaining step is needed. *)
+    apply (mat_star_lt_bound H_total_order). intro n.
+    apply H_pow_lt. exact HX0.
   Qed.
+
 
 
   
