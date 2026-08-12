@@ -260,40 +260,6 @@ Section SocialChoice.
   Qed.
 
   
-  (* The direct edge M_{AX} appears in geom_sum M n A X for n ≥ 1.           *)
-  Lemma geom_sum_includes_direct {R : BoundedSemiring.type}
-    (M : @Matrix Node R) (n : nat) (A X : Node) :
-    (1 <= n)%nat -> M A X ≤ geom_sum M n A X.
-  Proof.
-    induction n as [|n IH]; intros Hn.
-    - lia.
-    - destruct n as [|n].
-      + (* n = 1: geom_sum 1 = I + pow M 1 = I + M·I = I + M *)
-        cbn [geom_sum pow]. unfold matrix_add, Orel.
-        (* Goal: M A X + (I A X + matrix_mul M I A X) = I A X + matrix_mul M I A X *)
-        (* Use matrix_mul_I_r to replace matrix_mul M I A X with M A X *)
-        pose proof (matrix_mul_I_r M A X) as Hmul.
-        (* Hmul : matrix_mul M I A X = M A X *)
-        rewrite Hmul.
-        unfold I.
-        destruct (fin_eq_dec A X) as [Heq|Hneq'].
-        * subst X.
-          rewrite (addC 1 (M A A)).
-          transitivity ((M A A + M A A) + 1).
-          { symmetry. apply addA. }
-          apply (f_equal (fun t => t + 1)). apply bounded_add_idem.
-        * rewrite add0r at 2. rewrite add0r. apply bounded_add_idem.
-      + (* n ≥ 2 *)
-        assert (Hn' : (S n >= 1)%nat) by lia.
-        (* geom_sum M (S (S n)) = geom_sum M (S n) +M pow M (S (S n)) *)
-        (* Only expand the outer geom_sum *)
-        change (geom_sum M (S (S n))) with
-          (matrix_add (geom_sum M (S n)) (pow M (S (S n)))).
-        unfold matrix_add.
-        eapply orel_trans; [apply (IH Hn') |].
-        apply bounded_plus_upper_left.
-  Qed.
-
   (* In a bounded semiring, the diagonal of geom_sum is always 1.            *)
   Lemma geom_sum_diag_one {R : BoundedSemiring.type}
     (M : @Matrix Node R) (n : nat) (A : Node) :
@@ -672,6 +638,22 @@ Section SocialChoice.
     cbn [pow] in h. rewrite matrix_mul_I_r in h. exact h.
   Qed.
 
+  (** Lifting a uniform bound on the powers of [M] to the closure.  Since
+      [pow M 0 = I] is the first summand of every [geom_sum], the hypothesis
+      also discharges the base case, so no separate argument about [I] is
+      needed at the call sites. *)
+  Lemma mat_star_bound {R : BoundedSemiring.type}
+    (M : @Matrix Node R) (x y : Node) (c : R) :
+    (forall n, pow M n x y ≤ c) -> mat_star M x y ≤ c.
+  Proof.
+    intros Hpow. unfold mat_star.
+    assert (Hgen : forall k, geom_sum M k x y ≤ c).
+    { induction k as [|k IH]; cbn [geom_sum].
+      - exact (Hpow 0%nat).
+      - unfold matrix_add. apply add_orel_bound; [exact IH | exact (Hpow (S k))]. }
+    apply Hgen.
+  Qed.
+
   (** [sum_orel_bound] at the bounded-semiring coercion path. *)
   Lemma bounded_sum_orel_bound {R : BoundedSemiring.type} (f : Node -> R) (v : R) :
     (forall x, f x ≤ v) -> sum f ≤ v.
@@ -874,10 +856,7 @@ Section SocialChoice.
             apply (orel_trans _ (M' A z * geom_sum M' kleene_exp z C)).
             { apply bounded_mul_orel_compat_l. apply Hrow. }
             apply (orel_trans _ (mat_star M' A z * mat_star M' z C)).
-            { apply bounded_mul_orel_compat_l.
-              pose proof (pow_le_mat_star M' 1 A z) as Hp.
-              unfold kleene_exp in Hp. specialize (Hp ltac:(nia)).
-              cbn [pow] in Hp. rewrite matrix_mul_I_r in Hp. exact Hp. }
+            { apply bounded_mul_orel_compat_l. apply link_le_mat_star. }
             { apply star_path_compose. }
       - (* part 2, inductive: pow M (S n) z C for z ≠ A *)
         intros z HzneA. simpl. unfold matrix_mul.
@@ -907,24 +886,13 @@ Section SocialChoice.
             rewrite mul1r. apply bounded_plus_upper_left.
           * setoid_rewrite Hcase.
             apply (orel_trans _ (mat_star M' z w * mat_star M' w C)).
-            { apply bounded_mul_orel_compat_l.
-              pose proof (pow_le_mat_star M' 1 z w) as Hp.
-              unfold kleene_exp in Hp. specialize (Hp ltac:(nia)).
-              cbn [pow] in Hp. rewrite matrix_mul_I_r in Hp. exact Hp. }
+            { apply bounded_mul_orel_compat_l. apply link_le_mat_star. }
             (* mat_star M' z w * mat_star M' w C ≤ mat_star M' z C ≤ star' A C + star' z C *)
             apply (orel_trans _ (mat_star M' z C)).
             { apply star_path_compose. }
             apply orel_plus_upper_right. }
     (* Now use the mutual IH to prove the main result *)
-    assert (Hgeom : forall n, geom_sum M n A C ≤ geom_sum M' kleene_exp A C).
-    { induction n as [|n IHn]; cbn [geom_sum].
-      - destruct (fin_eq_dec A C).
-        + subst C. unfold I. destruct (fin_eq_dec A A); [|congruence]. rewrite (geom_sum_diag_one M' kleene_exp A). apply bounded_orel_refl.
-        + unfold I. destruct (fin_eq_dec A C); [congruence|]. unfold Orel. apply add0r.
-      - unfold matrix_add. apply add_orel_bound.
-        + apply IHn.
-        + apply Hmutual. }
-    apply Hgeom with (n := kleene_exp).
+    apply mat_star_bound. intro n. apply Hmutual.
   Qed.
 
   (* =====================================================================  *)
@@ -966,6 +934,57 @@ Section SocialChoice.
     subst. reflexivity.
   Qed.
 
+  (** Inversion principle for a path of length [S k]: it is the edge
+      [(x, z, M x z)] out of its source followed by a path of length [k]
+      from [z].  Every induction over [all_paths_klength] below peels a
+      path this way, so the [append_node_in_paths] bookkeeping is done
+      once here rather than at each such proof. *)
+  Lemma all_paths_klength_S_inv {R : Semiring.type}
+    (M : @Matrix Node R) (k : nat) (x y : Node) (p : list (Node * Node * R)) :
+    List.In p (all_paths_klength elements M (S k) x y) ->
+    exists (z : Node) (q : list (Node * Node * R)),
+      p = (x, z, M x z) :: q /\
+      List.In q (all_paths_klength elements M k z y).
+  Proof.
+    intros Hin.
+    cbn [all_paths_klength] in Hin.
+    pose proof Hin as Hin_shape.
+    apply (append_node_in_paths_In M x
+      (List.flat_map (fun z => all_paths_klength elements M k z y) elements) p) in Hin.
+    destruct Hin as [w [q [Hp Hq_lf]]].
+    apply append_node_in_paths_shape in Hin_shape.
+    destruct Hin_shape as (w' & q' & Hp' & Hsrc_x & Hsrc_w' & Hq_ne).
+    subst p.
+    inversion Hp' as [[Heq_hd Heq_tl]].
+    inversion Heq_hd. subst w' q'. clear Hp'.
+    apply in_flat_map in Hq_lf. destruct Hq_lf as [z [Hz_el Hq_in]].
+    pose proof Hq_in as Hq_in_copy.
+    apply non_empty_paths_in_kpath in Hq_in as (_ & Hsrc_z & _).
+    assert (Hw_eq_z : w = z). { eapply source_inj; eassumption. }
+    subst w.
+    exists z, q. split; [reflexivity | exact Hq_in_copy].
+  Qed.
+
+  (** A bound holding of every path of length [n] from [x] to [y] is a bound
+      on [pow M n x y], which is the join of exactly those path measures. *)
+  Lemma pow_bound_of_paths {R : BoundedSemiring.type}
+    (M : @Matrix Node R) (n : nat) (x y : Node) (c : R) :
+    (forall p, List.In p (all_paths_klength elements M n x y) ->
+       measure_of_path p ≤ c) ->
+    pow M n x y ≤ c.
+  Proof.
+    intros Hall.
+    rewrite (matrix_path_equation n M x y).
+    unfold sum_all_rvalues, get_all_rvalues.
+    apply fold_right_orel_bound.
+    intros v Hv. apply in_map_iff in Hv. destruct Hv as [path [Hm Hin]].
+    destruct path as [[s d] p]. cbn in Hm. subst v.
+    unfold construct_all_paths in Hin.
+    apply in_map_iff in Hin. destruct Hin as [q [Heq Hin']].
+    inversion Heq. subst s d q. clear Heq.
+    exact (Hall p Hin').
+  Qed.
+
   (** For any path from [x] to [A] (with [x ≠ A]), swapping the destination
       from [A] to [B] gives an upper bound via [mat_star M x B].
       Proved by induction on the path length [k]. *)
@@ -983,36 +1002,8 @@ Section SocialChoice.
       cbn [all_paths_klength] in Hin.
       destruct (fin_eq_dec x A) as [Heq|Heq]; [congruence|].
       inversion Hin.
-    - (* k = S k *)
-      cbn [all_paths_klength] in Hin.
-      (* Use both shape and membership lemmas on two copies of Hin *)
-      pose proof Hin as Hin_shape.
-      apply (append_node_in_paths_In M x
-        (List.flat_map (fun z => all_paths_klength elements M k z A) elements) p) in Hin.
-      destruct Hin as [y [q [Hp Hq_lf]]].
-      apply append_node_in_paths_shape in Hin_shape.
-      destruct Hin_shape as (y' & q' & Hp' & Hsrc_x & Hsrc_y' & Hq_ne).
-      (* Hp: p = (x, y, M x y) :: q.  Hp': p = (x, y', M x y') :: q'. *)
-      (* By inversion, y = y' and q = q'. *)
-      rewrite Hp in Hp'. inversion Hp' as [[Heq_xy Heq_M Heq_rest]].
-      (* Heq_rest: q = q'.  Also from the head equality, y = y'. *)
-      (* Actually inversion on a cons equality is tricky.  Let us use injection. *)
-      (* Simpler: subst from Hp, then Hp' becomes a reflexive equality. *)
-      subst p. 
-      (* Now Hp': (x, y, M x y) :: q = (x, y', M x y') :: q' *)
-      inversion Hp' as [[Heq_hd Heq_tl]].
-      (* Heq_hd: (x, y, M x y) = (x, y', M x y').  Heq_tl: q = q'. *)
-      (* From Heq_hd, by inversion: *)
-      inversion Heq_hd. subst y' q'. clear Hp' Heq_hd Heq_tl.
-      (* Now: Hsrc_y' : source y q = true.  Hq_ne: q ≠ []. *)
-      apply in_flat_map in Hq_lf. destruct Hq_lf as [z [Hz_el Hq_in]].
-      (* Hq_in: In q (all_paths_klength k z A). *)
-      pose proof Hq_in as Hq_in_copy.
-      apply non_empty_paths_in_kpath in Hq_in as (_ & Hsrc_z & _).
-      (* Hsrc_z: source z q = true.  Also source y q = true, q ≠ []. *)
-      assert (Hy_eq_z : y = z).
-      { eapply source_inj; eassumption. }
-      subst y.
+    - (* k = S k: peel off the head edge (x, z, M x z) *)
+      destruct (all_paths_klength_S_inv M k x A p Hin) as (z & q & -> & Hq).
       cbn [measure_of_path].
       destruct (fin_eq_dec z A) as [Heq_zA|Hneq_zA].
       + (* z = A: q ∈ all_paths_klength k A A *)
@@ -1024,25 +1015,13 @@ Section SocialChoice.
         destruct (fin_eq_dec x B) as [Heq_xB|Hneq_xB].
         * subst x. rewrite Hzero. unfold Orel. apply add0r.
         * apply (orel_trans _ _ _ (Hcol x Hx_ne_A Hneq_xB)).
-          unfold Orel.
-          pose proof (elements_two_or_more (s := Node)) as Hlen.
-          pose proof (@pow_le_mat_star R M 1 x B) as ha.
-          unfold kleene_exp in ha.
-          specialize (ha ltac:(nia)).
-          cbn [pow] in ha. rewrite matrix_mul_I_r in ha. exact ha.
-      + (* z ≠ A *)
+          apply link_le_mat_star.
+      + (* z ≠ A: chain the head link with the tail through [z] *)
         assert (Hq_bound : measure_of_path q ≤ mat_star M z B).
-        { apply IH; [exact Hneq_zA|exact Hq_in_copy]. }
+        { apply IH; [exact Hneq_zA | exact Hq]. }
         apply (orel_trans _ _ _ (bounded_mul_orel_compat_r _ _ _ Hq_bound)).
-        assert (HMxz : M x z ≤ mat_star M x z).
-        { 
-          pose proof (elements_two_or_more (s := Node)) as Hlen.
-          pose proof (@pow_le_mat_star R M 1 x z) as ha.
-          unfold kleene_exp in ha.
-          specialize (ha ltac:(nia)).
-          cbn [pow] in ha. rewrite matrix_mul_I_r in ha. exact ha.
-        }
-        apply (orel_trans _ _ _ (bounded_mul_orel_compat_l _ _ _ HMxz)).
+        apply (orel_trans _ _ _
+          (bounded_mul_orel_compat_l _ _ _ (link_le_mat_star M x z))).
         apply star_path_compose.
   Qed.
 
@@ -1058,64 +1037,32 @@ Section SocialChoice.
     (Hdiag_one : forall i j, i = j -> M i j = 1)
     (n : nat) : pow M n B A ≤ mat_star M A B.
   Proof.
-    rewrite (matrix_path_equation n M B A).
-    unfold sum_all_rvalues, get_all_rvalues.
-    apply fold_right_orel_bound.
-    intros x Hx. apply in_map_iff in Hx. destruct Hx as [path [Hm Hin]].
-    destruct path as [[s d] p]. cbn in Hm. subst x.
-    unfold construct_all_paths in Hin.
-    apply in_map_iff in Hin. destruct Hin as [q [Heq Hin']].
-    inversion Heq. subst s d q. clear Heq.
-    (* Goal: measure_of_path p ≤ mat_star M A B, where p ∈ all_paths_klength n B A *)
-    revert p Hin'.
-    induction n as [|k IH]; intros p Hin'.
+    apply pow_bound_of_paths.
+    induction n as [|k IH]; intros p Hin.
     - (* n = 0: all_paths_klength 0 B A = [] since B ≠ A *)
-      cbn [all_paths_klength] in Hin'.
-      destruct (fin_eq_dec B A) as [Heq_BA|Hneq_BA]; [congruence|].
-      inversion Hin'.
-    - (* n = S k *)
-      cbn [all_paths_klength] in Hin'.
-      pose proof Hin' as Hin_shape.
-      apply (append_node_in_paths_In M B
-        (List.flat_map (fun z => all_paths_klength elements M k z A) elements) p) in Hin'.
-      destruct Hin' as [y [q' [Hp Hq_lf]]].
-      apply append_node_in_paths_shape in Hin_shape.
-      destruct Hin_shape as (y' & q'' & Hp' & Hsrc_B & Hsrc_y' & Hq_ne).
-      (* Hp: p = (B, y, M B y) :: q'.  Hp': p = (B, y', M B y') :: q''. *)
-      rewrite Hp in Hp'. inversion Hp' as [[Heq_hd Heq_tl]].
-      inversion Heq_hd. subst y' q''. clear Hp'  Heq_tl.
-      (* Now: Hsrc_y' : source y q' = true. Hq_ne: q' ≠ []. *)
-      apply in_flat_map in Hq_lf. destruct Hq_lf as [z [Hz_el Hq_in]].
-      pose proof Hq_in as Hq_in_copy.
-      apply non_empty_paths_in_kpath in Hq_in as (_ & Hsrc_z & _).
-      assert (Hy_eq_z : y = z).
-      { eapply source_inj; eassumption. }
-      subst y.
-      rewrite Hp. cbn [measure_of_path].
+      cbn [all_paths_klength] in Hin.
+      destruct (fin_eq_dec B A) as [Heq_BA|_]; [congruence | inversion Hin].
+    - (* n = S k: peel off the head edge (B, z, M B z) *)
+      destruct (all_paths_klength_S_inv M k B A p Hin) as (z & q & -> & Hq).
+      cbn [measure_of_path].
       destruct (fin_eq_dec z A) as [Heq_zA|Hneq_zA].
-      + (* z = A: edge is (B, A, M B A = 0) *)
+      + (* z = A: the head edge is (B, A, M B A = 0), so the path vanishes *)
         subst z. rewrite Hzero.
-        apply (orel_trans _ 0 _); [|unfold Orel; apply add0r].
-        assert (Htmp : 0 * measure_of_path q' = 0). { apply mul0r. }
-        rewrite Htmp. unfold Orel. apply add0r.
-      + (* z ≠ A *)
-        destruct (fin_eq_dec z B) as [Heq_zB|Hneq_zB].
-        * (* z = B: q' ∈ all_paths_klength k B A *)
-          subst z.
-          rewrite (Hdiag_one B B eq_refl). rewrite mul1r.
-          apply (IH _ Hq_in_copy).
-        * (* z ≠ A, B *)
-          assert (Hq_bound : measure_of_path q' ≤ mat_star M z B).
-          { apply (path_xA_measure_le_mat_star_xB M A B Hneq Hzero Hcol k z q' Hneq_zA Hq_in_copy). }
-          apply (orel_trans _ _ _ (bounded_mul_orel_compat_l _ _ _ (Hrow z Hneq_zA Hneq_zB))).
+        eapply orel_trans; [apply bounded_mul_lower_left | apply zero_is_bottom].
+      + destruct (fin_eq_dec z B) as [Heq_zB|Hneq_zB].
+        * (* z = B: a self-loop of weight 1, the tail is still a path B ⇝ A *)
+          subst z. rewrite (Hdiag_one B B eq_refl), mul1r.
+          apply (IH _ Hq).
+        * (* z ≠ A, B: bound the tail by [mat_star M z B] and chain *)
+          assert (Hq_bound : measure_of_path q ≤ mat_star M z B).
+          { exact (path_xA_measure_le_mat_star_xB M A B Hneq Hzero Hcol
+              k z q Hneq_zA Hq). }
+          apply (orel_trans _ _ _
+            (bounded_mul_orel_compat_l _ _ _ (Hrow z Hneq_zA Hneq_zB))).
           apply (orel_trans _ _ _ (bounded_mul_orel_compat_r _ _ _ Hq_bound)).
-          apply (orel_trans _ (mat_star M A z * mat_star M z B) _).
-          { apply (bounded_mul_orel_compat_l (M A z) (mat_star M A z) (mat_star M z B)).
-            pose proof (elements_two_or_more (s := Node)) as Hlen.
-            pose proof (pow_le_mat_star M 1 A z) as h.
-            unfold kleene_exp in h. specialize (h ltac:(nia)).
-            cbn [pow] in h. rewrite matrix_mul_I_r in h. exact h. }
-          { apply star_path_compose. }
+          apply (orel_trans _ _ _
+            (bounded_mul_orel_compat_l _ _ _ (link_le_mat_star M A z))).
+          apply star_path_compose.
   Qed.
 
 
@@ -1165,20 +1112,8 @@ Section SocialChoice.
     (mat_star M B A ≤ mat_star M A B).
   Proof.
     intros Hneq Hzero Hrow Hcol Hdiag_one.
-    unfold mat_star.
-    assert (forall k, geom_sum M k B A ≤ geom_sum M kleene_exp A B).
-    { induction k as [|k IH]; cbn [geom_sum].
-      - unfold I, Orel.
-        destruct (fin_eq_dec B A) as [Heq|Hba];
-          [exfalso; apply Hneq; symmetry; exact Heq|].
-        destruct (fin_eq_dec A B) as [Heq|Hab];
-          [exfalso; apply Hneq; exact Heq|].
-        apply add0r.
-      - unfold matrix_add.
-        apply add_orel_bound.
-        + apply IH.
-        + apply pow_BA_le_mat_star_AB with (n := S k); assumption. }
-    apply H with (k := kleene_exp).
+    apply mat_star_bound. intro n.
+    exact (pow_BA_le_mat_star_AB M A B Hneq Hzero Hrow Hcol Hdiag_one n).
   Qed.
 
 
@@ -1231,6 +1166,43 @@ Section SocialChoice.
       + apply IH. intros x Hx. apply Hall. right; exact Hx.
   Qed.
 
+  (** Strict counterpart of [pow_bound_of_paths].  The empty join is [0], so
+      the bound must be strictly above [0] for the degenerate case. *)
+  Lemma pow_lt_bound_of_paths {R : BoundedSemiring.type}
+    (Htotal : forall x y : R, x + y = x \/ x + y = y)
+    (M : @Matrix Node R) (n : nat) (x y : Node) (c : R) :
+    0 < c ->
+    (forall p, List.In p (all_paths_klength elements M n x y) ->
+       measure_of_path p < c) ->
+    pow M n x y < c.
+  Proof.
+    intros Hpos Hall.
+    rewrite (matrix_path_equation n M x y).
+    unfold sum_all_rvalues, get_all_rvalues.
+    apply (fold_right_lt_bound Htotal); [exact Hpos |].
+    intros v Hv. apply in_map_iff in Hv. destruct Hv as [path [Hm Hin]].
+    destruct path as [[s d] p]. cbn in Hm. subst v.
+    unfold construct_all_paths in Hin.
+    apply in_map_iff in Hin. destruct Hin as [q [Heq Hin']].
+    inversion Heq. subst s d q. clear Heq.
+    exact (Hall p Hin').
+  Qed.
+
+  (** Strict counterpart of [mat_star_bound]. *)
+  Lemma mat_star_lt_bound {R : BoundedSemiring.type}
+    (Htotal : forall x y : R, x + y = x \/ x + y = y)
+    (M : @Matrix Node R) (x y : Node) (c : R) :
+    (forall n, pow M n x y < c) -> mat_star M x y < c.
+  Proof.
+    intros Hpow. unfold mat_star.
+    assert (Hgen : forall k, geom_sum M k x y < c).
+    { induction k as [|k IH]; cbn [geom_sum].
+      - exact (Hpow 0%nat).
+      - unfold matrix_add.
+        apply (add_lt_bound Htotal); [exact IH | exact (Hpow (S k))]. }
+    apply Hgen.
+  Qed.
+
   (** Key lemma.  Every path into [A] starting from some [x ≠ A] has measure
       at most the strongest link [M A B], and it attains [M A B] only when the
       direct link [x → A] is itself of maximal strength.
@@ -1257,21 +1229,7 @@ Section SocialChoice.
       destruct (fin_eq_dec x A) as [Heq|Heq]; [congruence|].
       inversion Hin.
     - (* k = S k: peel off the head edge (x, z, M x z) *)
-      cbn [all_paths_klength] in Hin.
-      pose proof Hin as Hin_shape.
-      apply (append_node_in_paths_In M x
-        (List.flat_map (fun z => all_paths_klength elements M k z A) elements) p) in Hin.
-      destruct Hin as [y [q [Hp Hq_lf]]].
-      apply append_node_in_paths_shape in Hin_shape.
-      destruct Hin_shape as (y' & q' & Hp' & Hsrc_x & Hsrc_y' & Hq_ne).
-      subst p.
-      inversion Hp' as [[Heq_hd Heq_tl]].
-      inversion Heq_hd. subst y' q'. clear Hp'.
-      apply in_flat_map in Hq_lf. destruct Hq_lf as [z [Hz_el Hq_in]].
-      pose proof Hq_in as Hq_in_copy.
-      apply non_empty_paths_in_kpath in Hq_in as (_ & Hsrc_z & _).
-      assert (Hy_eq_z : y = z). { eapply source_inj; eassumption. }
-      subst y.
+      destruct (all_paths_klength_S_inv M k x A p Hin) as (z & q & -> & Hq).
       cbn [measure_of_path].
       destruct (fin_eq_dec z A) as [Heq_zA|Hneq_zA].
       + (* head edge already lands on A *)
@@ -1284,7 +1242,7 @@ Section SocialChoice.
         * intro Heq.
           apply orel_antisym; [exact HxA_le | rewrite <- Heq; exact Hlow].
       + (* head edge goes to a third node z, so the tail is a path z ⇝ A *)
-        destruct (IH z q Hneq_zA Hq_in_copy) as [Hq_le Hq_top].
+        destruct (IH z q Hneq_zA Hq) as [Hq_le Hq_top].
         destruct (fin_eq_dec x z) as [Hxz|Hxz].
         * (* self-loop: weight 1, the measure is unchanged *)
           subst z. rewrite (Hdiag_one x x eq_refl), mul1r.
@@ -1335,16 +1293,10 @@ Section SocialChoice.
     (Hneq : A ≠ B) (Hne_top : M B A ≠ M A B) (Hpos : 0 < M A B)
     (n : nat) : pow M n B A < M A B.
   Proof.
-    rewrite (matrix_path_equation n M B A).
-    unfold sum_all_rvalues, get_all_rvalues.
-    apply (fold_right_lt_bound Htotal); [exact Hpos |].
-    intros x Hx. apply in_map_iff in Hx. destruct Hx as [path [Hm Hin]].
-    destruct path as [[s d] p]. cbn in Hm. subst x.
-    unfold construct_all_paths in Hin.
-    apply in_map_iff in Hin. destruct Hin as [q [Heq Hin']].
-    inversion Heq. subst s d q. clear Heq.
+    apply (pow_lt_bound_of_paths Htotal); [exact Hpos |].
+    intros p Hin.
     exact (path_BA_measure_lt M A B Htop_trans Hmax Hdiag_one
-      Hneq Hne_top n p Hin').
+      Hneq Hne_top n p Hin).
   Qed.
 
   (** …and so is the whole closure. *)
@@ -1358,17 +1310,9 @@ Section SocialChoice.
     (Hneq : A ≠ B) (Hne_top : M B A ≠ M A B) (Hpos : 0 < M A B) :
     mat_star M B A < M A B.
   Proof.
-    unfold mat_star.
-    assert (Hgen : forall k, geom_sum M k B A < M A B).
-    { induction k as [|k IHk]; cbn [geom_sum].
-      - unfold I.
-        destruct (fin_eq_dec B A) as [Heq|_];
-          [exfalso; apply Hneq; symmetry; exact Heq | exact Hpos].
-      - unfold matrix_add.
-        apply (add_lt_bound Htotal); [exact IHk |].
-        exact (pow_BA_lt_link M A B Htotal Htop_trans Hmax Hdiag_one
-          Hneq Hne_top Hpos (S k)). }
-    apply Hgen.
+    apply (mat_star_lt_bound Htotal). intro n.
+    exact (pow_BA_lt_link M A B Htotal Htop_trans Hmax Hdiag_one
+      Hneq Hne_top Hpos n).
   Qed.
 
   Theorem pareto_stronger {R : BoundedSemiring.type}
@@ -1389,10 +1333,7 @@ Section SocialChoice.
     - exact (mat_star_BA_lt_link M A B Htotal Htop_trans Hmax Hdiag_one
         Hneq Hne_top Hpos).
     - (* M A B ≤ mat_star M A B: the link itself is a path of length one *)
-      pose proof (elements_two_or_more (s := Node)) as Hlen.
-      pose proof (@pow_le_mat_star R M 1 A B) as h.
-      unfold kleene_exp in h. specialize (h ltac:(nia)).
-      cbn [pow] in h. rewrite matrix_mul_I_r in h. exact h.
+      apply link_le_mat_star.
   Qed.
 
   (** Pareto (4.3.1.3): the unanimously dominated alternative is not a winner. *)
@@ -1438,26 +1379,12 @@ Section SocialChoice.
     induction k as [|k IH]; intros x y p Hxy Hin.
     - cbn [all_paths_klength] in Hin.
       destruct (fin_eq_dec x y) as [Heq|_]; [congruence | inversion Hin].
-    - cbn [all_paths_klength] in Hin.
-      pose proof Hin as Hin_shape.
-      apply (append_node_in_paths_In M x
-        (List.flat_map (fun z => all_paths_klength elements M k z y) elements) p) in Hin.
-      destruct Hin as [w [q [Hp Hq_lf]]].
-      apply append_node_in_paths_shape in Hin_shape.
-      destruct Hin_shape as (w' & q' & Hp' & Hsrc_x & Hsrc_w' & Hq_ne).
-      subst p.
-      inversion Hp' as [[Heq_hd Heq_tl]].
-      inversion Heq_hd. subst w' q'. clear Hp'.
-      apply in_flat_map in Hq_lf. destruct Hq_lf as [z [Hz_el Hq_in]].
-      pose proof Hq_in as Hq_in_copy.
-      apply non_empty_paths_in_kpath in Hq_in as (_ & Hsrc_z & _).
-      assert (Hw_eq_z : w = z). { eapply source_inj; eassumption. }
-      subst w.
+    - destruct (all_paths_klength_S_inv M k x y p Hin) as (z & q & -> & Hq).
       cbn [measure_of_path].
       destruct (fin_eq_dec x z) as [Hxz|Hxz].
       + (* self-loop of weight 1: the tail is still a path from x to y *)
         subst z. rewrite (Hdiag_one x x eq_refl), mul1r.
-        exact (IH x y q Hxy Hq_in_copy).
+        exact (IH x y q Hxy Hq).
       + exact (orel_trans _ _ _ (bounded_mul_lower_left _ _) (Hmax x z Hxz)).
   Qed.
 
@@ -1468,15 +1395,9 @@ Section SocialChoice.
     (n : nat) (x y : Node) : x ≠ y -> pow M n x y ≤ M A B.
   Proof.
     intros Hxy.
-    rewrite (matrix_path_equation n M x y).
-    unfold sum_all_rvalues, get_all_rvalues.
-    apply fold_right_orel_bound.
-    intros v Hv. apply in_map_iff in Hv. destruct Hv as [path [Hm Hin]].
-    destruct path as [[s d] p]. cbn in Hm. subst v.
-    unfold construct_all_paths in Hin.
-    apply in_map_iff in Hin. destruct Hin as [q [Heq Hin']].
-    inversion Heq. subst s d q. clear Heq.
-    exact (path_measure_le_link M A B Hmax Hdiag_one n x y p Hxy Hin').
+    apply pow_bound_of_paths.
+    intros p Hin.
+    exact (path_measure_le_link M A B Hmax Hdiag_one n x y p Hxy Hin).
   Qed.
 
   Lemma mat_star_le_link {R : BoundedSemiring.type}
@@ -1485,15 +1406,8 @@ Section SocialChoice.
     (Hdiag_one : forall i j, i = j -> M i j = 1)
     (x y : Node) : x ≠ y -> mat_star M x y ≤ M A B.
   Proof.
-    intros Hxy. unfold mat_star.
-    assert (Hgen : forall k, geom_sum M k x y ≤ M A B).
-    { induction k as [|k IHk]; cbn [geom_sum].
-      - unfold I.
-        destruct (fin_eq_dec x y) as [Heq|_];
-          [congruence | apply zero_is_bottom].
-      - unfold matrix_add. apply add_orel_bound; [exact IHk |].
-        exact (pow_xy_le_link M A B Hmax Hdiag_one (S k) x y Hxy). }
-    apply Hgen.
+    intros Hxy. apply mat_star_bound. intro n.
+    exact (pow_xy_le_link M A B Hmax Hdiag_one n x y Hxy).
   Qed.
 
   (** The strongest link is its own closure — no detour improves on it. *)
@@ -1505,10 +1419,7 @@ Section SocialChoice.
   Proof.
     apply orel_antisym.
     - exact (mat_star_le_link M A B Hmax Hdiag_one A B Hneq).
-    - pose proof (elements_two_or_more (s := Node)) as Hlen.
-      pose proof (@pow_le_mat_star R M 1 A B) as h.
-      unfold kleene_exp in h. specialize (h ltac:(nia)).
-      cbn [pow] in h. rewrite matrix_mul_I_r in h. exact h.
+    - apply link_le_mat_star.
   Qed.
 
   (** Both directions.  [pareto_stronger] is the special case [M B A = 0]. *)
@@ -1530,10 +1441,7 @@ Section SocialChoice.
       intros [Hle Hne] Habs.
       apply Hne, orel_antisym; [exact Hle |].
       rewrite Hstar_AB, <- Habs.
-      pose proof (elements_two_or_more (s := Node)) as Hlen.
-      pose proof (@pow_le_mat_star R M 1 B A) as h.
-      unfold kleene_exp in h. specialize (h ltac:(nia)).
-      cbn [pow] in h. rewrite matrix_mul_I_r in h. exact h.
+      apply link_le_mat_star.
     - intros Hne_top.
       eapply orel_lt_le_trans.
       + exact (mat_star_BA_lt_link M A B Htotal Htop_trans Hmax Hdiag_one
@@ -1638,18 +1546,10 @@ Section SocialChoice.
           apply (orel_lt_trans (M w z * pow M n z A) (pow M n z A) (M A X0)).
           * apply bounded_mul_lower_right.
           * apply IH. exact Hneqz. }
-    assert (H_geom_lt : forall n, geom_sum M n X0 A < M A X0).
-    { induction n as [|n IH].
-      - change (geom_sum M 0 X0 A) with (pow M 0 X0 A).
-        apply H_pow_lt. exact HX0.
-      - cbn [geom_sum]. unfold matrix_add.
-        apply orel_lt_add_lt; [exact H_total_order | exact IH | apply H_pow_lt; exact HX0]. }
-    unfold mat_star.
-    apply (orel_lt_le_trans (geom_sum M kleene_exp X0 A) (M A X0)
-      (geom_sum M kleene_exp A X0)).
-    - apply H_geom_lt.
-    - apply (geom_sum_includes_direct M kleene_exp A X0).
-      pose proof (elements_two_or_more (s := Node)) as Hlen. unfold kleene_exp. nia.
+    apply (orel_lt_le_trans (mat_star M X0 A) (M A X0) (mat_star M A X0)).
+    - apply (mat_star_lt_bound H_total_order). intro n.
+      apply H_pow_lt. exact HX0.
+    - apply link_le_mat_star.
   Qed.
 
 
@@ -1707,20 +1607,13 @@ Section SocialChoice.
           apply (orel_lt_trans (M b z * pow M n z a) (pow M n z a) c).
           * apply bounded_mul_lower_right.
           * apply IH; assumption. }
-    assert (H_geom_lt : forall n, geom_sum M n w a0 < c).
-    { induction n as [|n IH].
-      - change (geom_sum M 0 w a0) with (pow M 0 w a0).
-        apply H_pow_lt; assumption.
-      - cbn [geom_sum]. unfold matrix_add.
-        apply orel_lt_add_lt; [exact H_total_order | exact IH | apply H_pow_lt; assumption]. }
     assert (H_star_lt : mat_star M w a0 < mat_star M a0 w).
-    { unfold mat_star.
-      apply (orel_lt_le_trans (geom_sum M kleene_exp w a0) c (geom_sum M kleene_exp a0 w)).
-      - apply H_geom_lt.
-      - apply (orel_trans c (M a0 w) (geom_sum M kleene_exp a0 w)).
+    { apply (orel_lt_le_trans (mat_star M w a0) c (mat_star M a0 w)).
+      - apply (mat_star_lt_bound H_total_order). intro n.
+        apply H_pow_lt; assumption.
+      - apply (orel_trans c (M a0 w) (mat_star M a0 w)).
         + apply H_ge; assumption.
-        + apply (geom_sum_includes_direct M kleene_exp a0 w).
-          pose proof (elements_two_or_more (s := Node)) as Hlen. unfold kleene_exp. nia. }
+        + apply link_le_mat_star. }
     assert (H_a0_ne_w : a0 <> w).
     { intro Heq. subst w. apply (proj1 (H_partition a0) Ha0_B1). exact Hw_B2. }
     apply (H_winner a0 H_a0_ne_w).
@@ -1907,21 +1800,7 @@ Section SocialChoice.
     induction k as [|k IH]; intros x y p Hx Hy Hin.
     - cbn [all_paths_klength] in Hin.
       destruct (fin_eq_dec x y) as [Heq|_]; [subst y; congruence | inversion Hin].
-    - cbn [all_paths_klength] in Hin.
-      pose proof Hin as Hin_shape.
-      apply (append_node_in_paths_In M x
-        (List.flat_map (fun z => all_paths_klength elements M k z y) elements) p) in Hin.
-      destruct Hin as [w [q [Hp Hq_lf]]].
-      apply append_node_in_paths_shape in Hin_shape.
-      destruct Hin_shape as (w' & q' & Hp' & Hsrc_x & Hsrc_w' & Hq_ne).
-      subst p.
-      inversion Hp' as [[Heq_hd Heq_tl]].
-      inversion Heq_hd. subst w' q'. clear Hp'.
-      apply in_flat_map in Hq_lf. destruct Hq_lf as [z [Hz_el Hq_in]].
-      pose proof Hq_in as Hq_in_copy.
-      apply non_empty_paths_in_kpath in Hq_in as (_ & Hsrc_z & _).
-      assert (Hw_eq_z : w = z). { eapply source_inj; eassumption. }
-      subst w.
+    - destruct (all_paths_klength_S_inv M k x y p Hin) as (z & q & -> & Hq).
       cbn [measure_of_path].
       destruct (B z) eqn:Hz.
       + (* the head edge already crosses the boundary *)
@@ -1929,7 +1808,7 @@ Section SocialChoice.
           (cut_in_ge M B x z Hx Hz)).
       + (* still outside [B]: the tail crosses it *)
         exact (orel_trans _ _ _ (bounded_mul_lower_right _ _)
-          (IH z y q Hz Hy Hq_in_copy)).
+          (IH z y q Hz Hy Hq)).
   Qed.
 
   Lemma pow_into_B_le_cut {R : BoundedSemiring.type}
@@ -1937,30 +1816,17 @@ Section SocialChoice.
     B x = false -> B y = true -> pow M n x y ≤ cut_in M B.
   Proof.
     intros Hx Hy.
-    rewrite (matrix_path_equation n M x y).
-    unfold sum_all_rvalues, get_all_rvalues.
-    apply fold_right_orel_bound.
-    intros v Hv. apply in_map_iff in Hv. destruct Hv as [path [Hm Hin]].
-    destruct path as [[s d] p]. cbn in Hm. subst v.
-    unfold construct_all_paths in Hin.
-    apply in_map_iff in Hin. destruct Hin as [q [Heq Hin']].
-    inversion Heq. subst s d q. clear Heq.
-    exact (path_into_B_le_cut M B n x y p Hx Hy Hin').
+    apply pow_bound_of_paths.
+    intros p Hin.
+    exact (path_into_B_le_cut M B n x y p Hx Hy Hin).
   Qed.
 
   Lemma mat_star_into_B_le_cut {R : BoundedSemiring.type}
     (M : @Matrix Node R) (B : Node -> bool) (x y : Node) :
     B x = false -> B y = true -> mat_star M x y ≤ cut_in M B.
   Proof.
-    intros Hx Hy. unfold mat_star.
-    assert (Hgen : forall k, geom_sum M k x y ≤ cut_in M B).
-    { induction k as [|k IHk]; cbn [geom_sum].
-      - unfold I.
-        destruct (fin_eq_dec x y) as [Heq|_];
-          [subst y; congruence | apply zero_is_bottom].
-      - unfold matrix_add. apply add_orel_bound; [exact IHk |].
-        exact (pow_into_B_le_cut M B (S k) x y Hx Hy). }
-    apply Hgen.
+    intros Hx Hy. apply mat_star_bound. intro n.
+    exact (pow_into_B_le_cut M B n x y Hx Hy).
   Qed.
 
   (** Order helpers available once the order is total. *)
@@ -2134,4 +2000,3 @@ Section SocialChoice.
 
 
 End SocialChoice.
-
