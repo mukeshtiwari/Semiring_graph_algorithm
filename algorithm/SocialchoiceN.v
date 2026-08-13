@@ -71,7 +71,12 @@ Local Infix "<" := (fun x y => x ≤ y ∧ x ≠ y) (at level 70).
 (*             a non-winner          reversal_symmetry_S                 (†) *)
 (*    (4.4.4)  S unchanged iff S = A reversal_symmetry_all_tied          (†) *)
 (*    (4.5.13/14) monotonicity of P  monotonicity, monotonicity_rev          *)
+(*    (4.5.4)  A's victories survive  monotonicity_beats                     *)
+(*    (4.5.5)  A's non-defeats survive monotonicity_unbeaten                 *)
 (*    (4.5.6, ⇒) a ∈ S_old ⇒ a ∈ S_new  winner_monotonicity                 *)
+(*    (4.5.6, ⊆) S_new ⊆ S_old   winner_monotonicity_subset — but ONLY      *)
+(*             under an extra no-ties hypothesis on A; see its comment and  *)
+(*             the NOT FORMALISED note                                       *)
 (*    (4.7.3)  Smith: every a∈B1                                            *)
 (*             beats every b∈B2  smith_beats                          (†) *)
 (*    (4.7.4)  Smith: S ⊆ B1         smith_criterion_weaker              (†) *)
@@ -108,7 +113,10 @@ Local Infix "<" := (fun x y => x ≤ y ∧ x ≠ y) (at level 70).
 (*    §4.2.2   resolvability #2 — constructs a ballot to add to the profile  *)
 (*    §4.6     independence of clones                                        *)
 (*    (4.7.5/6) Smith-IIA                                                    *)
-(*    (4.5.6, ⊆) S_new ⊆ S_old                                              *)
+(*    (4.5.6, ⊆) S_new ⊆ S_old in general.  Proved under a no-ties          *)
+(*             hypothesis on A (winner_monotonicity_subset); the paper's    *)
+(*             tie case needs the critical link of a strongest path, the    *)
+(*             same gap as §4.2.1                                            *)
 (*    majority for solid coalitions, majority, majority loser, Condorcet     *)
 (*    loser — the paper derives all of these from Smith (§4.7)               *)
 (*    participation — the paper notes it is violated, so nothing to prove    *)
@@ -1448,8 +1456,85 @@ Section SocialChoice.
         rewrite <- Heq0. exact Hout.
   Qed.
 
+  (** Monotonicity (4.5.4): a victory of [A] survives the raise. *)
+  Theorem monotonicity_beats {R : BoundedCommutativeSemiring.type}
+    (M M' : @Matrix Node R) (A : Node)
+    (H_total_order : forall x y : R, x + y = x \/ x + y = y)
+    (Hrow : forall Y : Node, M A Y ≤ M' A Y)
+    (Hcol : forall X : Node, M' X A ≤ M X A)
+    (Heq : forall X Y : Node, X ≠ A -> Y ≠ A -> M X Y = M' X Y) :
+    forall b, schulze_beats M A b -> schulze_beats M' A b.
+  Proof.
+    intros b [Hle Hne].
+    pose proof (monotonicity M M' A H_total_order Hrow Heq b) as Hout.
+    pose proof (monotonicity_rev M M' A H_total_order Hcol Heq b) as Hin.
+    split.
+    - apply (orel_trans _ _ _ Hin). apply (orel_trans _ _ _ Hle). exact Hout.
+    - intro Heq0.
+      apply Hne. apply orel_antisym; [exact Hle |].
+      apply (orel_trans _ _ _ Hout). rewrite Heq0 in Hin. exact Hin.
+  Qed.
 
-  
+  (** Monotonicity (4.5.5): a defeat that [A] avoided before, it still avoids.
+      The pointwise form of [winner_monotonicity]. *)
+  Theorem monotonicity_unbeaten {R : BoundedCommutativeSemiring.type}
+    (M M' : @Matrix Node R) (A : Node)
+    (H_total_order : forall x y : R, x + y = x \/ x + y = y)
+    (Hrow : forall Y : Node, M A Y ≤ M' A Y)
+    (Hcol : forall X : Node, M' X A ≤ M X A)
+    (Heq : forall X Y : Node, X ≠ A -> Y ≠ A -> M X Y = M' X Y) :
+    forall b, ~ schulze_beats M b A -> ~ schulze_beats M' b A.
+  Proof.
+    intros b Hnb Hbeats.
+    pose proof (monotonicity M M' A H_total_order Hrow Heq b) as Hout.
+    pose proof (monotonicity_rev M M' A H_total_order Hcol Heq b) as Hin.
+    apply Hnb. destruct Hbeats as [Hle Hne]. split.
+    - apply (orel_trans _ _ _ Hout). apply (orel_trans _ _ _ Hle). exact Hin.
+    - intro Heq0. apply Hne. apply orel_antisym; [exact Hle |].
+      apply (orel_trans _ _ _ Hin). rewrite <- Heq0. exact Hout.
+  Qed.
+
+  (** Monotonicity (4.5.6), the [S_new ⊆ S_old] half — under the extra
+      hypothesis that [A] is nowhere tied in the closure of [M].
+
+      That hypothesis is not in the paper, and it is doing real work.  With it,
+      [untied_winner_is_strict] upgrades [A] from "unbeaten" to "beats
+      everyone", so (4.5.4) carries each of those victories across the raise
+      and [A] is left the only winner of [M'] — which is contained in [S_old].
+
+      Without it the paper argues differently, and that argument is out of
+      reach here.  When [A] is merely tied with some [h ∉ S_old], the raise
+      need not break the tie, so the alternative that must still beat [h] in
+      [M'] is some third [g].  Establishing that needs to compare
+      [P_new[g,h]] with [P_new[h,g]] for [g, h ≠ A], and neither
+      [monotonicity] nor [monotonicity_rev] says anything about such a pair:
+      a path from [g] to [h] through [A] uses one edge into [A] (weakened)
+      and one out of [A] (strengthened).  Schulze resolves it by locating the
+      weakest link of each strongest path and splitting there (his cases 1
+      and 2) — the same critical-link machinery that §4.2.1 needs, and which
+      [mat_star_link_or_extreme] does not provide, since it yields the value
+      of a closure entry but not the link witnessing it. *)
+  Theorem winner_monotonicity_subset {R : BoundedCommutativeSemiring.type}
+    (M M' : @Matrix Node R) (A : Node)
+    (H_total_order : forall x y : R, x + y = x \/ x + y = y)
+    (Hrow : forall Y : Node, M A Y ≤ M' A Y)
+    (Hcol : forall X : Node, M' X A ≤ M X A)
+    (Heq : forall X Y : Node, X ≠ A -> Y ≠ A -> M X Y = M' X Y)
+    (Hnoties : forall b, b <> A -> mat_star M A b <> mat_star M b A)
+    (HA : schulze_winner M A) :
+    forall h, schulze_winner M' h -> schulze_winner M h.
+  Proof.
+    intros h Hh.
+    destruct (fin_eq_dec h A) as [HhA | HhA]; [subst h; exact HA |].
+    exfalso.
+    pose proof (untied_winner_is_strict H_total_order M A Hnoties HA) as Hstrict.
+    exact (Hh A (fun e => HhA (eq_sym e))
+             (monotonicity_beats M M' A H_total_order Hrow Hcol Heq h
+                (Hstrict h HhA))).
+  Qed.
+
+
+
   (* =====================================================================  *)
   (*  Helper lemmas for the Pareto proofs                                   *)
   (* =====================================================================  *)
