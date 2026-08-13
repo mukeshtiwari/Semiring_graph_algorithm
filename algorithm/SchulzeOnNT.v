@@ -65,4 +65,31 @@ Section SchulzeOnNT.
     exact (smith_criterion_weaker M (NT_selective cs)).
   Qed.
 
+  (** Schulze's corollary (4.1.14): every non-winner is beaten by a winner. *)
+  Theorem winner_beats_nonwinner_normalized (M : @Matrix Node (NT cs)) :
+    forall b : Node,
+      ~ schulze_winner M b -> exists a, schulze_winner M a /\ schulze_beats M a b.
+  Proof.
+    exact (winner_beats_nonwinner (NT_selective cs) (NT_eq_dec cs)
+             (NT_meet_lower_bound cs) M).
+  Qed.
+
+  (** Reversal symmetry (4.4.3) — hypothesis-free on a normalised carrier. *)
+  Theorem reversal_symmetry_S_normalized (M : @Matrix Node (NT cs)) :
+    (exists i, schulze_winner M i /\ ~ schulze_winner (fun x y => M y x) i) <->
+    (exists j, ~ schulze_winner M j /\ schulze_winner (fun x y => M y x) j).
+  Proof.
+    exact (reversal_symmetry_S (NT_selective cs) (NT_eq_dec cs)
+             (NT_meet_lower_bound cs) M).
+  Qed.
+
+  (** Reversal symmetry (4.4.4) — likewise. *)
+  Theorem reversal_symmetry_all_tied_normalized (M : @Matrix Node (NT cs)) :
+    (forall x, schulze_winner M x <-> schulze_winner (fun i j => M j i) x) <->
+    (forall x, schulze_winner M x).
+  Proof.
+    exact (reversal_symmetry_all_tied (NT_selective cs) (NT_eq_dec cs)
+             (NT_meet_lower_bound cs) M).
+  Qed.
+
 End SchulzeOnNT.

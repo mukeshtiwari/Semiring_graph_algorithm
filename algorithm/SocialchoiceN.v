@@ -6,21 +6,81 @@ Import ListNotations SemiringNotations.
 Local Infix "≤" := Orel (at level 70).
 Local Infix "<" := (fun x y => x ≤ y ∧ x ≠ y) (at level 70).
 
-(* ======================================================================= *)
-(*  Social Choice — Schulze method definitions and theorems                  *)
-(*                                                                          *)
-(*  Status:                                                                 *)
-(*    schulze_trans                    — Qed                               *)
-(*    condorcet_implies_strict_winner  — Qed                               *)
-(*    monotonicity                     — Qed                               *)
-(*    smith_criterion                  — Qed                               *)
-(*    pareto_weaker                    — Qed                               *)
-(*    pareto_stronger                  — Qed                               *)
-(*    pareto_stronger_iff              — Qed                               *)
-(*    prudence          (§4.9)         — Qed                               *)
-(*    minmax_beats      (§4.8)         — Qed                               *)
-(*    reversal_symmetry_O (4.4.2)      — Qed                               *)
-(* ======================================================================= *)
+(* ========================================================================= *)
+(*  Social choice — the Schulze method over an arbitrary semiring            *)
+(*                                                                           *)
+(*  Reference: M. Schulze, "A new monotonic, clone-independent, reversal     *)
+(*  symmetric, and Condorcet-consistent single-winner election method",      *)
+(*  Soc Choice Welf (2011) 36:267-303.  Section and equation numbers below   *)
+(*  are the paper's.                                                         *)
+(*                                                                           *)
+(*  MODELLING.  The paper's link strengths live in N0 x N0 ordered by a      *)
+(*  strict weak order, with path strength = weakest link (min) and the       *)
+(*  strength of an indirect comparison = strongest path (max).  Here that    *)
+(*  is an arbitrary semiring: [*] is path composition, [+] is path           *)
+(*  selection, and [Orel] (a ≤ b := a + b = b) is the induced order.  So     *)
+(*  P_D[a,b] is [mat_star M a b] = geom_sum M (|A|-1) a b.  The two agree:   *)
+(*  in a bounded semiring [a*b ≤ a] and [a*b ≤ b], so deleting a repeated    *)
+(*  segment from a walk never lowers its measure, and the join over walks    *)
+(*  of length ≤ |A|-1 is the join over the paper's paths (which forbid       *)
+(*  c(i) ≡ c(i+1)).                                                          *)
+(*                                                                           *)
+(*  BASIC DEFINITIONS                                                        *)
+(*    (2.2.1)  relation O            schulze_beats   (via [beats], [mat_star]) *)
+(*    (2.2.2)  winner set S          schulze_winner                          *)
+(*    (2.2.3)  link is a path        link_le_mat_star                        *)
+(*    (2.2.5)  path composition      star_path_compose                       *)
+(*                                                                           *)
+(*  RESULTS.  Where the paper's proof uses properties of its concrete order  *)
+(*  that a bare semiring lacks, the Rocq statement carries them as explicit  *)
+(*  hypotheses; [SchulzeOnNT.v] discharges those for a normalised carrier,   *)
+(*  giving the paper's unconditional form.  Such entries are marked (†), and *)
+(*  the discharged version is named there.                                   *)
+(*                                                                           *)
+(*    §4.1     transitivity of O     schulze_trans_weaker_necessary      (†) *)
+(*             converse              schulze_trans_weaker_sufficient  ADMITTED *)
+(*             characterisation      transitivity_characterisation           *)
+(*                                     — depends on the admitted converse    *)
+(*    (4.1.14) a winner beats every                                          *)
+(*             non-winner            winner_beats_nonwinner              (†) *)
+(*             …hence S ≠ ∅          winner_exists_weaker_necessary      (†) *)
+(*    §4.3.1   Pareto #1             pareto_stronger, pareto_stronger_loser  *)
+(*             both directions       pareto_stronger_iff                     *)
+(*    (4.3.2.2/10) Pareto #2         pareto_weaker                           *)
+(*    (4.4.2)  reversal reverses O   reversal_symmetry_O                     *)
+(*    (4.4.3)  reversal displaces a                                          *)
+(*             winner iff it promotes                                        *)
+(*             a non-winner          reversal_symmetry_S                 (†) *)
+(*    (4.4.4)  S unchanged iff S = A reversal_symmetry_all_tied          (†) *)
+(*    (4.5.13/14) monotonicity of P  monotonicity, monotonicity_rev          *)
+(*    (4.5.6, ⇒) a ∈ S_old ⇒ a ∈ S_new  winner_monotonicity                 *)
+(*    (4.7.4)  Smith: S ⊆ B1         smith_criterion_weaker              (†) *)
+(*    (4.8.1)  MinMax set beats                                              *)
+(*             its complement        minmax_beats                            *)
+(*    (4.8.2)  S ⊆ 𝔅_D               minmax_winner                          *)
+(*    (4.9.3)  prudence              prudence, prudence_local                *)
+(*    (4.9.4)  its loser is no winner prudence_not_winner                    *)
+(*                                                                           *)
+(*  Not from the paper, but proved here: uniqueness and order facts about    *)
+(*  the two winner notions (strict_winner_unique, condorcet_winner_unique,   *)
+(*  strict_winner_is_schulze_winner, strict_winner_excludes_others,          *)
+(*  schulze_beats_asym, schulze_beats_irrefl), the Condorcet criterion in    *)
+(*  the form "Condorcet winner ⇒ beats everyone"                             *)
+(*  (condorcet_implies_strict_winner_weaker), and the observation that the   *)
+(*  meet property forces commutativity (meet_lower_bound_implies_comm).      *)
+(*                                                                           *)
+(*  NOT FORMALISED                                                           *)
+(*    §4.2     resolvability, both formulations                              *)
+(*    §4.6     independence of clones                                        *)
+(*    (4.7.3)  ∀a∈B1, b∈B2: ab ∈ O — the Smith proof establishes this        *)
+(*             internally but does not expose it                             *)
+(*    (4.7.5/6) Smith-IIA                                                    *)
+(*    (4.3.2.3/4/5) the remaining Pareto #2 conclusions                      *)
+(*    (4.5.6, ⊆) S_new ⊆ S_old                                              *)
+(*    majority for solid coalitions, majority, majority loser, Condorcet     *)
+(*    loser — the paper derives all of these from Smith (§4.7)               *)
+(*    participation — the paper notes it is violated, so nothing to prove    *)
+(* ========================================================================= *)
 
 Section SocialChoice.
 
@@ -715,6 +775,69 @@ Section SocialChoice.
   Qed.
 
 
+  (** Either something beats [a] in the closure, or [a] is a winner.  A finite
+      search, so no classical reasoning is needed to invert [schulze_winner]. *)
+  Lemma beater_or_winner {R : Semiring.type}
+    (Hdec : forall x y : R, {x = y} + {x ≠ y})
+    (M : @Matrix Node R) (a : Node) :
+    (exists x, schulze_beats M x a) \/ schulze_winner M a.
+  Proof.
+    set (test := fun x : Node =>
+      if schulze_beats_dec M x a Hdec then true else false).
+    destruct (List.filter test (@elements Node)) as [|w ws] eqn:E.
+    - right. intros b Hb Hbeats.
+      assert (Hin : List.In b (List.filter test (@elements Node))).
+      { apply filter_In. split; [apply elements_complete |].
+        unfold test. destruct (schulze_beats_dec M b a Hdec);
+          [reflexivity | contradiction]. }
+      rewrite E in Hin. inversion Hin.
+    - left. exists w.
+      assert (Hin : List.In w (List.filter test (@elements Node)))
+        by (rewrite E; left; reflexivity).
+      apply filter_In in Hin as [_ Ht]. unfold test in Ht.
+      destruct (schulze_beats_dec M w a Hdec); [assumption | discriminate].
+  Qed.
+
+  (** A non-empty list has an element that nothing else in the list beats —
+      [schulze_beats] is a strict order, so a finite list has a maximal
+      element.  Shared by [winner_exists_weaker_necessary] and
+      [winner_beats_nonwinner]. *)
+  Lemma exists_maximal_in_list {R : BoundedSemiring.type}
+    (H_total_order : forall x y : R, x + y = x \/ x + y = y)
+    (Hdec : forall x y : R, {x = y} + {x ≠ y})
+    (H_meet_lower_bound : forall m a b : R, m ≤ a -> m ≤ b -> m ≤ a * b)
+    (M : @Matrix Node R) :
+    forall (l : list Node), l <> [] ->
+      exists w, In w l /\ (forall b, In b l -> b <> w -> ~ schulze_beats M b w).
+  Proof.
+    intro l. induction l as [|a l IH]; intros Hnonempty.
+    - exfalso. apply Hnonempty. reflexivity.
+    - destruct l as [|b l].
+      + exists a. split; [left; reflexivity |].
+        intros b0 Hb0 Hneq. inversion Hb0 as [Heq|Hfalse].
+        * exfalso. apply Hneq. symmetry. exact Heq.
+        * inversion Hfalse.
+      + assert (Hnonempty_tail : b :: l <> []) by discriminate.
+        destruct (IH Hnonempty_tail) as [w [Hin_w Hw_undefeated]].
+        destruct (schulze_beats_dec M a w Hdec) as [H_aw | H_not_aw].
+        * exists a. split; [left; reflexivity |].
+          intros x Hx_in Hx_neq_a.
+          inversion Hx_in as [Heq_a | Hx_in_tail].
+          { exfalso. apply Hx_neq_a. symmetry. exact Heq_a. }
+          intro Hx_beats_a.
+          pose proof (@schulze_trans_weaker_necessary R
+            H_total_order H_meet_lower_bound M x a w Hx_beats_a H_aw) as Hxw.
+          destruct (fin_eq_dec x w) as [Heq_xw | Hneq_xw].
+          { subst x. apply (schulze_beats_irrefl M w). exact Hxw. }
+          { apply (Hw_undefeated x Hx_in_tail Hneq_xw). exact Hxw. }
+        * exists w. split.
+          { right. exact Hin_w. }
+          intros x Hx_in Hx_neq_w.
+          inversion Hx_in as [Heq_a | Hx_in_tail].
+          { subst x. exact H_not_aw. }
+          { apply (Hw_undefeated x Hx_in_tail Hx_neq_w). }
+  Qed.
+
   (** * Winner existence — meet-semiring version
 
       Same statement as [winner_exists] but using [schulze_trans_weaker]
@@ -737,35 +860,8 @@ Section SocialChoice.
     forall (M : @Matrix Node R), exists (a : Node), schulze_winner M a.
   Proof.
     intro M.
-    assert (Hmax : forall (l : list Node), l <> [] -> exists w,
-      In w l /\ (forall b, In b l -> b <> w -> ~ schulze_beats M b w)).
-    { intro l. induction l as [|a l IH]; intros Hnonempty.
-      - exfalso. apply Hnonempty. reflexivity.
-      - destruct l as [|b l].
-        + exists a. split; [left; reflexivity |].
-          intros b0 Hb0 Hneq. inversion Hb0 as [Heq|Hfalse].
-          * exfalso. apply Hneq. symmetry. exact Heq.
-          * inversion Hfalse.
-        + assert (Hnonempty_tail : b :: l <> []) by discriminate.
-          destruct (IH Hnonempty_tail) as [w [Hin_w Hw_undefeated]].
-          destruct (schulze_beats_dec M a w Hdec) as [H_aw | H_not_aw].
-          * exists a. split; [left; reflexivity |].
-            intros x Hx_in Hx_neq_a.
-            inversion Hx_in as [Heq_a | Hx_in_tail].
-            { exfalso. apply Hx_neq_a. symmetry. exact Heq_a. }
-            intro Hx_beats_a.
-            pose proof (@schulze_trans_weaker_necessary R 
-              H_total_order H_meet_lower_bound
-              M x a w Hx_beats_a H_aw) as Hxw.
-            destruct (fin_eq_dec x w) as [Heq_xw | Hneq_xw].
-            { subst x. apply (schulze_beats_irrefl M w). exact Hxw. }
-            { apply (Hw_undefeated x Hx_in_tail Hneq_xw). exact Hxw. }
-          * exists w. split.
-            { right. exact Hin_w. }
-            intros x Hx_in Hx_neq_w.
-            inversion Hx_in as [Heq_a | Hx_in_tail].
-            { subst x. exact H_not_aw. }
-            { apply (Hw_undefeated x Hx_in_tail Hx_neq_w). } }
+    pose proof (exists_maximal_in_list H_total_order Hdec H_meet_lower_bound M)
+      as Hmax.
     assert (Hnonempty : @elements Node <> []).
     { intro Hnil.
       pose proof (elements_two_or_more (s := Node)) as Hlen.
@@ -779,6 +875,123 @@ Section SocialChoice.
   Qed.
 
  
+
+  (** Schulze's corollary (4.1.14): every non-winner is beaten by some actual
+      winner.  This strengthens [winner_exists_weaker_necessary], which only
+      says the winner set is non-empty, and it is what the reversal-symmetry
+      results below need.
+
+      The paper climbs from the non-winner through beaters until it reaches a
+      winner.  Equivalently, and more directly: take a maximal element [w] of
+      the set of alternatives that beat [b].  It beats [b] by construction, and
+      it is maximal in the whole population, since anything beating [w] would
+      beat [b] by transitivity and so already lie in that set. *)
+  Theorem winner_beats_nonwinner {R : BoundedSemiring.type}
+    (H_total_order : forall x y : R, x + y = x \/ x + y = y)
+    (Hdec : forall x y : R, {x = y} + {x ≠ y})
+    (H_meet_lower_bound : forall m a b : R, m ≤ a -> m ≤ b -> m ≤ a * b) :
+    forall (M : @Matrix Node R) (b : Node),
+      ~ schulze_winner M b -> exists a, schulze_winner M a /\ schulze_beats M a b.
+  Proof.
+    intros M b Hnw.
+    destruct (beater_or_winner Hdec M b) as [[x Hx] | Hw]; [| contradiction].
+    set (test := fun y : Node =>
+      if schulze_beats_dec M y b Hdec then true else false).
+    assert (Hmem : forall y, schulze_beats M y b ->
+                     In y (List.filter test (@elements Node))).
+    { intros y Hy. apply filter_In. split; [apply elements_complete |].
+      unfold test. destruct (schulze_beats_dec M y b Hdec);
+        [reflexivity | contradiction]. }
+    assert (Hback : forall y, In y (List.filter test (@elements Node)) ->
+                      schulze_beats M y b).
+    { intros y Hy. apply filter_In in Hy as [_ Ht]. unfold test in Ht.
+      destruct (schulze_beats_dec M y b Hdec); [assumption | discriminate]. }
+    assert (HL : List.filter test (@elements Node) <> []).
+    { intro H0. pose proof (Hmem x Hx) as Hin. rewrite H0 in Hin. inversion Hin. }
+    destruct (exists_maximal_in_list H_total_order Hdec H_meet_lower_bound M
+                (List.filter test (@elements Node)) HL) as [w [HwL Hwmax]].
+    exists w. split.
+    - intros y Hy_ne Hy_beats.
+      apply (Hwmax y (Hmem y (schulze_trans_weaker_necessary H_total_order
+               H_meet_lower_bound M y w b Hy_beats (Hback w HwL))) Hy_ne).
+      exact Hy_beats.
+    - exact (Hback w HwL).
+  Qed.
+
+  (** Reversal symmetry (4.4.3): reversing the ballots displaces a winner
+      exactly when it promotes a non-winner.  The winner-level statement the
+      paper actually makes about [S]; [reversal_symmetry] above is the much
+      weaker claim about [strict_winner]. *)
+  Theorem reversal_symmetry_S {R : BoundedCommutativeSemiring.type}
+    (H_total_order : forall x y : R, x + y = x \/ x + y = y)
+    (Hdec : forall x y : R, {x = y} + {x ≠ y})
+    (H_meet_lower_bound : forall m a b : R, m ≤ a -> m ≤ b -> m ≤ a * b)
+    (M : @Matrix Node R) :
+    (exists i, schulze_winner M i /\ ~ schulze_winner (fun x y => M y x) i) <->
+    (exists j, ~ schulze_winner M j /\ schulze_winner (fun x y => M y x) j).
+  Proof.
+    split.
+    - intros [i [Hi_old Hi_new]].
+      destruct (winner_beats_nonwinner H_total_order Hdec H_meet_lower_bound
+                  (fun x y => M y x) i Hi_new) as [j [Hj_new Hj_beats]].
+      exists j. split; [| exact Hj_new].
+      intro Hj_old.
+      assert (Hij : schulze_beats M i j)
+        by (apply (reversal_symmetry_O M i j); exact Hj_beats).
+      destruct (fin_eq_dec i j) as [Heq|Hne].
+      + subst j. exact (schulze_beats_irrefl M i Hij).
+      + exact (Hj_old i Hne Hij).
+    - intros [j [Hj_old Hj_new]].
+      destruct (winner_beats_nonwinner H_total_order Hdec H_meet_lower_bound
+                  M j Hj_old) as [i [Hi_old Hi_beats]].
+      exists i. split; [exact Hi_old |].
+      intro Hi_new.
+      assert (Hji : schulze_beats (fun x y => M y x) j i)
+        by (apply (reversal_symmetry_O M i j); exact Hi_beats).
+      destruct (fin_eq_dec j i) as [Heq|Hne].
+      + subst i. exact (schulze_beats_irrefl M j Hi_beats).
+      + exact (Hi_new j Hne Hji).
+  Qed.
+
+  (** Reversal symmetry (4.4.4): the reversed profile has the same winner set
+      as the original exactly when every alternative wins — i.e. the only way
+      reversal changes nothing is that there was nothing to change. *)
+  Theorem reversal_symmetry_all_tied {R : BoundedCommutativeSemiring.type}
+    (H_total_order : forall x y : R, x + y = x \/ x + y = y)
+    (Hdec : forall x y : R, {x = y} + {x ≠ y})
+    (H_meet_lower_bound : forall m a b : R, m ≤ a -> m ≤ b -> m ≤ a * b)
+    (M : @Matrix Node R) :
+    (forall x, schulze_winner M x <-> schulze_winner (fun i j => M j i) x) <->
+    (forall x, schulze_winner M x).
+  Proof.
+    split.
+    - (* if the two winner sets agree, everybody wins *)
+      intros Hsame x.
+      destruct (beater_or_winner Hdec M x) as [[y Hy] | Hx]; [| exact Hx].
+      exfalso.
+      assert (Hx_not : ~ schulze_winner M x).
+      { intro Hw. destruct (fin_eq_dec y x) as [Heq|Hne].
+        - subst y. exact (schulze_beats_irrefl M x Hy).
+        - exact (Hw y Hne Hy). }
+      destruct (winner_beats_nonwinner H_total_order Hdec H_meet_lower_bound
+                  M x Hx_not) as [i [Hi_old Hi_beats]].
+      assert (Hi_new : schulze_winner (fun p q => M q p) i)
+        by (apply Hsame; exact Hi_old).
+      assert (Hxi : schulze_beats (fun p q => M q p) x i)
+        by (apply (reversal_symmetry_O M i x); exact Hi_beats).
+      destruct (fin_eq_dec x i) as [Heq|Hne].
+      + subst i. exact (schulze_beats_irrefl M x Hi_beats).
+      + exact (Hi_new x Hne Hxi).
+    - (* everybody wins: then nobody beats anybody, in either direction *)
+      intros Hall x.
+      assert (Hno : forall i j, ~ schulze_beats M i j).
+      { intros i j Hij. destruct (fin_eq_dec i j) as [Heq|Hne].
+        - subst j. exact (schulze_beats_irrefl M i Hij).
+        - exact (Hall j i Hne Hij). }
+      split; intro; [| apply Hall].
+      intros b Hb Hbeats.
+      exact (Hno x b (proj2 (reversal_symmetry_O M x b) Hbeats)).
+  Qed.
 
   (** * Monotonicity (Section 4.2 of the Schulze paper)
 
@@ -1050,10 +1263,11 @@ Section SocialChoice.
 
   (** For any path from [x] to [A] (with [x ≠ A]), swapping the destination
       from [A] to [B] gives an upper bound via [mat_star M x B].
-      Proved by induction on the path length [k]. *)
+      Proved by induction on the path length [k].  Nothing about the link
+      [B → A] is needed: in the one branch that reaches it (the path is the
+      single edge [B → A]) the target is [mat_star M B B], which is the top. *)
   Lemma path_xA_measure_le_mat_star_xB {R : BoundedSemiring.type}
     (M : @Matrix Node R) (A B : Node)
-    (Hneq : A ≠ B) (Hzero : M B A = 0)
     (Hcol : forall X, X ≠ A -> X ≠ B -> M X A ≤ M X B) :
     forall (k : nat) (x : Node) (p : list (Node * Node * R)),
       x ≠ A ->
@@ -1076,7 +1290,9 @@ Section SocialChoice.
         apply (orel_trans _ _ _ (bounded_mul_orel_compat_r _ _ _ Hq_le_one)).
         rewrite mulr1.
         destruct (fin_eq_dec x B) as [Heq_xB|Hneq_xB].
-        * subst x. rewrite Hzero. unfold Orel. apply add0r.
+        * (* x = B: the target [mat_star M B B] is the top *)
+          subst x. unfold mat_star. rewrite geom_sum_diag_one.
+          unfold Orel. rewrite addC. apply (add_bound (s := R) (M B A)).
         * apply (orel_trans _ _ _ (Hcol x Hx_ne_A Hneq_xB)).
           apply link_le_mat_star.
       + (* z ≠ A: chain the head link with the tail through [z] *)
@@ -1094,7 +1310,7 @@ Section SocialChoice.
       to chain through the intermediate node. *)
   Lemma pow_BA_le_mat_star_AB {R : BoundedSemiring.type}
     (M : @Matrix Node R) (A B : Node)
-    (Hneq : A ≠ B) (Hzero : M B A = 0)
+    (Hneq : A ≠ B) (Hle : M B A ≤ M A B)
     (Hrow : forall X, X ≠ A -> X ≠ B -> M B X ≤ M A X)
     (Hcol : forall X, X ≠ A -> X ≠ B -> M X A ≤ M X B)
     (Hdiag_one : forall i j, i = j -> M i j = 1)
@@ -1109,16 +1325,18 @@ Section SocialChoice.
       destruct (all_paths_klength_S_inv M k B A p Hin) as (z & q & -> & Hq).
       cbn [measure_of_path].
       destruct (fin_eq_dec z A) as [Heq_zA|Hneq_zA].
-      + (* z = A: the head edge is (B, A, M B A = 0), so the path vanishes *)
-        subst z. rewrite Hzero.
-        eapply orel_trans; [apply bounded_mul_lower_left | apply zero_is_bottom].
+      + (* z = A: the head edge is the direct link (B, A); bound the whole
+           path by it, then by [M A B] and hence by the closure *)
+        subst z.
+        eapply orel_trans; [apply bounded_mul_lower_left |].
+        eapply orel_trans; [exact Hle | apply link_le_mat_star].
       + destruct (fin_eq_dec z B) as [Heq_zB|Hneq_zB].
         * (* z = B: a self-loop of weight 1, the tail is still a path B ⇝ A *)
           subst z. rewrite (Hdiag_one B B eq_refl), mul1r.
           apply (IH _ Hq).
         * (* z ≠ A, B: bound the tail by [mat_star M z B] and chain *)
           assert (Hq_bound : measure_of_path q ≤ mat_star M z B).
-          { exact (path_xA_measure_le_mat_star_xB M A B Hneq Hzero Hcol
+          { exact (path_xA_measure_le_mat_star_xB M A B Hcol
               k z q Hneq_zA Hq). }
           apply (orel_trans _ _ _
             (bounded_mul_orel_compat_l _ _ _ (Hrow z Hneq_zA Hneq_zB))).
@@ -1147,36 +1365,45 @@ Section SocialChoice.
 
 
   (* ------------------------------------------------------------------ *)
-  (*  Version 1 — pareto_weaker (weaker form):  a ≻ᵥ b ∀v  →  a ≽ b    *)
+  (*  Version 1 — pareto_weaker (weaker form):  a ≽ᵥ b ∀v  →  a ≽ b     *)
   (*                                                                      *)
-  (*  If every voter strictly prefers A over B, then A is at least as    *)
-  (*  strong as B in the Schulze ranking: mat_star M B A ≤ mat_star M A B.*)
+  (*  If A dominates B head to head and in every third-party comparison,  *)
+  (*  then A is at least as strong as B in the Schulze ranking:           *)
+  (*  mat_star M B A ≤ mat_star M A B.  This is Schulze (4.3.2.10),       *)
+  (*  which gives (4.3.2.2) [ba ∉ O].                                     *)
   (*                                                                      *)
   (*  The stronger form (strict <) is [pareto_stronger] below; it needs   *)
   (*  two extra hypotheses, see the comment there.                        *)
   (*                                                                      *)
   (*  Hypotheses:                                                          *)
   (*    A ≠ B            — distinct candidates                            *)
-  (*    M B A = 0         — zero voters prefer B over A                   *)
-  (*    M B X ≤ M A X    — ballot transitivity: viewers who have B≻X      *)
-  (*                        also have A≻X (since A≻B)                     *)
-  (*    M X A ≤ M X B    — ballot transitivity: viewers who have X≻A      *)
-  (*                        also have X≻B (since A≻B)                     *)
+  (*    M B A ≤ M A B    — A is at least as strong as B head to head.     *)
+  (*                        Schulze's (4.3.2.1) — "no voter strictly      *)
+  (*                        prefers B to A" — gives the stronger          *)
+  (*                        M B A = 0, which implies this; the proof      *)
+  (*                        only needs the inequality, and it cannot be   *)
+  (*                        dropped altogether: the two hypotheses below  *)
+  (*                        both exclude X ∈ {A, B}, so nothing else      *)
+  (*                        constrains the link B → A.                    *)
+  (*    M B X ≤ M A X    — ballot transitivity: voters who have B≻X       *)
+  (*                        also have A≻X (since A≽B)                     *)
+  (*    M X A ≤ M X B    — ballot transitivity: voters who have X≻A       *)
+  (*                        also have X≻B (since A≽B)                     *)
   (*    M i i = 1         — diagonal is the multiplicative identity       *)
   (* ------------------------------------------------------------------   *)
-  
+
 
   Theorem pareto_weaker {R : BoundedSemiring.type}
     (M : @Matrix Node R) (A B : Node) :
-    A ≠ B -> M B A = 0 -> 
+    A ≠ B -> M B A ≤ M A B ->
     (forall X, X ≠ A -> X ≠ B -> M B X ≤ M A X) ->
     (forall X, X ≠ A -> X ≠ B -> M X A ≤ M X B) ->
     (forall i j, i = j -> M i j = 1) ->
     (mat_star M B A ≤ mat_star M A B).
   Proof.
-    intros Hneq Hzero Hrow Hcol Hdiag_one.
+    intros Hneq Hle Hrow Hcol Hdiag_one.
     apply mat_star_bound. intro n.
-    exact (pow_BA_le_mat_star_AB M A B Hneq Hzero Hrow Hcol Hdiag_one n).
+    exact (pow_BA_le_mat_star_AB M A B Hneq Hle Hrow Hcol Hdiag_one n).
   Qed.
 
 
