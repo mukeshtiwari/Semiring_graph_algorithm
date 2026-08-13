@@ -65,6 +65,16 @@ Section SchulzeOnNT.
     exact (smith_criterion_weaker M (NT_selective cs)).
   Qed.
 
+  (** Schulze §2.2: the method outputs a strict partial order O and a
+      non-empty winner set S — with no hypotheses at all on a normalised
+      carrier. *)
+  Theorem schulze_output_well_formed_normalized (M : @Matrix Node (NT cs)) :
+    strict_partial_order (schulze_beats M) /\ (exists a, schulze_winner M a).
+  Proof.
+    exact (schulze_output_well_formed (NT_selective cs) (NT_eq_dec cs)
+             (NT_meet_lower_bound cs) M).
+  Qed.
+
   (** Schulze's corollary (4.1.14): every non-winner is beaten by a winner. *)
   Theorem winner_beats_nonwinner_normalized (M : @Matrix Node (NT cs)) :
     forall b : Node,

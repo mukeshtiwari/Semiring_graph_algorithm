@@ -26,10 +26,14 @@ Local Infix "<" := (fun x y => x ≤ y ∧ x ≠ y) (at level 70).
 (*  c(i) ≡ c(i+1)).                                                          *)
 (*                                                                           *)
 (*  BASIC DEFINITIONS                                                        *)
+(*    §2.1     strict partial order  strict_partial_order                    *)
 (*    (2.2.1)  relation O            schulze_beats   (via [beats], [mat_star]) *)
 (*    (2.2.2)  winner set S          schulze_winner                          *)
 (*    (2.2.3)  link is a path        link_le_mat_star                        *)
 (*    (2.2.5)  path composition      star_path_compose                       *)
+(*                                                                           *)
+(*    §2.2     the method outputs a strict partial order O and a non-empty   *)
+(*             winner set S         schulze_output_well_formed           (†) *)
 (*                                                                           *)
 (*  RESULTS.  Where the paper's proof uses properties of its concrete order  *)
 (*  that a bare semiring lacks, the Rocq statement carries them as explicit  *)
@@ -161,6 +165,22 @@ Section SocialChoice.
   Definition schulze_winner {R : Semiring.type}
     (M : @Matrix Node R) (a : Node) : Prop :=
     forall (b : Node), b ≠ a -> ~ schulze_beats M b a.
+
+  (* =====================================================================  *)
+  (*  Strict partial order (Definition in §2.1): transitive and asymmetric. *)
+  (*  This is the shape the paper claims for the output relation O; see     *)
+  (*  [schulze_output_well_formed] below.                                   *)
+  (* =====================================================================  *)
+
+  Definition strict_partial_order (Rel : Node -> Node -> Prop) : Prop :=
+    (forall a b c, Rel a b -> Rel b c -> Rel a c) /\
+    (forall a b, Rel a b -> ~ Rel b a).
+
+  (** Asymmetry already yields irreflexivity, so the paper's two conditions
+      are all that a strict partial order has to supply. *)
+  Remark spo_irreflexive (Rel : Node -> Node -> Prop) :
+    strict_partial_order Rel -> forall a, ~ Rel a a.
+  Proof. intros [_ Hasym] a Ha. exact (Hasym a a Ha Ha). Qed.
 
   (* =====================================================================  *)
   (*  Lemma: transpose commutes with Kleene star                            *)
@@ -875,6 +895,32 @@ Section SocialChoice.
   Qed.
 
  
+
+  (** Schulze §2.2: "Output of the proposed method are (1) a strict partial
+      order O on A and (2) a set ∅ ≠ S ⊆ A of winners."
+
+      Both halves in one statement.  Asymmetry of O is immediate from the
+      asymmetry of the strict order on path strengths; transitivity is §4.1;
+      non-emptiness of S is the corollary (4.1.14) that §4.1 draws from it.
+      The claim [S ⊆ A] carries no content here — [schulze_winner M] is a
+      predicate on [Node], so it is a subset of the alternatives by typing.
+
+      This sits after [winner_exists_weaker_necessary] because it depends on
+      it, even though the paper states it up front in §2.2. *)
+  Theorem schulze_output_well_formed {R : BoundedSemiring.type}
+    (H_total_order : forall x y : R, x + y = x \/ x + y = y)
+    (Hdec : forall x y : R, {x = y} + {x ≠ y})
+    (H_meet_lower_bound : forall m a b : R, m ≤ a -> m ≤ b -> m ≤ a * b)
+    (M : @Matrix Node R) :
+    strict_partial_order (schulze_beats M) /\ (exists a, schulze_winner M a).
+  Proof.
+    split.
+    - split.
+      + exact (schulze_trans_weaker_necessary H_total_order H_meet_lower_bound M).
+      + exact (schulze_beats_asym M).
+    - exact (winner_exists_weaker_necessary H_total_order Hdec
+               H_meet_lower_bound M).
+  Qed.
 
   (** Schulze's corollary (4.1.14): every non-winner is beaten by some actual
       winner.  This strengthens [winner_exists_weaker_necessary], which only
