@@ -80,6 +80,10 @@ Local Infix "<" := (fun x y => x ≤ y ∧ x ≠ y) (at level 70).
 (*    (4.7.3)  Smith: every a∈B1                                            *)
 (*             beats every b∈B2  smith_beats                          (†) *)
 (*    (4.7.4)  Smith: S ⊆ B1         smith_criterion_weaker              (†) *)
+(*    (4.7.5a) Smith-IIA: a weak alternative does not affect how the       *)
+(*             strong ones compare   smith_iia_isolate — but for ISOLATION *)
+(*             of d, not removal, and with an extra separation hypothesis; *)
+(*             see the section comment and the NOT FORMALISED note         *)
 (*    (4.8.1)  MinMax set beats                                              *)
 (*             its complement        minmax_beats                            *)
 (*    (4.8.2)  S ⊆ 𝔅_D               minmax_winner                          *)
@@ -112,7 +116,15 @@ Local Infix "<" := (fun x y => x ≤ y ∧ x ≠ y) (at level 70).
 (*             winner hypotheses feed, is [untied_winner_unique] above.      *)
 (*    §4.2.2   resolvability #2 — constructs a ballot to add to the profile  *)
 (*    §4.6     independence of clones                                        *)
-(*    (4.7.5/6) Smith-IIA                                                    *)
+(*    (4.7.5/6) Smith-IIA for genuine REMOVAL of an alternative.  The       *)
+(*             closure is defined over the fixed [elements] of the FinType, *)
+(*             so there is no closure over a subset to compare against;     *)
+(*             stating it needs either a list-parameterised closure or a    *)
+(*             transfer lemma across two FinTypes.  The isolation surrogate *)
+(*             for (4.7.5)(a) is [smith_iia_isolate]; (4.7.5)(b) does not   *)
+(*             survive that surrogate, since an isolated d becomes a        *)
+(*             spurious winner.  (4.7.6) needs the mirrored argument for    *)
+(*             pairs inside B2.                                             *)
 (*    (4.5.6, ⊆) S_new ⊆ S_old in general.  Proved under a no-ties          *)
 (*             hypothesis on A (winner_monotonicity_subset); the paper's    *)
 (*             tie case needs the critical link of a strongest path, the    *)
@@ -2342,6 +2354,38 @@ Section SocialChoice.
       which follows immediately by chaining [M b a < c0 <= M a b] — so it
       is dropped as a separate premise here.
   *)
+  (** No walk from [B2] into [B1] can reach the threshold: every such walk
+      must eventually cross the boundary, and every crossing link is below
+      [c].  This is the engine of both the Smith criterion and Smith-IIA. *)
+  Lemma pow_from_B2_lt {R : BoundedSemiring.type}
+    (M : @Matrix Node R)
+    (H_total_order : forall x y : R, x + y = x ∨ x + y = y)
+    (B1 B2 : list Node) (c : R)
+    (H_partition : forall x : Node, In x B1 <-> ~ In x B2)
+    (H_lt : forall a b, In a B1 -> In b B2 -> M b a < c)
+    (H0 : (0 : R) < c) :
+    forall n y, In y B2 -> forall x, In x B1 -> pow M n y x < c.
+  Proof.
+    induction n as [|n IH]; intros y Hy x Hx.
+    - cbn [pow]. unfold I.
+      destruct (fin_eq_dec y x) as [Heq|Hneq].
+      + subst x. exfalso. apply (proj1 (H_partition y) Hx). exact Hy.
+      + exact H0.
+    - simpl. unfold matrix_mul.
+      apply sum_lt_bound_if_all_lt; [exact H_total_order |].
+      intro z.
+      destruct (in_dec fin_eq_dec z B1) as [HzB1|HzB1'].
+      + apply (orel_lt_trans (M y z * pow M n z x) (M y z) c).
+        * apply bounded_mul_lower_left.
+        * apply H_lt; assumption.
+      + assert (HzB2 : In z B2).
+        { destruct (in_dec fin_eq_dec z B2) as [Hz|Hz]; [exact Hz|].
+          exfalso. apply HzB1'. apply (proj2 (H_partition z)). exact Hz. }
+        apply (orel_lt_trans (M y z * pow M n z x) (pow M n z x) c).
+        * apply bounded_mul_lower_right.
+        * apply IH; assumption.
+  Qed.
+
   (** Schulze (4.7.3): every member of [B1] beats every member of [B2].  The
       whole strength of the criterion lives here — no walk from [B2] into [B1]
       can rise to the threshold [c], while the direct link out of [B1] already
@@ -2361,31 +2405,8 @@ Section SocialChoice.
     { apply (orel_lt_trans 0 (M b a) c).
       - apply zero_is_bottom.
       - apply H_lt; assumption. }
-    (* every walk from B2 into B1 stays strictly below the threshold *)
-    assert (H_pow_lt : forall n y, In y B2 ->
-      forall x, In x B1 -> pow M n y x < c).
-    { induction n as [|n IH]; intros y Hy x Hx.
-      - (* n = 0: pow M 0 y x = I y x, and y <> x by the partition *)
-        cbn [pow]. unfold I.
-        destruct (fin_eq_dec y x) as [Heq|Hneq].
-        + subst x. exfalso. apply (proj1 (H_partition y) Hx). exact Hy.
-        + exact H0_lt_c.
-      - (* n = S n: pow M (S n) y x = sum_z M y z * pow M n z x *)
-        simpl. unfold matrix_mul.
-        apply sum_lt_bound_if_all_lt; [exact H_total_order |].
-        intro z.
-        destruct (in_dec fin_eq_dec z B1) as [HzB1|HzB1'].
-        + (* z in B1: bound via the first factor, M y z < c directly *)
-          apply (orel_lt_trans (M y z * pow M n z x) (M y z) c).
-          * apply bounded_mul_lower_left.
-          * apply H_lt; assumption.
-        + (* z in B2: bound via the second factor, IH gives pow M n z x < c *)
-          assert (HzB2 : In z B2).
-          { destruct (in_dec fin_eq_dec z B2) as [Hz|Hz]; [exact Hz|].
-            exfalso. apply HzB1'. apply (proj2 (H_partition z)). exact Hz. }
-          apply (orel_lt_trans (M y z * pow M n z x) (pow M n z x) c).
-          * apply bounded_mul_lower_right.
-          * apply IH; assumption. }
+    pose proof (pow_from_B2_lt M H_total_order B1 B2 c H_partition H_lt
+                  H0_lt_c) as H_pow_lt.
     unfold schulze_beats, beats.
     apply (orel_lt_le_trans (mat_star M b a) c (mat_star M a b)).
     - apply (mat_star_lt_bound H_total_order). intro n.
@@ -2419,6 +2440,218 @@ Section SocialChoice.
     exact (H_winner a0 Hne
              (smith_beats M H_total_order (a0 :: B1') B2 H_partition Hc
                 a0 w Ha0 Hw_B2)).
+  Qed.
+
+  (* ==================================================================== *)
+  (*  Smith-IIA (4.7.5a) — isolation rather than removal                   *)
+  (*                                                                       *)
+  (*  The paper compares the method before and after REMOVING a weak       *)
+  (*  alternative [d ∈ B2].  Removal is not expressible here: [sum] folds  *)
+  (*  over [elements], the whole [FinType] enumeration, so [matrix_mul],   *)
+  (*  [pow], [geom_sum], [mat_star] and [kleene_exp] are all tied to one   *)
+  (*  fixed alternative set, and there is no closure over a subset to      *)
+  (*  write [P_new] with.                                                  *)
+  (*                                                                       *)
+  (*  What is expressible is ISOLATION: cut every link into and out of     *)
+  (*  [d], leaving the node in place.  [smith_iia_isolate] then says the   *)
+  (*  relation O restricted to [B1] is unchanged — the content of          *)
+  (*  (4.7.5)(a).  Two caveats, both real:                                 *)
+  (*                                                                       *)
+  (*  - It needs [Hsep], which the paper gets from (2.1.2): between two    *)
+  (*    distinct alternatives the stronger direction is at least a tie,    *)
+  (*    hence clears the threshold.  The Smith hypotheses alone relate     *)
+  (*    only B1-to-B2 pairs, so this has to be assumed.                    *)
+  (*                                                                       *)
+  (*  - (4.7.5)(b) [S_old = S_new] does NOT transfer to isolation.  An     *)
+  (*    isolated [d] has every link at [0], so nobody beats it and it      *)
+  (*    becomes a spurious winner — an artefact of leaving the node in     *)
+  (*    place.  Only removal gets (b) right.                               *)
+  (* ==================================================================== *)
+
+  (** With a selective join, a geometric sum is equal to one of its terms —
+      the closure is attained at some particular walk length. *)
+  Lemma geom_sum_selective {R : BoundedSemiring.type}
+    (Htotal : forall x y : R, x + y = x \/ x + y = y)
+    (M : @Matrix Node R) (n : nat) (a b : Node) :
+    exists k, (k <= n)%nat /\ geom_sum M n a b = pow M k a b.
+  Proof.
+    induction n as [|m IH].
+    - exists 0%nat. split; [lia | reflexivity].
+    - cbn [geom_sum]. unfold matrix_add.
+      destruct (Htotal (geom_sum M m a b) (pow M (S m) a b)) as [Hc | Hc].
+      + destruct IH as [k [Hk Heq]]. exists k. split; [lia |].
+        setoid_rewrite Hc. exact Heq.
+      + exists (S m). split; [lia |]. setoid_rewrite Hc. reflexivity.
+  Qed.
+
+  (** Isolating [d]: cut every link into and out of it. *)
+  Definition isolate {R : Semiring.type} (M : @Matrix Node R) (d : Node)
+    : @Matrix Node R :=
+    fun x y => if fin_eq_dec x d then 0
+               else if fin_eq_dec y d then 0 else M x y.
+
+  Lemma isolate_off {R : Semiring.type} (M : @Matrix Node R) (d x y : Node) :
+    x <> d -> y <> d -> isolate M d x y = M x y.
+  Proof.
+    intros Hx Hy. unfold isolate.
+    destruct (fin_eq_dec x d); [contradiction |].
+    destruct (fin_eq_dec y d); [contradiction | reflexivity].
+  Qed.
+
+  Lemma isolate_le {R : BoundedSemiring.type} (M : @Matrix Node R) (d x y : Node) :
+    isolate M d x y ≤ M x y.
+  Proof.
+    unfold isolate.
+    destruct (fin_eq_dec x d); [apply zero_is_bottom |].
+    destruct (fin_eq_dec y d); [apply zero_is_bottom | apply bounded_orel_refl].
+  Qed.
+
+  (** Isolation only removes walks, so it can only lower the closure. *)
+  Lemma mat_star_isolate_le {R : BoundedSemiring.type}
+    (M : @Matrix Node R) (d x y : Node) :
+    mat_star (isolate M d) x y ≤ mat_star M x y.
+  Proof.
+    unfold mat_star. apply geom_sum_monotone. intros i j. apply isolate_le.
+  Qed.
+
+  (** Every walk into [B1] is either matched by an isolated walk, or is too
+      weak to matter — because reaching [d ∈ B2] commits it to a crossing
+      back into [B1], and every crossing link is below [c]. *)
+  Lemma pow_isolate_dichotomy {R : BoundedSemiring.type}
+    (M : @Matrix Node R)
+    (H_total_order : forall x y : R, x + y = x ∨ x + y = y)
+    (B1 B2 : list Node) (c : R) (d : Node)
+    (H_partition : forall x : Node, In x B1 <-> ~ In x B2)
+    (H_lt : forall a b, In a B1 -> In b B2 -> M b a < c)
+    (H0 : (0 : R) < c) (Hd : In d B2) (f : Node) (Hf : In f B1) :
+    forall n x, x <> d ->
+      pow M n x f ≤ mat_star (isolate M d) x f \/ pow M n x f < c.
+  Proof.
+    induction n as [|k IH]; intros x Hx.
+    - left. cbn [pow]. unfold I.
+      destruct (fin_eq_dec x f) as [Heq|_].
+      + subst f. unfold mat_star. rewrite geom_sum_diag_one.
+        apply bounded_orel_refl.
+      + apply zero_is_bottom.
+    - simpl. unfold matrix_mul.
+      destruct (sum_selective H_total_order
+                  (fun z => M x z * pow M k z f)) as [H0eq | [z Hz]].
+      + left. rewrite H0eq. apply zero_is_bottom.
+      + rewrite Hz. cbv beta.
+        destruct (fin_eq_dec z d) as [Hzd | Hzd].
+        * subst z. right.
+          apply (orel_lt_trans (M x d * pow M k d f) (pow M k d f) c).
+          -- apply bounded_mul_lower_right.
+          -- exact (pow_from_B2_lt M H_total_order B1 B2 c H_partition H_lt H0
+                      k d Hd f Hf).
+        * destruct (IH z Hzd) as [Hle | Hlt].
+          -- left.
+             rewrite <- (isolate_off M d x z Hx Hzd).
+             eapply orel_trans;
+               [apply (bounded_mul_orel_compat_r _ _ _ Hle) |].
+             eapply orel_trans;
+               [apply (bounded_mul_orel_compat_l _ _ _
+                         (link_le_mat_star (isolate M d) x z)) |].
+             apply star_path_compose.
+          -- right.
+             apply (orel_lt_trans (M x z * pow M k z f) (pow M k z f) c).
+             ++ apply bounded_mul_lower_right.
+             ++ exact Hlt.
+  Qed.
+
+  (** A closure entry between two members of [B1] that already clears the
+      threshold is untouched by isolating [d]: its strongest walk cannot have
+      gone through [B2]. *)
+  Lemma mat_star_isolate_preserved {R : BoundedSemiring.type}
+    (M : @Matrix Node R)
+    (Htotal : forall x y : R, x + y = x ∨ x + y = y)
+    (B1 B2 : list Node) (c : R) (d : Node)
+    (H_partition : forall x : Node, In x B1 <-> ~ In x B2)
+    (H_lt : forall a b, In a B1 -> In b B2 -> M b a < c)
+    (H0 : (0 : R) < c) (Hd : In d B2)
+    (e f : Node) (He : In e B1) (Hf : In f B1) (Hc : c ≤ mat_star M e f) :
+    mat_star M e f = mat_star (isolate M d) e f.
+  Proof.
+    apply orel_antisym; [| apply mat_star_isolate_le].
+    assert (Hed : e <> d).
+    { intro Heq. subst e. exact (proj1 (H_partition d) He Hd). }
+    destruct (geom_sum_selective Htotal M kleene_exp e f) as [k [Hk Heq]].
+    destruct (pow_isolate_dichotomy M Htotal B1 B2 c d H_partition H_lt H0 Hd
+                f Hf k e Hed) as [Hle | Hlt].
+    - unfold mat_star. rewrite Heq. exact Hle.
+    - exfalso. destruct Hlt as [Hlt_le Hlt_ne]. apply Hlt_ne.
+      apply orel_antisym; [exact Hlt_le |].
+      unfold mat_star in Hc. rewrite Heq in Hc. exact Hc.
+  Qed.
+
+  (** Smith-IIA (4.7.5)(a), in the isolation reading: a weak alternative has
+      no bearing on how the strong ones compare. *)
+  Theorem smith_iia_isolate {R : BoundedSemiring.type}
+    (M : @Matrix Node R)
+    (Htotal : forall x y : R, x + y = x ∨ x + y = y)
+    (B1 B2 : list Node) (c : R) (d : Node)
+    (H_partition : forall x : Node, In x B1 <-> ~ In x B2)
+    (H_lt : forall a b, In a B1 -> In b B2 -> M b a < c)
+    (H0 : (0 : R) < c) (Hd : In d B2)
+    (Hsep : forall x y : Node, x <> y -> c ≤ M x y + M y x) :
+    forall e f, In e B1 -> In f B1 ->
+      (schulze_beats M e f <-> schulze_beats (isolate M d) e f).
+  Proof.
+    intros e f He Hf.
+    assert (Hed : e <> d).
+    { intro Heq. subst e. exact (proj1 (H_partition d) He Hd). }
+    assert (Hfd : f <> d).
+    { intro Heq. subst f. exact (proj1 (H_partition d) Hf Hd). }
+    (* a closure entry that dominates its converse already clears c *)
+    assert (Hclears : forall x y, x <> y ->
+              mat_star M y x ≤ mat_star M x y -> c ≤ mat_star M x y).
+    { intros x y Hxy Hdom.
+      eapply orel_trans; [exact (Hsep x y Hxy) |].
+      apply add_orel_bound.
+      - apply link_le_mat_star.
+      - eapply orel_trans; [apply link_le_mat_star | exact Hdom]. }
+    split.
+    - intros [Hle Hne].
+      assert (Hef_ne : e <> f).
+      { intro Heq. subst f. apply Hne. reflexivity. }
+      pose proof (Hclears e f Hef_ne Hle) as Hc.
+      pose proof (mat_star_isolate_preserved M Htotal B1 B2 c d H_partition
+                    H_lt H0 Hd e f He Hf Hc) as Hef.
+      split.
+      + eapply orel_trans; [apply mat_star_isolate_le |].
+        eapply orel_trans; [exact Hle |]. rewrite Hef. apply bounded_orel_refl.
+      + intro Heq0.
+        apply Hne. apply orel_antisym; [exact Hle |].
+        rewrite Hef, <- Heq0. apply mat_star_isolate_le.
+    - intros [Hle' Hne'].
+      assert (Hef_ne : e <> f).
+      { intro Heq. subst f. apply Hne'. reflexivity. }
+      assert (Hc' : c ≤ mat_star (isolate M d) e f).
+      { eapply orel_trans; [exact (Hsep e f Hef_ne) |].
+        apply add_orel_bound.
+        - rewrite <- (isolate_off M d e f Hed Hfd). apply link_le_mat_star.
+        - eapply orel_trans; [| exact Hle'].
+          rewrite <- (isolate_off M d f e Hfd Hed). apply link_le_mat_star. }
+      assert (Hc : c ≤ mat_star M e f)
+        by (eapply orel_trans; [exact Hc' | apply mat_star_isolate_le]).
+      pose proof (mat_star_isolate_preserved M Htotal B1 B2 c d H_partition
+                    H_lt H0 Hd e f He Hf Hc) as Hef.
+      (* were the converse also above c it would be preserved too, forcing a
+         tie in the isolated profile *)
+      assert (Hno_converse : ~ (mat_star M e f ≤ mat_star M f e)).
+      { intro Hbad.
+        assert (Hcfe : c ≤ mat_star M f e)
+          by (eapply orel_trans; [exact Hc | exact Hbad]).
+        pose proof (mat_star_isolate_preserved M Htotal B1 B2 c d H_partition
+                      H_lt H0 Hd f e Hf He Hcfe) as Hfe.
+        apply Hne'. apply orel_antisym; [exact Hle' |].
+        rewrite <- Hef, <- Hfe. exact Hbad. }
+      split.
+      + destruct (Htotal (mat_star M f e) (mat_star M e f)) as [Hc1 | Hc1].
+        * exfalso. apply Hno_converse. unfold Orel. rewrite addC. exact Hc1.
+        * exact Hc1.
+      + intro Heq0. apply Hno_converse.
+        rewrite Heq0. apply bounded_orel_refl.
   Qed.
 
   (* ==================================================================== *)
