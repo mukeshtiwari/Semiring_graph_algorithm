@@ -52,6 +52,18 @@ Section SchulzeOnNT.
     (NT_meet_lower_bound cs) M).
   Qed.
 
+  (** Schulze (4.7.3): every member of B1 beats every member of B2. *)
+  Theorem smith_beats_normalized (M : @Matrix Node (NT cs)) :
+    forall (B1 B2 : list Node),
+      (forall x : Node, In x B1 <-> ~ In x B2) ->
+      (exists c : NT cs,
+        (forall a b, In a B1 -> In b B2 -> M b a < c) /\
+        (forall a b, In a B1 -> In b B2 -> c ≤ M a b)) ->
+      forall a b, In a B1 -> In b B2 -> schulze_beats M a b.
+  Proof.
+    exact (smith_beats M (NT_selective cs)).
+  Qed.
+
   (** The Smith criterion keeps its hypothesis about the matrix — a strength
       separating the two blocks — but sheds the algebraic one. *)
   Theorem smith_criterion_normalized (M : @Matrix Node (NT cs)) :
@@ -74,6 +86,22 @@ Section SchulzeOnNT.
     exact (schulze_output_well_formed (NT_selective cs) (NT_eq_dec cs)
              (NT_meet_lower_bound cs) M).
   Qed.
+
+  (** The resolution step of Schulze 4.2.1: an untied winner is the only
+      winner.  The tie hypothesis is about the matrix, so it stays. *)
+  Theorem untied_winner_unique_normalized (M : @Matrix Node (NT cs)) (a : Node)
+    (Hnoties : forall b, b <> a -> mat_star M a b <> mat_star M b a) :
+    schulze_winner M a -> forall w, schulze_winner M w -> w = a.
+  Proof.
+    exact (untied_winner_unique (NT_selective cs) M a Hnoties).
+  Qed.
+
+  (** The remaining Pareto #2 conclusions (4.3.2.3 / .4 / .5).  These carry
+      no algebraic hypotheses even in the general file — only conditions on
+      the matrix — so there is nothing for the normalised carrier to shed;
+      they are listed here only to keep the paper-section index in one place.
+      See [pareto_weaker_beats_transfer], [pareto_weaker_loses_transfer] and
+      [pareto_weaker_winner_transfer] in [SocialchoiceN.v]. *)
 
   (** Schulze's corollary (4.1.14): every non-winner is beaten by a winner. *)
   Theorem winner_beats_nonwinner_normalized (M : @Matrix Node (NT cs)) :
