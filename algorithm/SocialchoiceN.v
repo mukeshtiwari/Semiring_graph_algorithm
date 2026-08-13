@@ -9,8 +9,8 @@ Local Infix "<" := (fun x y => x ≤ y ∧ x ≠ y) (at level 70).
 (* ========================================================================= *)
 (*  Social choice — the Schulze method over an arbitrary semiring            *)
 (*                                                                           *)
-(*  Reference: M. Schulze, "A new monotonic, clone-independent, reversal     *)
-(*  symmetric, and Condorcet-consistent single-winner election method",      *)
+(*  Reference: M. Schulze, A new monotonic, clone-independent, reversal      *)
+(*  symmetric, and Condorcet-consistent single-winner election method,       *)
 (*  Soc Choice Welf (2011) 36:267-303.  Section and equation numbers below   *)
 (*  are the paper's.                                                         *)
 (*                                                                           *)
@@ -30,6 +30,9 @@ Local Infix "<" := (fun x y => x ≤ y ∧ x ≠ y) (at level 70).
 (*    (2.2.1)  relation O            schulze_beats   (via [beats], [mat_star]) *)
 (*    (2.2.2)  winner set S          schulze_winner                          *)
 (*    (2.2.3)  link is a path        link_le_mat_star                        *)
+(*    (2.2.4)  a link beating the                                            *)
+(*             return closure is                                             *)
+(*             respected by O        link_beats                              *)
 (*    (2.2.5)  path composition      star_path_compose                       *)
 (*                                                                           *)
 (*    §2.2     the method outputs a strict partial order O and a non-empty   *)
@@ -48,6 +51,11 @@ Local Infix "<" := (fun x y => x ≤ y ∧ x ≠ y) (at level 70).
 (*    (4.1.14) a winner beats every                                          *)
 (*             non-winner            winner_beats_nonwinner              (†) *)
 (*             …hence S ≠ ∅          winner_exists_weaker_necessary      (†) *)
+(*    §4.2     resolvability — only the resolution step of 4.2.1: an untied  *)
+(*             winner beats everyone and is unique                           *)
+(*                                   untied_winner_is_strict,                *)
+(*                                   untied_winner_unique                (†) *)
+(*             see the NOT FORMALISED note below for the two halves missing  *)
 (*    §4.3.1   Pareto #1             pareto_stronger, pareto_stronger_loser  *)
 (*             both directions       pareto_stronger_iff                     *)
 (*    (4.3.2.2/10) Pareto #2         pareto_weaker                           *)
@@ -70,11 +78,26 @@ Local Infix "<" := (fun x y => x ≤ y ∧ x ≠ y) (at level 70).
 (*  strict_winner_is_schulze_winner, strict_winner_excludes_others,          *)
 (*  schulze_beats_asym, schulze_beats_irrefl), the Condorcet criterion in    *)
 (*  the form "Condorcet winner ⇒ beats everyone"                             *)
-(*  (condorcet_implies_strict_winner_weaker), and the observation that the   *)
-(*  meet property forces commutativity (meet_lower_bound_implies_comm).      *)
+(*  (condorcet_implies_strict_winner_weaker), the observation that the meet  *)
+(*  property forces commutativity (meet_lower_bound_implies_comm), and the   *)
+(*  selectivity facts (mul_selective, sum_selective, pow_link_or_extreme,    *)
+(*  mat_star_link_or_extreme) saying that under [Htotal] and [Hmeet] the     *)
+(*  closure invents no values beyond the link strengths and the bounds.      *)
 (*                                                                           *)
 (*  NOT FORMALISED                                                           *)
-(*    §4.2     resolvability, both formulations                              *)
+(*    §4.2.1   the outer layers of resolvability #1.  The paper's claim is   *)
+(*             that distinct LINK strengths give at most one WINNER; note    *)
+(*             it is NOT that distinct links give an untied closure, which   *)
+(*             is false (on four nodes in max-min, all twelve off-diagonal   *)
+(*             links can be distinct with mat_star a b = mat_star b a).  The *)
+(*             paper's proof therefore leans on the winner hypotheses: it    *)
+(*             identifies the critical link shared by the two strongest      *)
+(*             paths and splits both paths there.  That needs the WITNESS    *)
+(*             link, which [mat_star_link_or_extreme] does not supply — it   *)
+(*             gives only the value.  Also missing: the asymptotic wrapper   *)
+(*             over profiles.  The inner resolution step, which is what the  *)
+(*             winner hypotheses feed, is [untied_winner_unique] above.      *)
+(*    §4.2.2   resolvability #2 — constructs a ballot to add to the profile  *)
 (*    §4.6     independence of clones                                        *)
 (*    (4.7.3)  ∀a∈B1, b∈B2: ab ∈ O — the Smith proof establishes this        *)
 (*             internally but does not expose it                             *)
@@ -382,6 +405,8 @@ Section SocialChoice.
     apply Hab_ne, orel_antisym; assumption.
   Qed.
 
+
+
   (** Beating everybody implies being unbeaten: [strict_winner ⊆ schulze_winner]. *)
   Lemma strict_winner_is_schulze_winner {R : Semiring.type}
     (M : @Matrix Node R) (a : Node) :
@@ -421,6 +446,153 @@ Section SocialChoice.
     destruct (Ha b (fun h => Hne (eq_sym h))) as [Hab_le Hab_ne].
     destruct (Hb a Hne) as [Hba_le _].
     apply Hab_ne, orel_antisym; assumption.
+  Qed.
+
+  (* ==================================================================== *)
+  (*  Resolvability (Section 4.2) — the resolution step only               *)
+  (*                                                                       *)
+  (*  Schulze's 4.2.1 argues that two distinct winners [a] and [b] force   *)
+  (*  a tie [P_D[a,b] ≈ P_D[b,a]] (4.2.1.3), and then rules that out when  *)
+  (*  no two links have equivalent strength.  What follows is the          *)
+  (*  contrapositive of the first half: a winner that is never tied in the *)
+  (*  closure beats everyone, hence is the unique winner.                  *)
+  (*                                                                       *)
+  (*  The second half — that distinct LINK strengths force an untied       *)
+  (*  closure — is not formalised.  The paper proves it by locating the    *)
+  (*  weakest link of the strongest path and splitting both paths there,   *)
+  (*  which needs [*] to be a selective meet (so that every closure entry  *)
+  (*  is attained by some individual link) plus path-level reasoning from  *)
+  (*  [PathN.v].  Nor is the criterion as literally stated: both of the    *)
+  (*  paper's formulations quantify over profiles and voters, and this     *)
+  (*  development has no ballot layer — [M] is an abstract matrix.         *)
+  (* ==================================================================== *)
+
+  (** A winner that is nowhere tied in the closure beats everyone. *)
+  Theorem untied_winner_is_strict {R : BoundedSemiring.type}
+    (Htotal : forall x y : R, x + y = x \/ x + y = y)
+    (M : @Matrix Node R) (a : Node)
+    (Hnoties : forall b, b <> a -> mat_star M a b <> mat_star M b a) :
+    schulze_winner M a -> strict_winner M a.
+  Proof.
+    intros Hwin X HX.
+    unfold schulze_beats, beats.
+    destruct (Htotal (mat_star M a X) (mat_star M X a)) as [Hc | Hc].
+    - (* mat_star M X a ≤ mat_star M a X, and they differ *)
+      split.
+      + unfold Orel. rewrite addC. exact Hc.
+      + intro Heq. exact (Hnoties X HX (eq_sym Heq)).
+    - (* the other orientation would make X beat a *)
+      exfalso. apply (Hwin X HX). split; [exact Hc |].
+      exact (Hnoties X HX).
+  Qed.
+
+  (** …and is therefore the only winner: the resolution step of 4.2.1. *)
+  Corollary untied_winner_unique {R : BoundedSemiring.type}
+    (Htotal : forall x y : R, x + y = x \/ x + y = y)
+    (M : @Matrix Node R) (a : Node)
+    (Hnoties : forall b, b <> a -> mat_star M a b <> mat_star M b a) :
+    schulze_winner M a -> forall w, schulze_winner M w -> w = a.
+  Proof.
+    intros Hwin w Hw.
+    destruct (fin_eq_dec w a) as [Heq | Hne]; [exact Heq | exfalso].
+    exact (strict_winner_excludes_others M a w
+             (untied_winner_is_strict Htotal M a Hnoties Hwin) Hne Hw).
+  Qed.
+
+  (* ==================================================================== *)
+  (*  Selectivity: the closure invents no new values                       *)
+  (*                                                                       *)
+  (*  [Htotal] and [Hmeet] together — the pair already assumed by          *)
+  (*  [prudence] and [minmax_beats], and satisfied by the max-min semiring *)
+  (*  of the Schulze instance — make both operations SELECTIVE: [x + y]    *)
+  (*  and [x * y] each return one of their arguments.  So every entry of   *)
+  (*  the closure is either a bound or the strength of an actual link.     *)
+  (*  This is the algebraic content of the paper's habit of naming the     *)
+  (*  critical link of a strongest path, e.g. in 4.2.1.                    *)
+  (*                                                                       *)
+  (*  Note what this does NOT give: the value being some link's strength   *)
+  (*  says nothing about WHICH link, or that it lies on a path from [a] to *)
+  (*  [b].  Recovering that — and with it the paper's path-splitting       *)
+  (*  arguments — needs the witness, not just the value.                   *)
+  (* ==================================================================== *)
+
+  (** With a total order the meet of two elements is one of them. *)
+  Lemma mul_selective {R : BoundedSemiring.type}
+    (Htotal : forall x y : R, x + y = x \/ x + y = y)
+    (Hmeet : forall x y : R, x ≤ y -> x * y = x /\ y * x = x) (x y : R) :
+    x * y = x \/ x * y = y.
+  Proof.
+    destruct (Htotal x y) as [Hc | Hc].
+    - right. assert (Hyx : y ≤ x) by (unfold Orel; rewrite addC; exact Hc).
+      exact (proj2 (Hmeet y x Hyx)).
+    - left. exact (proj1 (Hmeet x y Hc)).
+  Qed.
+
+  (** A selective join over a list returns [0] or one of the summands. *)
+  Lemma fold_selective {R : BoundedSemiring.type}
+    (Htotal : forall x y : R, x + y = x \/ x + y = y) (f : Node -> R) :
+    forall l : list Node,
+      fold_right (fun x acc => f x + acc) 0 l = 0 \/
+      exists z, In z l /\ fold_right (fun x acc => f x + acc) 0 l = f z.
+  Proof.
+    induction l as [|a l IH]; cbn [fold_right].
+    - left. reflexivity.
+    - destruct (Htotal (f a) (fold_right (fun x acc => f x + acc) 0 l)) as [Hc | Hc].
+      + right. exists a. split; [left; reflexivity | exact Hc].
+      + destruct IH as [H0 | [z [Hz Hfz]]].
+        * left. rewrite Hc. exact H0.
+        * right. exists z. split; [right; exact Hz |]. rewrite Hc. exact Hfz.
+  Qed.
+
+  Lemma sum_selective {R : BoundedSemiring.type}
+    (Htotal : forall x y : R, x + y = x \/ x + y = y) (f : Node -> R) :
+    sum f = 0 \/ exists z, sum f = f z.
+  Proof.
+    unfold sum.
+    destruct (fold_selective Htotal f (@elements Node)) as [H0 | [z [_ Hz]]].
+    - left. exact H0.
+    - right. exists z. exact Hz.
+  Qed.
+
+  (** A value is a bound or the strength of some link. *)
+  Definition link_or_extreme {R : Semiring.type} (M : @Matrix Node R) (v : R) : Prop :=
+    v = 0 \/ v = 1 \/ exists x y, v = M x y.
+
+  Lemma pow_link_or_extreme {R : BoundedSemiring.type}
+    (Htotal : forall x y : R, x + y = x \/ x + y = y)
+    (Hmeet : forall x y : R, x ≤ y -> x * y = x /\ y * x = x)
+    (M : @Matrix Node R) (n : nat) :
+    forall a b, link_or_extreme M (pow M n a b).
+  Proof.
+    induction n as [|n IH]; intros a b.
+    - cbn [pow]. unfold I.
+      destruct (fin_eq_dec a b);
+        [right; left; reflexivity | left; reflexivity].
+    - cbn [pow]. unfold matrix_mul.
+      destruct (sum_selective Htotal (fun z => M a z * pow M n z b))
+        as [H0 | [z Hz]].
+      + left. exact H0.
+      + rewrite Hz. cbv beta.
+        destruct (mul_selective Htotal Hmeet (M a z) (pow M n z b)) as [Hc | Hc].
+        * rewrite Hc. right; right. exists a, z. reflexivity.
+        * rewrite Hc. apply IH.
+  Qed.
+
+  Lemma mat_star_link_or_extreme {R : BoundedSemiring.type}
+    (Htotal : forall x y : R, x + y = x \/ x + y = y)
+    (Hmeet : forall x y : R, x ≤ y -> x * y = x /\ y * x = x)
+    (M : @Matrix Node R) (a b : Node) :
+    link_or_extreme M (mat_star M a b).
+  Proof.
+    unfold mat_star.
+    induction kleene_exp as [|K IH]; cbn [geom_sum].
+    - unfold I. destruct (fin_eq_dec a b);
+        [right; left; reflexivity | left; reflexivity].
+    - unfold matrix_add.
+      destruct (Htotal (geom_sum M K a b) (pow M (S K) a b)) as [Hc | Hc];
+        setoid_rewrite Hc.
+      + exact IH.
+      + apply pow_link_or_extreme; assumption.
   Qed.
 
   (* ==================================================================== *)
@@ -563,7 +735,7 @@ Section SocialChoice.
     exact Hmul.
   Qed.
 
-  (** * Transitivity of Schulze beats — meet-semiring proof
+  (** * 4.1 Transitivity of Schulze beats — meet-semiring proof
 
       Same conclusion as [schulze_trans] (if [a] beats [b] and [b] beats [c]
       then [a] beats [c]), but replacing the strong normalisation hypothesis
@@ -708,7 +880,9 @@ Section SocialChoice.
       + lia.
   Qed.
 
-  (** A link is a path of length one. *)
+  (** A link is a path of length one. 2.2.3 
+      ∀a,b ∈ A : P_D [a,b] ≿_D (N [a,b], N [b,a]). 
+  *)
   Lemma link_le_mat_star {R : BoundedSemiring.type}
     (M : @Matrix Node R) (x y : Node) : M x y ≤ mat_star M x y.
   Proof.
@@ -860,11 +1034,8 @@ Section SocialChoice.
 
   (** * Winner existence — meet-semiring version
 
-      Same statement as [winner_exists] but using [schulze_trans_weaker]
-      (which requires [H_meet_lower_bound]) instead of [schulze_trans]
-      (which requires [H_pair_sum_one]).
 
-      The proof is identical to [winner_exists]: a Schulze winner is a
+      a Schulze winner is a
       maximal element of the strict partial order [schulze_beats], and
       such an element always exists on a finite set.  The only change is
       which transitivity lemma is invoked in the induction step.
@@ -963,6 +1134,8 @@ Section SocialChoice.
       exact Hy_beats.
     - exact (Hback w HwL).
   Qed.
+
+
 
   (** Reversal symmetry (4.4.3): reversing the ballots displaces a winner
       exactly when it promotes a non-winner.  The winner-level statement the
@@ -1424,8 +1597,8 @@ Section SocialChoice.
   (*  Hypotheses:                                                          *)
   (*    A ≠ B            — distinct candidates                            *)
   (*    M B A ≤ M A B    — A is at least as strong as B head to head.     *)
-  (*                        Schulze's (4.3.2.1) — "no voter strictly      *)
-  (*                        prefers B to A" — gives the stronger          *)
+  (*                        Schulze's (4.3.2.1) — no voter strictly       *)
+  (*                        prefers B to A — gives the stronger           *)
   (*                        M B A = 0, which implies this; the proof      *)
   (*                        only needs the inequality, and it cannot be   *)
   (*                        dropped altogether: the two hypotheses below  *)
@@ -1477,6 +1650,16 @@ Section SocialChoice.
     - exact (orel_trans _ _ _ Hxy_le Hyz).
     - intro Heq. apply Hxy_neq.
       apply orel_antisym; [exact Hxy_le | rewrite Heq; exact Hyz].
+  Qed.
+
+  (** Schulze (2.2.4): a link stronger than the return closure is respected by
+      the relation O.  As in the paper this is immediate from (2.2.1) and
+      (2.2.3) — the link [a → b] is itself a path, so [M a b ≤ mat_star M a b],
+      and the strict comparison carries across. *)
+  Lemma link_beats {R : BoundedSemiring.type} (M : @Matrix Node R) (a b : Node) :
+    mat_star M b a < M a b -> schulze_beats M a b.
+  Proof.
+    intro H. exact (orel_lt_le_trans _ _ _ H (link_le_mat_star M a b)).
   Qed.
 
   (** When the order is total, a strict upper bound survives addition. *)
@@ -1665,11 +1848,10 @@ Section SocialChoice.
     (* unanimity makes the reverse link [B → A] non-maximal *)
     assert (Hne_top : M B A ≠ M A B).
     { rewrite Hzero. exact (proj2 Hpos). }
-    eapply orel_lt_le_trans.
-    - exact (mat_star_BA_lt_link M A B Htotal Htop_trans Hmax Hdiag_one
-        Hneq Hne_top Hpos).
-    - (* M A B ≤ mat_star M A B: the link itself is a path of length one *)
-      apply link_le_mat_star.
+    (* the reverse closure is strictly below the link, so (2.2.4) applies *)
+    apply link_beats.
+    exact (mat_star_BA_lt_link M A B Htotal Htop_trans Hmax Hdiag_one
+      Hneq Hne_top Hpos).
   Qed.
 
   (** Pareto (4.3.1.3): the unanimously dominated alternative is not a winner. *)
@@ -2086,10 +2268,9 @@ Section SocialChoice.
       assert (Hself : M a b * mat_star M b a = M a b).
       { rewrite Heq. apply (Hmeet (M a b) (M a b) (bounded_orel_refl _)). }
       apply Hne. exact Hself. }
-    unfold schulze_beats, beats.
-    apply (orel_lt_le_trans (mat_star M b a) (M a b) (mat_star M a b)).
-    - split; [exact Hstar_le | exact Hstar_ne].
-    - apply link_le_mat_star.
+    (* the reverse closure is strictly below the link, so (2.2.4) applies *)
+    apply link_beats.
+    split; [exact Hstar_le | exact Hstar_ne].
   Qed.
 
   (** Prudence (4.9.3, global form): a link strictly stronger than every
