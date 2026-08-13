@@ -59,6 +59,12 @@ Local Infix "<" := (fun x y => x ≤ y ∧ x ≠ y) (at level 70).
 (*    §4.3.1   Pareto #1             pareto_stronger, pareto_stronger_loser  *)
 (*             both directions       pareto_stronger_iff                     *)
 (*    (4.3.2.2/10) Pareto #2         pareto_weaker                           *)
+(*    (4.3.2.11/12) the two path-rewriting steps behind #2                   *)
+(*                                   pareto_star_source_swap,                *)
+(*                                   pareto_star_target_swap                 *)
+(*    (4.3.2.3) B beats F ⇒ A beats F  pareto_weaker_beats_transfer          *)
+(*    (4.3.2.4) F beats A ⇒ F beats B  pareto_weaker_loses_transfer          *)
+(*    (4.3.2.5) B ∈ S ⇒ A ∈ S         pareto_weaker_winner_transfer          *)
 (*    (4.4.2)  reversal reverses O   reversal_symmetry_O                     *)
 (*    (4.4.3)  reversal displaces a                                          *)
 (*             winner iff it promotes                                        *)
@@ -102,7 +108,6 @@ Local Infix "<" := (fun x y => x ≤ y ∧ x ≠ y) (at level 70).
 (*    §4.2.2   resolvability #2 — constructs a ballot to add to the profile  *)
 (*    §4.6     independence of clones                                        *)
 (*    (4.7.5/6) Smith-IIA                                                    *)
-(*    (4.3.2.3/4/5) the remaining Pareto #2 conclusions                      *)
 (*    (4.5.6, ⊆) S_new ⊆ S_old                                              *)
 (*    majority for solid coalitions, majority, majority loser, Condorcet     *)
 (*    loser — the paper derives all of these from Smith (§4.7)               *)
@@ -345,6 +350,31 @@ Section SocialChoice.
   Proof.
     unfold Orel. intros Ha Hb.
     rewrite addA, Hb, Ha. reflexivity.
+  Qed.
+
+  (** [x < y] and [y ≤ z] give [x < z]. *)
+  Lemma orel_lt_le_trans {R : CommutativeMonoid.type} (x y z : R) :
+    x < y -> y ≤ z -> x < z.
+  Proof.
+    intros [Hxy_le Hxy_neq] Hyz. split.
+    - exact (orel_trans _ _ _ Hxy_le Hyz).
+    - intro Heq. apply Hxy_neq.
+      apply orel_antisym; [exact Hxy_le | rewrite Heq; exact Hyz].
+  Qed.
+
+  (** Transitivity: x ≤ y and y < z implies x < z. *)
+  Lemma orel_lt_trans {R : CommutativeMonoid.type} (x y z : R) :
+    x ≤ y -> y < z -> x < z.
+  Proof.
+    intros Hxy [Hyz_le Hyz_neq]. split.
+    - unfold Orel.
+      red in Hxy. red in Hyz_le.
+      rewrite <- Hyz_le at 1. (* z → y + z *)
+      rewrite <- addA.        (* x + (y + z) → (x + y) + z *)
+      rewrite Hxy.             (* x + y → y *)
+      rewrite Hyz_le. reflexivity.
+    - intro Heq. subst x. apply Hyz_neq.
+      apply orel_antisym; assumption.
   Qed.
 
   Lemma bounded_plus_upper_left {R : BoundedSemiring.type} (a b : R) : a ≤ a + b.
@@ -890,6 +920,36 @@ Section SocialChoice.
     pose proof (@pow_le_mat_star R M 1 x y) as h.
     unfold kleene_exp in h. specialize (h ltac:(nia)).
     cbn [pow] in h. rewrite matrix_mul_I_r in h. exact h.
+  Qed.
+
+  (** [pow_le_mat_star] without the cap on the exponent.  Beyond [kleene_exp]
+      the geometric sum has stabilised, so longer walks add nothing: go via
+      [pow M k ≤ pow (M+I) k = geom_sum M k], which
+      [geom_sum_stable_after_node_bound] collapses back to [geom_sum M
+      kleene_exp].  The diagonal condition is what makes that stabilisation
+      hold. *)
+  Lemma pow_le_mat_star_any {R : BoundedSemiring.type}
+    (M : @Matrix Node R) (Hdiag : forall u v : Node, u = v -> M u v = 1)
+    (k : nat) (a b : Node) :
+    pow M k a b ≤ mat_star M a b.
+  Proof.
+    pose proof (elements_two_or_more (s := Node)) as Hlen.
+    destruct (Compare_dec.le_lt_dec k kleene_exp) as [Hle | Hgt].
+    - exact (pow_le_mat_star M k a b Hle).
+    - assert (Hstep : pow M k a b ≤ pow (matrix_add M (I : @Matrix Node R)) k a b).
+      { apply pow_monotone. intros i j.
+        rewrite matrix_add_unfold. apply bounded_plus_upper_left. }
+      assert (Heq1 : pow (matrix_add M (I : @Matrix Node R)) k a b
+                     = geom_sum M k a b)
+        by apply matrix_pow_idempotence_bounded.
+      assert (Heq2 : geom_sum M k a b = geom_sum M kleene_exp a b).
+      { unfold kleene_exp. unfold kleene_exp in Hgt.
+        replace k with ((k - (length (@elements Node) - 1)) +
+                        length (@elements Node) - 1)%nat by lia.
+        symmetry.
+        exact (geom_sum_stable_after_node_bound
+                 (k - (length (@elements Node) - 1))%nat M Hdiag a b). }
+      unfold mat_star. rewrite <- Heq2, <- Heq1. exact Hstep.
   Qed.
 
   (** Lifting a uniform bound on the powers of [M] to the closure.  Since
@@ -1625,6 +1685,119 @@ Section SocialChoice.
     exact (pow_BA_le_mat_star_AB M A B Hneq Hle Hrow Hcol Hdiag_one n).
   Qed.
 
+  (* ------------------------------------------------------------------ *)
+  (*  The remaining Pareto #2 conclusions (4.3.2.3 / .4 / .5)             *)
+  (*                                                                      *)
+  (*  All three rest on the paper's two path-rewriting steps: (4.3.2.11)  *)
+  (*  swaps the SOURCE of a path out of [B] to [A], and (4.3.2.12) swaps  *)
+  (*  its TARGET from [A] to [B].  Schulze performs both by editing the   *)
+  (*  strongest path; here they are inductions on the closure.            *)
+  (* ------------------------------------------------------------------ *)
+
+  (** (4.3.2.11): [P_D[a,f] ≽ P_D[b,f]].  Every walk out of [B] is dominated
+      by one out of [A]: its first edge improves by [Hrow], and once the walk
+      has left [{A, B}] the rest is bounded by the closure. *)
+  Lemma pareto_star_source_swap {R : BoundedSemiring.type}
+    (M : @Matrix Node R) (A B : Node)
+    (Hdiag : forall u v : Node, u = v -> M u v = 1)
+    (Hrow : forall X, X ≠ A -> X ≠ B -> M B X ≤ M A X)
+    (F : Node) (HFB : F ≠ B) :
+    mat_star M B F ≤ mat_star M A F.
+  Proof.
+    apply mat_star_bound. intro n.
+    induction n as [|k IH].
+    - cbn [pow]. unfold I.
+      destruct (fin_eq_dec B F) as [Heq|_];
+        [exfalso; apply HFB; symmetry; exact Heq | apply zero_is_bottom].
+    - simpl. unfold matrix_mul.
+      apply sum_orel_bound. intro z.
+      destruct (fin_eq_dec z A) as [HzA|HzA].
+      + (* the walk reaches A: the tail is a walk A ⇝ F *)
+        subst z. eapply orel_trans; [apply bounded_mul_lower_right |].
+        apply pow_le_mat_star_any; exact Hdiag.
+      + destruct (fin_eq_dec z B) as [HzB|HzB].
+        * (* still at B: recurse *)
+          subst z. eapply orel_trans; [apply bounded_mul_lower_right |]. exact IH.
+        * (* left {A,B}: improve the head edge by Hrow, then chain *)
+          eapply orel_trans;
+            [apply (bounded_mul_orel_compat_l _ _ _ (Hrow z HzA HzB)) |].
+          eapply orel_trans;
+            [apply (bounded_mul_orel_compat_r _ _ _
+                      (pow_le_mat_star_any M Hdiag k z F)) |].
+          eapply orel_trans;
+            [apply (bounded_mul_orel_compat_l _ _ _ (link_le_mat_star M A z)) |].
+          apply star_path_compose.
+  Qed.
+
+  (** (4.3.2.12): [P_D[f,b] ≽ P_D[f,a]].  This is exactly what
+      [path_xA_measure_le_mat_star_xB] already says, lifted from paths to the
+      closure. *)
+  Lemma pareto_star_target_swap {R : BoundedSemiring.type}
+    (M : @Matrix Node R) (A B : Node)
+    (Hcol : forall X, X ≠ A -> X ≠ B -> M X A ≤ M X B)
+    (F : Node) (HFA : F ≠ A) :
+    mat_star M F A ≤ mat_star M F B.
+  Proof.
+    apply mat_star_bound. intro n.
+    apply pow_bound_of_paths. intros p Hp.
+    exact (path_xA_measure_le_mat_star_xB M A B Hcol n F p HFA Hp).
+  Qed.
+
+  (** Pareto (4.3.2.3): if [B] beats [F] then so does [A]. *)
+  Theorem pareto_weaker_beats_transfer {R : BoundedSemiring.type}
+    (M : @Matrix Node R) (A B : Node)
+    (Hdiag : forall u v : Node, u = v -> M u v = 1)
+    (Hrow : forall X, X ≠ A -> X ≠ B -> M B X ≤ M A X)
+    (Hcol : forall X, X ≠ A -> X ≠ B -> M X A ≤ M X B) :
+    forall F, F ≠ A -> F ≠ B -> schulze_beats M B F -> schulze_beats M A F.
+  Proof.
+    intros F HFA HFB HBF.
+    unfold schulze_beats, beats in *.
+    apply (orel_lt_le_trans (mat_star M F A) (mat_star M B F) (mat_star M A F)).
+    - apply (orel_lt_trans (mat_star M F A) (mat_star M F B) (mat_star M B F)).
+      + exact (pareto_star_target_swap M A B Hcol F HFA).
+      + exact HBF.
+    - exact (pareto_star_source_swap M A B Hdiag Hrow F HFB).
+  Qed.
+
+  (** Pareto (4.3.2.4): if [F] beats [A] then it also beats [B]. *)
+  Theorem pareto_weaker_loses_transfer {R : BoundedSemiring.type}
+    (M : @Matrix Node R) (A B : Node)
+    (Hdiag : forall u v : Node, u = v -> M u v = 1)
+    (Hrow : forall X, X ≠ A -> X ≠ B -> M B X ≤ M A X)
+    (Hcol : forall X, X ≠ A -> X ≠ B -> M X A ≤ M X B) :
+    forall F, F ≠ A -> F ≠ B -> schulze_beats M F A -> schulze_beats M F B.
+  Proof.
+    intros F HFA HFB HF_beats_A.
+    unfold schulze_beats, beats in *.
+    apply (orel_lt_le_trans (mat_star M B F) (mat_star M F A) (mat_star M F B)).
+    - apply (orel_lt_trans (mat_star M B F) (mat_star M A F) (mat_star M F A)).
+      + exact (pareto_star_source_swap M A B Hdiag Hrow F HFB).
+      + exact HF_beats_A.
+    - exact (pareto_star_target_swap M A B Hcol F HFA).
+  Qed.
+
+  (** Pareto (4.3.2.5): if [B] is a winner then so is [A].  The [f = B] case
+      is (4.3.2.2), i.e. [pareto_weaker]; every other [f] goes through
+      (4.3.2.4). *)
+  Theorem pareto_weaker_winner_transfer {R : BoundedSemiring.type}
+    (M : @Matrix Node R) (A B : Node)
+    (Hneq : A ≠ B) (Hle : M B A ≤ M A B)
+    (Hrow : forall X, X ≠ A -> X ≠ B -> M B X ≤ M A X)
+    (Hcol : forall X, X ≠ A -> X ≠ B -> M X A ≤ M X B)
+    (Hdiag : forall i j : Node, i = j -> M i j = 1) :
+    schulze_winner M B -> schulze_winner M A.
+  Proof.
+    intros HB f Hf_ne_A Hbeats.
+    destruct (fin_eq_dec f B) as [HfB | HfB].
+    - subst f. destruct Hbeats as [Hle' Hne'].
+      apply Hne'. apply orel_antisym; [exact Hle' |].
+      exact (pareto_weaker M A B Hneq Hle Hrow Hcol Hdiag).
+    - exact (HB f HfB
+               (pareto_weaker_loses_transfer M A B Hdiag Hrow Hcol
+                  f Hf_ne_A HfB Hbeats)).
+  Qed.
+
 
   (* ------------------------------------------------------------------ *)
   (*  Version 2 — pareto_stronger (strict form):  a ≻ᵥ b ∀v  →  a ≻ b   *)
@@ -1641,16 +1814,6 @@ Section SocialChoice.
   (*  max-min instance is still covered.  [Htotal] says the natural       *)
   (*  order is total, as in [condorcet_implies_strict_winner].            *)
   (* ------------------------------------------------------------------ *)
-
-  (** [x < y] and [y ≤ z] give [x < z]. *)
-  Lemma orel_lt_le_trans {R : CommutativeMonoid.type} (x y z : R) :
-    x < y -> y ≤ z -> x < z.
-  Proof.
-    intros [Hxy_le Hxy_neq] Hyz. split.
-    - exact (orel_trans _ _ _ Hxy_le Hyz).
-    - intro Heq. apply Hxy_neq.
-      apply orel_antisym; [exact Hxy_le | rewrite Heq; exact Hyz].
-  Qed.
 
   (** Schulze (2.2.4): a link stronger than the return closure is respected by
       the relation O.  As in the paper this is immediate from (2.2.1) and
@@ -1968,21 +2131,6 @@ Section SocialChoice.
   Qed.
 
 
-
-  (** Transitivity: x ≤ y and y < z implies x < z. *)
-  Lemma orel_lt_trans {R : CommutativeMonoid.type} (x y z : R) :
-    x ≤ y -> y < z -> x < z.
-  Proof.
-    intros Hxy [Hyz_le Hyz_neq]. split.
-    - unfold Orel.
-      red in Hxy. red in Hyz_le.
-      rewrite <- Hyz_le at 1. (* z → y + z *)
-      rewrite <- addA.        (* x + (y + z) → (x + y) + z *)
-      rewrite Hxy.             (* x + y → y *)
-      rewrite Hyz_le. reflexivity.
-    - intro Heq. subst x. apply Hyz_neq.
-      apply orel_antisym; assumption.
-  Qed.
 
 
 
