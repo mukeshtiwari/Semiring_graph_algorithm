@@ -545,4 +545,45 @@ Section Level1Tight.
     - discriminate.
   Qed.
 
+  (* ---- Smith-IIA (isolation form): every hypothesis of                 *)
+  (*      [smith_iia_isolate] holds, yet isolating the non-Smith           *)
+  (*      alternative changes the beat relation on B1: the beat B > C      *)
+  (*      travelled through the outside alternative A, its two routes      *)
+  (*      joining to top, and dies with it. ---- *)
+
+  Definition Miia : Node -> Node -> D4 :=
+    fun x y =>
+      match x, y with
+      | A, A => Dtop | A, B => Dbot | A, C => Dp
+      | B, A => Dtop | B, B => Dtop | B, C => Dq
+      | C, A => Dq   | C, B => Dp   | C, C => Dtop
+      end.
+
+  Theorem smith_iia_fails_over_diamond :
+    (forall x : Node, In x [B; C] <-> ~ In x [A])
+    /\ (forall a b : Node, In a [B; C] -> In b [A] ->
+          Miia b a ≤ Dtop /\ Miia b a <> Dtop)
+    /\ ((Dbot : D4) ≤ Dtop /\ Dbot <> Dtop)
+    /\ In A [A]
+    /\ (forall x y : Node, x <> y -> Dtop ≤ Miia x y + Miia y x)
+    /\ In B [B; C] /\ In C [B; C]
+    /\ schulze_beats Miia B C
+    /\ ~ schulze_beats (isolate Miia A) B C.
+  Proof.
+    split; [| split; [| split; [| split; [| split; [| split; [| split;
+      [| split]]]]]]].
+    - intro x. destruct x; cbn; intuition congruence.
+    - intros a b Ha Hb.
+      destruct Hb as [Eb|[]]; subst b.
+      destruct Ha as [Ea|[Ea|[]]]; subst a;
+        split; vm_compute; first [reflexivity | discriminate].
+    - split; vm_compute; first [reflexivity | discriminate].
+    - cbn; auto.
+    - intros x y Hxy. destruct x, y; try congruence; vm_compute; reflexivity.
+    - cbn; auto.
+    - cbn; auto.
+    - split; vm_compute; first [reflexivity | discriminate].
+    - intros (Hle & _). vm_compute in Hle. discriminate.
+  Qed.
+
 End Level1Tight.
