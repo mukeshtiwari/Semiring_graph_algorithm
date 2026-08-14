@@ -1997,6 +1997,89 @@ Section SocialChoice.
     - exact (Hback w HwL).
   Qed.
 
+  (* ===================================================================== *)
+  (*  Two further characterisations, free consequences of the two main     *)
+  (*  ones.  Well-formedness of the output (Schulze's Section 2.2) is      *)
+  (*  characterised at three alternatives, because it contains             *)
+  (*  transitivity; the corollary that every non-winner is beaten by a     *)
+  (*  winner (4.1.14) is characterised at four, because refuting it        *)
+  (*  requires refuting winner existence.                                  *)
+  (* ===================================================================== *)
+
+  Lemma schulze_winner_dec {R : Semiring.type} (M : @Matrix Node R) (a : Node)
+    (Hdec : forall x y : R, {x = y} + {x <> y}) :
+    {schulze_winner M a} + {~ schulze_winner M a}.
+  Proof.
+    assert (Hd : forall b : Node,
+      {b <> a /\ schulze_beats M b a} + {~ (b <> a /\ schulze_beats M b a)}).
+    { intro b. destruct (fin_eq_dec b a) as [E|E].
+      - right. intros (Hb & _). exact (Hb E).
+      - destruct (schulze_beats_dec M b a Hdec) as [Hb|Hb].
+        + left. exact (conj E Hb).
+        + right. intros (_ & H'). exact (Hb H'). }
+    destruct (Exists_dec _ (@elements Node) Hd) as [He|Hne].
+    - right. intro Hw.
+      destruct (proj1 (Exists_exists _ _) He) as (b & _ & Hb & Hbeat).
+      exact (Hw b Hb Hbeat).
+    - left. intros b Hb Hbeat. apply Hne.
+      apply (proj2 (Exists_exists _ _)).
+      exists b. split; [apply elements_complete | exact (conj Hb Hbeat)].
+  Qed.
+
+  Theorem output_well_formed_characterisation {R : BoundedSemiring.type} :
+    (3 <= List.length (@elements Node))%nat ->
+    (forall x y : R, {x = y} + {x <> y}) ->
+    (forall M : @Matrix Node R,
+       strict_partial_order (schulze_beats M) /\
+       (exists a : Node, schulze_winner M a))
+    <->
+    (forall x y : R, x + y = x \/ x + y = y) /\
+    (forall m a b : R, m ≤ a -> m ≤ b -> m ≤ a * b).
+  Proof.
+    intros Hlen Hdec. split.
+    - intro H. apply (schulze_trans_weaker_sufficient Hlen Hdec).
+      intros M a b c. exact (proj1 (proj1 (H M)) a b c).
+    - intros (Hsel & Hmeet) M.
+      exact (schulze_output_well_formed Hsel Hdec Hmeet M).
+  Qed.
+
+  Theorem strict_partial_order_characterisation {R : BoundedSemiring.type} :
+    (3 <= List.length (@elements Node))%nat ->
+    (forall x y : R, {x = y} + {x <> y}) ->
+    (forall M : @Matrix Node R, strict_partial_order (schulze_beats M))
+    <->
+    (forall x y : R, x + y = x \/ x + y = y) /\
+    (forall m a b : R, m ≤ a -> m ≤ b -> m ≤ a * b).
+  Proof.
+    intros Hlen Hdec. split.
+    - intro H. apply (schulze_trans_weaker_sufficient Hlen Hdec).
+      intros M a b c. exact (proj1 (H M) a b c).
+    - intros (Hsel & Hmeet) M.
+      exact (proj1 (schulze_output_well_formed Hsel Hdec Hmeet M)).
+  Qed.
+
+  Theorem winner_beats_nonwinner_characterisation {R : BoundedSemiring.type} :
+    (4 <= List.length (@elements Node))%nat ->
+    (forall x y : R, {x = y} + {x <> y}) ->
+    (forall (M : @Matrix Node R) (b : Node),
+       ~ schulze_winner M b ->
+       exists a : Node, schulze_winner M a /\ schulze_beats M a b)
+    <->
+    (forall x y : R, x + y = x \/ x + y = y) /\
+    (forall m a b : R, m ≤ a -> m ≤ b -> m ≤ a * b).
+  Proof.
+    intros Hlen Hdec. split.
+    - intro H. apply (proj1 (winner_exists_characterisation Hlen Hdec)).
+      intro M.
+      destruct (three_distinct_nodes ltac:(lia)) as (a0 & _ & _ & _ & _ & _).
+      destruct (schulze_winner_dec M a0 Hdec) as [Hw | Hnw].
+      + exact (ex_intro _ a0 Hw).
+      + destruct (H M a0 Hnw) as (w & Hw & _). exact (ex_intro _ w Hw).
+    - intros (Hsel & Hmeet) M b Hnb.
+      exact (winner_beats_nonwinner Hsel Hdec Hmeet M b Hnb).
+  Qed.
+
+
 
 
   (** Reversal symmetry (4.4.3): reversing the ballots displaces a winner
