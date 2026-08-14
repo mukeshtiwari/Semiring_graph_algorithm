@@ -380,7 +380,8 @@ Section Reflection.
 End Reflection.
 
 (* ===================================================================== *)
-(*  The exhaustive check: one vm_compute over all 4^9 = 262144 matrices.  *)
+(*  The exhaustive check: one vm_compute over all 4^9 = 262144 matrices. *)
+(*  It is taking too much time though.                                   *)
 (* ===================================================================== *)
 
 Lemma diamond_all_tabs_have_winner :
@@ -587,3 +588,44 @@ Section Level1Tight.
   Qed.
 
 End Level1Tight.
+
+(* ===================================================================== *)
+(*  The four-alternative witness over the diamond.                        *)
+(*                                                                        *)
+(*  This is not a new construction.  It is the alternating square of the  *)
+(*  winner-existence characterisation, [sq_no_winner], instantiated at    *)
+(*  x := Dp and y := Dq.  The two facts that construction needs,          *)
+(*  x * y < y and y * x < x, hold over the diamond because Dp and Dq are  *)
+(*  incomparable and their meet is Dbot.  Together with                   *)
+(*  [diamond_every_profile_has_winner] this shows four alternatives are   *)
+(*  both sufficient and necessary to refute winner existence over D4.     *)
+(* ===================================================================== *)
+
+Inductive Node4 := W1 | W2 | W3 | W4.
+
+Definition node4_eq_dec : forall x y : Node4, {x = y} + {x <> y}.
+Proof. decide equality. Defined.
+
+Definition elements4 : list Node4 := [W1; W2; W3; W4].
+
+Lemma elements4_nodup : NoDup elements4.
+Proof. repeat constructor; cbn; intuition discriminate. Qed.
+
+Lemma elements4_complete : forall x : Node4, In x elements4.
+Proof. intros [| | |]; cbn; auto. Qed.
+
+Lemma elements4_two_or_more : (2 <= List.length elements4)%nat.
+Proof. cbn; lia. Qed.
+
+HB.instance Definition _ := IsFinType.Build Node4
+  elements4 elements4_nodup elements4_complete
+  elements4_two_or_more node4_eq_dec.
+
+(** Over the diamond, four alternatives admit a profile with no winner:
+    the beat relation is the cycle W1 > W4 > W3 > W2 > W1. *)
+Theorem diamond_no_winner_at_four :
+  forall w : Node4, ~ schulze_winner (sq_matrix W1 W2 W3 W4 Dp Dq) w.
+Proof.
+  apply (@sq_no_winner Node4 D4 W1 W2 W3 W4);
+    unfold Orel; cbn; first [reflexivity | discriminate].
+Qed.
