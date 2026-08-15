@@ -4093,5 +4093,24 @@ Section SocialChoice.
     Qed.
   End Neutrality.
 
+  (** The passive view of neutrality.  [neutrality_winner] and its inverse
+      corollary read [permute_matrix M s] actively: the matrix is pulled
+      along [s] and the winner moves along the inverse [t].  The passive
+      reading keeps every entry of [M] in place and renames each
+      alternative [a] to [s a]; written as a matrix over the new names,
+      the renamed election is [permute_matrix M t], and the winner now
+      moves forward along [s] itself.  The proof is [neutrality_winner]
+      with the roles of [s] and [t] exchanged, which the symmetric
+      hypotheses permit. *)
+  Corollary neutrality_winner_relabel
+    (s t : Node -> Node)
+    (Hst : forall x, s (t x) = x)
+    (Hts : forall x, t (s x) = x)
+    {R : Semiring.type} (M : @Matrix Node R) (a : Node) :
+    schulze_winner M a <-> schulze_winner (permute_matrix M t) (s a).
+  Proof.
+    rewrite (neutrality_winner t s Hts Hst M (s a)).
+    rewrite (Hts a). reflexivity.
+  Qed.
 
 End SocialChoice.
