@@ -217,6 +217,29 @@ Section SocialChoice.
         * apply mul1r.
   Qed.
 
+  (* The structure theorem for bottleneck carriers, pointwise: on a carrier
+     that is selective (so the natural order is a chain) addition returns
+     the larger argument and, given the meet-lower-bound property,
+     multiplication returns the smaller.  Together: + is the join (max) and
+     * is the meet (min) of the chain.                                       *)
+  Lemma structure_add_is_max {R : BoundedSemiring.type} (a b : R) :
+    a ≤ b -> a + b = b /\ b + a = b.
+  Proof.
+    intro h. split; [exact h | rewrite addC; exact h].
+  Qed.
+
+  Lemma structure_mul_is_min {R : BoundedSemiring.type}
+    (H_meet_lower_bound : forall m a b : R, m ≤ a -> m ≤ b -> m ≤ a * b)
+    (a b : R) :
+    a ≤ b -> a * b = a /\ b * a = a.
+  Proof.
+    intro h. split; apply orel_antisym.
+    - apply bounded_mul_lower_left.
+    - apply H_meet_lower_bound; [apply bounded_orel_refl | exact h].
+    - apply bounded_mul_lower_right.
+    - apply H_meet_lower_bound; [exact h | apply bounded_orel_refl].
+  Qed.
+
   (* If every term of a sum is ≤ v, then the whole sum is ≤ v.               *)
   Lemma sum_orel_bound {R : Semiring.type} 
     (f : Node -> R) (v : R) :
