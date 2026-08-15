@@ -4079,6 +4079,18 @@ Section SocialChoice.
         + intro Heq. apply Hb. exact (s_inj b a Heq).
         + exact (proj1 (neutrality_beats M b a) Hbeats).
     Qed.
+
+    (** The same equivalence read from the original election's side: [a]
+        wins [M] exactly when the alternative playing [a]'s role in the
+        relabelled election, its inverse image [t a], wins there.  Note
+        that [s a] in place of [t a] would be false for a non-involutive
+        [s]: it would say that [a] wins iff [s (s a)] wins. *)
+    Corollary neutrality_winner_inv {R : Semiring.type}
+      (M : @Matrix Node R) (a : Node) :
+      schulze_winner M a <-> schulze_winner (permute_matrix M s) (t a).
+    Proof.
+      rewrite (neutrality_winner M (t a)). rewrite (Hst a). reflexivity.
+    Qed.
   End Neutrality.
 
 
