@@ -2930,4 +2930,119 @@ Section Path.
   Qed.
 
 
+
+  (* ==================================================================== *)
+  (*  Dead nodes                                                           *)
+  (*                                                                       *)
+  (*  A node with no outgoing edges of its own cannot lie on the interior  *)
+  (*  of any path of positive measure.  This is what lets a closure over   *)
+  (*  the whole alternative set be identified with a closure over a        *)
+  (*  sublist, provided everything outside the sublist is dead, and it is  *)
+  (*  the mechanism behind the witness matrices of SocialchoiceN, whose    *)
+  (*  unnamed nodes are exactly of this kind.                              *)
+  (* ==================================================================== *)
+
+  (** A zero edge zeroes the whole path. *)
+  Lemma measure_zero_edge {R : Semiring.type}
+    (p : list (Node * Node * R)) (a b : Node) (w : R) :
+    List.In (a, b, w) p -> w = 0 -> measure_of_path p = 0.
+  Proof.
+    induction p as [|((x, y), v) t IH]; intros Hin Hw.
+    - inversion Hin.
+    - cbn [measure_of_path].
+      destruct Hin as [Heq | Hin].
+      + inversion Heq. subst v. rewrite Hw. apply mul0r.
+      + rewrite (IH Hin Hw). apply mulr0.
+  Qed.
+
+  (** A path ending inside [ns] either stays inside [ns] throughout, or
+      somewhere re-enters it from outside.  Stated as a disjunction so that
+      no decision procedure for [path_nodes_in] is needed. *)
+  Lemma path_inside_or_exits {R : Semiring.type} (m : @Matrix R)
+    (ns : list Node) (p : list (Node * Node * R)) (y : Node) :
+    well_formed_path_aux m p ->
+    target y p = true ->
+    List.In y ns ->
+    path_nodes_in ns p \/
+    (exists a b w, List.In (a, b, w) p /\ ~ List.In a ns /\ List.In b ns).
+  Proof.
+    induction p as [|((u, v), w) t IH]; intros Hwf Htgt Hy.
+    - left. intros a b z Hin. inversion Hin.
+    - destruct t as [|((v', z), w') t'].
+      + cbn in Htgt.
+        destruct (fin_eq_dec y v) as [Hyv | Hyv]; [| discriminate Htgt].
+        subst v.
+        destruct (List.in_dec fin_eq_dec u ns) as [Hu | Hu].
+        * left. intros a b r Hin. destruct Hin as [Heq | []].
+          inversion Heq. subst. split; assumption.
+        * right. exists u, y, w. split; [left; reflexivity |].
+          split; [exact Hu | exact Hy].
+      + cbn in Hwf. destruct Hwf as [Huv [Hvv' Hwf_t]]. subst v'.
+        cbn [target] in Htgt.
+        destruct (IH Hwf_t Htgt Hy) as [Hin_t | Hex].
+        * assert (Hv : List.In v ns).
+          { exact (proj1 (Hin_t v z w' (or_introl eq_refl))). }
+          destruct (List.in_dec fin_eq_dec u ns) as [Hu | Hu].
+          -- left. intros a b r Hin. destruct Hin as [Heq | Hin].
+             ++ inversion Heq. subst. split; assumption.
+             ++ exact (Hin_t a b r Hin).
+          -- right. exists u, v, w. split; [left; reflexivity |].
+             split; [exact Hu | exact Hv].
+        * destruct Hex as (a & b & r & Hin & Ha & Hb).
+          right. exists a, b, r. split; [right; exact Hin |].
+          split; [exact Ha | exact Hb].
+  Qed.
+
+  (** A path from [b] to a different node must eventually leave [b]. *)
+  Lemma path_leaves_source {R : Semiring.type} (m : @Matrix R)
+    (p : list (Node * Node * R)) (b g : Node) :
+    well_formed_path_aux m p ->
+    source b p = true -> target g p = true -> b <> g ->
+    exists v w, List.In (b, v, w) p /\ v <> b.
+  Proof.
+    induction p as [|((u, x), w) t IH]; intros Hwf Hsrc Htgt Hbg.
+    - discriminate Hsrc.
+    - cbn in Hsrc.
+      destruct (fin_eq_dec b u) as [Hbu | Hbu]; [| discriminate Hsrc].
+      subst u.
+      destruct (fin_eq_dec x b) as [Hxb | Hxb].
+      + subst x.
+        destruct t as [|((b', z), w') t'].
+        * cbn in Htgt.
+          destruct (fin_eq_dec g b) as [Hgb | Hgb]; [| discriminate Htgt].
+          exfalso. exact (Hbg (eq_sym Hgb)).
+        * cbn in Hwf. destruct Hwf as [Hbb [Hbb' Hwf_t]]. subst b'.
+          cbn [target] in Htgt.
+          assert (Hsrc_t : source b ((b, z, w') :: t') = true).
+          { cbn. destruct (fin_eq_dec b b) as [_ | Hc];
+              [reflexivity | exfalso; apply Hc; reflexivity]. }
+          destruct (IH Hwf_t Hsrc_t Htgt Hbg) as (v0 & w0 & Hin & Hne).
+          exists v0, w0. split; [right; exact Hin | exact Hne].
+      + exists x, w. split; [left; reflexivity | exact Hxb].
+  Qed.
+
+  (** A node whose only outgoing edge is its own unit loop reaches nothing. *)
+  Lemma path_star_dead {R : BoundedSemiring.type} (ns : list Node)
+    (m : @Matrix R) (u w : Node) :
+    (forall a b : Node, a = b -> m a b = 1) ->
+    (forall v, u <> v -> m u v = 0) ->
+    u <> w ->
+    path_star ns m u w = 0.
+  Proof.
+    intros Hdiag Hdead Huw.
+    assert (H : Orel (path_star ns m u w) 0).
+    { apply path_star_upper. intros k p Hk Hin.
+      pose proof (all_paths_well_formed_in_kpaths_gen ns k m u w p Hdiag Hin) as Hwf.
+      destruct (non_empty_paths_in_kpath_gen ns k m u w p Hin) as (Hne & Hsrc & Htgt).
+      destruct (path_leaves_source m p u w Hwf Hsrc Htgt Huw)
+        as (v0 & w0 & Hin0 & Hne0).
+      assert (Hw0 : w0 = 0).
+      { rewrite <- (well_formed_edge m p u v0 w0 Hwf Hin0).
+        apply Hdead. intro h. exact (Hne0 (eq_sym h)). }
+      rewrite (measure_zero_edge p u v0 w0 Hin0 Hw0).
+      unfold Orel. apply bounded_add_idem. }
+    unfold Orel in H. rewrite addr0 in H. exact H.
+  Qed.
+
+
 End Path.
