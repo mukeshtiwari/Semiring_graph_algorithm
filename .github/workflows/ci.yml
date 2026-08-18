@@ -1,0 +1,43 @@
+# Checks the two claims the papers make about this development: that it
+# builds, and that every headline theorem is axiom-free with no admitted
+# statements anywhere.  See scripts/audit.sh.
+#
+# Versions are pinned to the switch the development is maintained on
+# (rocq-core 9.0.1, rocq-stdlib 9.0.0, rocq-elpi 3.5.0, HB 1.10.3).
+name: build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-and-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up OCaml and opam
+        uses: ocaml/setup-ocaml@v3
+        with:
+          ocaml-compiler: "4.14"
+          opam-repositories: |
+            rocq-released: https://rocq-prover.org/opam/released
+            default: https://github.com/ocaml/opam-repository.git
+
+      - name: Install Rocq and dependencies
+        run: |
+          opam install -y --confirm-level=unsafe-yes \
+            dune \
+            rocq-core.9.0.1 \
+            rocq-stdlib.9.0.0 \
+            rocq-elpi.3.5.0 \
+            rocq-hierarchy-builder.1.10.3
+
+      - name: Build
+        run: opam exec -- dune build
+
+      - name: Audit (no admits, no axioms)
+        run: opam exec -- ./scripts/audit.sh
