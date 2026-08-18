@@ -1979,5 +1979,955 @@ Section Path.
   Qed.
 
 
+  (* ==================================================================== *)
+  (*  Path enumeration over an arbitrary candidate list                    *)
+  (*                                                                       *)
+  (*  [all_paths_klength] is already parameterised by a node list, but the *)
+  (*  lemmas above are all stated at [elements].  The generalisations below*)
+  (*  replace [elements] by an arbitrary list [l], which is what lets two  *)
+  (*  elections over different candidate sets be compared at a single      *)
+  (*  ambient [Node] type.  Each original lemma is the [l := elements]     *)
+  (*  instance of its [_gen] counterpart, with the side condition on [l]   *)
+  (*  discharged by [covers_list_elem ... elements_complete].              *)
+  (* ==================================================================== *)
+
+  (** The source of the first edge is one of the nodes a path visits. *)
+  Lemma collect_nodes_head {R : Semiring.type} (a b : Node) (w : R)
+    (p : list (Node * Node * R)) :
+    List.In a (collect_nodes_from_a_path ((a, b, w) :: p)).
+  Proof.
+    destruct p as [|h t]; cbn; left; reflexivity.
+  Qed.
+
+  (** Dropping the first edge of a non-trivial path keeps every remaining
+      node inside [l]. *)
+  Lemma collect_nodes_cons_covers {R : Semiring.type} (l : list Node)
+    (a b : Node) (w : R) (p : list (Node * Node * R)) :
+    p <> [] ->
+    covers (collect_nodes_from_a_path ((a, b, w) :: p)) l ->
+    covers (collect_nodes_from_a_path p) l.
+  Proof.
+    intros Hne Hcov z Hz.
+    apply Hcov.
+    destruct p as [|h t]; [exfalso; apply Hne; reflexivity |].
+    cbn. right. exact Hz.
+  Qed.
+
+  (** [non_empty_paths_in_kpath] at an arbitrary candidate list. *)
+  Lemma non_empty_paths_in_kpath_gen {R : Semiring.type} :
+    ∀ (l : list Node) (n : nat) (m : @Matrix R)
+    (c d : Node) (xs : list (Node * Node * R)),
+    List.In xs (all_paths_klength l m n c d) ->
+    xs ≠ [] ∧ source c xs = true ∧ target d xs = true.
+  Proof.
+    intros l. induction n as [|n' IH]; intros m c d xs Hin.
+    - simpl in Hin.
+      destruct (fin_eq_dec c d) as [Heq | Hneq].
+      + subst d. destruct Hin as [Hin | []].
+        subst xs.
+        split; [intro Hnil; inversion Hnil | ].
+        unfold source. simpl.
+        destruct (fin_eq_dec c c) as [_|Hc]; [|exfalso; apply Hc; reflexivity].
+        split; [reflexivity | ].
+        unfold target. simpl.
+        destruct (fin_eq_dec c c) as [_|Hc]; [|exfalso; apply Hc; reflexivity].
+        reflexivity.
+      + inversion Hin.
+    - simpl in Hin.
+      apply append_node_in_paths_In in Hin.
+      destruct Hin as (y & ys & Heq & Hin_flat).
+      subst xs.
+      apply in_flat_map in Hin_flat.
+      destruct Hin_flat as (x & Hin_x & Hin_ys).
+      apply (IH m x d) in Hin_ys.
+      destruct Hin_ys as (Hys_ne & Hsrc & Htgt).
+      split; [intro Hnil; inversion Hnil | ].
+      unfold source. simpl.
+      destruct (fin_eq_dec c c) as [_|Hc]; [|exfalso; apply Hc; reflexivity].
+      split; [reflexivity | ].
+      cbn [target].
+      destruct ys as [|h ys']; [exfalso; apply Hys_ne; reflexivity | ].
+      exact Htgt.
+  Qed.
+
+  (** [all_paths_well_formed_in_kpaths] at an arbitrary candidate list. *)
+  Lemma all_paths_well_formed_in_kpaths_gen {R : Semiring.type} :
+    forall (l : list Node) (n : nat) (m : @Matrix R)
+    (c d : Node) (xs : list (Node * Node * R)),
+    (forall c d, c = d -> m c d = 1) ->
+    List.In xs (all_paths_klength l m n c d) ->
+    well_formed_path_aux m xs.
+  Proof.
+    intros l. induction n as [|n' IH]; intros m c d xs Hdiag Hin.
+    - simpl in Hin.
+      destruct (fin_eq_dec c d) as [Heq | Hneq].
+      + subst d. destruct Hin as [Hin | []].
+        subst xs. unfold well_formed_path_aux. cbn.
+        split; [apply Hdiag; reflexivity | exact I].
+      + inversion Hin.
+    - simpl in Hin.
+      assert (Hin_copy := Hin).
+      apply (append_node_in_paths_shape
+        (List.flat_map (fun x => all_paths_klength l m n' x d) l)
+        m c xs) in Hin.
+      destruct Hin as (y & ys & Heq & Hsrc_xs & Hsrc_ys & Hys_ne).
+      subst xs.
+      apply append_node_in_paths_In in Hin_copy.
+      destruct Hin_copy as (y2 & ys2 & Heq2 & Hin_flat).
+      inversion Heq2. subst y2 ys2.
+      apply in_flat_map in Hin_flat.
+      destruct Hin_flat as (x & Hin_el & Hin_ys).
+      apply (IH m x d ys Hdiag) in Hin_ys.
+      apply (well_formed_by_extending ((c, y, m c y) :: ys) ys c y m
+        Hys_ne eq_refl Hsrc_ys Hin_ys).
+  Qed.
+
+  (** [path_end_unit_loop] at an arbitrary candidate list. *)
+  Lemma path_end_unit_loop_gen {R : Semiring.type} :
+    forall (l : list Node) k p (m : @Matrix R) (c d : Node),
+    List.In p (all_paths_klength l m k c d) ->
+    exists p', p = (p' ++ [(d, d, 1)]).
+  Proof.
+    intros l. induction k as [|k' IH]; intros p m c d Hin.
+    - simpl in Hin.
+      destruct (fin_eq_dec c d) as [Heq | Hneq].
+      + subst d. destruct Hin as [Hin | []].
+        subst p. exists []. reflexivity.
+      + inversion Hin.
+    - simpl in Hin.
+      apply append_node_in_paths_In in Hin.
+      destruct Hin as (y & ys & Heq & Hin_flat).
+      subst p.
+      apply in_flat_map in Hin_flat.
+      destruct Hin_flat as (x & Hin_el & Hin_ys).
+      apply (IH ys m x d) in Hin_ys.
+      destruct Hin_ys as [p' Hp'].
+      exists ((c, y, m c y) :: p').
+      rewrite Hp'. reflexivity.
+  Qed.
+
+  (** [all_paths_in_klength] at an arbitrary candidate list. *)
+  Lemma all_paths_in_klength_gen {R : Semiring.type} :
+    ∀ (l : list Node) (k : nat) (m : @Matrix R) (c d : Node) xs,
+    List.In xs (all_paths_klength l m k c d) ->
+    List.length xs = S k.
+  Proof.
+    intros l. induction k as [|k' IH]; intros m c d xs Hin.
+    - simpl in Hin.
+      destruct (fin_eq_dec c d) as [Heq | Hneq].
+      + subst d. destruct Hin as [Hin | []].
+        subst xs. reflexivity.
+      + inversion Hin.
+    - simpl in Hin.
+      apply (append_node_in_paths_In m c
+        (List.flat_map (fun x => all_paths_klength l m k' x d) l)
+        xs) in Hin.
+      destruct Hin as (y & ys & Heq & Hin_flat).
+      subst xs.
+      apply in_flat_map in Hin_flat.
+      destruct Hin_flat as (x & Hin_el & Hin_ys).
+      apply (IH m x d ys) in Hin_ys.
+      simpl. rewrite Hin_ys. reflexivity.
+  Qed.
+
+  (** Soundness of the candidate list: an enumerated path only visits its
+      own endpoints and nodes drawn from [l].  This has no counterpart at
+      [elements], where it is vacuous, but it is what confines a path to a
+      given set of alternatives. *)
+  Lemma all_paths_klength_nodes {R : Semiring.type} :
+    ∀ (l : list Node) (k : nat) (m : @Matrix R) (c d : Node)
+    (xs : list (Node * Node * R)),
+    List.In xs (all_paths_klength l m k c d) ->
+    covers (collect_nodes_from_a_path xs) (c :: d :: l).
+  Proof.
+    intros l. induction k as [|k' IH]; intros m c d xs Hin.
+    - simpl in Hin.
+      destruct (fin_eq_dec c d) as [Heq | Hneq]; [| inversion Hin].
+      subst d. destruct Hin as [Hin | []]. subst xs.
+      intros z Hz. cbn in Hz.
+      destruct Hz as [Hz | [Hz | []]]; subst z; left; reflexivity.
+    - simpl in Hin.
+      apply append_node_in_paths_In in Hin.
+      destruct Hin as (y & ys & Heq & Hin_flat).
+      subst xs.
+      apply in_flat_map in Hin_flat.
+      destruct Hin_flat as (x & Hin_x & Hin_ys).
+      assert (Hys_ne : ys <> [])
+        by exact (proj1 (non_empty_paths_in_kpath_gen l k' m x d ys Hin_ys)).
+      pose proof (IH m x d ys Hin_ys) as Hcov_ys.
+      intros z Hz.
+      destruct ys as [|h t]; [exfalso; apply Hys_ne; reflexivity |].
+      cbn in Hz. destruct Hz as [Hz | Hz].
+      + subst z. left. reflexivity.
+      + specialize (Hcov_ys z Hz).
+        destruct Hcov_ys as [Hc | [Hc | Hc]].
+        * subst z. right. right. exact Hin_x.
+        * subst z. right. left. reflexivity.
+        * right. right. exact Hc.
+  Qed.
+
+  (** Completeness at an arbitrary candidate list.  This is the one place
+      where [elements_complete] was genuinely used, so it becomes the
+      explicit hypothesis that every node the path visits lies in [l]. *)
+  Lemma all_paths_klength_complete_gen {R : Semiring.type} :
+    ∀ (l : list Node) (xs : list (Node * Node * R))
+    (m : @Matrix R) (c d : Node),
+    covers (collect_nodes_from_a_path (xs ++ [(d, d, 1)])) l ->
+    source c (xs ++ [(d, d, 1)]) = true ->
+    target d (xs ++ [(d, d, 1)]) = true ->
+    well_formed_path_aux m (xs ++ [(d, d, 1)]) ->
+    List.In (xs ++ [(d, d, 1)])
+      (all_paths_klength l m (List.length xs) c d).
+  Proof.
+    intros l.
+    induction xs as [|h ys IH]; intros m c d Hcov Hsrc Htgt Hwf.
+    - simpl in Hsrc. unfold source in Hsrc.
+      destruct (fin_eq_dec c d) as [Heq | Hneq]; [| discriminate Hsrc].
+      subst c.
+      simpl. destruct (fin_eq_dec d d) as [_ | Hc]; [| exfalso; apply Hc; reflexivity].
+      left. reflexivity.
+    - destruct h as [[c' x] v].
+      simpl in Hsrc. unfold source in Hsrc. simpl in Hsrc.
+      destruct (fin_eq_dec c c') as [Heq | Hneq]; [| discriminate Hsrc].
+      subst c'.
+      set (tail := ys ++ [(d, d, 1)]).
+      assert (Htail_ne : tail <> []).
+      { unfold tail. intro H. cbn in H.
+        eapply app_eq_nil in H. destruct H as (Ha & Hb). congruence. }
+      assert (Htail_eq : ((c, x, v) :: ys) ++ [(d, d, 1)] = (c, x, v) :: tail).
+      { cbn. reflexivity. }
+      rewrite Htail_eq in Hcov, Hwf, Htgt |- *.
+      simpl.
+      apply (In_append_node_in_paths_rev
+        (List.flat_map (fun z => all_paths_klength l m (length ys) z d) l)
+        m c ((c, x, v) :: tail)).
+      + unfold source. simpl.
+        destruct (fin_eq_dec c c) as [_|Hc]; [reflexivity | exfalso; apply Hc; reflexivity].
+      + exact Htail_ne.
+      + exact Hwf.
+      + apply in_flat_map. exists x.
+        unfold well_formed_path_aux in Hwf. cbn in Hwf.
+        destruct Hwf as [Hmv Hwf_tail].
+        split.
+        * apply Hcov. cbn.
+          destruct ys as [|h2 ys'].
+          { destruct Hwf_tail as [Heq_x _]. subst x.
+            right. left. reflexivity. }
+          { destruct h2 as [[au av] aw].
+            destruct Hwf_tail as [Heq_x Hwf_rest]. subst x.
+            right. apply collect_nodes_head. }
+        * unfold tail.
+          destruct ys as [|h2 ys'].
+          { destruct Hwf_tail as [Heq_x _]. subst x.
+            simpl. destruct (fin_eq_dec d d) as [_|Hc]; [|exfalso; apply Hc; reflexivity].
+            left. reflexivity. }
+          { destruct h2 as [[au av] aw].
+            destruct Hwf_tail as [Heq_x Hwf_rest]. subst x.
+            cbn. eapply IH.
+            - eapply collect_nodes_cons_covers; [exact Htail_ne | exact Hcov].
+            - unfold source. simpl.
+              destruct (fin_eq_dec au au) as [_|Hc]; [reflexivity | exfalso; apply Hc; reflexivity].
+            - cbn in Htgt. exact Htgt.
+            - exact Hwf_rest. }
+  Qed.
+
+
+  (* ==================================================================== *)
+  (*  Confining a path to a candidate list                                 *)
+  (*                                                                       *)
+  (*  [covers (collect_nodes_from_a_path p) ns] is the natural way to say  *)
+  (*  that [p] stays inside [ns], but it is awkward under loop removal,    *)
+  (*  because the collected-node list of a sublist is not syntactically a  *)
+  (*  sublist of the collected-node list of the whole.  The edge-endpoint  *)
+  (*  formulation below says the same thing and is inherited by sublists   *)
+  (*  immediately, so it is the form the reduction lemmas carry.           *)
+  (* ==================================================================== *)
+
+  Definition path_nodes_in {R : Semiring.type} (ns : list Node)
+    (p : list (Node * Node * R)) : Prop :=
+    forall a b w, List.In (a, b, w) p -> List.In a ns /\ List.In b ns.
+
+  (** Every node a path visits is an endpoint of one of its edges. *)
+  Lemma collect_nodes_spec {R : Semiring.type} :
+    forall (p : list (Node * Node * R)) (z : Node),
+    List.In z (collect_nodes_from_a_path p) ->
+    exists a b w, List.In (a, b, w) p /\ (z = a \/ z = b).
+  Proof.
+    induction p as [|((a, b), w) t IH]; intros z Hz.
+    - inversion Hz.
+    - destruct t as [|h t'].
+      + cbn in Hz. destruct Hz as [Hz | [Hz | []]].
+        * exists a, b, w. split; [left; reflexivity | left; exact (eq_sym Hz)].
+        * exists a, b, w. split; [left; reflexivity | right; exact (eq_sym Hz)].
+      + cbn in Hz. destruct Hz as [Hz | Hz].
+        * exists a, b, w. split; [left; reflexivity | left; exact (eq_sym Hz)].
+        * destruct (IH z Hz) as (a' & b' & w' & Hin & Hor).
+          exists a', b', w'. split; [right; exact Hin | exact Hor].
+  Qed.
+
+  Lemma path_nodes_in_covers {R : Semiring.type} (ns : list Node)
+    (p : list (Node * Node * R)) :
+    path_nodes_in ns p ->
+    covers (collect_nodes_from_a_path p) ns.
+  Proof.
+    intros Hp z Hz.
+    destruct (collect_nodes_spec p z Hz) as (a & b & w & Hin & [Hor | Hor]).
+    - subst z. exact (proj1 (Hp a b w Hin)).
+    - subst z. exact (proj2 (Hp a b w Hin)).
+  Qed.
+
+  Lemma path_nodes_in_sublist {R : Semiring.type} (ns : list Node)
+    (p q : list (Node * Node * R)) :
+    (forall e, List.In e q -> List.In e p) ->
+    path_nodes_in ns p ->
+    path_nodes_in ns q.
+  Proof.
+    intros Hsub Hp a b w Hin.
+    exact (Hp a b w (Hsub _ Hin)).
+  Qed.
+
+  Lemma path_nodes_in_app {R : Semiring.type} (ns : list Node)
+    (p q : list (Node * Node * R)) :
+    path_nodes_in ns p -> path_nodes_in ns q ->
+    path_nodes_in ns (p ++ q).
+  Proof.
+    intros Hp Hq a b w Hin.
+    apply in_app_or in Hin.
+    destruct Hin as [Hin | Hin]; [exact (Hp a b w Hin) | exact (Hq a b w Hin)].
+  Qed.
+
+  Lemma path_nodes_in_app_inv {R : Semiring.type} (ns : list Node)
+    (p q : list (Node * Node * R)) :
+    path_nodes_in ns (p ++ q) ->
+    path_nodes_in ns p /\ path_nodes_in ns q.
+  Proof.
+    intros Hpq. split.
+    - intros a b w Hin. apply (Hpq a b w). apply in_or_app. left. exact Hin.
+    - intros a b w Hin. apply (Hpq a b w). apply in_or_app. right. exact Hin.
+  Qed.
+
+  (* ==================================================================== *)
+  (*  Cycle elimination against an arbitrary candidate list                *)
+  (*                                                                       *)
+  (*  The pigeonhole step below counts against [length ns] rather than     *)
+  (*  [length elements].  [all_paths_in_klength_paths_cycle] and           *)
+  (*  [length_collect_node_gen] were already stated at an arbitrary list,  *)
+  (*  so only the two wrappers that fixed it to [elements] need redoing.   *)
+  (* ==================================================================== *)
+
+  (** [all_paths_in_klength_paths_cycle_finN_stronger] at an arbitrary list. *)
+  Lemma all_paths_in_klength_paths_cycle_finN_stronger_gen {R : Semiring.type} :
+    forall (ns : list Node) (l : list (Node * Node * R)) (m : @Matrix R),
+    ns <> [] ->
+    path_nodes_in ns l ->
+    (List.length ns <= List.length l)%nat ->
+    well_formed_path_aux m l ->
+    exists ll au av aw lm lr,
+    (ll, Some ((au, av, aw) :: lm), lr) =
+      elem_path_triple_compute_loop_triple l /\
+    cyclic_path au ((au, av, aw) :: lm) /\
+    elem_path_triple ll = true /\
+    l = (ll ++ ((au, av, aw) :: lm) ++ lr).
+  Proof.
+    intros ns l m Hne Hnodes Hfin Hw.
+    pose proof length_collect_node_gen ns l Hne Hfin as Hf.
+    pose proof path_nodes_in_covers ns l Hnodes as Hcov.
+    pose proof all_paths_in_klength_paths_cycle ns l m Hw Hcov Hf as Hwt.
+    eapply triple_compute_connect_with_triple_elem_stronger.
+    exact Hwt.
+  Qed.
+
+  (** [elem_path_length] at an arbitrary candidate list: a loop-free path
+      confined to [ns] is shorter than [ns]. *)
+  Lemma elem_path_length_gen {R : Semiring.type} :
+    forall (ns : list Node) (l : list (Node * Node * R)) m,
+    ns <> [] ->
+    path_nodes_in ns l ->
+    elem_path_triple l = true ->
+    well_formed_path_aux m l ->
+    (List.length l < List.length ns)%nat.
+  Proof.
+    intros ns l m Hne Hnodes He Hw.
+    assert (Hwt : (length l < length ns)%nat \/ (length ns <= length l)%nat) by lia.
+    destruct Hwt as [Hwt | Hwt]; [exact Hwt |].
+    pose proof length_collect_node_gen ns l Hne Hwt as Hf.
+    pose proof path_nodes_in_covers ns l Hnodes as Hcov.
+    pose proof all_paths_in_klength_paths_cycle ns l m Hw Hcov Hf as Hat.
+    rewrite Hat in He. congruence.
+  Qed.
+
+  (** [reduce_path_cycle_step] at an arbitrary candidate list.  The reduced
+      path is still confined to [ns], which is what lets the reduction be
+      iterated. *)
+  Lemma reduce_path_cycle_step_gen {R : BoundedSemiring.type} :
+    forall (ns : list Node) (l : list (Node * Node * R)) (m : @Matrix R) c d,
+    ns <> [] ->
+    path_nodes_in ns l ->
+    (length ns <= length l)%nat ->
+    well_formed_path_aux m (l ++ [(d, d, 1)]) ->
+    source c (l ++ [(d, d, 1)]) = true ->
+    target d (l ++ [(d, d, 1)]) = true ->
+    exists ys,
+      (List.length ys < List.length l)%nat /\
+      path_nodes_in ns ys /\
+      well_formed_path_aux m (ys ++ [(d, d, 1)]) /\
+      source c (ys ++ [(d, d, 1)]) = true /\
+      target d (ys ++ [(d, d, 1)]) = true /\
+      Orel (measure_of_path l) (measure_of_path ys).
+  Proof.
+    intros ns l m c d Hne Hnodes Hlen Hwf Hsrc Htgt.
+    destruct (well_formed_path_snoc l [(d, d, 1)] m Hwf) as [Hwf_l Hwf_d].
+    simpl in Hwf_d. destruct Hwf_d as [Hdiag _].
+    pose proof (all_paths_in_klength_paths_cycle_finN_stronger_gen
+      ns l m Hne Hnodes Hlen Hwf_l) as Hcycle.
+    destruct Hcycle as (ll & au & av & aw & lm & lr & _ & Hcyc & _ & Hpath).
+    set (ys := ll ++ lr).
+    assert (Hlen_ys : List.length ys < List.length l).
+    { subst ys. rewrite Hpath. rewrite !length_app. cbn. lia. }
+    assert (Hnodes_ys : path_nodes_in ns ys).
+    { subst ys. eapply path_nodes_in_sublist; [| exact Hnodes].
+      intros e He. rewrite Hpath. apply in_app_or in He.
+      destruct He as [He | He].
+      - apply in_or_app. left. exact He.
+      - apply in_or_app. right. apply in_or_app. right. exact He. }
+    assert (Hwf_ys : well_formed_path_aux m (ys ++ [(d, d, 1)])).
+    { subst ys.
+      pose proof Hwf as Hwf'.
+      rewrite Hpath in Hwf'.
+      repeat rewrite <- app_assoc in Hwf'.
+      pose proof (well_formed_loop_removal ll (lr ++ [(d, d, 1)]) lm au av aw m Hwf' Hcyc)
+        as Htmp.
+      rewrite app_assoc in Htmp.
+      exact Htmp. }
+    assert (Hsrc_ys : source c (ys ++ [(d, d, 1)]) = true).
+    { subst ys.
+      pose proof Hwf as Hwf'.
+      rewrite Hpath in Hwf'.
+      repeat rewrite <- app_assoc in Hwf'.
+      pose proof Hsrc as Hsrc'.
+      rewrite Hpath in Hsrc'.
+      repeat rewrite <- app_assoc in Hsrc'.
+      pose proof (source_loop_removal ll lr lm au av aw c d m Hwf' Hsrc' Hcyc)
+        as Htmp.
+      exact Htmp. }
+    assert (Htgt_ys : target d (ys ++ [(d, d, 1)]) = true).
+    { subst ys. rewrite target_end. cbn.
+      destruct (fin_eq_dec d d) as [_ | Hc]; [reflexivity | exfalso; apply Hc; reflexivity]. }
+    assert (Horel : Orel (measure_of_path l) (measure_of_path ys)).
+    { subst ys.
+      rewrite Hpath.
+      apply (cycle_path_dup_remove ll ((au, av, aw) :: lm) lr). }
+    exists ys.
+    split; [exact Hlen_ys |].
+    split; [exact Hnodes_ys |].
+    split; [exact Hwf_ys |].
+    split; [exact Hsrc_ys |].
+    split; [exact Htgt_ys |].
+    exact Horel.
+  Qed.
+
+  (** Every path confined to [ns] is dominated by a loop-free path confined
+      to [ns] with the same endpoints.  Unlike [reduce_path_into_simpl_path]
+      this needs no lower bound on the length of the input path, since the
+      already-short case simply returns the path itself. *)
+  Lemma reduce_path_into_simpl_path_gen {R : BoundedSemiring.type} :
+    forall (ns : list Node) (l : list (Node * Node * R)) (m : @Matrix R) c d,
+    ns <> [] ->
+    path_nodes_in ns l ->
+    well_formed_path_aux m (l ++ [(d, d, 1)]) ->
+    source c (l ++ [(d, d, 1)]) = true ->
+    target d (l ++ [(d, d, 1)]) = true ->
+    exists ys,
+      (List.length ys < List.length ns)%nat /\
+      path_nodes_in ns ys /\
+      well_formed_path_aux m (ys ++ [(d, d, 1)]) /\
+      source c (ys ++ [(d, d, 1)]) = true /\
+      target d (ys ++ [(d, d, 1)]) = true /\
+      Orel (measure_of_path l) (measure_of_path ys).
+  Proof.
+    intros ns l.
+    induction (zwf_well_founded l) as [l Hf IHl].
+    unfold zwf in * |- *.
+    intros m c d Hne Hnodes Hwf Hsrc Htgt.
+    assert (Hshort_or_long : (length l < length ns)%nat \/
+      (length ns <= length l)%nat) by lia.
+    destruct Hshort_or_long as [Hshort | Hlong].
+    - exists l.
+      split; [exact Hshort |].
+      split; [exact Hnodes |].
+      split; [exact Hwf |].
+      split; [exact Hsrc |].
+      split; [exact Htgt |].
+      unfold Orel. apply bounded_add_idem.
+    - pose proof (reduce_path_cycle_step_gen ns l m c d Hne Hnodes Hlong Hwf Hsrc Htgt)
+        as (ys & Hyslen & Hnodes_ys & Hwf_ys & Hsrc_ys & Htgt_ys & Horel_ys).
+      specialize (IHl ys Hyslen m c d Hne Hnodes_ys Hwf_ys Hsrc_ys Htgt_ys)
+        as (zs & Hzs_short & Hnodes_zs & Hwf_zs & Hsrc_zs & Htgt_zs & Horel_zs).
+      exists zs.
+      split; [exact Hzs_short |].
+      split; [exact Hnodes_zs |].
+      split; [exact Hwf_zs |].
+      split; [exact Hsrc_zs |].
+      split; [exact Htgt_zs |].
+      eapply orel_trans; [exact Horel_ys | exact Horel_zs].
+  Qed.
+
+
+  (* ==================================================================== *)
+  (*  The closure over a candidate list                                    *)
+  (*                                                                       *)
+  (*  [path_star ns m c d] sums the measures of every path from [c] to [d] *)
+  (*  of length at most [length ns - 1] whose intermediate nodes are drawn *)
+  (*  from [ns].  At [ns := elements] it agrees with [mat_star] by         *)
+  (*  [connect_partial_sum_mat_paths], so this is the same closure viewed  *)
+  (*  through its path characterisation rather than through matrix         *)
+  (*  multiplication, and unlike [mat_star] it can speak about two         *)
+  (*  different sets of alternatives at one ambient [Node] type.           *)
+  (* ==================================================================== *)
+
+  (** In a bounded semiring [Orel] has the least-upper-bound shape on [+],
+      which is what makes [path_star] behave like a supremum over paths.
+      [OrelN] proves these for [IdempotentSemiring], which [BoundedSemiring]
+      does not coerce into, so they are rederived here from
+      [bounded_add_idem]. *)
+  Lemma bounded_orel_plus_left {R : BoundedSemiring.type} (a b : R) :
+    Orel a (a + b).
+  Proof.
+    unfold Orel. rewrite <- addA. rewrite bounded_add_idem. reflexivity.
+  Qed.
+
+  Lemma bounded_orel_plus_mono {R : BoundedSemiring.type} (x y z : R) :
+    Orel x y -> Orel x (z + y).
+  Proof.
+    unfold Orel. intros Hxy.
+    rewrite <- addA. rewrite (addC x z). rewrite addA. rewrite Hxy. reflexivity.
+  Qed.
+
+  Lemma bounded_orel_plus_glb {R : BoundedSemiring.type} (x y v : R) :
+    Orel x v -> Orel y v -> Orel (x + y) v.
+  Proof.
+    unfold Orel. intros Hx Hy.
+    rewrite addA. rewrite Hy. exact Hx.
+  Qed.
+
+  (** Each summand is below the sum. *)
+  Lemma sum_all_flat_paths_member {R : BoundedSemiring.type} :
+    forall (lp : list (@Path R)) (a b : Node) (p : list (Node * Node * R)),
+    List.In (a, b, p) lp ->
+    Orel (measure_of_path p) (sum_all_flat_paths lp).
+  Proof.
+    induction lp as [|((a', b'), p') t IH]; intros a b p Hin.
+    - inversion Hin.
+    - cbn [sum_all_flat_paths].
+      destruct Hin as [Heq | Hin].
+      + inversion Heq. subst p'.
+        apply bounded_orel_plus_left.
+      + apply bounded_orel_plus_mono.
+        exact (IH a b p Hin).
+  Qed.
+
+  (** A common bound on the summands bounds the sum. *)
+  Lemma sum_all_flat_paths_bound {R : BoundedSemiring.type} :
+    forall (lp : list (@Path R)) (v : R),
+    (forall a b p, List.In (a, b, p) lp -> Orel (measure_of_path p) v) ->
+    Orel (sum_all_flat_paths lp) v.
+  Proof.
+    induction lp as [|((a', b'), p') t IH]; intros v Hall.
+    - cbn. unfold Orel. rewrite add0r. reflexivity.
+    - cbn [sum_all_flat_paths].
+      apply bounded_orel_plus_glb.
+      + exact (Hall a' b' p' (or_introl eq_refl)).
+      + apply IH. intros a b p Hin.
+        exact (Hall a b p (or_intror Hin)).
+  Qed.
+
+  (** [flat_map_path_partial_sum] at an arbitrary candidate list. *)
+  Lemma flat_map_path_partial_sum_gen {R : Semiring.type} :
+    forall (ns : list Node) n (m : @Matrix R) c d,
+    partial_sum_paths ns m n c d =
+    @sum_all_flat_paths R (enum_all_paths_flat ns m n c d).
+  Proof.
+    intros ns. induction n as [|n IH]; intros m c d.
+    - cbn. destruct (fin_eq_dec c d) as [Hcd | Hcd]; cbn.
+      + rewrite mul1r. rewrite addr0. reflexivity.
+      + reflexivity.
+    - cbn [partial_sum_paths enum_all_paths_flat].
+      rewrite IH.
+      rewrite sum_all_rvalues_get_all_rvalues.
+      rewrite sum_all_flat_paths_app.
+      rewrite addC.
+      reflexivity.
+  Qed.
+
+  (** A path of length at most [n] appears in the flattened enumeration. *)
+  Lemma enum_all_paths_flat_member {R : Semiring.type} :
+    forall (ns : list Node) (n k : nat) (m : @Matrix R) (c d : Node)
+    (p : list (Node * Node * R)),
+    (k <= n)%nat ->
+    List.In p (all_paths_klength ns m k c d) ->
+    List.In (c, d, p) (enum_all_paths_flat ns m n c d).
+  Proof.
+    intros ns. induction n as [|n IH]; intros k m c d p Hk Hin.
+    - assert (Hk0 : k = 0%nat) by lia. subst k.
+      cbn [enum_all_paths_flat]. unfold construct_all_paths.
+      exact (in_map (fun l => (c, d, l)) _ p Hin).
+    - cbn [enum_all_paths_flat].
+      apply in_or_app.
+      destruct (PeanoNat.Nat.eq_dec k (S n)) as [Heq | Hne].
+      + subst k. left. unfold construct_all_paths.
+        exact (in_map (fun l => (c, d, l)) _ p Hin).
+      + right. apply (IH k m c d p); [lia | exact Hin].
+  Qed.
+
+  (** Conversely, everything in the flattened enumeration is a path of some
+      length at most [n]. *)
+  Lemma enum_all_paths_flat_inv {R : Semiring.type} :
+    forall (ns : list Node) (n : nat) (m : @Matrix R) (c d a b : Node)
+    (p : list (Node * Node * R)),
+    List.In (a, b, p) (enum_all_paths_flat ns m n c d) ->
+    exists k, (k <= n)%nat /\ List.In p (all_paths_klength ns m k c d).
+  Proof.
+    intros ns. induction n as [|n IH]; intros m c d a b p Hin.
+    - cbn [enum_all_paths_flat] in Hin. unfold construct_all_paths in Hin.
+      apply in_map_iff in Hin.
+      destruct Hin as (q & Heq & Hq).
+      inversion Heq. subst.
+      exists 0%nat. split; [lia | exact Hq].
+    - cbn [enum_all_paths_flat] in Hin.
+      apply in_app_or in Hin.
+      destruct Hin as [Hin | Hin].
+      + unfold construct_all_paths in Hin.
+        apply in_map_iff in Hin.
+        destruct Hin as (q & Heq & Hq).
+        inversion Heq. subst.
+        exists (S n). split; [lia | exact Hq].
+      + destruct (IH m c d a b p Hin) as (k & Hk & Hq).
+        exists k. split; [lia | exact Hq].
+  Qed.
+
+  Lemma path_measure_le_partial_sum {R : BoundedSemiring.type} :
+    forall (ns : list Node) (n k : nat) (m : @Matrix R) (c d : Node)
+    (p : list (Node * Node * R)),
+    (k <= n)%nat ->
+    List.In p (all_paths_klength ns m k c d) ->
+    Orel (measure_of_path p) (partial_sum_paths ns m n c d).
+  Proof.
+    intros ns n k m c d p Hk Hin.
+    rewrite flat_map_path_partial_sum_gen.
+    exact (sum_all_flat_paths_member _ c d p
+             (enum_all_paths_flat_member ns n k m c d p Hk Hin)).
+  Qed.
+
+  Lemma partial_sum_paths_bound {R : BoundedSemiring.type} :
+    forall (ns : list Node) (n : nat) (m : @Matrix R) (c d : Node) (v : R),
+    (forall k p, (k <= n)%nat -> List.In p (all_paths_klength ns m k c d) ->
+       Orel (measure_of_path p) v) ->
+    Orel (partial_sum_paths ns m n c d) v.
+  Proof.
+    intros ns n m c d v Hall.
+    rewrite flat_map_path_partial_sum_gen.
+    apply sum_all_flat_paths_bound.
+    intros a b p Hin.
+    destruct (enum_all_paths_flat_inv ns n m c d a b p Hin) as (k & Hk & Hq).
+    exact (Hall k p Hk Hq).
+  Qed.
+
+  (** The path-strength closure over the candidate list [ns]. *)
+  Definition path_star {R : Semiring.type} (ns : list Node)
+    (m : @Matrix R) (c d : Node) : R :=
+    partial_sum_paths ns m (List.length ns - 1) c d.
+
+  (** Lower bound: any counted path is below the closure. *)
+  Lemma path_star_lower {R : BoundedSemiring.type} :
+    forall (ns : list Node) (m : @Matrix R) (c d : Node)
+    (p : list (Node * Node * R)) (k : nat),
+    (k <= List.length ns - 1)%nat ->
+    List.In p (all_paths_klength ns m k c d) ->
+    Orel (measure_of_path p) (path_star ns m c d).
+  Proof.
+    intros ns m c d p k Hk Hin.
+    exact (path_measure_le_partial_sum ns _ k m c d p Hk Hin).
+  Qed.
+
+  (** Upper bound: a common bound on every counted path bounds the closure. *)
+  Lemma path_star_upper {R : BoundedSemiring.type} :
+    forall (ns : list Node) (m : @Matrix R) (c d : Node) (v : R),
+    (forall k p, (k <= List.length ns - 1)%nat ->
+       List.In p (all_paths_klength ns m k c d) ->
+       Orel (measure_of_path p) v) ->
+    Orel (path_star ns m c d) v.
+  Proof.
+    intros ns m c d v Hall.
+    exact (partial_sum_paths_bound ns _ m c d v Hall).
+  Qed.
+
+  (** The form the lower bound is actually used in: exhibit a concrete
+      well-formed path confined to [ns] and short enough, and its measure
+      is below the closure.  Completeness does the work of showing the
+      path is one of the counted ones. *)
+  Lemma path_star_lower_of_path {R : BoundedSemiring.type} :
+    forall (ns : list Node) (m : @Matrix R) (c d : Node)
+    (xs : list (Node * Node * R)),
+    path_nodes_in ns (xs ++ [(d, d, 1)]) ->
+    (List.length xs <= List.length ns - 1)%nat ->
+    source c (xs ++ [(d, d, 1)]) = true ->
+    target d (xs ++ [(d, d, 1)]) = true ->
+    well_formed_path_aux m (xs ++ [(d, d, 1)]) ->
+    Orel (measure_of_path (xs ++ [(d, d, 1)])) (path_star ns m c d).
+  Proof.
+    intros ns m c d xs Hnodes Hlen Hsrc Htgt Hwf.
+    apply (path_star_lower ns m c d _ (List.length xs) Hlen).
+    apply all_paths_klength_complete_gen; try assumption.
+    exact (path_nodes_in_covers ns _ Hnodes).
+  Qed.
+
+
+
+  (* ==================================================================== *)
+  (*  Composing closures over a candidate list                             *)
+  (*                                                                       *)
+  (*  [path_star_compose] is the list-indexed analogue of                  *)
+  (*  [star_path_compose] in SocialchoiceN.  The matrix proof there goes   *)
+  (*  through [pow (M + I)] and its stabilization; that route is not       *)
+  (*  available at an arbitrary candidate list, so the proof here is the   *)
+  (*  direct path-level one: concatenate a path from [a] to [b] with a     *)
+  (*  path from [b] to [c] and reduce the result.  Bounding a product of   *)
+  (*  two path sums needs distributivity, which is what the three          *)
+  (*  [_mul_bound] lemmas supply.                                          *)
+  (* ==================================================================== *)
+
+  (** The measure of a path is unchanged by its terminal unit loop. *)
+  Lemma measure_snoc_unit {R : Semiring.type}
+    (xs : list (Node * Node * R)) (e : Node) :
+    measure_of_path (xs ++ [(e, e, 1)]) = measure_of_path xs.
+  Proof.
+    rewrite (measure_of_path_app (xs ++ [(e, e, 1)]) xs [(e, e, 1)] eq_refl).
+    cbn. rewrite mulr1. rewrite mulr1. reflexivity.
+  Qed.
+
+  (** Every edge of a well-formed path carries the matrix entry of its
+      endpoints. *)
+  Lemma well_formed_edge {R : Semiring.type} (m : @Matrix R)
+    (p : list (Node * Node * R)) (a b : Node) (w : R) :
+    well_formed_path_aux m p -> List.In (a, b, w) p -> m a b = w.
+  Proof.
+    induction p as [|((x, y), v) t IH]; intros Hwf Hin.
+    - inversion Hin.
+    - cbn in Hwf. destruct Hwf as [Hxy Hrest].
+      destruct Hin as [Heq | Hin].
+      + inversion Heq; congruence.
+      + apply IH; [| exact Hin].
+        destruct t as [|((x', y'), v') t']; [exact Logic.I |].
+        exact (proj2 Hrest).
+  Qed.
+
+  (** Converse of [path_nodes_in_covers], for well-formed paths: the target of
+      each edge is the source of the next, so it is collected too. *)
+  Lemma covers_path_nodes_in {R : Semiring.type} (m : @Matrix R)
+    (ns : list Node) (p : list (Node * Node * R)) :
+    well_formed_path_aux m p ->
+    covers (collect_nodes_from_a_path p) ns ->
+    path_nodes_in ns p.
+  Proof.
+    induction p as [|((a, b), w) t IH]; intros Hwf Hcov.
+    - intros x y u Hin. inversion Hin.
+    - cbn in Hwf. destruct Hwf as [Hab Hrest].
+      destruct t as [|((b', c), w') t'].
+      + intros x y u Hin. destruct Hin as [Heq | []].
+        inversion Heq. subst.
+        split; apply Hcov; cbn; [left; reflexivity | right; left; reflexivity].
+      + destruct Hrest as [Heq_b Hwf_t]. subst b'.
+        assert (Hcov_t : covers (collect_nodes_from_a_path ((b, c, w') :: t')) ns).
+        { intros z Hz. apply Hcov. cbn. right. exact Hz. }
+        pose proof (IH Hwf_t Hcov_t) as Hnodes_t.
+        intros x y u Hin. destruct Hin as [Heq | Hin].
+        * inversion Heq. subst.
+          split.
+          -- apply Hcov. cbn. left. reflexivity.
+          -- apply Hcov_t. apply collect_nodes_head.
+        * exact (Hnodes_t x y u Hin).
+  Qed.
+
+  (** The endpoints [all_paths_klength_nodes] adds are already in the list
+      when both endpoints are candidates. *)
+  Lemma covers_cons2_drop (X : list Node) (a b : Node) (ns : list Node) :
+    List.In a ns -> List.In b ns ->
+    covers X (a :: b :: ns) -> covers X ns.
+  Proof.
+    intros Ha Hb HX z Hz.
+    destruct (HX z Hz) as [H | [H | H]];
+      [rewrite <- H; exact Ha | rewrite <- H; exact Hb | exact H].
+  Qed.
+
+  Lemma source_app {R : Semiring.type} (a : Node)
+    (p q : list (Node * Node * R)) :
+    p <> [] -> source a (p ++ q) = source a p.
+  Proof.
+    intros Hne. destruct p as [|((x, y), w) t];
+      [exfalso; apply Hne; reflexivity | reflexivity].
+  Qed.
+
+  Lemma target_app {R : Semiring.type} (c : Node)
+    (p q : list (Node * Node * R)) :
+    q <> [] -> target c (p ++ q) = target c q.
+  Proof.
+    intros Hne. induction p as [|((x, y), w) t IH]; [reflexivity |].
+    cbn [app target].
+    destruct (t ++ q) as [|h r] eqn:Htq.
+    - exfalso. apply app_eq_nil in Htq. destruct Htq as [_ Hq].
+      exact (Hne Hq).
+    - exact IH.
+  Qed.
+
+  (** Concatenation: a path ending with the unit loop at [b] may have that
+      loop replaced by any well-formed path starting at [b]. *)
+  Lemma well_formed_replace_unit_tail {R : Semiring.type} (m : @Matrix R)
+    (q : list (Node * Node * R)) (b : Node) :
+    well_formed_path_aux m q ->
+    source b q = true ->
+    forall (p : list (Node * Node * R)),
+    well_formed_path_aux m (p ++ [(b, b, 1)]) ->
+    well_formed_path_aux m (p ++ q).
+  Proof.
+    intros Hwfq Hsrc.
+    destruct q as [|((b', v0), z0) q']; [discriminate Hsrc |].
+    cbn in Hsrc. destruct (fin_eq_dec b b') as [Hbb | Hbb]; [| discriminate Hsrc].
+    subst b'.
+    induction p as [|((x, y), w) t IH]; intros Hwf.
+    - cbn. exact Hwfq.
+    - destruct t as [|((u, v), z) t'].
+      + cbn in Hwf. destruct Hwf as [Hxy [Hyb _]]. subst y.
+        cbn. split; [exact Hxy | split; [reflexivity | exact Hwfq]].
+      + cbn [app] in Hwf |- *.
+        cbn in Hwf. destruct Hwf as [Hxy [Hyu Hwf_t]].
+        cbn. split; [exact Hxy | split; [exact Hyu |]].
+        exact (IH Hwf_t).
+  Qed.
+
+  (** Distributivity, in the two shapes the composition proof needs. *)
+  Lemma mul_sum_all_flat_paths_bound {R : BoundedSemiring.type} (x : R)
+    (lp : list (@Path R)) (v : R) :
+    (forall a b p, List.In (a, b, p) lp -> Orel (x * measure_of_path p) v) ->
+    Orel (x * sum_all_flat_paths lp) v.
+  Proof.
+    induction lp as [|((a, b), p) t IH]; intros Hall.
+    - cbn. setoid_rewrite mulr0. apply zero_is_bottom.
+    - cbn [sum_all_flat_paths]. setoid_rewrite mulDl.
+      apply bounded_orel_plus_glb.
+      + exact (Hall a b p (or_introl eq_refl)).
+      + apply IH. intros a' b' p' Hin. exact (Hall a' b' p' (or_intror Hin)).
+  Qed.
+
+  Lemma sum_all_flat_paths_mul_bound {R : BoundedSemiring.type}
+    (lp1 lp2 : list (@Path R)) (v : R) :
+    (forall a1 b1 p1 a2 b2 p2,
+       List.In (a1, b1, p1) lp1 -> List.In (a2, b2, p2) lp2 ->
+       Orel (measure_of_path p1 * measure_of_path p2) v) ->
+    Orel (sum_all_flat_paths lp1 * sum_all_flat_paths lp2) v.
+  Proof.
+    induction lp1 as [|((a, b), p) t IH]; intros Hall.
+    - cbn. setoid_rewrite mul0r. apply zero_is_bottom.
+    - cbn [sum_all_flat_paths]. setoid_rewrite mulDr.
+      apply bounded_orel_plus_glb.
+      + apply mul_sum_all_flat_paths_bound.
+        intros a2 b2 p2 Hin2.
+        exact (Hall a b p a2 b2 p2 (or_introl eq_refl) Hin2).
+      + apply IH. intros a1 b1 p1 a2 b2 p2 Hin1 Hin2.
+        exact (Hall a1 b1 p1 a2 b2 p2 (or_intror Hin1) Hin2).
+  Qed.
+
+  Lemma partial_sum_paths_mul_bound {R : BoundedSemiring.type} (ns : list Node)
+    (m : @Matrix R) (n1 n2 : nat) (c1 d1 c2 d2 : Node) (v : R) :
+    (forall k1 p1 k2 p2,
+       (k1 <= n1)%nat -> List.In p1 (all_paths_klength ns m k1 c1 d1) ->
+       (k2 <= n2)%nat -> List.In p2 (all_paths_klength ns m k2 c2 d2) ->
+       Orel (measure_of_path p1 * measure_of_path p2) v) ->
+    Orel (partial_sum_paths ns m n1 c1 d1 * partial_sum_paths ns m n2 c2 d2) v.
+  Proof.
+    intros Hall.
+    rewrite !flat_map_path_partial_sum_gen.
+    apply sum_all_flat_paths_mul_bound.
+    intros a1 b1 p1 a2 b2 p2 Hin1 Hin2.
+    destruct (enum_all_paths_flat_inv ns n1 m c1 d1 a1 b1 p1 Hin1) as (k1 & Hk1 & Hq1).
+    destruct (enum_all_paths_flat_inv ns n2 m c2 d2 a2 b2 p2 Hin2) as (k2 & Hk2 & Hq2).
+    exact (Hall k1 p1 k2 p2 Hk1 Hq1 Hk2 Hq2).
+  Qed.
+
+  (** Concatenating a strongest path from [a] to [b] with one from [b] to [c]
+      gives a path from [a] to [c], so the closure composes. *)
+  Lemma path_star_compose {R : BoundedSemiring.type} (ns : list Node)
+    (m : @Matrix R) (a b c : Node) :
+    ns <> [] ->
+    (forall u v : Node, u = v -> m u v = 1) ->
+    List.In a ns -> List.In b ns -> List.In c ns ->
+    Orel (path_star ns m a b * path_star ns m b c) (path_star ns m a c).
+  Proof.
+    intros Hns Hdiag Ha Hb Hc.
+    unfold path_star at 1 2.
+    apply partial_sum_paths_mul_bound.
+    intros k1 p1 k2 p2 Hk1 Hin1 Hk2 Hin2.
+    pose proof (all_paths_well_formed_in_kpaths_gen ns k1 m a b p1 Hdiag Hin1) as Hwf1.
+    pose proof (covers_path_nodes_in m ns p1 Hwf1
+      (covers_cons2_drop _ a b ns Ha Hb
+        (all_paths_klength_nodes ns k1 m a b p1 Hin1))) as Hn1.
+    destruct (non_empty_paths_in_kpath_gen ns k1 m a b p1 Hin1)
+      as (Hne1 & Hsrc1 & Htgt1).
+    destruct (path_end_unit_loop_gen ns k1 p1 m a b Hin1) as [p1' Hp1].
+    pose proof (all_paths_well_formed_in_kpaths_gen ns k2 m b c p2 Hdiag Hin2) as Hwf2.
+    pose proof (covers_path_nodes_in m ns p2 Hwf2
+      (covers_cons2_drop _ b c ns Hb Hc
+        (all_paths_klength_nodes ns k2 m b c p2 Hin2))) as Hn2.
+    destruct (non_empty_paths_in_kpath_gen ns k2 m b c p2 Hin2)
+      as (Hne2 & Hsrc2 & Htgt2).
+    destruct (path_end_unit_loop_gen ns k2 p2 m b c Hin2) as [p2' Hp2].
+    assert (Hqeq : p1' ++ p2 = (p1' ++ p2') ++ [(c, c, 1)]).
+    { rewrite Hp2 at 1. rewrite app_assoc. reflexivity. }
+    assert (Hmeas : measure_of_path p1' * measure_of_path p2
+                    = measure_of_path (p1' ++ p2')).
+    { rewrite <- (measure_of_path_app (p1' ++ p2) p1' p2 eq_refl).
+      rewrite Hqeq. apply measure_snoc_unit. }
+    assert (Hwf_q : well_formed_path_aux m ((p1' ++ p2') ++ [(c, c, 1)])).
+    { rewrite <- Hqeq.
+      apply (well_formed_replace_unit_tail m p2 b Hwf2 Hsrc2 p1').
+      rewrite <- Hp1. exact Hwf1. }
+    assert (Hsrc_q : source a ((p1' ++ p2') ++ [(c, c, 1)]) = true).
+    { rewrite <- Hqeq.
+      destruct p1' as [|e p1''].
+      - cbn in Hp1. cbn.
+        rewrite Hp1 in Hsrc1. cbn in Hsrc1.
+        destruct (fin_eq_dec a b) as [Hab | Hab]; [| discriminate Hsrc1].
+        rewrite Hab. exact Hsrc2.
+      - assert (Hne' : e :: p1'' <> []) by discriminate.
+        rewrite (source_app a (e :: p1'') p2 Hne').
+        rewrite Hp1 in Hsrc1.
+        rewrite (source_app a (e :: p1'') [(b, b, 1)] Hne') in Hsrc1.
+        exact Hsrc1. }
+    assert (Htgt_q : target c ((p1' ++ p2') ++ [(c, c, 1)]) = true).
+    { rewrite target_end. cbn.
+      destruct (fin_eq_dec c c) as [_ | Hcc];
+        [reflexivity | exfalso; apply Hcc; reflexivity]. }
+    assert (Hn1' : path_nodes_in ns p1').
+    { rewrite Hp1 in Hn1.
+      exact (proj1 (path_nodes_in_app_inv ns p1' [(b, b, 1)] Hn1)). }
+    assert (Hn2' : path_nodes_in ns p2').
+    { rewrite Hp2 in Hn2.
+      exact (proj1 (path_nodes_in_app_inv ns p2' [(c, c, 1)] Hn2)). }
+    assert (Hn_q : path_nodes_in ns (p1' ++ p2'))
+      by exact (path_nodes_in_app ns p1' p2' Hn1' Hn2').
+    destruct (reduce_path_into_simpl_path_gen ns (p1' ++ p2') m a c
+                Hns Hn_q Hwf_q Hsrc_q Htgt_q)
+      as (ys & Hlen_ys & Hnodes_ys & Hwf_ys & Hsrc_ys & Htgt_ys & Horel_ys).
+    assert (Hnodes_full : path_nodes_in ns (ys ++ [(c, c, 1)])).
+    { apply path_nodes_in_app; [exact Hnodes_ys |].
+      intros x y u Hin_e. destruct Hin_e as [Heq | []].
+      inversion Heq. subst. split; exact Hc. }
+    assert (Hlen_bound : (List.length ys <= List.length ns - 1)%nat) by lia.
+    pose proof (path_star_lower_of_path ns m a c ys
+                  Hnodes_full Hlen_bound Hsrc_ys Htgt_ys Hwf_ys) as Hlow.
+    rewrite measure_snoc_unit in Hlow.
+    rewrite Hp1. rewrite measure_snoc_unit. rewrite Hmeas.
+    eapply orel_trans; [exact Horel_ys | exact Hlow].
+  Qed.
+
 
 End Path.
