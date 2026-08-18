@@ -190,4 +190,187 @@ Section IsolateN.
         rewrite Heq0. apply bounded_orel_refl.
   Qed.
 
+
+  (* ------------------------------------------------------------------ *)
+  (*  Removing the whole weak block at once                              *)
+  (*                                                                     *)
+  (*  [isolate M d] neutralises one weak alternative.  [isolate_out B1 M] *)
+  (*  keeps only the links inside [B1], which is the same operation for   *)
+  (*  the whole of [B2] at once.  Every lemma below is the corresponding  *)
+  (*  single-node lemma with the test "is this [d]?" replaced by "is this *)
+  (*  outside [B1]?", and the argument is unchanged: a walk that leaves   *)
+  (*  [B1] has to cross back, and every crossing link is below [c].       *)
+  (* ------------------------------------------------------------------ *)
+
+  Definition isolate_out {R : Semiring.type} (B : list Node) (M : @Matrix Node R)
+    : @Matrix Node R :=
+    fun x y => if List.in_dec fin_eq_dec x B
+               then (if List.in_dec fin_eq_dec y B then M x y else 0)
+               else 0.
+
+  Lemma isolate_out_off {R : Semiring.type} (B : list Node) (M : @Matrix Node R)
+    (x y : Node) :
+    List.In x B -> List.In y B -> isolate_out B M x y = M x y.
+  Proof.
+    intros Hx Hy. unfold isolate_out.
+    destruct (List.in_dec fin_eq_dec x B); [| contradiction].
+    destruct (List.in_dec fin_eq_dec y B); [reflexivity | contradiction].
+  Qed.
+
+  Lemma isolate_out_dead {R : Semiring.type} (B : list Node) (M : @Matrix Node R)
+    (x y : Node) :
+    ~ List.In x B -> isolate_out B M x y = 0.
+  Proof.
+    intros Hx. unfold isolate_out.
+    destruct (List.in_dec fin_eq_dec x B); [contradiction | reflexivity].
+  Qed.
+
+  Lemma isolate_out_le {R : BoundedSemiring.type} (B : list Node)
+    (M : @Matrix Node R) (x y : Node) :
+    isolate_out B M x y ≤ M x y.
+  Proof.
+    unfold isolate_out.
+    destruct (List.in_dec fin_eq_dec x B); [| apply zero_is_bottom].
+    destruct (List.in_dec fin_eq_dec y B);
+      [apply bounded_orel_refl | apply zero_is_bottom].
+  Qed.
+
+  Lemma mat_star_isolate_out_le {R : BoundedSemiring.type} (B : list Node)
+    (M : @Matrix Node R) (x y : Node) :
+    mat_star (isolate_out B M) x y ≤ mat_star M x y.
+  Proof.
+    unfold mat_star. apply geom_sum_monotone. intros i j. apply isolate_out_le.
+  Qed.
+
+  (** The dichotomy of [pow_isolate_dichotomy], for the whole weak block at
+      once: a walk into [B1] either stays inside [B1], and is then matched by
+      the restricted matrix, or it leaves and must cross back, which costs it
+      the threshold. *)
+  Lemma pow_isolate_out_dichotomy {R : BoundedSemiring.type}
+    (M : @Matrix Node R)
+    (H_total_order : forall x y : R, x + y = x ∨ x + y = y)
+    (B1 B2 : list Node) (c : R)
+    (H_partition : forall x : Node, In x B1 <-> ~ In x B2)
+    (H_lt : forall a b, In a B1 -> In b B2 -> M b a < c)
+    (H0 : (0 : R) < c) (f : Node) (Hf : In f B1) :
+    forall n x, In x B1 ->
+      pow M n x f ≤ mat_star (isolate_out B1 M) x f \/ pow M n x f < c.
+  Proof.
+    induction n as [|k IH]; intros x Hx.
+    - left. cbn [pow]. unfold I.
+      destruct (fin_eq_dec x f) as [Heq|_].
+      + subst f. unfold mat_star. rewrite geom_sum_diag_one.
+        apply bounded_orel_refl.
+      + apply zero_is_bottom.
+    - simpl. unfold matrix_mul.
+      destruct (sum_selective H_total_order
+                  (fun z => M x z * pow M k z f)) as [H0eq | [z Hz]].
+      + left. rewrite H0eq. apply zero_is_bottom.
+      + rewrite Hz. cbv beta.
+        destruct (List.in_dec fin_eq_dec z B1) as [HzB1 | HzB1].
+        * destruct (IH z HzB1) as [Hle | Hlt].
+          -- left.
+             rewrite <- (isolate_out_off B1 M x z Hx HzB1).
+             eapply orel_trans;
+               [apply (bounded_mul_orel_compat_r _ _ _ Hle) |].
+             eapply orel_trans;
+               [apply (bounded_mul_orel_compat_l _ _ _
+                         (link_le_mat_star (isolate_out B1 M) x z)) |].
+             apply star_path_compose.
+          -- right.
+             apply (orel_lt_trans (M x z * pow M k z f) (pow M k z f) c).
+             ++ apply bounded_mul_lower_right.
+             ++ exact Hlt.
+        * right.
+          assert (HzB2 : In z B2).
+          { destruct (List.in_dec fin_eq_dec z B2) as [h|h]; [exact h |].
+            exfalso. apply HzB1. apply (proj2 (H_partition z)). exact h. }
+          apply (orel_lt_trans (M x z * pow M k z f) (pow M k z f) c).
+          -- apply bounded_mul_lower_right.
+          -- exact (pow_from_B2_lt M H_total_order B1 B2 c H_partition H_lt H0
+                      k z HzB2 f Hf).
+  Qed.
+
+  Lemma mat_star_isolate_out_preserved {R : BoundedSemiring.type}
+    (M : @Matrix Node R)
+    (Htotal : forall x y : R, x + y = x ∨ x + y = y)
+    (B1 B2 : list Node) (c : R)
+    (H_partition : forall x : Node, In x B1 <-> ~ In x B2)
+    (H_lt : forall a b, In a B1 -> In b B2 -> M b a < c)
+    (H0 : (0 : R) < c)
+    (e f : Node) (He : In e B1) (Hf : In f B1) (Hc : c ≤ mat_star M e f) :
+    mat_star M e f = mat_star (isolate_out B1 M) e f.
+  Proof.
+    apply orel_antisym; [| apply mat_star_isolate_out_le].
+    destruct (geom_sum_selective Htotal M (@kleene_exp Node) e f) as [k [Hk Heq]].
+    destruct (pow_isolate_out_dichotomy M Htotal B1 B2 c H_partition H_lt H0
+                f Hf k e He) as [Hle | Hlt].
+    - unfold mat_star. rewrite Heq. exact Hle.
+    - exfalso. destruct Hlt as [Hlt_le Hlt_ne]. apply Hlt_ne.
+      apply orel_antisym; [exact Hlt_le |].
+      unfold mat_star in Hc. rewrite Heq in Hc. exact Hc.
+  Qed.
+
+  (** Smith-IIA for the whole weak block, in the isolation reading. *)
+  Theorem smith_iia_isolate_out {R : BoundedSemiring.type}
+    (M : @Matrix Node R)
+    (Htotal : forall x y : R, x + y = x ∨ x + y = y)
+    (B1 B2 : list Node) (c : R)
+    (H_partition : forall x : Node, In x B1 <-> ~ In x B2)
+    (H_lt : forall a b, In a B1 -> In b B2 -> M b a < c)
+    (H0 : (0 : R) < c)
+    (Hsep : forall x y : Node, x <> y -> c ≤ M x y + M y x) :
+    forall e f, In e B1 -> In f B1 ->
+      (schulze_beats M e f <-> schulze_beats (isolate_out B1 M) e f).
+  Proof.
+    intros e f He Hf.
+    assert (Hclears : forall x y, x <> y ->
+              mat_star M y x ≤ mat_star M x y -> c ≤ mat_star M x y).
+    { intros x y Hxy Hdom.
+      eapply orel_trans; [exact (Hsep x y Hxy) |].
+      apply add_orel_bound.
+      - apply link_le_mat_star.
+      - eapply orel_trans; [apply link_le_mat_star | exact Hdom]. }
+    split.
+    - intros [Hle Hne].
+      assert (Hef_ne : e <> f).
+      { intro Heq. subst f. apply Hne. reflexivity. }
+      pose proof (Hclears e f Hef_ne Hle) as Hc.
+      pose proof (mat_star_isolate_out_preserved M Htotal B1 B2 c H_partition
+                    H_lt H0 e f He Hf Hc) as Hef.
+      split.
+      + eapply orel_trans; [apply mat_star_isolate_out_le |].
+        eapply orel_trans; [exact Hle |]. rewrite Hef. apply bounded_orel_refl.
+      + intro Heq0.
+        apply Hne. apply orel_antisym; [exact Hle |].
+        rewrite Hef, <- Heq0. apply mat_star_isolate_out_le.
+    - intros [Hle' Hne'].
+      assert (Hef_ne : e <> f).
+      { intro Heq. subst f. apply Hne'. reflexivity. }
+      assert (Hc' : c ≤ mat_star (isolate_out B1 M) e f).
+      { eapply orel_trans; [exact (Hsep e f Hef_ne) |].
+        apply add_orel_bound.
+        - rewrite <- (isolate_out_off B1 M e f He Hf). apply link_le_mat_star.
+        - eapply orel_trans; [| exact Hle'].
+          rewrite <- (isolate_out_off B1 M f e Hf He). apply link_le_mat_star. }
+      assert (Hc : c ≤ mat_star M e f)
+        by (eapply orel_trans; [exact Hc' | apply mat_star_isolate_out_le]).
+      pose proof (mat_star_isolate_out_preserved M Htotal B1 B2 c H_partition
+                    H_lt H0 e f He Hf Hc) as Hef.
+      assert (Hno_converse : ~ (mat_star M e f ≤ mat_star M f e)).
+      { intro Hbad.
+        assert (Hcfe : c ≤ mat_star M f e)
+          by (eapply orel_trans; [exact Hc | exact Hbad]).
+        pose proof (mat_star_isolate_out_preserved M Htotal B1 B2 c H_partition
+                      H_lt H0 f e Hf He Hcfe) as Hfe.
+        apply Hne'. apply orel_antisym; [exact Hle' |].
+        rewrite <- Hef, <- Hfe. exact Hbad. }
+      split.
+      + destruct (Htotal (mat_star M f e) (mat_star M e f)) as [Hc1 | Hc1].
+        * exfalso. apply Hno_converse. unfold Orel. rewrite addC. exact Hc1.
+        * exact Hc1.
+      + intro Heq0. apply Hno_converse.
+        rewrite Heq0. apply bounded_orel_refl.
+  Qed.
+
 End IsolateN.

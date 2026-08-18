@@ -279,6 +279,106 @@ Section SmithIIA.
     - intros [Ha Hwin]. exact (proj2 (smith_iia_removal a Ha) Hwin).
   Qed.
 
+
+  (* ------------------------------------------------------------------ *)
+  (*  Deleting the whole weak block                                      *)
+  (*                                                                     *)
+  (*  Above, one weak alternative is deleted and the rest of [B2] stays   *)
+  (*  on the ballot.  Deleting all of them is the same argument with      *)
+  (*  [isolate M d] replaced by [isolate_out B1 M], and it is in fact     *)
+  (*  simpler: once only [B1] survives, every potential beater is a       *)
+  (*  strong alternative, so the case for a surviving weak one disappears.*)
+  (* ------------------------------------------------------------------ *)
+
+  Hypothesis HB1 : B1 <> [].
+
+  (** The same bridge for the whole weak block: keeping only the candidates
+      of [B1] computes the same closure as keeping only the links inside
+      [B1].  No Smith hypothesis is used. *)
+  Lemma path_star_B1_is_isolate_out (x y : Node) :
+    List.In x B1 -> List.In y B1 ->
+    path_star B1 M x y = mat_star (isolate_out B1 M) x y.
+  Proof.
+    intros Hx Hy.
+    set (M' := matrix_add (isolate_out B1 M) (I : @OrelN.Matrix Node R)).
+    assert (Hdiag' : forall u v : Node, u = v -> M' u v = 1).
+    { intros u v H. unfold M'. apply matrix_add_I_diag. exact H. }
+    assert (Hstep1 : path_star B1 M x y = path_star B1 M' x y).
+    { apply path_star_ext.
+      - exact HB1.
+      - exact Hx.
+      - exact Hy.
+      - exact Hdiag.
+      - exact Hdiag'.
+      - intros u v Hu Hv.
+        destruct (fin_eq_dec u v) as [Heq | Hne].
+        + rewrite (Hdiag u v Heq). symmetry. apply matrix_add_I_diag. exact Heq.
+        + unfold M'. rewrite (matrix_add_I_off (isolate_out B1 M) u v Hne).
+          symmetry. apply isolate_out_off; assumption. }
+    assert (Hstep2 : path_star B1 M' x y = path_star (@elements Node) M' x y).
+    { symmetry. apply path_star_restrict.
+      - exact HB1.
+      - intros z _. apply elements_complete.
+      - intros u v Hu Hv.
+        assert (Huv : u <> v) by (intro h; subst v; contradiction).
+        unfold M'. rewrite (matrix_add_I_off (isolate_out B1 M) u v Huv).
+        apply isolate_out_dead. exact Hu.
+      - exact Hdiag'.
+      - exact Hx.
+      - exact Hy. }
+    rewrite Hstep1, Hstep2.
+    rewrite path_star_elements_is_mat_star.
+    apply mat_star_add_I.
+  Qed.
+
+  (** Deleting the entire weak block at once leaves the beat relation on the
+      strong block unchanged. *)
+  Theorem smith_iia_removal_all_beats (e f : Node) :
+    List.In e B1 -> List.In f B1 ->
+    (schulze_beats M e f <-> beats_on B1 M e f).
+  Proof.
+    intros He Hf.
+    unfold beats_on.
+    rewrite (path_star_B1_is_isolate_out f e Hf He).
+    rewrite (path_star_B1_is_isolate_out e f He Hf).
+    exact (smith_iia_isolate_out M Htotal B1 B2 c H_partition H_lt H0 Hsep
+             e f He Hf).
+  Qed.
+
+  (** The iterated form of (4.7.5a).  Every weak alternative may be deleted at
+      once, and the winner status of every strong alternative is unchanged.
+      The single-deletion form above keeps the other weak alternatives on the
+      ballot; this one keeps none of them. *)
+  Theorem smith_iia_removal_all (a : Node) :
+    List.In a B1 ->
+    (schulze_winner M a <-> winner_on B1 M a).
+  Proof.
+    intros Ha. split.
+    - intros Hwin b Hb Hne Hbeats.
+      exact (Hwin b Hne (proj2 (smith_iia_removal_all_beats b a Hb Ha) Hbeats)).
+    - intros Hwin b Hne Hbeats.
+      destruct (in_dec fin_eq_dec b B1) as [HbB1 | HbB1].
+      + exact (Hwin b HbB1 Hne
+                 (proj1 (smith_iia_removal_all_beats b a HbB1 Ha) Hbeats)).
+      + pose proof (in_B2_of_not_B1 b HbB1) as HbB2.
+        exact (schulze_beats_asym M a b (strong_beats_weak a b Ha HbB2) Hbeats).
+  Qed.
+
+  (** The winner set of the reduced election is the winner set of the full
+      one.  Every winner already lay in [B1] by the Smith criterion. *)
+  Corollary smith_iia_winner_set_all (a : Node) :
+    schulze_winner M a <-> (List.In a B1 /\ winner_on B1 M a).
+  Proof.
+    split.
+    - intros Hwin.
+      assert (Ha : List.In a B1).
+      { apply (smith_criterion_weaker M Htotal B1 B2 HB1 H_partition).
+        - exists c. split; [exact H_lt | exact c_le_link].
+        - exact Hwin. }
+      split; [exact Ha | exact (proj1 (smith_iia_removal_all a Ha) Hwin)].
+    - intros [Ha Hwin]. exact (proj2 (smith_iia_removal_all a Ha) Hwin).
+  Qed.
+
   End Removal.
 
 End SmithIIA.

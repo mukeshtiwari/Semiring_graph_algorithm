@@ -28,6 +28,9 @@ Semiring.CloneCharacterisationN clone_iff_winner_exists
 Semiring.BeatsOnN               beats_on_trans
 Semiring.SmithiiaN              smith_iia_removal
 Semiring.SmithiiaN              smith_iia_winner_set
+Semiring.IsolateN               smith_iia_isolate_out
+Semiring.SmithiiaN              smith_iia_removal_all
+Semiring.SmithiiaN              smith_iia_winner_set_all
 Examples.SharpnessWitness       tropical_no_winner_at_three
 Examples.SharpnessWitness       diamond_no_winner_at_four
 Examples.SharpnessWitness       diamond_every_profile_has_winner
