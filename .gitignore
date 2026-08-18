@@ -31,3 +31,9 @@ lia.cache
 nia.cache
 nlia.cache
 nra.cache
+
+# build artifacts
+_build/
+
+# macOS
+.DS_Store
