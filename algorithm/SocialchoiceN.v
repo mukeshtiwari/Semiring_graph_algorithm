@@ -17,9 +17,25 @@ Section SocialChoice.
   (*  Kleene star as a named definition for readability                     *)
   (* =====================================================================  *)
 
-  Definition mat_star {R : Semiring.type} (M : @Matrix Node R) 
+  Definition mat_star {R : Semiring.type} (M : @Matrix Node R)
     : @Matrix Node R :=
     geom_sum M kleene_exp.
+
+  (** [mat_star] is the closure over the full alternative set, viewed
+      through matrix multiplication; [path_star] is the same closure viewed
+      through its path characterisation, but taken over an arbitrary list of
+      alternatives.  They agree at [elements].  This is the single point at
+      which a development over varying candidate lists, which is what
+      criteria like independence of clones need, reconnects to every theorem
+      stated below in terms of [mat_star]. *)
+  Lemma path_star_elements_is_mat_star {R : Semiring.type}
+    (M : @Matrix Node R) (c d : Node) :
+    path_star (@elements Node) M c d = mat_star M c d.
+  Proof.
+    unfold path_star, mat_star, kleene_exp.
+    rewrite connect_partial_sum_mat_paths.
+    reflexivity.
+  Qed.
 
 
   (* =====================================================================  *)
