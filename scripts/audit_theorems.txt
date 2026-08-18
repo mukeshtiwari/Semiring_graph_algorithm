@@ -1,0 +1,32 @@
+# Theorems whose proofs must stay axiom-free.  One per line, "Module name".
+# Blank lines and lines starting with # are ignored.
+Semiring.NeutralityN            neutrality_winner
+Semiring.ResolvabilityN         untied_winner_unique
+Semiring.MonotonicityN          monotonicity_beats
+Semiring.ParetoN                pareto_weaker
+Semiring.CondorcetN             condorcet_implies_strict_winner_weaker
+Semiring.SmithN                 smith_criterion_weaker
+Semiring.PrudenceN              prudence
+Semiring.MinMaxN                minmax_winner
+Semiring.IsolateN               smith_iia_isolate
+Semiring.SchulzeOrderN          mul_comm_of_meet
+Semiring.TransitivityN          schulze_trans_weaker_necessary
+Semiring.TransitivityN          transitivity_characterisation
+Semiring.WinnerexistenceN       schulze_output_well_formed
+Semiring.WinnerexistenceN       winner_beats_nonwinner
+Semiring.WinnerexistenceN       winner_exists_characterisation
+Semiring.CharacterisationsN     output_well_formed_characterisation
+Semiring.CharacterisationsN     strict_partial_order_characterisation
+Semiring.CharacterisationsN     winner_beats_nonwinner_characterisation
+Semiring.ReversalsymmetryN      reversal_symmetry_O
+Semiring.ReversalsymmetryN      reversal_symmetry_S_level2
+Semiring.ReversalsymmetryN      reversal_symmetry_all_tied_level2
+Semiring.PathN                  path_star_compose
+Semiring.CloneN                 independence_of_clones_selective
+Semiring.CloneN                 clone_characterisation
+Semiring.CloneN                 clone_iff_winner_exists
+Semiring.SmithiiaN              smith_iia_removal
+Semiring.SmithiiaN              smith_iia_winner_set
+Examples.SharpnessWitness       tropical_no_winner_at_three
+Examples.SharpnessWitness       diamond_no_winner_at_four
+Examples.SharpnessWitness       diamond_every_profile_has_winner
