@@ -124,11 +124,19 @@ Section SocialChoice.
   (*  Requires commutative multiplication (mulC) for (M^T)^k = (M^k)^T.     *)
   (* =====================================================================  *)
 
-  Lemma pow_transpose {R : CommutativeSemiring.type}
+  (*  Commutativity is needed pointwise only, so we take it as a hypothesis *)
+  (*  rather than as a structure.  That matters downstream: on a carrier    *)
+  (*  with the meet property commutativity is free (mul_comm_of_meet), so   *)
+  (*  the reversal-symmetry results can be stated over a bounded semiring   *)
+  (*  with no commutativity assumption of their own.  The named lemmas at   *)
+  (*  the end of the block are the CommutativeSemiring instances, unchanged.*)
+
+  Lemma pow_transpose_hyp {R : Semiring.type}
+    (Hcomm : forall x y : R, x * y = y * x)
     (M : @Matrix Node R) (k : nat) (i j : Node) :
     pow (fun x y => M y x) k i j = pow M k j i.
   Proof.
-    revert i j. 
+    revert i j.
     induction k as [|k IH]; intros i j; cbn [pow].
     - (* Base: I i j = I j i *)
       unfold I.
@@ -142,11 +150,12 @@ Section SocialChoice.
       + rewrite (sum_ext (fun X => M X i * pow M k j X)
         (fun X => pow M k j X * M X i)).
         * symmetry. apply (pow_comm k M j i).
-        * intro X. apply mulC.
+        * intro X. apply Hcomm.
       + intro X. rewrite (IH X j). reflexivity.
   Qed.
 
-  Lemma geom_sum_transpose {R : CommutativeSemiring.type}
+  Lemma geom_sum_transpose_hyp {R : Semiring.type}
+    (Hcomm : forall x y : R, x * y = y * x)
     (M : @Matrix Node R) (n : nat) (i j : Node) :
     geom_sum (fun x y => M y x) n i j = geom_sum M n j i.
   Proof.
@@ -160,19 +169,32 @@ Section SocialChoice.
       + reflexivity.
     - unfold matrix_add.
       rewrite IH.
-      rewrite (pow_transpose M (S n) i j).
+      rewrite (pow_transpose_hyp Hcomm M (S n) i j).
       reflexivity.
   Qed.
 
+  Lemma mat_star_transpose_hyp {R : Semiring.type}
+    (Hcomm : forall x y : R, x * y = y * x)
+    (M : @Matrix Node R) (i j : Node) :
+    mat_star (fun x y => M y x) i j = mat_star M j i.
+  Proof.
+    unfold mat_star. apply geom_sum_transpose_hyp. exact Hcomm.
+  Qed.
 
-  Lemma mat_star_transpose {R : CommutativeSemiring.type} : 
+  Lemma pow_transpose {R : CommutativeSemiring.type}
+    (M : @Matrix Node R) (k : nat) (i j : Node) :
+    pow (fun x y => M y x) k i j = pow M k j i.
+  Proof. apply pow_transpose_hyp. intros x y. apply mulC. Qed.
+
+  Lemma geom_sum_transpose {R : CommutativeSemiring.type}
+    (M : @Matrix Node R) (n : nat) (i j : Node) :
+    geom_sum (fun x y => M y x) n i j = geom_sum M n j i.
+  Proof. apply geom_sum_transpose_hyp. intros x y. apply mulC. Qed.
+
+  Lemma mat_star_transpose {R : CommutativeSemiring.type} :
     forall (M : @Matrix Node R) (i j : Node),
       mat_star (fun x y => M y x) i j = mat_star M j i.
-  Proof.
-    intros M i j.
-    unfold mat_star.
-    apply geom_sum_transpose.
-  Qed.
+  Proof. intros M i j. apply mat_star_transpose_hyp. intros x y. apply mulC. Qed.
 
 
   (* In a bounded semiring, addition is idempotent: a+a = a.                 *)
@@ -231,6 +253,26 @@ Section SocialChoice.
       + transitivity (1 * b).
         * apply (f_equal (fun t => t * b)). rewrite addC. apply (add_bound (s := R) a).
         * apply mul1r.
+  Qed.
+
+  (** Commutativity is not an independent axiom of the classification: on a
+      bounded semiring the meet property already forces it.  Both [a * b] and
+      [b * a] are lower bounds of the pair by [bounded_mul_lower_left] and
+      [bounded_mul_lower_right], the meet property makes each of them the
+      greatest such, and a greatest lower bound is unique.  The consequence is
+      that every result below whose hypotheses include the meet property may
+      use commutativity for free; see [reversal_symmetry_O_level2]. *)
+  Lemma mul_comm_of_meet {R : BoundedSemiring.type}
+    (H_meet_lower_bound : forall m a b : R, m ≤ a -> m ≤ b -> m ≤ a * b) :
+    forall a b : R, a * b = b * a.
+  Proof.
+    intros a b. apply orel_antisym.
+    - apply H_meet_lower_bound.
+      + apply bounded_mul_lower_right.
+      + apply bounded_mul_lower_left.
+    - apply H_meet_lower_bound.
+      + apply bounded_mul_lower_right.
+      + apply bounded_mul_lower_left.
   Qed.
 
   (* The structure theorem for bottleneck carriers, pointwise: on a carrier
@@ -568,6 +610,21 @@ Section SocialChoice.
   Proof.
     unfold schulze_beats, beats.
     rewrite (mat_star_transpose M a b), (mat_star_transpose M b a).
+    reflexivity.
+  Qed.
+
+  (** The same statement over a bounded semiring, with no commutativity
+      assumption: the meet property supplies it by [mul_comm_of_meet].  This
+      is what places the winner-level reversal-symmetry results below at the
+      level of selectivity and the meet property rather than above it. *)
+  Theorem reversal_symmetry_O_level2 {R : BoundedSemiring.type}
+    (H_meet_lower_bound : forall m a b : R, m ≤ a -> m ≤ b -> m ≤ a * b)
+    (M : @Matrix Node R) (a b : Node) :
+    schulze_beats M a b <-> schulze_beats (fun i j => M j i) b a.
+  Proof.
+    unfold schulze_beats, beats.
+    rewrite (mat_star_transpose_hyp (mul_comm_of_meet H_meet_lower_bound) M a b),
+            (mat_star_transpose_hyp (mul_comm_of_meet H_meet_lower_bound) M b a).
     reflexivity.
   Qed.
 
@@ -1654,7 +1711,8 @@ Section SocialChoice.
   Lemma selectivity_from_winner_exists {R : BoundedSemiring.type}
     (Hlen : (4 <= List.length (@elements Node))%nat)
     (Hdec : forall u v : R, {u = v} + {u <> v})
-    (Hwin : forall (M : @Matrix Node R), exists a : Node, schulze_winner M a) :
+    (Hwin : forall (A B C D : Node) (u v : R),
+              exists a : Node, schulze_winner (sq_matrix A B C D u v) a) :
     forall u v : R, u + v = u \/ u + v = v.
   Proof.
     intros x y.
@@ -1675,7 +1733,7 @@ Section SocialChoice.
     { intro h. apply Hyx. rewrite h. apply zero_is_bottom. }
     destruct (four_distinct_nodes Hlen)
       as (A & B & C & D & HAB & HAC & HAD & HBC & HBD & HCD).
-    destruct (Hwin (sq_matrix A B C D x y)) as [w Hw].
+    destruct (Hwin A B C D x y) as [w Hw].
     exact (sq_no_winner A B C D HAB HAC HAD HBC HBD HCD x y
              Hy0 H1 H1' H2 H2' w Hw).
   Qed.
@@ -1759,7 +1817,8 @@ Section SocialChoice.
     (Hlen : (3 <= List.length (@elements Node))%nat)
     (Hdec : forall u v : R, {u = v} + {u <> v})
     (Hsel : forall u v : R, u + v = u \/ u + v = v)
-    (Hwin : forall (M : @Matrix Node R), exists a : Node, schulze_winner M a) :
+    (Hwin : forall (X Y Z : Node) (p q r : R),
+              exists a : Node, schulze_winner (tri_matrix X Y Z p q r) a) :
     forall m a b : R, m ≤ a -> m ≤ b -> m ≤ a * b.
   Proof.
     intros m a b Hma Hmb.
@@ -1788,7 +1847,7 @@ Section SocialChoice.
         rewrite h in Hmono. apply Hnle. rewrite <- Ham. exact Hmono. }
       assert (Hp : a <> 0).
       { intro h. apply Haa_ne. rewrite h. apply (@mul0r R). }
-      destruct (Hwin (tri_matrix X Y Z a a a)) as [w Hw].
+      destruct (Hwin X Y Z a a a) as [w Hw].
       exact (tri_no_winner X Y Z HXY HYZ HXZ a a a Hp
                Haa_le Haa_ne Haa_le Haa_ne Haa_le Haa_ne w Hw).
     - destruct (Hdec (m * a) b) as [E2|K2].
@@ -1805,7 +1864,7 @@ Section SocialChoice.
           rewrite h in Hmono. apply Hnle. rewrite <- Hbm. exact Hmono. }
         assert (Hp : b <> 0).
         { intro h. apply Hbb_ne. rewrite h. apply (@mul0r R). }
-        destruct (Hwin (tri_matrix X Y Z b b b)) as [w Hw].
+        destruct (Hwin X Y Z b b b) as [w Hw].
         exact (tri_no_winner X Y Z HXY HYZ HXZ b b b Hp
                  Hbb_le Hbb_ne Hbb_le Hbb_ne Hbb_le Hbb_ne w Hw).
       + (* both edges strict: the triangle (a, b, m) has no winner *)
@@ -1817,7 +1876,7 @@ Section SocialChoice.
         { intro h. apply Hab_ne. rewrite h, (@mul0r R). symmetry.
           rewrite h in Hma.
           apply orel_antisym; [ exact Hma | apply zero_is_bottom ]. }
-        destruct (Hwin (tri_matrix X Y Z a b m)) as [w Hw].
+        destruct (Hwin X Y Z a b m) as [w Hw].
         exact (tri_no_winner X Y Z HXY HYZ HXZ a b m Hp
                  K1' K1 K2' K2 Hab_le Hab_ne w Hw).
   Qed.
@@ -1958,10 +2017,12 @@ Section SocialChoice.
     intros Hlen Hdec. split.
     - intro Hwin.
       assert (Hsel : forall u v : R, u + v = u \/ u + v = v)
-        by exact (selectivity_from_winner_exists Hlen Hdec Hwin).
+        by exact (selectivity_from_winner_exists Hlen Hdec
+                    (fun A B C D u v => Hwin (sq_matrix A B C D u v))).
       split; [exact Hsel |].
       assert (Hlen3 : (3 <= List.length (@elements Node))%nat) by lia.
-      exact (meet_from_winner_exists Hlen3 Hdec Hsel Hwin).
+      exact (meet_from_winner_exists Hlen3 Hdec Hsel
+               (fun X Y Z p q r => Hwin (tri_matrix X Y Z p q r))).
     - intros (Hsel & Hmeet).
       exact (winner_exists_weaker_necessary Hsel Hdec Hmeet).
   Qed.
@@ -2156,6 +2217,45 @@ Section SocialChoice.
       + exact (Hi_new j Hne Hji).
   Qed.
 
+  (** The same theorem over a bounded semiring.  Commutativity is not assumed,
+      because the meet property already supplies it (mul_comm_of_meet), so
+      Schulze's (4.4.3) needs nothing beyond selectivity and the meet
+      property.  In the classification this moves the winner-level reversal
+      symmetry down onto the level of the two structural guarantees; only the
+      relation-level form (4.4.2, reversal_symmetry_O) genuinely requires
+      commutativity, and it is also the only one that does not require
+      boundedness. *)
+  Theorem reversal_symmetry_S_level2 {R : BoundedSemiring.type}
+    (H_total_order : forall x y : R, x + y = x \/ x + y = y)
+    (Hdec : forall x y : R, {x = y} + {x ≠ y})
+    (H_meet_lower_bound : forall m a b : R, m ≤ a -> m ≤ b -> m ≤ a * b)
+    (M : @Matrix Node R) :
+    (exists i, schulze_winner M i /\ ~ schulze_winner (fun x y => M y x) i) <->
+    (exists j, ~ schulze_winner M j /\ schulze_winner (fun x y => M y x) j).
+  Proof.
+    split.
+    - intros [i [Hi_old Hi_new]].
+      destruct (winner_beats_nonwinner H_total_order Hdec H_meet_lower_bound
+                  (fun x y => M y x) i Hi_new) as [j [Hj_new Hj_beats]].
+      exists j. split; [| exact Hj_new].
+      intro Hj_old.
+      assert (Hij : schulze_beats M i j)
+        by (apply (reversal_symmetry_O_level2 H_meet_lower_bound M i j); exact Hj_beats).
+      destruct (fin_eq_dec i j) as [Heq|Hne].
+      + subst j. exact (schulze_beats_irrefl M i Hij).
+      + exact (Hj_old i Hne Hij).
+    - intros [j [Hj_old Hj_new]].
+      destruct (winner_beats_nonwinner H_total_order Hdec H_meet_lower_bound
+                  M j Hj_old) as [i [Hi_old Hi_beats]].
+      exists i. split; [exact Hi_old |].
+      intro Hi_new.
+      assert (Hji : schulze_beats (fun x y => M y x) j i)
+        by (apply (reversal_symmetry_O_level2 H_meet_lower_bound M i j); exact Hi_beats).
+      destruct (fin_eq_dec j i) as [Heq|Hne].
+      + subst i. exact (schulze_beats_irrefl M j Hi_beats).
+      + exact (Hi_new j Hne Hji).
+  Qed.
+
   (** Reversal symmetry (4.4.4): the reversed profile has the same winner set
       as the original exactly when every alternative wins — i.e. the only way
       reversal changes nothing is that there was nothing to change. *)
@@ -2194,6 +2294,44 @@ Section SocialChoice.
       split; intro; [| apply Hall].
       intros b Hb Hbeats.
       exact (Hno x b (proj2 (reversal_symmetry_O M x b) Hbeats)).
+  Qed.
+
+  (** Schulze's (4.4.4) over a bounded semiring, for the same reason. *)
+  Theorem reversal_symmetry_all_tied_level2 {R : BoundedSemiring.type}
+    (H_total_order : forall x y : R, x + y = x \/ x + y = y)
+    (Hdec : forall x y : R, {x = y} + {x ≠ y})
+    (H_meet_lower_bound : forall m a b : R, m ≤ a -> m ≤ b -> m ≤ a * b)
+    (M : @Matrix Node R) :
+    (forall x, schulze_winner M x <-> schulze_winner (fun i j => M j i) x) <->
+    (forall x, schulze_winner M x).
+  Proof.
+    split.
+    - (* if the two winner sets agree, everybody wins *)
+      intros Hsame x.
+      destruct (beater_or_winner Hdec M x) as [[y Hy] | Hx]; [| exact Hx].
+      exfalso.
+      assert (Hx_not : ~ schulze_winner M x).
+      { intro Hw. destruct (fin_eq_dec y x) as [Heq|Hne].
+        - subst y. exact (schulze_beats_irrefl M x Hy).
+        - exact (Hw y Hne Hy). }
+      destruct (winner_beats_nonwinner H_total_order Hdec H_meet_lower_bound
+                  M x Hx_not) as [i [Hi_old Hi_beats]].
+      assert (Hi_new : schulze_winner (fun p q => M q p) i)
+        by (apply Hsame; exact Hi_old).
+      assert (Hxi : schulze_beats (fun p q => M q p) x i)
+        by (apply (reversal_symmetry_O_level2 H_meet_lower_bound M i x); exact Hi_beats).
+      destruct (fin_eq_dec x i) as [Heq|Hne].
+      + subst i. exact (schulze_beats_irrefl M x Hi_beats).
+      + exact (Hi_new x Hne Hxi).
+    - (* everybody wins: then nobody beats anybody, in either direction *)
+      intros Hall x.
+      assert (Hno : forall i j, ~ schulze_beats M i j).
+      { intros i j Hij. destruct (fin_eq_dec i j) as [Heq|Hne].
+        - subst j. exact (schulze_beats_irrefl M i Hij).
+        - exact (Hall j i Hne Hij). }
+      split; intro; [| apply Hall].
+      intros b Hb Hbeats.
+      exact (Hno x b (proj2 (reversal_symmetry_O_level2 H_meet_lower_bound M x b) Hbeats)).
   Qed.
 
   (** * Monotonicity (Section 4.2 of the Schulze paper)
