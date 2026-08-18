@@ -1,6 +1,6 @@
 From Stdlib Require Import List Utf8 Lia.
 From Semiring Require Import PathN MatN OrelN
-  SemimoduleN Structures SocialchoiceN CloneN.
+  SemimoduleN Structures SocialchoiceN ClosureTransportN BeatsOnN.
 Import ListNotations SemiringNotations.
 
 Local Infix "≤" := Orel (at level 70).
