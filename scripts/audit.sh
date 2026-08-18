@@ -32,7 +32,18 @@ awk '!/^[[:space:]]*(#|$)/ {print $1}' "$list" | sort -u |
 awk '!/^[[:space:]]*(#|$)/ {print $2}' "$list" |
   while read -r n; do echo "Print Assumptions $n." >> "$src"; done
 
-out=$(coqc -R _build/default/algorithm Semiring \
+# Rocq 9.x ships 'rocq compile'; 'coqc' is a compatibility binary that is not
+# present on every switch (it is missing from a plain rocq-core install, which
+# is what CI builds).  Prefer the canonical spelling and fall back.
+if command -v rocq >/dev/null 2>&1; then
+  rocqc=(rocq compile)
+elif command -v coqc >/dev/null 2>&1; then
+  rocqc=(coqc)
+else
+  echo "FAIL: neither 'rocq' nor 'coqc' found on PATH"; exit 1
+fi
+
+out=$("${rocqc[@]}" -R _build/default/algorithm Semiring \
            -R _build/default/examples Examples \
            "$src" 2>&1) || { echo "FAIL: audit file did not compile:"; echo "$out"; exit 1; }
 
