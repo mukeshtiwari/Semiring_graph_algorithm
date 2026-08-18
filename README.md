@@ -8,7 +8,84 @@ generate OCaml code from it (see _RocqProject file).
 5. Run `dune exec _build/default/executable/wikimedia/main.exe` to run the [Wikipedia Schulze method](https://en.wikipedia.org/wiki/Schulze_method) example (18-candidate Board election). Shows strongest path strengths and fixed-point iteration converging in 17 steps.
 6. Run `dune exec executable/fivegslicing/main.exe` to run the 5G Network Slicing example, which computes optimal routing paths through a 5G core network (UE → gNB → UPF → DN) using a **latency × bandwidth product semiring**. Each link has two attributes — latency (minimized, min-plus) and bandwidth (maximized, max-min) — and A* finds the Pareto-optimal end-to-end path weights.
     
-We have compiled this project with Rocq 9.1.1 but if you want to use it with any other Rocq version, please let us know. 
+We have compiled this project with Rocq 9.0.1 (with `rocq-elpi` and
+Hierarchy Builder); if you want to use it with any other Rocq version, please
+let us know.
+
+
+## Repository layout
+
+`algorithm/` is the reusable library. The Schulze development used to live in a
+single `SocialchoiceN.v`; each criterion now has its own file over five shared
+base files, and `SocialchoiceN.v` re-exports all of them, so `From Semiring
+Require Import SocialchoiceN.` still brings in everything.
+
+**Infrastructure**
+
+| File | Contents |
+|---|---|
+| `Structures.v` | the HB algebraic hierarchy (semiring, bounded, commutative) |
+| `OrelN.v` | the natural order `a ≤ b := a + b = b` |
+| `MatN.v` | matrices, `pow`, `geom_sum`, the Kleene star |
+| `PathN.v` | paths, path measures, and the closure over a candidate list |
+| `SemimoduleN.v` | the semimodule layer and affine fixed points |
+| `OrderSemiring.v`, `NormalizedOrder.v`, `ExtendOrder.v` | building a carrier from an order alone |
+
+**Schulze, shared base**
+
+| File | Contents |
+|---|---|
+| `SchulzeDefsN.v` | the five definitions, `mat_star`, `kleene_exp` |
+| `SchulzeOrderN.v` | order and semiring algebra over a bounded semiring |
+| `SchulzeClosureN.v` | the closure, powers, transposition, path-measure bounds |
+| `SchulzeBasicsN.v` | order facts about beating and winning |
+| `SchulzeWitnessN.v` | the triangle and four-cycle witness matrices |
+
+**One file per criterion**, in dependency order: `ResolvabilityN`,
+`TransitivityN`, `WinnerexistenceN`, `CharacterisationsN`, `ReversalsymmetryN`,
+`MonotonicityN`, `ParetoN`, `CondorcetN`, `SmithN`, `PrudenceN`, `MinMaxN`,
+`NeutralityN`, `IsolateN`. `SocialchoiceN.v` re-exports these.
+
+**Comparing two elections over different alternative sets.** Independence of
+clones and Smith-IIA both replace or delete an alternative, which changes
+`|A|`, so they use the closure parameterised by a candidate list rather than by
+a fixed type.
+
+| File | Contents |
+|---|---|
+| `ClosureTransportN.v` | carrying a path from one election to another; used by both |
+| `BeatsOnN.v` | `beats_on` and `winner_on` over a candidate list, and their agreement with `schulze_beats`/`schulze_winner` at `elements` |
+| `CloneN.v` | independence of clones (Schulze 4.6) |
+| `CloneCharacterisationN.v` | its converse, and its equivalence with winner existence |
+| `SmithiiaN.v` | Smith-IIA in removal form (4.7.5a) |
+
+`SchulzeOnNT.v` discharges the algebraic side conditions once for a concrete
+carrier. `examples/` instantiates the framework and checks the separating
+examples by reflection; `extraction/` drives the OCaml targets.
+
+### Where the characterisation results live
+
+Each of the first three sits beside the criterion it completes; the last three
+combine both structural guarantees and so belong to neither.
+
+| Theorem | File |
+|---|---|
+| `transitivity_characterisation` | `TransitivityN.v` |
+| `winner_exists_characterisation` | `WinnerexistenceN.v` |
+| `clone_characterisation`, `clone_iff_winner_exists` | `CloneCharacterisationN.v` |
+| `output_well_formed_characterisation` | `CharacterisationsN.v` |
+| `strict_partial_order_characterisation` | `CharacterisationsN.v` |
+| `winner_beats_nonwinner_characterisation` | `CharacterisationsN.v` |
+
+## Checking the development
+
+`./scripts/audit.sh` (after `dune build`) checks the two claims the papers
+make: that no file contains an admitted statement, and that every headline
+theorem is closed under the global context. The theorems it checks are listed
+in `scripts/audit_theorems.txt`, one per line, so the list can be extended
+without touching the script. GitHub Actions runs `dune build` and then the
+audit on every push (`.github/workflows/ci.yml`).
+
 
 
 If you want to verify that your algebra is a semiring, do the following:
