@@ -42,9 +42,6 @@ Section Clone.
     (m : @Matrix R) (p : list (Node * Node * R)) : list (Node * Node * R) :=
     List.map (fun '(a, b, _) => (f a, f b, m (f a) (f b))) p.
 
-  Lemma orel_le_one {R : BoundedSemiring.type} (a : R) : a ≤ 1.
-  Proof. unfold Orel. rewrite addC. apply add_bound. Qed.
-
   Lemma remap_path_app {R : Semiring.type} (f : Node -> Node)
     (m : @Matrix R) (p q : list (Node * Node * R)) :
     remap_path f m (p ++ q) = remap_path f m p ++ remap_path f m q.
@@ -427,9 +424,6 @@ Section CloneReplacement.
     destruct Hx as [Hx | [Hx | Hx]]; [subst x; exact Hc | subst x; exact He | exact Hx].
   Qed.
 
-  Lemma bounded_orel_refl' (a : R) : a ≤ a.
-  Proof. unfold Orel. apply bounded_add_idem. Qed.
-
   Lemma nonempty_has_member {A : Type} (l : list A) :
     l <> [] -> exists x, List.In x l.
   Proof.
@@ -466,16 +460,16 @@ Section CloneReplacement.
         destruct (fin_eq_dec b d) as [Hbd | Hbn].
       + subst a b. rewrite !expand_d.
         rewrite (Hdiag_old d d eq_refl), (Hdiag_new g g eq_refl).
-        apply bounded_orel_refl'.
+        apply bounded_orel_refl.
       + subst a. rewrite expand_d, (expand_other g b Hbn).
         rewrite (Hclone_out b g Hb_old Hbn Hg).
-        apply bounded_orel_refl'.
+        apply bounded_orel_refl.
       + subst b. rewrite (expand_other g a Han), expand_d.
         rewrite (Hclone_in a g Ha_old Han Hg).
-        apply bounded_orel_refl'.
+        apply bounded_orel_refl.
       + rewrite (expand_other g a Han), (expand_other g b Hbn).
         rewrite (Hclone_ext a b Ha_old Han Hb_old Hbn).
-        apply bounded_orel_refl'.
+        apply bounded_orel_refl.
   Qed.
 
   (** Collapse: sending every clone back to [d] carries the new closure below
@@ -505,16 +499,16 @@ Section CloneReplacement.
         destruct (in_A_new_inv b Hb_new) as [[Hb_old [Hb_ne _]] | Hb_K].
       + rewrite (collapse_old a Ha_old), (collapse_old b Hb_old).
         rewrite (Hclone_ext a b Ha_old Ha_ne Hb_old Hb_ne).
-        apply bounded_orel_refl'.
+        apply bounded_orel_refl.
       + rewrite (collapse_old a Ha_old), (collapse_clone b Hb_K).
         rewrite (Hclone_in a b Ha_old Ha_ne Hb_K).
-        apply bounded_orel_refl'.
+        apply bounded_orel_refl.
       + rewrite (collapse_clone a Ha_K), (collapse_old b Hb_old).
         rewrite (Hclone_out b a Hb_old Hb_ne Ha_K).
-        apply bounded_orel_refl'.
+        apply bounded_orel_refl.
       + rewrite (collapse_clone a Ha_K), (collapse_clone b Hb_K).
         rewrite (Hdiag_old d d eq_refl).
-        apply orel_le_one.
+        apply le_one.
   Qed.
 
   (* ------------------------------------------------------------------ *)
