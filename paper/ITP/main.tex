@@ -575,8 +575,8 @@ $\quad A^{*} = \lim_{k\to\infty} A^{\langle k \rangle}$.
 \end{definition}
 
 
-This is the closure of $A$. We have not encoded $A^{*}$ in Rocq because we do not want to compute it. In many cases, computing $A^{*}$ is a diverging process; for example, with regular languages endowed with the concatenation and union operators, it never reaches a fixed point. We are only interested in cases where $A^{*}$ is well-defined and does reach a fixed point. Therefore, we express $A^{*}$ as 
-$A^{\langle k + n - 1 \rangle}$ in proofs, where  $k$  is an arbitrary natural number and $n$ is the dimension of $A$. Ideally, we could have encoded $A^{*}$ as a coinductive definition and demonstrated that it reaches a fixed point using a mix of inductive and coinductive reasoning \cite{Nakata_2010}. However, this would have complicated our reasoning without significant benefit.
+This is the closure of $A$. We have not encoded $A^{*}$ itself in Rocq, because over an arbitrary semiring there is nothing to encode: the limit need not exist. The failure has two forms. The iteration may fail to stabilise even though the limit exists; with regular languages endowed with the union and concatenation operators, $A^{*}$ is the infinite union of all the powers, and no finite stage reaches it. Over other carriers the limit does not exist at all; with natural numbers under addition and multiplication, the powers simply grow. We are only interested in cases where the iteration does reach a fixed point. Therefore, we express $A^{*}$ as
+$A^{\langle k + n - 1 \rangle}$ in proofs, where $n$ is the dimension of $A$ and $k$ is an arbitrary natural number. Quantifying over $k$ is precisely the statement that the sum stops growing at stage $n - 1$, so it expresses the fixed point in finite terms. Ideally, we could have encoded $A^{*}$ as a coinductive definition and demonstrated that it reaches a fixed point using a mix of inductive and coinductive reasoning \cite{Nakata_2010}. However, this would have complicated our reasoning without significant benefit.
 
 
 

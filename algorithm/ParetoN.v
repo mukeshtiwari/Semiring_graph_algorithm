@@ -389,10 +389,13 @@ Section ParetoN.
       Hneq Hne_top Hpos n).
   Qed.
 
+  (** Pareto (4.3.1.2): the unanimously preferred alternative beats the
+      dominated one, [ab ∈ O] — here as the strict closure comparison that
+      (2.2.1) reads as [ab ∈ O]. *)
   Theorem pareto_stronger {R : BoundedSemiring.type}
     (M : @Matrix Node R) (A B : Node)
     (Htotal : forall x y : R, x + y = x \/ x + y = y)
-    (Htop_trans : forall X Y Z, M X Y = M A B -> 
+    (Htop_trans : forall X Y Z, M X Y = M A B ->
       M Y Z = M A B -> M X Z = M A B) :
     A ≠ B -> M B A = 0 -> 0 < M A B ->
     (forall X Y, X ≠ Y -> M X Y ≤ M A B) ->

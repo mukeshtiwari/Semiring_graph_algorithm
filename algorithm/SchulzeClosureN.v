@@ -208,6 +208,8 @@ Section SchulzeClosureN.
   (*  5. pow B^K = mat_star M (matrix_pow_idempotence_bounded)               *)
   (* =====================================================================  *)
 
+  (** Schulze (2.2.5): ∀a,b,c ∈ A : min_D{P_D[a,b], P_D[b,c]} ≾_D P_D[a,c] —
+      with the semiring product standing for the paper's min. *)
   Lemma star_path_compose {R : BoundedSemiring.type}
     (M : @Matrix Node R) (a b c : Node) :
     mat_star M a b * mat_star M b c ≤ mat_star M a c.

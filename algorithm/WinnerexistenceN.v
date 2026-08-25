@@ -236,6 +236,9 @@ Section WinnerexistenceN.
 
   (** * Winner existence — meet-semiring version
 
+      The headline of Schulze's §4.1 corollary: "the set S of winners, as
+      defined in (2.2.2), is non-empty".  (The corollary's displayed form
+      (4.1.14) is the stronger [winner_beats_nonwinner] below.)
 
       a Schulze winner is a
       maximal element of the strict partial order [schulze_beats], and

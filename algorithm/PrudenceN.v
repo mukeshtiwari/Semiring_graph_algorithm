@@ -38,6 +38,7 @@ Section PrudenceN.
   (*  a link can dominate every cycle while a two-step detour ties it.     *)
   (* ==================================================================== *)
 
+  (** [λ_D], the strength of the strongest directed cycle — Schulze (4.9.2). *)
   Definition cycle_strength {R : Semiring.type} (M : @Matrix Node R) : R :=
     sum (fun a => sum (fun b =>
       if fin_eq_dec a b then 0 else M a b * mat_star M b a)).

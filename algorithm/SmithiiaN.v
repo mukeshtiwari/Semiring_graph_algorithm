@@ -263,9 +263,10 @@ Section SmithIIA.
         exact (schulze_beats_asym M a b (strong_beats_weak a b Ha HbB2) Hbeats).
   Qed.
 
-  (** The winner set itself is unchanged.  Every winner lies in the strong
-      block by the Smith criterion, and there the two elections agree, so
-      deleting a weak alternative is invisible to the outcome. *)
+  (** The winner set itself is unchanged — Schulze (4.7.5)(b), [S_old =
+      S_new].  Every winner lies in the strong block by the Smith criterion,
+      and there the two elections agree, so deleting a weak alternative is
+      invisible to the outcome. *)
   Corollary smith_iia_winner_set (HB1 : B1 <> []) (a : Node) :
     schulze_winner M a <-> (List.In a B1 /\ winner_on (drop d) M a).
   Proof.
@@ -365,7 +366,8 @@ Section SmithIIA.
   Qed.
 
   (** The winner set of the reduced election is the winner set of the full
-      one.  Every winner already lay in [B1] by the Smith criterion. *)
+      one — the iterated form of (4.7.5)(b).  Every winner already lay in
+      [B1] by the Smith criterion. *)
   Corollary smith_iia_winner_set_all (a : Node) :
     schulze_winner M a <-> (List.In a B1 /\ winner_on B1 M a).
   Proof.

@@ -33,10 +33,10 @@ Section CloneReplacement.
   Hypothesis Hdiag_old : forall u v : Node, u = v -> M_old u v = 1.
   Hypothesis Hdiag_new : forall u v : Node, u = v -> M_new u v = 1.
 
-  (** Schulze's (4.6.12): every clone inherits the outgoing edges of [d]. *)
+  (** Schulze's (4.6.13): every clone inherits the outgoing edges of [d]. *)
   Hypothesis Hclone_out : forall a g, List.In a A_old -> a <> d ->
     List.In g K -> M_new g a = M_old d a.
-  (** Schulze's (4.6.13): every clone inherits the incoming edges of [d]. *)
+  (** Schulze's (4.6.12): every clone inherits the incoming edges of [d]. *)
   Hypothesis Hclone_in : forall a g, List.In a A_old -> a <> d ->
     List.In g K -> M_new a g = M_old a d.
   (** Schulze's (4.6.14): edges between surviving alternatives are untouched.
@@ -224,10 +224,10 @@ Section CloneReplacement.
   Qed.
 
   (* ------------------------------------------------------------------ *)
-  (*  Path strengths are preserved (Schulze 4.6.4 to 4.6.6)              *)
+  (*  Path strengths are preserved (Schulze 4.6.21 to 4.6.23)           *)
   (* ------------------------------------------------------------------ *)
 
-  (** (4.6.4) Strengths between surviving alternatives are unchanged. *)
+  (** (4.6.23) Strengths between surviving alternatives are unchanged. *)
   Theorem clone_strength_survivors (a b : Node) :
     List.In a A_old -> a <> d -> List.In b A_old -> b <> d ->
     path_star A_new M_new a b = path_star A_old M_old a b.
@@ -242,7 +242,7 @@ Section CloneReplacement.
       rewrite (expand_other g a Ha_ne), (expand_other g b Hb_ne) in H. exact H.
   Qed.
 
-  (** (4.6.5) The strength into any clone equals the old strength into [d]. *)
+  (** (4.6.21) The strength into any clone equals the old strength into [d]. *)
   Theorem clone_strength_to_clone (a g : Node) :
     List.In a A_old -> a <> d -> List.In g K ->
     path_star A_new M_new a g = path_star A_old M_old a d.
@@ -256,7 +256,7 @@ Section CloneReplacement.
       rewrite (expand_other g a Ha_ne), expand_d in H. exact H.
   Qed.
 
-  (** (4.6.6) The strength out of any clone equals the old strength out of
+  (** (4.6.22) The strength out of any clone equals the old strength out of
       [d].  In particular all clones are pairwise indistinguishable from the
       outside, however they compare among themselves. *)
   Theorem clone_strength_from_clone (a g : Node) :
@@ -271,7 +271,8 @@ Section CloneReplacement.
     - pose proof (expand_transport g d a Hg Hd_old Ha) as H.
       rewrite expand_d, (expand_other g a Ha_ne) in H. exact H.
   Qed.
-  (** A clone beats a survivor exactly when [d] used to. *)
+  (** A clone beats a survivor exactly when [d] used to — the two directions
+      of Schulze's (4.6.5): [db ∈ O_old ⇔ gb ∈ O_new]. *)
   Lemma clone_beats_survivor (g a : Node) :
     List.In g K -> List.In a A_old -> a <> d ->
     beats_on A_new M_new g a -> beats_on A_old M_old d a.
@@ -294,7 +295,8 @@ Section CloneReplacement.
       | exact Hbeats ].
   Qed.
 
-  (** A survivor beats a clone exactly when it used to beat [d]. *)
+  (** A survivor beats a clone exactly when it used to beat [d] — the two
+      directions of Schulze's (4.6.4): [ad ∈ O_old ⇔ ag ∈ O_new]. *)
   Lemma survivor_beats_clone (b g : Node) :
     List.In g K -> List.In b A_old -> b <> d ->
     beats_on A_new M_new b g -> beats_on A_old M_old b d.
@@ -317,7 +319,8 @@ Section CloneReplacement.
       | exact Hbeats ].
   Qed.
 
-  (** Survivors beat each other exactly as before. *)
+  (** Survivors beat each other exactly as before — the two directions of
+      Schulze's (4.6.6): [ab ∈ O_old ⇔ ab ∈ O_new]. *)
   Lemma survivors_beat_new_old (a b : Node) :
     List.In a A_old -> a <> d -> List.In b A_old -> b <> d ->
     beats_on A_new M_new a b -> beats_on A_old M_old a b.

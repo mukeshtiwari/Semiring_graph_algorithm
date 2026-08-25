@@ -19,7 +19,7 @@ Section MonotonicityN.
   Context {Node : FinType.type}.
 
 
-  (** * Monotonicity (Section 4.2 of the Schulze paper)
+  (** * Monotonicity (Section 4.5 of the Schulze paper)
 
       If we strengthen candidate [A] — increasing [A]'s wins over other
       candidates and decreasing other candidates' wins over [A], while
@@ -107,6 +107,7 @@ Section MonotonicityN.
 
   (** * Monotonicity — forward direction (strength OUT of [A])
 
+      Schulze (4.5.13): [P_new[a,b] ≽ P_old[a,b]].
       Raising [A]'s row cannot lower any closure entry out of [A].  Proof:
       replace column [A] of [M] by that of [M'] — column irrelevance says
       the closure out of [A] does not change — and the result is entrywise
@@ -138,6 +139,7 @@ Section MonotonicityN.
 
   (** * Monotonicity — reverse direction (strength INTO [A])
 
+      Schulze (4.5.14): [P_old[b,a] ≽ P_new[b,a]].
       Lowering [A]'s column cannot raise any closure entry into [A].  Same
       shape: replace row [A] of [M'] by that of [M] — row irrelevance says
       the closure into [A] does not change — and the result is entrywise
@@ -167,7 +169,8 @@ Section MonotonicityN.
     - unfold mat_star. exact (geom_sum_monotone Mid M (@kleene_exp Node) Hdown C A).
   Qed.
 
-  (** * Monotonicity — winner level (paper §4.2: "a winner stays a winner")
+  (** * Monotonicity — winner level (paper §4.5: "a winner stays a winner";
+      the [a ∈ S_old ⇒ a ∈ S_new] half of (4.5.6))
 
       Raising [A] cannot harm a winner: if [A] is a Schulze winner in the
       original profile, then [A] is still a Schulze winner after [A] is
@@ -175,10 +178,12 @@ Section MonotonicityN.
       outgoing strengths below, and [monotonicity_rev] bounds the incoming
       strengths above, so the strict comparison [beats] is preserved.
 
-      Hypotheses (exactly the pairwise-matrix content of "raise [A]"):
-        [Hrow]:  M A Y  ≤ M' A Y   (A's outgoing edges increase)
-        [Hcol]:  M' X A ≤ M X A    (A's incoming edges decrease)
-        [Heq]:   M X Y  = M' X Y   for X≠A, Y≠A (everything else unchanged)
+      Hypotheses (exactly the pairwise-matrix content of "raise [A]",
+      the link-strength forms (4.5.10)–(4.5.12) of the paper):
+        [Hrow]:  M A Y  ≤ M' A Y   (A's outgoing edges increase, (4.5.10))
+        [Hcol]:  M' X A ≤ M X A    (A's incoming edges decrease, (4.5.11))
+        [Heq]:   M X Y  = M' X Y   for X≠A, Y≠A (everything else
+                                    unchanged, (4.5.12))
   *)
   Theorem winner_monotonicity {R : BoundedSemiring.type}
     (M M' : @Matrix Node R) (A : Node) :

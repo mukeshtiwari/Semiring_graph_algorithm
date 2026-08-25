@@ -20,7 +20,14 @@ Section CondorcetN.
 
 
 
-  (** * [condorcet_implies_strict_winner], with [H_pair_sum_one] replaced by
+  (** * Condorcet consistency.  In the paper this is not a separate section:
+      it is the Remark in §4.7 — "If B1 consists of only one alternative
+      a ∈ A, then this is the so-called Condorcet criterion" — i.e. the
+      Smith criterion (4.7.3)/(4.7.4) with [B1 = {a}].  Here it is proved
+      directly, and in a stronger form: the Condorcet winner is a strict
+      winner, not merely undefeated.
+
+      [condorcet_implies_strict_winner], with [H_pair_sum_one] replaced by
       [H_cross] — every edge *into* the Condorcet winner [A] is strictly below
       the closure strength *out of* [A], rather than forcing every outgoing
       edge to equal the semiring's top [1].

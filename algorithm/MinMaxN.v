@@ -38,6 +38,8 @@ Section MinMaxN.
   Definition proper_nonempty (B : Node -> bool) : Prop :=
     (exists x, B x = true) /\ (exists y, B y = false).
 
+  (** [Γ_D(B)], the strongest link entering [B] — the definition opening
+      Schulze's §4.8 (also (6.3) in his §6). *)
   Definition cut_in {R : Semiring.type}
     (M : @Matrix Node R) (B : Node -> bool) : R :=
     sum (fun y => sum (fun x => if andb (negb (B y)) (B x) then M y x else 0)).

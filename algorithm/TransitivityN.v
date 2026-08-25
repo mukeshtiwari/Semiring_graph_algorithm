@@ -20,6 +20,10 @@ Section TransitivityN.
 
   (** * 4.1 Transitivity of Schulze beats — meet-semiring proof
 
+      Schulze's §4.1 Claim ("The binary relation O, as defined in (2.2.1),
+      is transitive"): premises (4.1.1) [ab ∈ O] and (4.1.2) [bc ∈ O] give
+      the conclusion (4.1.3) [ac ∈ O].
+
       Same conclusion as [schulze_trans] (if [a] beats [b] and [b] beats [c]
       then [a] beats [c]), but replacing the strong normalisation hypothesis
       [H_pair_sum_one] with a meet-lower-bound axiom:
