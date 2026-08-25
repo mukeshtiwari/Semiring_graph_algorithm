@@ -159,6 +159,119 @@ Section BeatsOnN.
   Qed.
 
   (* ------------------------------------------------------------------ *)
+  (*  Three-cycles in the beat relation                                  *)
+  (*                                                                     *)
+  (*  A three-cycle forces a CYCLIC TRIPLE in the carrier: three values,  *)
+  (*  each strictly above the product of the other two.  This is the      *)
+  (*  triangle core of the transitivity argument read contrapositively,   *)
+  (*  and it needs no selectivity and no meet property — only the         *)
+  (*  composition bound.  A carrier with no cyclic triple, such as the    *)
+  (*  diamond lattice, therefore admits no beat three-cycle over any      *)
+  (*  candidate list, which is what the clone criterion at four           *)
+  (*  alternatives turns on.                                              *)
+  (* ------------------------------------------------------------------ *)
+
+  Lemma beats_on_cycle3_cyclic_triple (ns : list Node)
+    (m : @OrelN.Matrix Node R)
+    (Hns : ns <> [])
+    (Hdiag : forall u v : Node, u = v -> m u v = 1)
+    (x y z : Node)
+    (Hx : List.In x ns) (Hy : List.In y ns) (Hz : List.In z ns) :
+    beats_on ns m x y -> beats_on ns m y z -> beats_on ns m z x ->
+    exists F1 F2 F3 : R,
+      (F1 * F2 ≤ F3 /\ F1 * F2 <> F3) /\
+      (F2 * F3 ≤ F1 /\ F2 * F3 <> F1) /\
+      (F3 * F1 ≤ F2 /\ F3 * F1 <> F2).
+  Proof.
+    intros [B1le B1ne] [B2le B2ne] [B3le B3ne].
+    exists (path_star ns m x y), (path_star ns m y z), (path_star ns m z x).
+    pose proof (path_star_compose ns m x y z Hns Hdiag Hx Hy Hz) as C1.
+    pose proof (path_star_compose ns m y z x Hns Hdiag Hy Hz Hx) as C2.
+    pose proof (path_star_compose ns m z x y Hns Hdiag Hz Hx Hy) as C3.
+    split; [| split]; split.
+    - exact (orel_trans _ _ _ C1 B3le).
+    - intro Heq. apply B3ne. apply orel_antisym; [exact B3le |].
+      rewrite <- Heq. exact C1.
+    - exact (orel_trans _ _ _ C2 B1le).
+    - intro Heq. apply B1ne. apply orel_antisym; [exact B1le |].
+      rewrite <- Heq. exact C2.
+    - exact (orel_trans _ _ _ C3 B2le).
+    - intro Heq. apply B2ne. apply orel_antisym; [exact B2le |].
+      rewrite <- Heq. exact C3.
+  Qed.
+
+  (** Four values drawn from a three-element set must collide somewhere. *)
+  Lemma four_in_three_collide (a b c u0 u1 u2 u3 : Node) :
+    (u0 = a \/ u0 = b \/ u0 = c) ->
+    (u1 = a \/ u1 = b \/ u1 = c) ->
+    (u2 = a \/ u2 = b \/ u2 = c) ->
+    (u3 = a \/ u3 = b \/ u3 = c) ->
+    u1 = u0 \/ u2 = u1 \/ u3 = u2 \/ u2 = u0 \/ u3 = u1 \/ u3 = u0.
+  Proof.
+    intros H0 H1 H2 H3.
+    repeat match goal with H : _ \/ _ |- _ => destruct H end; subst; tauto.
+  Qed.
+
+  (** On a list drawn from at most three values, an asymmetric decidable
+      relation with no three-cycle leaves some member unbeaten.  Every
+      beaten-by-beaten chain of length three must collide, and each
+      collision is either an asymmetry violation or a three-cycle. *)
+  Lemma exists_unbeaten_small (Rel : Node -> Node -> Prop)
+    (Hdec : forall u v : Node, {Rel u v} + {~ Rel u v})
+    (Hasym : forall u v : Node, Rel u v -> ~ Rel v u)
+    (a b c : Node) (l : list Node)
+    (Hsmall : forall u, List.In u l -> u = a \/ u = b \/ u = c)
+    (Hnc : forall u v w, List.In u l -> List.In v l -> List.In w l ->
+             Rel u v -> Rel v w -> Rel w u -> False)
+    (Hne : l <> []) :
+    exists w, List.In w l /\ forall u, List.In u l -> ~ Rel u w.
+  Proof.
+    set (beatenb := fun u : Node =>
+      existsb (fun v => if Hdec v u then true else false) l).
+    assert (Hbeaten : forall u, beatenb u = true ->
+              exists v, List.In v l /\ Rel v u).
+    { intros u Hu. unfold beatenb in Hu.
+      destruct (proj1 (existsb_exists _ _) Hu) as (v & Hv & Hif).
+      exists v. split; [exact Hv |].
+      destruct (Hdec v u) as [HR | HR]; [exact HR | discriminate]. }
+    destruct (existsb (fun u => negb (beatenb u)) l) eqn:E.
+    - (* some member is unbeaten *)
+      destruct (proj1 (existsb_exists _ _) E) as (w & Hw & Hnb).
+      exists w. split; [exact Hw |].
+      intros u Hu HR.
+      assert (Hb : beatenb w = true).
+      { unfold beatenb. apply existsb_exists. exists u. split; [exact Hu |].
+        destruct (Hdec u w) as [_ | Habs]; [reflexivity | contradiction]. }
+      rewrite Hb in Hnb. discriminate.
+    - (* every member is beaten: build a chain of three beaters and collide *)
+      exfalso.
+      assert (Hallb : forall u, List.In u l ->
+                exists v, List.In v l /\ Rel v u).
+      { intros u Hu. apply Hbeaten.
+        destruct (beatenb u) eqn:Eb; [reflexivity | exfalso].
+        assert (Htrue : existsb (fun u0 => negb (beatenb u0)) l = true).
+        { apply existsb_exists. exists u. split; [exact Hu |].
+          rewrite Eb. reflexivity. }
+        rewrite E in Htrue. discriminate. }
+      destruct l as [| u0 t] eqn:El; [exact (Hne eq_refl) |].
+      rewrite <- El in *.
+      assert (Hu0 : List.In u0 l) by (rewrite El; left; reflexivity).
+      destruct (Hallb u0 Hu0) as (v1 & Hv1 & R1).
+      destruct (Hallb v1 Hv1) as (v2 & Hv2 & R2).
+      destruct (Hallb v2 Hv2) as (v3 & Hv3 & R3).
+      destruct (four_in_three_collide a b c u0 v1 v2 v3
+                  (Hsmall u0 Hu0) (Hsmall v1 Hv1) (Hsmall v2 Hv2)
+                  (Hsmall v3 Hv3))
+        as [Hc1 | [Hc2 | [Hc3 | [Hc4 | [Hc5 | Hc6]]]]].
+      + subst v1. exact (Hasym u0 u0 R1 R1).
+      + subst v2. exact (Hasym v1 v1 R2 R2).
+      + subst v3. exact (Hasym v2 v2 R3 R3).
+      + subst v2. exact (Hasym v1 u0 R1 R2).
+      + subst v3. exact (Hasym v2 v1 R2 R3).
+      + subst v3. exact (Hnc u0 v2 v1 Hu0 Hv2 Hv1 R3 R2 R1).
+  Qed.
+
+  (* ------------------------------------------------------------------ *)
   (*  Winner sets (Schulze 4.6.7 and 4.6.8)                              *)
   (* ------------------------------------------------------------------ *)
 

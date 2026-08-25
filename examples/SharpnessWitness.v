@@ -22,7 +22,10 @@
 From Stdlib Require Import List Psatz Utf8.
 From HB Require Import structures.
 From Semiring Require Import Structures OrelN MatN SemimoduleN SocialchoiceN.
-From Examples Require Import Shortestpath.
+(* Schulze is imported first so that Shortestpath's [Node], [R], and
+   constructor names shadow its homonyms; the max-min carrier of the worked
+   example below is referred to by its qualified name [Schulze.R]. *)
+From Examples Require Import Schulze Shortestpath.
 Import ListNotations SemiringNotations.
 
 Local Infix "≤" := Orel (at level 70).
@@ -181,6 +184,23 @@ Lemma diamond_not_selective :
   exists x y : D4, x + y <> x /\ x + y <> y.
 Proof.
   exists Dp, Dq. split; cbn; discriminate.
+Qed.
+
+(** The diamond admits no CYCLIC TRIPLE: no three values, each strictly
+    above the meet of the other two.  By [beats_on_cycle3_cyclic_triple]
+    this means the beat relation over the diamond never contains a
+    three-cycle, on any candidate list and for any matrix — the fact that
+    lets the clone criterion hold at four alternatives (CloneFour.v), and
+    the proof of the computational observation that no order-3 profile over
+    the diamond has a cyclic beat relation. *)
+Lemma diamond_no_cyclic_triple :
+  forall F1 F2 F3 : D4,
+    F1 * F2 ≤ F3 /\ F1 * F2 <> F3 ->
+    F2 * F3 ≤ F1 /\ F2 * F3 <> F1 ->
+    F3 * F1 ≤ F2 /\ F3 * F1 <> F2 -> False.
+Proof.
+  intros [| | |] [| | |] [| | |]; unfold Orel; cbn;
+    intros [H1a H1b] [H2a H2b] [H3a H3b]; congruence.
 Qed.
 
 (* ===================================================================== *)
@@ -587,7 +607,107 @@ Section Level1Tight.
     - intros (Hle & _). vm_compute in Hle. discriminate.
   Qed.
 
+  (* ---- Smith-IIA, strong-removal form (Schulze 4.7.6): every            *)
+  (*      hypothesis of [smith_iia_isolate_strong] holds, yet isolating     *)
+  (*      the strong alternative A changes the beat relation on B2: the     *)
+  (*      tie between B and C rested on C's route to B through A, whose     *)
+  (*      strength q joined with the direct p to top, and dies with A. ---- *)
+
+  Definition Mstrong : Node -> Node -> D4 :=
+    fun x y =>
+      match x, y with
+      | A, A => Dtop | A, B => Dq   | A, C => Dp
+      | B, A => Dp   | B, B => Dtop | B, C => Dtop
+      | C, A => Dq   | C, B => Dp   | C, C => Dtop
+      end.
+
+  Theorem smith_iia_strong_fails_over_diamond :
+    (forall x : Node, In x [A] <-> ~ In x [B; C])
+    /\ (forall a b : Node, In a [A] -> In b [B; C] ->
+          Mstrong b a ≤ Dtop /\ Mstrong b a <> Dtop)
+    /\ In A [A]
+    /\ (forall x y : Node, x <> y -> Dtop ≤ Mstrong x y + Mstrong y x)
+    /\ In B [B; C] /\ In C [B; C]
+    /\ ~ schulze_beats Mstrong B C
+    /\ schulze_beats (isolate Mstrong A) B C.
+  Proof.
+    split; [| split; [| split; [| split; [| split; [| split; [| split]]]]]].
+    - intro x. destruct x; cbn; intuition congruence.
+    - intros a b Ha Hb.
+      destruct Ha as [Ea|[]]; subst a.
+      destruct Hb as [Eb|[Eb|[]]]; subst b;
+        split; vm_compute; first [reflexivity | discriminate].
+    - cbn; auto.
+    - intros x y Hxy. destruct x, y; try congruence; vm_compute; reflexivity.
+    - cbn; auto.
+    - cbn; auto.
+    - intros (_ & Hne). apply Hne. vm_compute. reflexivity.
+    - split; vm_compute; first [reflexivity | discriminate].
+  Qed.
+
 End Level1Tight.
+
+(* ===================================================================== *)
+(*  Part 4: the worked beatpath example, machine-checked.                 *)
+(*                                                                        *)
+(*  The introductory example of the semiring reading: over the max-min    *)
+(*  carrier (nat extended with infinity, from Schulze.v, whose zero       *)
+(*  [Left 0] plays the bottom), the profile with direct links             *)
+(*  A -> B at 8, B -> C at 6, and C -> A at 4 has closure                 *)
+(*                                                                        *)
+(*      star = [[top, 8, 6], [4, top, 6], [4, 4, top]],                   *)
+(*                                                                        *)
+(*  so the beat relation is the strict order A > B > C and A is the       *)
+(*  unique winner: the beatpaths break the direct cycle.                  *)
+(* ===================================================================== *)
+
+Section WorkedExample.
+
+  Definition Mw : Node -> Node -> Schulze.R :=
+    fun x y =>
+      match x, y with
+      | A, A => Schulze.Infinity
+      | A, B => Schulze.Left 8
+      | A, C => Schulze.Left 0
+      | B, A => Schulze.Left 0
+      | B, B => Schulze.Infinity
+      | B, C => Schulze.Left 6
+      | C, A => Schulze.Left 4
+      | C, B => Schulze.Left 0
+      | C, C => Schulze.Infinity
+      end.
+
+  (** The six off-diagonal closure entries, exactly as in the paper. *)
+  Theorem worked_example_star :
+    mat_star Mw A B = Schulze.Left 8 /\ mat_star Mw A C = Schulze.Left 6 /\
+    mat_star Mw B C = Schulze.Left 6 /\ mat_star Mw B A = Schulze.Left 4 /\
+    mat_star Mw C A = Schulze.Left 4 /\ mat_star Mw C B = Schulze.Left 4.
+  Proof.
+    repeat split; vm_compute; reflexivity.
+  Qed.
+
+  (** The beat relation is the strict order A > B > C. *)
+  Theorem worked_example_order :
+    schulze_beats Mw A B /\ schulze_beats Mw A C /\ schulze_beats Mw B C.
+  Proof.
+    repeat split; vm_compute; first [reflexivity | discriminate].
+  Qed.
+
+  (** A is the unique winner. *)
+  Theorem worked_example_winner :
+    schulze_winner Mw A /\ ~ schulze_winner Mw B /\ ~ schulze_winner Mw C.
+  Proof.
+    split; [| split].
+    - intros b Hb [Hle Hne].
+      destruct b; [congruence | vm_compute in Hle; discriminate
+                  | vm_compute in Hle; discriminate].
+    - intro Hw. apply (Hw A ltac:(discriminate)).
+      split; vm_compute; first [reflexivity | discriminate].
+    - intro Hw. apply (Hw A ltac:(discriminate)).
+      split; vm_compute; first [reflexivity | discriminate].
+  Qed.
+
+End WorkedExample.
 
 (* ===================================================================== *)
 (*  The four-alternative witness over the diamond.                        *)

@@ -34,3 +34,11 @@ Semiring.SmithiiaN              smith_iia_winner_set_all
 Examples.SharpnessWitness       tropical_no_winner_at_three
 Examples.SharpnessWitness       diamond_no_winner_at_four
 Examples.SharpnessWitness       diamond_every_profile_has_winner
+Semiring.MonotonicityN          winner_monotonicity
+Semiring.IsolateN               smith_iia_isolate_strong
+Semiring.SmithiiaN              smith_iia_removal_strong_beats
+Semiring.BeatsOnN               beats_on_cycle3_cyclic_triple
+Examples.SharpnessWitness       smith_iia_strong_fails_over_diamond
+Examples.SharpnessWitness       worked_example_winner
+Examples.CloneFour              diamond_clone_independence_at_four
+Examples.CloneFour              clone_characterisation_four_insufficient

@@ -57,7 +57,7 @@ a fixed type.
 | `BeatsOnN.v` | `beats_on` and `winner_on` over a candidate list, and their agreement with `schulze_beats`/`schulze_winner` at `elements` |
 | `CloneN.v` | independence of clones (Schulze 4.6) |
 | `CloneCharacterisationN.v` | its converse, and its equivalence with winner existence |
-| `SmithiiaN.v` | Smith-IIA in removal form (4.7.5a) |
+| `SmithiiaN.v` | Smith-IIA in removal form, on both sides of the cut (Schulze's 4.7.5a and 4.7.6) |
 
 `SchulzeOnNT.v` discharges the algebraic side conditions once for a concrete
 carrier. `examples/` instantiates the framework and checks the separating
@@ -76,6 +76,38 @@ combine both structural guarantees and so belong to neither.
 | `output_well_formed_characterisation` | `CharacterisationsN.v` |
 | `strict_partial_order_characterisation` | `CharacterisationsN.v` |
 | `winner_beats_nonwinner_characterisation` | `CharacterisationsN.v` |
+
+### Map for the ICALP submission
+
+Every numbered result of the ICALP paper is machine-checked. The table below mirrors the paper's status table and adds
+the file each theorem lives in. `PAPER-MAP.md` at the repository root gives
+the finer-grained map keyed to the equation numbers of Schulze's own paper.
+
+| Paper result | Rocq name | File |
+|---|---|---|
+| Asymmetry of the beat relation | `schulze_beats_asym` | `algorithm/SchulzeBasicsN.v` |
+| Paths, not walks | `reduce_path_into_elem_path_gen` | `algorithm/PathN.v` |
+| Neutrality | `neutrality_beats`, `neutrality_winner` | `algorithm/NeutralityN.v` |
+| Weak Pareto | `pareto_weaker`, `pareto_weaker_winner_transfer` | `algorithm/ParetoN.v` |
+| Monotonicity | `monotonicity_beats`, `winner_monotonicity` | `algorithm/MonotonicityN.v` |
+| Smith criterion | `smith_criterion_weaker` | `algorithm/SmithN.v` |
+| Smith-IIA, weak side | `smith_iia_removal`, `smith_iia_winner_set` | `algorithm/SmithiiaN.v` |
+| Smith-IIA, strong side | `smith_iia_removal_strong_beats`; `smith_iia_isolate_strong` | `algorithm/SmithiiaN.v`; `algorithm/IsolateN.v` |
+| Condorcet consistency | `condorcet_implies_strict_winner_weaker` | `algorithm/CondorcetN.v` |
+| Resolution step | `untied_winner_is_strict`, `untied_winner_unique` | `algorithm/ResolvabilityN.v` |
+| Transitivity and winner existence | `schulze_trans_weaker_necessary`; `winner_exists_weaker_necessary` | `algorithm/TransitivityN.v`; `algorithm/WinnerexistenceN.v` |
+| Independence of clones | `independence_of_clones_selective` | `algorithm/CloneN.v` |
+| Prudence | `prudence`, `prudence_not_winner` | `algorithm/PrudenceN.v` |
+| MinMax set | `minmax_beats`, `minmax_winner` | `algorithm/MinMaxN.v` |
+| Reversal symmetry, relation and winner level | `reversal_symmetry_O`; `reversal_symmetry_S_level2` | `algorithm/ReversalsymmetryN.v` |
+| Commutativity from the meet property | `mul_comm_of_meet` | `algorithm/SchulzeOrderN.v` |
+| Structure theorem | `structure_add_is_max`, `structure_mul_is_min` | `algorithm/SchulzeOrderN.v` |
+| The characterisations | see the table above | `algorithm/` |
+| Tropical three-cycle | `tropical_no_winner_at_three` | `examples/SharpnessWitness.v` |
+| Diamond witnesses and counts | `diamond_no_winner_at_four`, `diamond_every_profile_has_winner`, `diamond_order3_intransitive_count` | `examples/SharpnessWitness.v` |
+| Level-2 tightness (all five criteria) | `smith_fails_over_diamond`, `smith_iia_fails_over_diamond`, `smith_iia_strong_fails_over_diamond`, `condorcet_fails_over_diamond`, `resolution_fails_over_diamond` | `examples/SharpnessWitness.v` |
+| Clone bound: five alternatives optimal | `diamond_clone_independence_at_four`, `clone_characterisation_four_insufficient`; `beats_on_cycle3_cyclic_triple` | `examples/CloneFour.v`; `algorithm/BeatsOnN.v` |
+| The worked beatpath example | `worked_example_star`, `worked_example_order`, `worked_example_winner` | `examples/SharpnessWitness.v` |
 
 ## Checking the development
 
