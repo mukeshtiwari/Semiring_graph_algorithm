@@ -383,4 +383,51 @@ Section SmithIIA.
 
   End Removal.
 
+  (* =================================================================== *)
+  (*  Removing a strong alternative (Schulze 4.7.6)                       *)
+  (*                                                                      *)
+  (*  The other half of the Smith-IIA definition: deleting [d ∈ B1]       *)
+  (*  leaves the beat relation on the WEAK block unchanged.  The paper    *)
+  (*  proves it as "analogous" to (4.7.5)(a), and the formal mirror is    *)
+  (*  exact: the bridge [path_star_drop_is_isolate] needs only            *)
+  (*  [e, f ≠ d], and the isolation content is [smith_iia_isolate_strong] *)
+  (*  in IsolateN.  Note the paper claims no winner-set statement here    *)
+  (*  — removing a strong alternative can of course change [S] — so       *)
+  (*  unlike (4.7.5) there is no analogue of [smith_iia_winner_set].      *)
+  (* =================================================================== *)
+
+  Section RemovalStrong.
+
+  Context (M : @OrelN.Matrix Node R).
+  Hypothesis Htotal : forall x y : R, x + y = x \/ x + y = y.
+  Hypothesis Hdiag : forall u v : Node, u = v -> M u v = 1.
+  Context (B1 B2 : list Node) (c : R) (d : Node).
+  Hypothesis H_partition : forall x : Node, List.In x B1 <-> ~ List.In x B2.
+  Hypothesis H_lt : forall a b, List.In a B1 -> List.In b B2 -> M b a < c.
+  Hypothesis Hd : List.In d B1.
+  Hypothesis Hsep : forall x y : Node, x <> y -> c ≤ M x y + M y x.
+
+  Lemma B2_not_d (x : Node) : List.In x B2 -> x <> d.
+  Proof.
+    intros Hx Heq. subst x. exact (proj1 (H_partition d) Hd Hx).
+  Qed.
+
+  (** Schulze (4.7.6).  Deleting a strong alternative from the ballot leaves
+      the beat relation between the weak alternatives untouched. *)
+  Theorem smith_iia_removal_strong_beats (e f : Node) :
+    List.In e B2 -> List.In f B2 ->
+    (schulze_beats M e f <-> beats_on (drop d) M e f).
+  Proof.
+    intros He Hf.
+    unfold beats_on.
+    rewrite (path_star_drop_is_isolate M Hdiag d f e
+               (B2_not_d f Hf) (B2_not_d e He)).
+    rewrite (path_star_drop_is_isolate M Hdiag d e f
+               (B2_not_d e He) (B2_not_d f Hf)).
+    exact (smith_iia_isolate_strong M Htotal B1 B2 c d H_partition H_lt Hd Hsep
+             e f He Hf).
+  Qed.
+
+  End RemovalStrong.
+
 End SmithIIA.

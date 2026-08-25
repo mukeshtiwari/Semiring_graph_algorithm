@@ -173,7 +173,8 @@ two blocks: every `B2 → B1` link lies strictly below `c` and every
 | (4.7.5)(a), removal form | deleting a weak `d` from the ballot leaves the beat relation on `B1` unchanged | `smith_iia_removal_beats`, `smith_iia_removal_all_beats` | `SmithiiaN.v` |
 | (4.7.5)(a) at winner level | winner status of every strong alternative is untouched | `smith_iia_removal`, `smith_iia_removal_all` | `SmithiiaN.v` |
 | (4.7.5)(b) | `S_old = S_new` | `smith_iia_winner_set`, `smith_iia_winner_set_all` | `SmithiiaN.v` |
-| (4.7.6) | removing `d ∈ B1` | not formalised | — |
+| (4.7.6), isolation form | isolating a strong `d ∈ B1` leaves the beat relation on `B2` unchanged | `smith_iia_isolate_strong` (with `pow_isolate_strong_dichotomy` and `mat_star_isolate_strong_preserved`) | `IsolateN.v` |
+| (4.7.6), removal form | deleting a strong `d ∈ B1` from the ballot leaves the beat relation on `B2` unchanged | `smith_iia_removal_strong_beats` | `SmithiiaN.v` |
 
 The majority criterion for solid coalitions and participation
 ((4.7.14)–(4.7.15)) are only discussed, not proved, in the paper, and are
@@ -220,7 +221,6 @@ equality hold by construction: `schulze_trans_normalized` (§4.1),
 - The two resolvability formulations of §4.2 as literally stated (they
   quantify over profiles and voters), and the critical-link argument of
   §4.2.1.
-- (4.7.6), Smith-IIA for removing a strong alternative `d ∈ B1`.
 - The majority criterion for solid coalitions and participation
   ((4.7.14), (4.7.15)), which the paper also does not prove.
 - The paper's §2.3 Floyd–Warshall implementation as such; the extraction
