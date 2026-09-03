@@ -532,30 +532,6 @@ Section SchulzeClosureN.
     apply Hgen.
   Qed.
 
-  (** * Smith-IIA (4.7.5a) — isolation rather than removal
-
-      The paper compares the method before and after REMOVING a weak
-      alternative [d ∈ B2].  Removal is not expressible here: [sum] folds
-      over [elements], the whole [FinType] enumeration, so [matrix_mul],
-      [pow], [geom_sum], [mat_star] and [kleene_exp] are all tied to one
-      fixed alternative set, and there is no closure over a subset to
-      write [P_new] with.
-
-      What is expressible is ISOLATION: cut every link into and out of
-      [d], leaving the node in place.  [smith_iia_isolate] then says the
-      relation O restricted to [B1] is unchanged — the content of
-      (4.7.5)(a).  Two caveats, both real:
-
-      - It needs [Hsep], which the paper gets from (2.1.2): between two
-        distinct alternatives the stronger direction is at least a tie,
-        hence clears the threshold.  The Smith hypotheses alone relate
-        only B1-to-B2 pairs, so this has to be assumed.
-
-      - (4.7.5)(b) [S_old = S_new] does NOT transfer to isolation.  An
-        isolated [d] has every link at [0], so nobody beats it and it
-        becomes a spurious winner — an artefact of leaving the node in
-        place.  Only removal gets (b) right. *)
-
   (** With a selective join, a geometric sum is equal to one of its terms —
       the closure is attained at some particular walk length. *)
   Lemma geom_sum_selective {R : BoundedSemiring.type}

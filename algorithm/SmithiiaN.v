@@ -74,7 +74,7 @@ Section SmithIIA.
 
   (** * The removal theorem
 
-      The hypotheses are those of [smith_iia_isolate] in SocialchoiceN,
+      The hypotheses are those of [smith_iia_isolate] in IsolateN,
       with one addition: [M] must carry [1] on its diagonal.  The
       isolation form does not need this, because [mat_star] supplies the
       identity separately, whereas the list-indexed closure enumerates
