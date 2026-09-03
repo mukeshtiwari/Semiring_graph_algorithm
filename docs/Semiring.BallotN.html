@@ -19,6 +19,49 @@
 <h1 class="libtitle">Semiring.BallotN</h1>
 
 <div class="code">
+</div>
+
+<div class="doc">
+<a id="lab1"></a><h1 class="section">The ballot layer: from profiles to a strength matrix, generically</h1>
+
+
+<div class="paragraph"> </div>
+
+    Everything else in this development starts from a matrix <span class="inlinecode"><a class="idref" href="Examples.Profiles.html#M"><span class="id" title="abbreviation">M</span></a></span> of link
+    strengths.  That is where the algebra lives, but it is not where several
+    of Schulze's arguments live: Pareto appeals to the transitivity of each
+    ballot, Smith and Condorcet to the fact that the two entries <span class="inlinecode"><a class="idref" href="Examples.Profiles.html#M"><span class="id" title="abbreviation">M</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.b"><span class="id" title="variable">b</span></a></span> and
+    <span class="inlinecode"><a class="idref" href="Examples.Profiles.html#M"><span class="id" title="abbreviation">M</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.b"><span class="id" title="variable">b</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a></span> come from ONE pair of counts, monotonicity and clone independence
+    to how the counts move when ballots change.  A matrix has discarded all
+    of that, so the criterion files carry it as hypotheses on <span class="inlinecode"><a class="idref" href="Examples.Profiles.html#M"><span class="id" title="abbreviation">M</span></a></span>.
+
+<div class="paragraph"> </div>
+
+    This file supplies the missing layer and discharges those hypotheses.
+    A ballot is a ranking function <span class="inlinecode"><a class="idref" href="Examples.WinningVotes.html#WinningVotesSchulze.Node"><span class="id" title="variable">Node</span></a></span> <span class="inlinecode">→</span> <span class="inlinecode"><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a></span>, lower being better; every
+    strict weak order on a finite set is representable this way, and
+    transitivity comes for free.  A profile is a list of ballots, <span class="inlinecode"><a class="idref" href="Semiring.BallotN.html#count"><span class="id" title="definition">count</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.P"><span class="id" title="variable">P</span></a></span> <span class="inlinecode"><span class="id" title="var">i</span></span> <span class="inlinecode"><span class="id" title="var">j</span></span>
+    is the number of voters who strictly prefer <span class="inlinecode"><span class="id" title="var">i</span></span> to <span class="inlinecode"><span class="id" title="var">j</span></span>, and <span class="inlinecode"><a class="idref" href="Semiring.BallotN.html#matrix_of"><span class="id" title="definition">matrix_of</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.P"><span class="id" title="variable">P</span></a></span>
+    sends each off-diagonal pair of counts through a <span class="inlinecode"><a class="idref" href="Semiring.MeasureN.html#Measure"><span class="id" title="record">Measure</span></a></span> (MeasureN.v),
+    which is any of Schulze's strength measures satisfying (2.1.1) and (2.1.2).
+
+<div class="paragraph"> </div>
+
+    Neutrality and anonymity, the two symmetries Schulze notes in Sect. 2.1,
+    the Condorcet loser, and Smith-IIA in its removal form are bridged here
+    as well; the last needs a separator that no single tie strength supplies,
+    and takes it as the weakest pair maximum instead.
+
+<div class="paragraph"> </div>
+
+    Nothing here changes a matrix-level theorem.  Each section below states
+    Schulze's ballot-level premise, derives the matrix hypotheses of the
+    corresponding theorem from it, and applies that theorem to <span class="inlinecode"><a class="idref" href="Semiring.BallotN.html#matrix_of"><span class="id" title="definition">matrix_of</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.P"><span class="id" title="variable">P</span></a></span>.
+    Changes to a profile (raising, cloning, reversing) are relations between
+    profiles, stated as <span class="inlinecode"><span class="id" title="inductive">Forall2</span></span> of a relation between ballots, so that
+    "some voters do X" is expressed without choosing which voters. 
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">From</span> <span class="id" title="var">Stdlib</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <span class="id" title="library">Utf8</span> <span class="id" title="library">List</span> <span class="id" title="library">Arith</span> <span class="id" title="library">Lia</span> <span class="id" title="library">Sorting.Permutation</span>.<br/>
@@ -29,6 +72,14 @@
 <span class="id" title="keyword">Import</span> <span class="id" title="module">ListNotations</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+The weak order <span class="inlinecode">≤</span> on strengths is the <span class="inlinecode"><a class="idref" href="Semiring.OrelN.html#Orel"><span class="id" title="definition">Orel</span></a></span> notation from the imports.
+    The strict one is written out as a conjunction, so that <span class="inlinecode">&lt;</span> keeps its
+    meaning on vote counts. 
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">Section</span> <a id="BallotN" class="idref" href="#BallotN"><span class="id" title="section">BallotN</span></a>.<br/>
@@ -37,6 +88,13 @@
 &nbsp;&nbsp;<span class="id" title="keyword">Context</span> {<a id="BallotN.Node" class="idref" href="#BallotN.Node"><span class="id" title="variable">Node</span></a> : <a class="idref" href="Semiring.Structures.html#FinType.type"><span class="id" title="record">FinType.type</span></a>}.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab2"></a><h2 class="section">Ballots, profiles, pairwise counts</h2>
+
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="Ballot" class="idref" href="#Ballot"><span class="id" title="definition">Ballot</span></a> := <a class="idref" href="Semiring.BallotN.html#BallotN.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>.<br/>
@@ -120,6 +178,20 @@ No voter prefers each of two alternatives to the other.
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab3"></a><h2 class="section">Comparing counts across profiles</h2>
+
+
+<div class="paragraph"> </div>
+
+      Every bridge below is one of these four facts about filtered
+      lengths: a pointwise implication within a profile, a pointwise
+      implication or equivalence between two profiles related voter by
+      voter, and invariance under permutation. 
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="filter_length_le_incl" class="idref" href="#filter_length_le_incl"><span class="id" title="lemma">filter_length_le_incl</span></a> (<a id="f:26" class="idref" href="#f:26"><span class="id" title="binder">f</span></a> <a id="g:27" class="idref" href="#g:27"><span class="id" title="binder">g</span></a> : <a class="idref" href="Semiring.BallotN.html#Ballot"><span class="id" title="definition">Ballot</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#bool"><span class="id" title="inductive">bool</span></a>) (<a id="P:28" class="idref" href="#P:28"><span class="id" title="binder">P</span></a> : <a class="idref" href="Semiring.BallotN.html#Profile"><span class="id" title="definition">Profile</span></a>) :<br/>
@@ -174,6 +246,13 @@ No voter prefers each of two alternatives to the other.
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab4"></a><h2 class="section">Unanimity</h2>
+
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="unanimous" class="idref" href="#unanimous"><span class="id" title="definition">unanimous</span></a> (<a id="P:47" class="idref" href="#P:47"><span class="id" title="binder">P</span></a> : <a class="idref" href="Semiring.BallotN.html#Profile"><span class="id" title="definition">Profile</span></a>) (<a id="i:48" class="idref" href="#i:48"><span class="id" title="binder">i</span></a> <a id="j:49" class="idref" href="#j:49"><span class="id" title="binder">j</span></a> : <a class="idref" href="Semiring.BallotN.html#BallotN.Node"><span class="id" title="variable">Node</span></a>) : <span class="id" title="keyword">Prop</span> :=<br/>
@@ -234,6 +313,20 @@ Unanimous preference is transitive because each ballot is.
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab5"></a><h2 class="section">The closure depends on the matrix only pointwise</h2>
+
+
+<div class="paragraph"> </div>
+
+      Two profiles related voter by voter give two matrices that agree
+      entrywise but are not the same function.  These lemmas carry the
+      Schulze relations across such an agreement; they hold over any
+      bounded semiring. 
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="mat_star_ext" class="idref" href="#mat_star_ext"><span class="id" title="lemma">mat_star_ext</span></a> {<a id="R:64" class="idref" href="#R:64"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#BoundedSemiring.type"><span class="id" title="record">BoundedSemiring.type</span></a>} (<a id="M:65" class="idref" href="#M:65"><span class="id" title="binder">M</span></a> <a id="N:66" class="idref" href="#N:66"><span class="id" title="binder">N</span></a> : @<a class="idref" href="Semiring.OrelN.html#Matrix"><span class="id" title="definition">Matrix</span></a> <a class="idref" href="Semiring.BallotN.html#BallotN.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="Semiring.BallotN.html#R:64"><span class="id" title="variable">R</span></a>) :<br/>
@@ -302,6 +395,18 @@ A nonempty list over a totally ordered carrier has a least element.
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab6"></a><h2 class="section">The induced strength matrix</h2>
+
+
+<div class="paragraph"> </div>
+
+      The diagonal is the top by convention: Schulze's paths never
+      traverse it, and the criterion files expect <span class="inlinecode">1</span> there. 
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Context</span> (<a id="BallotN.m" class="idref" href="#BallotN.m"><span class="id" title="variable">m</span></a> : <a class="idref" href="Semiring.MeasureN.html#Measure"><span class="id" title="record">Measure</span></a>).<br/>
@@ -339,6 +444,23 @@ A real link never has the strength of the diagonal.
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab7"></a><h1 class="section">Pareto, strict form (Schulze 4.3.1)</h1>
+
+
+<div class="paragraph"> </div>
+
+      Premise: every voter strictly prefers <span class="inlinecode"><a class="idref" href="Examples.WidestShortestPath.html#A"><span class="id" title="constructor">A</span></a></span> to <span class="inlinecode"><a class="idref" href="Examples.WidestShortestPath.html#B"><span class="id" title="constructor">B</span></a></span>, and somebody
+      voted.  The five matrix hypotheses of <span class="inlinecode"><a class="idref" href="Semiring.ParetoN.html#pareto_stronger_iff"><span class="id" title="lemma">pareto_stronger_iff</span></a></span> follow:
+      <span class="inlinecode"><span class="id" title="var">Hmax</span></span> and <span class="inlinecode"><span class="id" title="var">Hpos</span></span> from (2.1.1), <span class="inlinecode"><a class="idref" href="Semiring.SmithiiaN.html#SmithIIA.RemovalStrong.Hdiag"><span class="id" title="variable">Hdiag</span></a></span> by construction, and
+      <span class="inlinecode"><span class="id" title="var">Htop_trans</span></span> because a link as strong as the unanimous one IS
+      unanimous (full_strength_inv), and unanimity composes because each
+      ballot is transitive.  This is the one bridge that needs the
+      individual ballots rather than the counts alone. 
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Section</span> <a id="BallotN.Pareto" class="idref" href="#BallotN.Pareto"><span class="id" title="section">Pareto</span></a>.<br/>
@@ -416,12 +538,24 @@ The key step: a link as strong as the unanimous one is unanimous.
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Semiring.BallotN.html#M"><span class="id" title="abbreviation">M</span></a> <a class="idref" href="Semiring.BallotN.html#X:126"><span class="id" title="variable">X</span></a> <a class="idref" href="Semiring.BallotN.html#Y:127"><span class="id" title="variable">Y</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="Semiring.BallotN.html#M"><span class="id" title="abbreviation">M</span></a> <a class="idref" href="Semiring.BallotN.html#BallotN.Pareto.A"><span class="id" title="variable">A</span></a> <a class="idref" href="Semiring.BallotN.html#BallotN.Pareto.B"><span class="id" title="variable">B</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Semiring.BallotN.html#M"><span class="id" title="abbreviation">M</span></a> <a class="idref" href="Semiring.BallotN.html#Y:127"><span class="id" title="variable">Y</span></a> <a class="idref" href="Semiring.BallotN.html#Z:128"><span class="id" title="variable">Z</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="Semiring.BallotN.html#M"><span class="id" title="abbreviation">M</span></a> <a class="idref" href="Semiring.BallotN.html#BallotN.Pareto.A"><span class="id" title="variable">A</span></a> <a class="idref" href="Semiring.BallotN.html#BallotN.Pareto.B"><span class="id" title="variable">B</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Semiring.BallotN.html#M"><span class="id" title="abbreviation">M</span></a> <a class="idref" href="Semiring.BallotN.html#X:126"><span class="id" title="variable">X</span></a> <a class="idref" href="Semiring.BallotN.html#Z:128"><span class="id" title="variable">Z</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="Semiring.BallotN.html#M"><span class="id" title="abbreviation">M</span></a> <a class="idref" href="Semiring.BallotN.html#BallotN.Pareto.A"><span class="id" title="variable">A</span></a> <a class="idref" href="Semiring.BallotN.html#BallotN.Pareto.B"><span class="id" title="variable">B</span></a>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">Proof</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">X</span> <span class="id" title="var">Y</span> <span class="id" title="var">Z</span> <span class="id" title="var">HXY</span> <span class="id" title="var">HYZ</span>.<br/>
+</div>
+
+<div class="doc">
+the diagonal is the top, which is not the strength of a real link 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">Hne</span> : <span class="id" title="keyword">∀</span> <a id="U:129" class="idref" href="#U:129"><span class="id" title="binder"><span id="U:131" class="id">U</span></span></a> <a id="V:130" class="idref" href="#V:130"><span class="id" title="binder"><span id="V:132" class="id">V</span></span></a>, <a class="idref" href="Semiring.BallotN.html#M"><span class="id" title="abbreviation">M</span></a> <a class="idref" href="Semiring.BallotN.html#U:129"><span class="id" title="variable">U</span></a> <a class="idref" href="Semiring.BallotN.html#V:130"><span class="id" title="variable">V</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="Semiring.BallotN.html#M"><span class="id" title="abbreviation">M</span></a> <a class="idref" href="Semiring.BallotN.html#BallotN.Pareto.A"><span class="id" title="variable">A</span></a> <a class="idref" href="Semiring.BallotN.html#BallotN.Pareto.B"><span class="id" title="variable">B</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Semiring.BallotN.html#U:129"><span class="id" title="variable">U</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'&lt;&gt;'_x"><span class="id" title="notation">≠</span></a> <a class="idref" href="Semiring.BallotN.html#V:130"><span class="id" title="variable">V</span></a>).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ <span class="id" title="tactic">intros</span> <span class="id" title="var">U</span> <span class="id" title="var">V</span> <span class="id" title="var">H</span> <span class="id" title="var">Huv</span>. <span class="id" title="tactic">rewrite</span> (<a class="idref" href="Semiring.BallotN.html#matrix_of_diag"><span class="id" title="lemma">matrix_of_diag</span></a> <a class="idref" href="Semiring.BallotN.html#BallotN.Pareto.P"><span class="id" title="variable">P</span></a> <span class="id" title="var">U</span> <span class="id" title="var">V</span> <span class="id" title="var">Huv</span>), <a class="idref" href="Semiring.BallotN.html#link_AB"><span class="id" title="lemma">link_AB</span></a> <span class="id" title="tactic">in</span> <span class="id" title="var">H</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">exact</span> (<a class="idref" href="Semiring.MeasureN.html#strength_ne_one"><span class="id" title="lemma">strength_ne_one</span></a> <a class="idref" href="Semiring.BallotN.html#BallotN.m"><span class="id" title="variable">m</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">(</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#length"><span class="id" title="definition">length</span></a> <a class="idref" href="Semiring.BallotN.html#BallotN.Pareto.P"><span class="id" title="variable">P</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">,</span></a> 0<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">)</span></a> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#eq_sym"><span class="id" title="lemma">eq_sym</span></a> <span class="id" title="var">H</span>)). }<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">pose</span> <span class="id" title="var">proof</span> (<span class="id" title="var">Hne</span> <span class="id" title="var">X</span> <span class="id" title="var">Y</span> <span class="id" title="var">HXY</span>) <span class="id" title="keyword">as</span> <span class="id" title="var">HXY'</span>. <span class="id" title="tactic">pose</span> <span class="id" title="var">proof</span> (<span class="id" title="var">Hne</span> <span class="id" title="var">Y</span> <span class="id" title="var">Z</span> <span class="id" title="var">HYZ</span>) <span class="id" title="keyword">as</span> <span class="id" title="var">HYZ'</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">pose</span> <span class="id" title="var">proof</span> (<a class="idref" href="Semiring.BallotN.html#unanimous_trans"><span class="id" title="lemma">unanimous_trans</span></a> <a class="idref" href="Semiring.BallotN.html#BallotN.Pareto.P"><span class="id" title="variable">P</span></a> <span class="id" title="var">X</span> <span class="id" title="var">Y</span> <span class="id" title="var">Z</span> (<a class="idref" href="Semiring.BallotN.html#top_link_unanimous"><span class="id" title="lemma">top_link_unanimous</span></a> <span class="id" title="var">X</span> <span class="id" title="var">Y</span> <span class="id" title="var">HXY'</span> <span class="id" title="var">HXY</span>)<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<a class="idref" href="Semiring.BallotN.html#top_link_unanimous"><span class="id" title="lemma">top_link_unanimous</span></a> <span class="id" title="var">Y</span> <span class="id" title="var">Z</span> <span class="id" title="var">HYZ'</span> <span class="id" title="var">HYZ</span>)) <span class="id" title="keyword">as</span> <span class="id" title="var">HuXZ</span>.<br/>
+</div>
+
+<div class="doc">
+nobody prefers an alternative to itself, so <span class="inlinecode"><a class="idref" href="Semiring.SchulzeWitnessN.html#SchulzeWitnessN.TriangleClosures.X"><span class="id" title="variable">X</span></a></span> <span class="inlinecode">≠</span> <span class="inlinecode"><a class="idref" href="Semiring.SchulzeWitnessN.html#SchulzeWitnessN.TriangleClosures.Z"><span class="id" title="variable">Z</span></a></span> 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">HXZ</span> : <span class="id" title="var">X</span> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'&lt;&gt;'_x"><span class="id" title="notation">≠</span></a> <span class="id" title="var">Z</span>).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ <span class="id" title="tactic">intro</span> <span class="id" title="var">Habs</span>. <span class="id" title="tactic">subst</span> <span class="id" title="var">Z</span>. <span class="id" title="tactic">destruct</span> <a class="idref" href="Semiring.BallotN.html#BallotN.Pareto.P"><span class="id" title="variable">P</span></a> <span class="id" title="keyword">as</span> [|<span class="id" title="var">b0</span> <span class="id" title="var">P'</span>]; [<span class="id" title="var">cbn</span> <span class="id" title="tactic">in</span> <span class="id" title="var">Hvoters</span>; <span class="id" title="var">lia</span> |].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">pose</span> <span class="id" title="var">proof</span> (<span class="id" title="var">HuXZ</span> <span class="id" title="var">b0</span> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#or_introl"><span class="id" title="constructor">or_introl</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#eq_refl"><span class="id" title="constructor">eq_refl</span></a>)) <span class="id" title="keyword">as</span> <span class="id" title="var">Hb0</span>.<br/>
@@ -476,6 +610,20 @@ Schulze (4.3.1.3): the dominated alternative is not a winner.
 &nbsp;&nbsp;<span class="id" title="keyword">End</span> <a class="idref" href="Semiring.BallotN.html#BallotN.Pareto"><span class="id" title="section">Pareto</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab8"></a><h1 class="section">Pareto, weak form (Schulze 4.3.2)</h1>
+
+
+<div class="paragraph"> </div>
+
+      Premise: every voter ranks <span class="inlinecode"><a class="idref" href="Examples.WidestShortestPath.html#A"><span class="id" title="constructor">A</span></a></span> at least as high as <span class="inlinecode"><a class="idref" href="Examples.WidestShortestPath.html#B"><span class="id" title="constructor">B</span></a></span>.  The row
+      and column inequalities of <span class="inlinecode"><a class="idref" href="Semiring.ParetoN.html#pareto_weaker"><span class="id" title="lemma">pareto_weaker</span></a></span> are then inclusions of
+      filtered voter sets: a voter with <span class="inlinecode"><a class="idref" href="Examples.WidestShortestPath.html#B"><span class="id" title="constructor">B</span></a></span> <span class="inlinecode">≻</span> <span class="inlinecode"><a class="idref" href="Semiring.SchulzeWitnessN.html#SchulzeWitnessN.TriangleClosures.X"><span class="id" title="variable">X</span></a></span> also has <span class="inlinecode"><a class="idref" href="Examples.WidestShortestPath.html#A"><span class="id" title="constructor">A</span></a></span> <span class="inlinecode">≻</span> <span class="inlinecode"><a class="idref" href="Semiring.SchulzeWitnessN.html#SchulzeWitnessN.TriangleClosures.X"><span class="id" title="variable">X</span></a></span>, and a
+      voter with <span class="inlinecode"><a class="idref" href="Semiring.SchulzeWitnessN.html#SchulzeWitnessN.TriangleClosures.X"><span class="id" title="variable">X</span></a></span> <span class="inlinecode">≻</span> <span class="inlinecode"><a class="idref" href="Examples.WidestShortestPath.html#A"><span class="id" title="constructor">A</span></a></span> also has <span class="inlinecode"><a class="idref" href="Semiring.SchulzeWitnessN.html#SchulzeWitnessN.TriangleClosures.X"><span class="id" title="variable">X</span></a></span> <span class="inlinecode">≻</span> <span class="inlinecode"><a class="idref" href="Examples.WidestShortestPath.html#B"><span class="id" title="constructor">B</span></a></span>. 
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="count_zero_of_none" class="idref" href="#count_zero_of_none"><span class="id" title="lemma">count_zero_of_none</span></a> : <span class="id" title="keyword">∀</span> (<a id="P:133" class="idref" href="#P:133"><span class="id" title="binder">P</span></a> : <a class="idref" href="Semiring.BallotN.html#Profile"><span class="id" title="definition">Profile</span></a>) <a id="i:134" class="idref" href="#i:134"><span class="id" title="binder">i</span></a> <a id="j:135" class="idref" href="#j:135"><span class="id" title="binder">j</span></a>,<br/>
@@ -591,6 +739,22 @@ Schulze (4.3.2.3) and (4.3.2.4): whatever <span class="inlinecode"><a class="idr
 &nbsp;&nbsp;<span class="id" title="keyword">End</span> <a class="idref" href="Semiring.BallotN.html#BallotN.ParetoWeak"><span class="id" title="section">ParetoWeak</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab9"></a><h1 class="section">Condorcet (the remark in Schulze 4.7)</h1>
+
+
+<div class="paragraph"> </div>
+
+      Premise: <span class="inlinecode"><a class="idref" href="Examples.WidestShortestPath.html#A"><span class="id" title="constructor">A</span></a></span> wins every pairwise comparison.  The matrix
+      hypothesis <span class="inlinecode"><span class="id" title="var">H_cross</span></span> of <span class="inlinecode"><a class="idref" href="Semiring.CondorcetN.html#condorcet_implies_strict_winner_weaker"><span class="id" title="lemma">condorcet_implies_strict_winner_weaker</span></a></span>
+      asks every link INTO <span class="inlinecode"><a class="idref" href="Examples.WidestShortestPath.html#A"><span class="id" title="constructor">A</span></a></span> to lie strictly below every closure entry
+      OUT of <span class="inlinecode"><a class="idref" href="Examples.WidestShortestPath.html#A"><span class="id" title="constructor">A</span></a></span>.  On an abstract matrix that is a genuine assumption;
+      here it is (2.1.2): a link into <span class="inlinecode"><a class="idref" href="Examples.WidestShortestPath.html#A"><span class="id" title="constructor">A</span></a></span> is a defeat, so it sits below
+      the tie, and a link out of <span class="inlinecode"><a class="idref" href="Examples.WidestShortestPath.html#A"><span class="id" title="constructor">A</span></a></span> is a victory, so it sits above it. 
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Section</span> <a id="BallotN.Condorcet" class="idref" href="#BallotN.Condorcet"><span class="id" title="section">Condorcet</span></a>.<br/>
@@ -661,6 +825,21 @@ A Condorcet winner is a strict Schulze winner…
 &nbsp;&nbsp;<span class="id" title="keyword">End</span> <a class="idref" href="Semiring.BallotN.html#BallotN.Condorcet"><span class="id" title="section">Condorcet</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab10"></a><h1 class="section">Smith (Schulze 4.7.3 and 4.7.4)</h1>
+
+
+<div class="paragraph"> </div>
+
+      Premise: every member of <span class="inlinecode"><a class="idref" href="Semiring.SmithiiaN.html#SmithIIA.RemovalStrong.B1"><span class="id" title="variable">B1</span></a></span> pairwise beats every member of <span class="inlinecode"><a class="idref" href="Semiring.SmithiiaN.html#SmithIIA.RemovalStrong.B2"><span class="id" title="variable">B2</span></a></span>.
+      The separator <span class="inlinecode"><a class="idref" href="Semiring.SmithiiaN.html#SmithIIA.RemovalStrong.c"><span class="id" title="variable">c</span></a></span> that <span class="inlinecode"><a class="idref" href="Semiring.SmithN.html#smith_criterion_weaker"><span class="id" title="lemma">smith_criterion_weaker</span></a></span> asks for is the
+      tie strength, again by (2.1.2).  SchulzeOnNT.v notes that no
+      carrier construction can supply this hypothesis; the count layer
+      does, because <span class="inlinecode"><a class="idref" href="Examples.Profiles.html#M"><span class="id" title="abbreviation">M</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.b"><span class="id" title="variable">b</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a></span> and <span class="inlinecode"><a class="idref" href="Examples.Profiles.html#M"><span class="id" title="abbreviation">M</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.b"><span class="id" title="variable">b</span></a></span> come from one pair of counts. 
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Section</span> <a id="BallotN.Smith" class="idref" href="#BallotN.Smith"><span class="id" title="section">Smith</span></a>.<br/>
@@ -724,6 +903,20 @@ Schulze (4.7.4): the winners lie in <span class="inlinecode"><a class="idref" hr
 &nbsp;&nbsp;<span class="id" title="keyword">End</span> <a class="idref" href="Semiring.BallotN.html#BallotN.Smith"><span class="id" title="section">Smith</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab11"></a><h1 class="section">Condorcet loser</h1>
+
+
+<div class="paragraph"> </div>
+
+      Premise: <span class="inlinecode"><a class="idref" href="Examples.WidestShortestPath.html#B"><span class="id" title="constructor">B</span></a></span> loses every pairwise comparison.  This is the Smith
+      bridge with <span class="inlinecode"><a class="idref" href="Examples.WidestShortestPath.html#B"><span class="id" title="constructor">B</span></a></span> alone as the weak block, so nothing new is needed
+      from the measure; the only extra hypothesis is that <span class="inlinecode"><a class="idref" href="Examples.WidestShortestPath.html#B"><span class="id" title="constructor">B</span></a></span> has a
+      rival at all. 
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Section</span> <a id="BallotN.CondorcetLoser" class="idref" href="#BallotN.CondorcetLoser"><span class="id" title="section">CondorcetLoser</span></a>.<br/>
@@ -759,6 +952,26 @@ Schulze (4.7.4): the winners lie in <span class="inlinecode"><a class="idref" hr
 &nbsp;&nbsp;<span class="id" title="keyword">End</span> <a class="idref" href="Semiring.BallotN.html#BallotN.CondorcetLoser"><span class="id" title="section">CondorcetLoser</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab12"></a><h1 class="section">Smith-IIA, removal form (Schulze 4.7.5a and 4.7.6)</h1>
+
+
+<div class="paragraph"> </div>
+
+      Premise: the cut of the Smith bridge.  The removal theorems of
+      SmithiiaN ask for a separator <span class="inlinecode"><a class="idref" href="Semiring.SmithiiaN.html#SmithIIA.RemovalStrong.c"><span class="id" title="variable">c</span></a></span> with three properties: every
+      link across the cut from weak to strong is strictly below <span class="inlinecode"><a class="idref" href="Semiring.SmithiiaN.html#SmithIIA.RemovalStrong.c"><span class="id" title="variable">c</span></a></span>,
+      <span class="inlinecode"><a class="idref" href="Semiring.SmithiiaN.html#SmithIIA.RemovalStrong.c"><span class="id" title="variable">c</span></a></span> is not the bottom, and <span class="inlinecode"><a class="idref" href="Semiring.SmithiiaN.html#SmithIIA.RemovalStrong.c"><span class="id" title="variable">c</span></a></span> is at most the larger link of
+      every pair.  The tie strength does not serve here, since (2.1.1)
+      and (2.1.2) say nothing about how two ties compare.  Instead <span class="inlinecode"><a class="idref" href="Semiring.SmithiiaN.html#SmithIIA.RemovalStrong.c"><span class="id" title="variable">c</span></a></span>
+      is the weakest of the pair maxima: it lies at most every pair
+      maximum by construction, and it is itself the larger link of some
+      pair, hence not a defeat, hence strictly above every defeat by
+      (2.1.2). 
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Section</span> <a id="BallotN.SmithIIA" class="idref" href="#BallotN.SmithIIA"><span class="id" title="section">SmithIIA</span></a>.<br/>
@@ -976,6 +1189,21 @@ Schulze (4.7.6): deleting a strong alternative leaves the comparison
 &nbsp;&nbsp;<span class="id" title="keyword">End</span> <a class="idref" href="Semiring.BallotN.html#BallotN.SmithIIA"><span class="id" title="section">SmithIIA</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab13"></a><h1 class="section">Monotonicity (Schulze 4.5)</h1>
+
+
+<div class="paragraph"> </div>
+
+      Premise: Schulze's (4.5.1) to (4.5.3), voter by voter.  A voter
+      who preferred <span class="inlinecode"><a class="idref" href="Examples.WidestShortestPath.html#A"><span class="id" title="constructor">A</span></a></span> to <span class="inlinecode"><a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.f"><span class="id" title="variable">f</span></a></span> still does, a voter who did not prefer
+      <span class="inlinecode"><a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.f"><span class="id" title="variable">f</span></a></span> to <span class="inlinecode"><a class="idref" href="Examples.WidestShortestPath.html#A"><span class="id" title="constructor">A</span></a></span> still does not, and preferences not involving <span class="inlinecode"><a class="idref" href="Examples.WidestShortestPath.html#A"><span class="id" title="constructor">A</span></a></span> are
+      unchanged.  The three matrix hypotheses of <span class="inlinecode"><a class="idref" href="Semiring.MonotonicityN.html#winner_monotonicity"><span class="id" title="lemma">winner_monotonicity</span></a></span>
+      are then count inequalities carried through (2.1.1). 
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="filter_length_ge_forall2" class="idref" href="#filter_length_ge_forall2"><span class="id" title="lemma">filter_length_ge_forall2</span></a> (<a id="Rel:265" class="idref" href="#Rel:265"><span class="id" title="binder">Rel</span></a> : <a class="idref" href="Semiring.BallotN.html#Ballot"><span class="id" title="definition">Ballot</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Semiring.BallotN.html#Ballot"><span class="id" title="definition">Ballot</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <span class="id" title="keyword">Prop</span>)<br/>
@@ -1114,6 +1342,21 @@ Schulze (4.5.5): a defeat <span class="inlinecode"><a class="idref" href="Exampl
 &nbsp;&nbsp;<span class="id" title="keyword">End</span> <a class="idref" href="Semiring.BallotN.html#BallotN.Monotonicity"><span class="id" title="section">Monotonicity</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab14"></a><h1 class="section">Independence of clones (Schulze 4.6)</h1>
+
+
+<div class="paragraph"> </div>
+
+      Premise: Schulze's (4.6.1) to (4.6.3), voter by voter.  Every
+      clone takes <span class="inlinecode"><a class="idref" href="Semiring.SmithiiaN.html#SmithIIA.RemovalStrong.d"><span class="id" title="variable">d</span></a></span>'s place against each surviving alternative, and
+      preferences among survivors are unchanged.  The three matrix
+      hypotheses (4.6.12) to (4.6.14) of CloneN are then count
+      equalities; nothing is assumed about how voters order the clones. 
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Section</span> <a id="BallotN.Clones" class="idref" href="#BallotN.Clones"><span class="id" title="section">Clones</span></a>.<br/>
@@ -1244,6 +1487,19 @@ Schulze (4.6.7) and (4.6.8): replacing <span class="inlinecode"><a class="idref"
 &nbsp;&nbsp;<span class="id" title="keyword">End</span> <a class="idref" href="Semiring.BallotN.html#BallotN.Clones"><span class="id" title="section">Clones</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab15"></a><h1 class="section">Reversal symmetry (Schulze 4.4)</h1>
+
+
+<div class="paragraph"> </div>
+
+      Premise: every ballot is reversed.  The counts swap, so the new
+      matrix agrees entrywise with the transpose that the reversal
+      theorems are stated for. 
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="reversed" class="idref" href="#reversed"><span class="id" title="definition">reversed</span></a> (<a id="b:330" class="idref" href="#b:330"><span class="id" title="binder">b</span></a> <a id="b':331" class="idref" href="#b':331"><span class="id" title="binder">b'</span></a> : <a class="idref" href="Semiring.BallotN.html#Ballot"><span class="id" title="definition">Ballot</span></a>) : <span class="id" title="keyword">Prop</span> :=<br/>
@@ -1340,6 +1596,19 @@ Schulze (4.4.3): some winner is displaced by the reversal exactly
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab16"></a><h1 class="section">Anonymity (Schulze 2.1)</h1>
+
+
+<div class="paragraph"> </div>
+
+      Schulze observes that a method whose link strengths depend only on
+      the counts is anonymous.  Here that is a permutation invariance of
+      <span class="inlinecode"><a class="idref" href="Semiring.BallotN.html#count"><span class="id" title="definition">count</span></a></span>. 
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="count_perm" class="idref" href="#count_perm"><span class="id" title="lemma">count_perm</span></a> : <span class="id" title="keyword">∀</span> <a id="P:367" class="idref" href="#P:367"><span class="id" title="binder">P</span></a> <a id="P':368" class="idref" href="#P':368"><span class="id" title="binder">P'</span></a>, <span class="id" title="inductive">Permutation</span> <a class="idref" href="Semiring.BallotN.html#P:367"><span class="id" title="variable">P</span></a> <a class="idref" href="Semiring.BallotN.html#P':368"><span class="id" title="variable">P'</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a><br/>
@@ -1362,6 +1631,20 @@ Schulze (4.4.3): some winner is displaced by the reversal exactly
 &nbsp;&nbsp;<span class="id" title="keyword">Proof</span>. <span class="id" title="tactic">intros</span> <span class="id" title="var">P</span> <span class="id" title="var">P'</span> <span class="id" title="var">HP</span>. <span class="id" title="tactic">exact</span> (<a class="idref" href="Semiring.BallotN.html#schulze_winner_ext"><span class="id" title="lemma">schulze_winner_ext</span></a> <span class="id" title="var">_</span> <span class="id" title="var">_</span> (<a class="idref" href="Semiring.BallotN.html#matrix_of_perm"><span class="id" title="lemma">matrix_of_perm</span></a> <span class="id" title="var">P</span> <span class="id" title="var">P'</span> <span class="id" title="var">HP</span>)). <span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab17"></a><h1 class="section">Neutrality (Schulze 2.1)</h1>
+
+
+<div class="paragraph"> </div>
+
+      The companion of anonymity: the method treats the alternatives
+      symmetrically.  Renaming the alternatives in every ballot gives a
+      matrix that agrees entrywise with the permuted matrix of
+      NeutralityN, and the winner set is renamed to match. 
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Section</span> <a id="BallotN.Neutrality" class="idref" href="#BallotN.Neutrality"><span class="id" title="section">Neutrality</span></a>.<br/>

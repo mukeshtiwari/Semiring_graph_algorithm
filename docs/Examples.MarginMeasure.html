@@ -19,6 +19,46 @@
 <h1 class="libtitle">Examples.MarginMeasure</h1>
 
 <div class="code">
+</div>
+
+<div class="doc">
+<a id="lab184"></a><h1 class="section">Schulze's MARGIN measure as a bounded commutative semiring</h1>
+
+
+<div class="paragraph"> </div>
+
+    Schulze §2.1, Example 1: the strength of the link ef is the difference
+    N<span class="inlinecode"><a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.e"><span class="id" title="variable">e</span></a>,<a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.f"><span class="id" title="variable">f</span></a></span> - N<span class="inlinecode"><a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.f"><span class="id" title="variable">f</span></a>,<a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.e"><span class="id" title="variable">e</span></a></span> between its support and its opposition, and
+
+<div class="paragraph"> </div>
+
+      (x1,x2) &gt;margin (y1,y2)  iff  x1 - x2 &gt; y1 - y2.
+
+<div class="paragraph"> </div>
+
+    Two things have to be dealt with to make this a carrier for the Kleene
+    theory, and they are exactly the two the machinery was built for.
+
+<div class="paragraph"> </div>
+
+    TIES.  Margin is a total PREORDER, not an order: (3,1) and (5,3) both
+    have margin 2, so they are equivalent without being equal, and
+    antisymmetry with respect to Leibniz equality fails.  <span class="inlinecode"><a class="idref" href="Examples.MarginMeasure.html#mnorm"><span class="id" title="definition">mnorm</span></a></span> picks the
+    canonical representative of each margin class — (d,0) for a victory,
+    (0,d) for a defeat — and NormalizedOrder works in its image.
+
+<div class="paragraph"> </div>
+
+    BOUNDS.  Margins are unbounded in both directions, so there is no least
+    or greatest element to serve as the semiring's 0 and 1.  ExtendOrder
+    adjoins them.
+
+<div class="paragraph"> </div>
+
+    Comparison is written without subtraction, as x1 + y2 &lt;= x2 + y1, so
+    that truncated nat subtraction never enters the order itself. 
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">From</span> <span class="id" title="var">Stdlib</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <span class="id" title="library">Utf8</span> <span class="id" title="library">Arith</span> <span class="id" title="library">Lia</span>.<br/>
@@ -27,6 +67,13 @@
 &nbsp;&nbsp;<a class="idref" href="Semiring.NormalizedOrder.html#"><span class="id" title="library">NormalizedOrder</span></a> <a class="idref" href="Semiring.ExtendOrder.html#"><span class="id" title="library">ExtendOrder</span></a> <a class="idref" href="Semiring.SocialchoiceN.html#"><span class="id" title="library">SocialchoiceN</span></a> <a class="idref" href="Semiring.SchulzeOnNT.html#"><span class="id" title="library">SchulzeOnNT</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab185"></a><h2 class="section">The order</h2>
+
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">Definition</span> <a id="pair_eq_dec" class="idref" href="#pair_eq_dec"><span class="id" title="definition">pair_eq_dec</span></a> (<a id="p:1" class="idref" href="#p:1"><span class="id" title="binder">p</span></a> <a id="q:2" class="idref" href="#q:2"><span class="id" title="binder">q</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>) : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Specif.html#87727981cdc1579fef00b9d9c1d3b9da"><span class="id" title="notation">{</span></a><a class="idref" href="Examples.MarginMeasure.html#p:1"><span class="id" title="variable">p</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="Examples.MarginMeasure.html#q:2"><span class="id" title="variable">q</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Specif.html#87727981cdc1579fef00b9d9c1d3b9da"><span class="id" title="notation">}</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Specif.html#87727981cdc1579fef00b9d9c1d3b9da"><span class="id" title="notation">+</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Specif.html#87727981cdc1579fef00b9d9c1d3b9da"><span class="id" title="notation">{</span></a><a class="idref" href="Examples.MarginMeasure.html#p:1"><span class="id" title="variable">p</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'&lt;&gt;'_x"><span class="id" title="notation">≠</span></a> <a class="idref" href="Examples.MarginMeasure.html#q:2"><span class="id" title="variable">q</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Specif.html#87727981cdc1579fef00b9d9c1d3b9da"><span class="id" title="notation">}</span></a>.<br/>
@@ -118,6 +165,13 @@ Canonical representative of a margin class: a victory by <span class="inlinecode
 <span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab186"></a><h2 class="section">…packaged, extended with bounds, and normalised</h2>
+
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">Definition</span> <a id="margin_pre" class="idref" href="#margin_pre"><span class="id" title="definition">margin_pre</span></a> : <a class="idref" href="Semiring.ExtendOrder.html#PreSpec"><span class="id" title="record">PreSpec</span></a> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>) :=<br/>
@@ -145,14 +199,34 @@ The carrier of margin strengths.
 <span class="id" title="keyword">Definition</span> <a id="Margin" class="idref" href="#Margin"><span class="id" title="definition">Margin</span></a> : <span class="id" title="keyword">Type</span> := <a class="idref" href="Semiring.NormalizedOrder.html#NT"><span class="id" title="definition">NT</span></a> <a class="idref" href="Examples.MarginMeasure.html#margin_spec"><span class="id" title="definition">margin_spec</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+The payoff: everything in SocialchoiceN.v that is parametric in the
+    carrier now applies to margin-strength Schulze. 
+</div>
+<div class="code">
 <span class="id" title="keyword">Check</span> (<a class="idref" href="Examples.MarginMeasure.html#Margin"><span class="id" title="definition">Margin</span></a> : <a class="idref" href="Semiring.Structures.html#BoundedSemiring.type"><span class="id" title="record">BoundedSemiring.type</span></a>).<br/>
 <span class="id" title="keyword">Check</span> (<a class="idref" href="Examples.MarginMeasure.html#Margin"><span class="id" title="definition">Margin</span></a> : <a class="idref" href="Semiring.Structures.html#BoundedCommutativeSemiring.type"><span class="id" title="record">BoundedCommutativeSemiring.type</span></a>).<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+…and the order it was built from is the derived order the theorems use. 
+</div>
+<div class="code">
 <span class="id" title="keyword">Check</span> (<a class="idref" href="Semiring.NormalizedOrder.html#Orel_iff_leN"><span class="id" title="lemma">Orel_iff_leN</span></a> <a class="idref" href="Examples.MarginMeasure.html#margin_spec"><span class="id" title="definition">margin_spec</span></a><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="keyword">∀</span> <a id="x:17" class="idref" href="#x:17"><span class="id" title="binder">x</span></a> <a id="y:18" class="idref" href="#y:18"><span class="id" title="binder">y</span></a> : <a class="idref" href="Examples.MarginMeasure.html#Margin"><span class="id" title="definition">Margin</span></a>, <a class="idref" href="Semiring.OrelN.html#Orel"><span class="id" title="definition">Orel</span></a> <a class="idref" href="Examples.MarginMeasure.html#x:17"><span class="id" title="variable">x</span></a> <a class="idref" href="Examples.MarginMeasure.html#y:18"><span class="id" title="variable">y</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'&lt;-&gt;'_x"><span class="id" title="notation">↔</span></a> <a class="idref" href="Semiring.NormalizedOrder.html#leN"><span class="id" title="definition">leN</span></a> <a class="idref" href="Examples.MarginMeasure.html#margin_spec"><span class="id" title="definition">margin_spec</span></a> <a class="idref" href="Examples.MarginMeasure.html#x:17"><span class="id" title="variable">x</span></a> <a class="idref" href="Examples.MarginMeasure.html#y:18"><span class="id" title="variable">y</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#true"><span class="id" title="constructor">true</span></a>).<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab187"></a><h2 class="section">Sanity: the tie class is real and is collapsed</h2>
+
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">Example</span> <a id="margin_ties_equivalent" class="idref" href="#margin_ties_equivalent"><span class="id" title="definition">margin_ties_equivalent</span></a> :<br/>
@@ -172,6 +246,22 @@ The carrier of margin strengths.
 <span class="id" title="keyword">Proof</span>. <span class="id" title="tactic">reflexivity</span>. <span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab188"></a><h2 class="section">The lexicographic path, end to end</h2>
+
+
+<div class="paragraph"> </div>
+
+    Combining margin with itself is artificial — it is margin, since
+    the tiebreaker never fires on a class its own comparison already
+    collapsed — but it exercises the whole pipeline: combine two
+    PreSpecs, adjoin the bounds AFTERWARDS, normalise, and land in the
+    semiring.  Replacing either argument with another measure is then
+    a one-line change. 
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">Definition</span> <a id="margin_lex_spec" class="idref" href="#margin_lex_spec"><span class="id" title="definition">margin_lex_spec</span></a> : <a class="idref" href="Semiring.NormalizedOrder.html#CanonSpec"><span class="id" title="record">CanonSpec</span></a> (<a class="idref" href="Semiring.ExtendOrder.html#Ext"><span class="id" title="inductive">Ext</span></a> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">(</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">)</span></a>)) :=<br/>
@@ -184,6 +274,20 @@ The carrier of margin strengths.
 <span class="id" title="keyword">Check</span> (<a class="idref" href="Examples.MarginMeasure.html#MarginLex"><span class="id" title="definition">MarginLex</span></a> : <a class="idref" href="Semiring.Structures.html#BoundedCommutativeSemiring.type"><span class="id" title="record">BoundedCommutativeSemiring.type</span></a>).<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab189"></a><h2 class="section">Schulze's theorems for margin, with nothing left to supply</h2>
+
+
+<div class="paragraph"> </div>
+
+    Transitivity of the winner relation and non-emptiness of the
+    winner set hold for margin-strength Schulze with NO hypotheses:
+    selectivity, the meet-lower-bound property and decidable equality
+    are all discharged by the construction of the carrier. 
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">Section</span> <a id="MarginSchulze" class="idref" href="#MarginSchulze"><span class="id" title="section">MarginSchulze</span></a>.<br/>

@@ -30,6 +30,13 @@
 <span class="id" title="keyword">Local Infix</span> <a id=":::x_'&lt;'_x" class="idref" href="#:::x_'&lt;'_x"><span class="id" title="notation">&quot;</span></a>&lt;" := (<span class="id" title="keyword">fun</span> <a id="x:1" class="idref" href="#x:1"><span class="id" title="binder">x</span></a> <a id="y:2" class="idref" href="#y:2"><span class="id" title="binder">y</span></a> ⇒ <a class="idref" href="Semiring.SchulzeBasicsN.html#x:1"><span class="id" title="variable">x</span></a> <a class="idref" href="Semiring.SchulzeBasicsN.html#3ccab6e0e5cec5d8305913b11c2aa678"><span class="id" title="notation">≤</span></a> <a class="idref" href="Semiring.SchulzeBasicsN.html#y:2"><span class="id" title="variable">y</span></a> <span class="id" title="notation">∧</span> <a class="idref" href="Semiring.SchulzeBasicsN.html#x:1"><span class="id" title="variable">x</span></a> <span class="id" title="notation">≠</span> <a class="idref" href="Semiring.SchulzeBasicsN.html#y:2"><span class="id" title="variable">y</span></a>) (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 70).<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Schulze over a semiring: order facts about the beat relation and the winner notions
+    Split out of the former monolithic SocialchoiceN.v. 
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">Section</span> <a id="SchulzeBasicsN" class="idref" href="#SchulzeBasicsN"><span class="id" title="section">SchulzeBasicsN</span></a>.<br/>
@@ -40,12 +47,14 @@
 <br/>
 
 <br/>
-
-<br/>
 </div>
 
 <div class="doc">
-With at least two alternatives, every alternative has a rival. 
+<a id="lab143"></a><h1 class="section">Order-theoretic facts about O and the two notions of winner</h1>
+
+<div class="paragraph"> </div>
+
+ With at least two alternatives, every alternative has a rival. 
 </div>
 <div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="exists_other" class="idref" href="#exists_other"><span class="id" title="lemma">exists_other</span></a> (<a id="x:4" class="idref" href="#x:4"><span class="id" title="binder">x</span></a> : <a class="idref" href="Semiring.SchulzeBasicsN.html#SchulzeBasicsN.Node"><span class="id" title="variable">Node</span></a>) : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#a883bdd010993579f99d60b3775bcf54"><span class="id" title="notation">∃</span></a> <a id="y:5" class="idref" href="#y:5"><span class="id" title="binder">y</span></a> : <a class="idref" href="Semiring.SchulzeBasicsN.html#SchulzeBasicsN.Node"><span class="id" title="variable">Node</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#a883bdd010993579f99d60b3775bcf54"><span class="id" title="notation">,</span></a> <a class="idref" href="Semiring.SchulzeBasicsN.html#y:5"><span class="id" title="variable">y</span></a> <span class="id" title="notation">≠</span> <a class="idref" href="Semiring.SchulzeBasicsN.html#x:4"><span class="id" title="variable">x</span></a>.<br/>
@@ -153,6 +162,13 @@ The same argument one level down, on <span class="inlinecode"><a class="idref" h
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+schulze_beats is decidable when R has decidable equality.
+      This holds in concrete semirings like max-min (Nat) or min-plus. 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="schulze_beats_dec" class="idref" href="#schulze_beats_dec"><span class="id" title="lemma">schulze_beats_dec</span></a> {<a id="R:34" class="idref" href="#R:34"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>}<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;(<a id="M:35" class="idref" href="#M:35"><span class="id" title="binder">M</span></a> : @<a class="idref" href="Semiring.OrelN.html#Matrix"><span class="id" title="definition">Matrix</span></a> <a class="idref" href="Semiring.SchulzeBasicsN.html#SchulzeBasicsN.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="Semiring.SchulzeBasicsN.html#R:34"><span class="id" title="variable">R</span></a>) (<a id="a:36" class="idref" href="#a:36"><span class="id" title="binder">a</span></a> <a id="b:37" class="idref" href="#b:37"><span class="id" title="binder">b</span></a> : <a class="idref" href="Semiring.SchulzeBasicsN.html#SchulzeBasicsN.Node"><span class="id" title="variable">Node</span></a>)<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;(<a id="Hdec:40" class="idref" href="#Hdec:40"><span class="id" title="binder">Hdec</span></a> : <span class="id" title="keyword">∀</span> <a id="x:38" class="idref" href="#x:38"><span class="id" title="binder">x</span></a> <a id="y:39" class="idref" href="#y:39"><span class="id" title="binder">y</span></a> : <a class="idref" href="Semiring.SchulzeBasicsN.html#R:34"><span class="id" title="variable">R</span></a>, <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Specif.html#87727981cdc1579fef00b9d9c1d3b9da"><span class="id" title="notation">{</span></a><a class="idref" href="Semiring.SchulzeBasicsN.html#x:38"><span class="id" title="variable">x</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="Semiring.SchulzeBasicsN.html#y:39"><span class="id" title="variable">y</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Specif.html#87727981cdc1579fef00b9d9c1d3b9da"><span class="id" title="notation">}</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Specif.html#87727981cdc1579fef00b9d9c1d3b9da"><span class="id" title="notation">+</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Specif.html#87727981cdc1579fef00b9d9c1d3b9da"><span class="id" title="notation">{</span></a><a class="idref" href="Semiring.SchulzeBasicsN.html#x:38"><span class="id" title="variable">x</span></a> <span class="id" title="notation">≠</span> <a class="idref" href="Semiring.SchulzeBasicsN.html#y:39"><span class="id" title="variable">y</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Specif.html#87727981cdc1579fef00b9d9c1d3b9da"><span class="id" title="notation">}</span></a>) :<br/>
@@ -223,12 +239,28 @@ Winner status is decidable when equality on the carrier is.
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
-
-<br/>
 </div>
 
 <div class="doc">
-Schulze (2.2.4): a link stronger than the return closure is respected by
+<a id="lab144"></a><h2 class="section">Version 2 — pareto_stronger (strict form):  a ≻ᵥ b ∀v  →  a ≻ b</h2>
+
+
+<div class="paragraph"> </div>
+
+      The semiring alone does not decide this: with <span class="inlinecode"><a class="idref" href="Examples.Profiles.html#M"><span class="id" title="abbreviation">M</span></a></span> <span class="inlinecode"><a class="idref" href="Examples.WidestShortestPath.html#A"><span class="id" title="constructor">A</span></a></span> <span class="inlinecode"><a class="idref" href="Examples.WidestShortestPath.html#B"><span class="id" title="constructor">B</span></a></span> the strongest
+      link, a route B → C → A built from equally strong links can match
+      it, and in the max-min semiring of the Schulze example the two
+      closures then coincide.  Schulze rules such a route out in §4.3.1
+      by an argument outside the algebra: the links of maximal strength
+      are exactly the unanimous ones, and unanimous preference cannot
+      cycle because individual ballots are transitive.  That is the
+      content of <span class="inlinecode"><span class="id" title="var">Htop_trans</span></span> below — maximal links compose — and it is
+      a constraint on the ballot matrix <span class="inlinecode"><a class="idref" href="Examples.Profiles.html#M"><span class="id" title="abbreviation">M</span></a></span>, not on the semiring, so the
+      max-min instance is still covered.  <span class="inlinecode"><a class="idref" href="Semiring.SmithiiaN.html#SmithIIA.RemovalStrong.Htotal"><span class="id" title="variable">Htotal</span></a></span> says the natural
+      order is total, as in <span class="inlinecode"><span class="id" title="var">condorcet_implies_strict_winner</span></span>. 
+<div class="paragraph"> </div>
+
+ Schulze (2.2.4): a link stronger than the return closure is respected by
       the relation O.  As in the paper this is immediate from (2.2.1) and
       (2.2.3) — the link <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a></span> <span class="inlinecode">→</span> <span class="inlinecode"><a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.b"><span class="id" title="variable">b</span></a></span> is itself a path, so <span class="inlinecode"><a class="idref" href="Examples.Profiles.html#M"><span class="id" title="abbreviation">M</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.b"><span class="id" title="variable">b</span></a></span> <span class="inlinecode">≤</span> <span class="inlinecode"><a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a></span> <span class="inlinecode"><a class="idref" href="Examples.Profiles.html#M"><span class="id" title="abbreviation">M</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.b"><span class="id" title="variable">b</span></a></span>,
       and the strict comparison carries across. 

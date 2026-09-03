@@ -19,12 +19,41 @@
 <h1 class="libtitle">Semiring.ExtendOrder</h1>
 
 <div class="code">
+</div>
+
+<div class="doc">
+<a id="lab40"></a><h1 class="section">Adjoining extremal elements to a total preorder</h1>
+
+
+<div class="paragraph"> </div>
+
+    <span class="inlinecode"><span class="id" title="var">NormalizedOrder.v</span></span> needs a least and a greatest element, but none of
+    Schulze's link-strength measures has one natively: margins over
+    unbounded vote counts run off in both directions.  This file adjoins
+    them formally, so a measure only has to supply the ORDER part — the ten
+    obligations of <span class="inlinecode"><a class="idref" href="Semiring.ExtendOrder.html#PreSpec"><span class="id" title="record">PreSpec</span></a></span> — and gets a full <span class="inlinecode"><a class="idref" href="Semiring.NormalizedOrder.html#CanonSpec"><span class="id" title="record">CanonSpec</span></a></span> back.
+
+<div class="paragraph"> </div>
+
+    This is the same move as CAPP's AddZero / AddOne combinators, and it
+    matters for the same reason it did in WidestShortestPath.v: the
+    extremes have to be genuinely new elements rather than repurposed
+    existing ones, or they collide with the values already in play. 
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">From</span> <span class="id" title="var">Stdlib</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <span class="id" title="library">Utf8</span> <span class="id" title="library">Bool</span>.<br/>
 <span class="id" title="keyword">From</span> <span class="id" title="var">Semiring</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="Semiring.Structures.html#"><span class="id" title="library">Structures</span></a> <a class="idref" href="Semiring.NormalizedOrder.html#"><span class="id" title="library">NormalizedOrder</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab41"></a><h2 class="section">The order obligations, without bounds</h2>
+
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">Record</span> <a id="PreSpec" class="idref" href="#PreSpec"><span class="id" title="record">PreSpec</span></a> (<a id="A:1" class="idref" href="#A:1"><span class="id" title="binder">A</span></a> : <span class="id" title="keyword">Type</span>) := {<br/>
@@ -57,6 +86,13 @@
 <span class="id" title="keyword">Arguments</span> <a class="idref" href="Semiring.ExtendOrder.html#ps_norm_compl"><span class="id" title="projection">ps_norm_compl</span></a> {<span class="id" title="var">A</span>}.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab42"></a><h2 class="section">The carrier with two new elements</h2>
+
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">Inductive</span> <a id="Ext" class="idref" href="#Ext"><span class="id" title="definition, inductive"><span id="Ext_rect" class="id"><span id="Ext_ind" class="id"><span id="Ext_rec" class="id"><span id="Ext_sind" class="id">Ext</span></span></span></span></span></a> (<a id="A:26" class="idref" href="#A:26"><span class="id" title="binder">A</span></a> : <span class="id" title="keyword">Type</span>) := <a id="EBot" class="idref" href="#EBot"><span class="id" title="constructor">EBot</span></a> | <a id="EMid" class="idref" href="#EMid"><span class="id" title="constructor">EMid</span></a> (<a id="a:29" class="idref" href="#a:29"><span class="id" title="binder">a</span></a> : <a class="idref" href="Semiring.ExtendOrder.html#A:26"><span class="id" title="variable">A</span></a>) | <a id="ETop" class="idref" href="#ETop"><span class="id" title="constructor">ETop</span></a>.<br/>
@@ -100,6 +136,12 @@
 &nbsp;&nbsp;<span class="id" title="keyword">Defined</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+ the order laws --- 
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="ext_le_refl" class="idref" href="#ext_le_refl"><span class="id" title="lemma">ext_le_refl</span></a> : <span class="id" title="keyword">∀</span> <a id="x:42" class="idref" href="#x:42"><span class="id" title="binder">x</span></a>, <a class="idref" href="Semiring.ExtendOrder.html#ext_le"><span class="id" title="definition">ext_le</span></a> <a class="idref" href="Semiring.ExtendOrder.html#x:42"><span class="id" title="variable">x</span></a> <a class="idref" href="Semiring.ExtendOrder.html#x:42"><span class="id" title="variable">x</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#true"><span class="id" title="constructor">true</span></a>.<br/>
@@ -122,6 +164,12 @@
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+ the normalisation laws --- 
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="ext_norm_idem" class="idref" href="#ext_norm_idem"><span class="id" title="lemma">ext_norm_idem</span></a> : <span class="id" title="keyword">∀</span> <a id="x:48" class="idref" href="#x:48"><span class="id" title="binder">x</span></a>, <a class="idref" href="Semiring.ExtendOrder.html#ext_norm"><span class="id" title="definition">ext_norm</span></a> (<a class="idref" href="Semiring.ExtendOrder.html#ext_norm"><span class="id" title="definition">ext_norm</span></a> <a class="idref" href="Semiring.ExtendOrder.html#x:48"><span class="id" title="variable">x</span></a>) <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="Semiring.ExtendOrder.html#ext_norm"><span class="id" title="definition">ext_norm</span></a> <a class="idref" href="Semiring.ExtendOrder.html#x:48"><span class="id" title="variable">x</span></a>.<br/>
@@ -152,6 +200,12 @@
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+ the bounds --- 
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="ext_bot_canon" class="idref" href="#ext_bot_canon"><span class="id" title="lemma">ext_bot_canon</span></a> : <a class="idref" href="Semiring.ExtendOrder.html#ext_norm"><span class="id" title="definition">ext_norm</span></a> <a class="idref" href="Semiring.ExtendOrder.html#EBot"><span class="id" title="constructor">EBot</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="Semiring.ExtendOrder.html#EBot"><span class="id" title="constructor">EBot</span></a>.<br/>
@@ -202,6 +256,30 @@ A measure supplies the order; the bounds come for free.
 &nbsp;&nbsp;<a class="idref" href="Semiring.ExtendOrder.html#ext_spec_def"><span class="id" title="definition">ext_spec_def</span></a> <a class="idref" href="Semiring.ExtendOrder.html#ps:56"><span class="id" title="variable">ps</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab43"></a><h1 class="section">Lexicographic product of two measures</h1>
+
+
+<div class="paragraph"> </div>
+
+    Combining at the PreSpec level — BEFORE bounds are adjoined — is
+    deliberate.  Adding the extremes first and taking the product second is
+    precisely the "we have added a zero too soon" error that breaks
+    distributivity for the naive widest-shortest-path encoding (CAPP §3.1,
+    and the NOTE at the top of examples/WidestShortestPath.v).
+
+<div class="paragraph"> </div>
+
+    Note also what does NOT need checking here.  Gurney and Griffin's
+    side conditions on lexicographic products — cancellativity of the first
+    component or constancy of the second — govern products whose
+    multiplication acts COMPONENTWISE.  Here multiplication is the meet of
+    the combined order, which OrderSemiring proves monotone unconditionally,
+    so a lexicographic combination of strength measures is always safe. 
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">Section</span> <a id="LexProduct" class="idref" href="#LexProduct"><span class="id" title="section">LexProduct</span></a>.<br/>
@@ -243,6 +321,12 @@ A measure supplies the order; the bounds come for free.
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">intros</span> [<span class="id" title="var">a1</span> <span class="id" title="var">b1</span>] [<span class="id" title="var">a2</span> <span class="id" title="var">b2</span>]. <span class="id" title="tactic">unfold</span> <a class="idref" href="Semiring.ExtendOrder.html#lex_le"><span class="id" title="definition">lex_le</span></a>. <span class="id" title="var">cbn</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> (<a class="idref" href="Semiring.ExtendOrder.html#ps_le"><span class="id" title="projection">ps_le</span></a> <a class="idref" href="Semiring.ExtendOrder.html#LexProduct.psA"><span class="id" title="variable">psA</span></a> <span class="id" title="var">a2</span> <span class="id" title="var">a1</span>) <span class="id" title="var">eqn</span>:<span class="id" title="var">E21</span>; <span class="id" title="tactic">destruct</span> (<a class="idref" href="Semiring.ExtendOrder.html#ps_le"><span class="id" title="projection">ps_le</span></a> <a class="idref" href="Semiring.ExtendOrder.html#LexProduct.psA"><span class="id" title="variable">psA</span></a> <span class="id" title="var">a1</span> <span class="id" title="var">a2</span>) <span class="id" title="var">eqn</span>:<span class="id" title="var">E12</span>;<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">cbn</span>; <span class="id" title="tactic">try</span> (<span class="id" title="tactic">left</span>; <span class="id" title="tactic">reflexivity</span>); <span class="id" title="tactic">try</span> (<span class="id" title="tactic">right</span>; <span class="id" title="tactic">reflexivity</span>).<br/>
+</div>
+
+<div class="doc">
+only the case where the first components are equivalent survives 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> (<a class="idref" href="Semiring.ExtendOrder.html#ps_total"><span class="id" title="projection">ps_total</span></a> <a class="idref" href="Semiring.ExtendOrder.html#LexProduct.psB"><span class="id" title="variable">psB</span></a>).<br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 

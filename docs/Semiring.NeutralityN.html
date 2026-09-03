@@ -33,6 +33,13 @@
 <span class="id" title="keyword">Local Infix</span> <a id=":::x_'&lt;'_x" class="idref" href="#:::x_'&lt;'_x"><span class="id" title="notation">&quot;</span></a>&lt;" := (<span class="id" title="keyword">fun</span> <a id="x:1" class="idref" href="#x:1"><span class="id" title="binder">x</span></a> <a id="y:2" class="idref" href="#y:2"><span class="id" title="binder">y</span></a> ⇒ <a class="idref" href="Semiring.NeutralityN.html#x:1"><span class="id" title="variable">x</span></a> <a class="idref" href="Semiring.NeutralityN.html#3ccab6e0e5cec5d8305913b11c2aa678"><span class="id" title="notation">≤</span></a> <a class="idref" href="Semiring.NeutralityN.html#y:2"><span class="id" title="variable">y</span></a> <span class="id" title="notation">∧</span> <a class="idref" href="Semiring.NeutralityN.html#x:1"><span class="id" title="variable">x</span></a> <span class="id" title="notation">≠</span> <a class="idref" href="Semiring.NeutralityN.html#y:2"><span class="id" title="variable">y</span></a>) (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 70).<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Schulze over a semiring: neutrality (2.1)
+    Split out of the former monolithic SocialchoiceN.v. 
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">Section</span> <a id="NeutralityN" class="idref" href="#NeutralityN"><span class="id" title="section">NeutralityN</span></a>.<br/>
@@ -41,12 +48,29 @@
 &nbsp;&nbsp;<span class="id" title="keyword">Context</span> {<a id="NeutralityN.Node" class="idref" href="#NeutralityN.Node"><span class="id" title="variable">Node</span></a> : <a class="idref" href="Semiring.Structures.html#FinType.type"><span class="id" title="record">FinType.type</span></a>}.<br/>
 
 <br/>
-
-<br/>
 </div>
 
 <div class="doc">
-Relabelling the alternatives by <span class="inlinecode"><a class="idref" href="Semiring.NeutralityN.html#NeutralityN.Neutrality.s"><span class="id" title="variable">s</span></a></span>. 
+<a id="lab95"></a><h1 class="section">Neutrality (§2.1)</h1>
+
+
+<div class="paragraph"> </div>
+
+      Schulze notes in §2.1 that making the strength of a link depend only
+      on N<span class="inlinecode"><a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.e"><span class="id" title="variable">e</span></a>,<a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.f"><span class="id" title="variable">f</span></a></span> and N<span class="inlinecode"><a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.f"><span class="id" title="variable">f</span></a>,<a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.e"><span class="id" title="variable">e</span></a></span> guarantees that the proposed method satisfies
+      anonymity and neutrality, without proving it.  Neutrality is the
+      claim that the method treats the alternatives symmetrically: rename
+      them and the outcome is renamed to match.
+
+<div class="paragraph"> </div>
+
+      Here a renaming is a bijection <span class="inlinecode"><a class="idref" href="Semiring.NeutralityN.html#NeutralityN.Neutrality.s"><span class="id" title="variable">s</span></a></span> of <span class="inlinecode"><a class="idref" href="Examples.WinningVotes.html#WinningVotesSchulze.Node"><span class="id" title="variable">Node</span></a></span> with inverse <span class="inlinecode"><a class="idref" href="Semiring.NeutralityN.html#NeutralityN.Neutrality.t"><span class="id" title="variable">t</span></a></span>, and
+      the relabelled profile is <span class="inlinecode"><a class="idref" href="Semiring.NeutralityN.html#permute_matrix"><span class="id" title="definition">permute_matrix</span></a></span> <span class="inlinecode"><a class="idref" href="Examples.Profiles.html#M"><span class="id" title="abbreviation">M</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.NeutralityN.html#NeutralityN.Neutrality.s"><span class="id" title="variable">s</span></a></span>.  The whole content
+      is that <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#sum"><span class="id" title="definition">sum</span></a></span> does not notice a permutation of its index — the
+      closure is then equivariant termwise. 
+<div class="paragraph"> </div>
+
+ Relabelling the alternatives by <span class="inlinecode"><a class="idref" href="Semiring.NeutralityN.html#NeutralityN.Neutrality.s"><span class="id" title="variable">s</span></a></span>. 
 </div>
 <div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="permute_matrix" class="idref" href="#permute_matrix"><span class="id" title="definition">permute_matrix</span></a> {<a id="R:4" class="idref" href="#R:4"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>}<br/>

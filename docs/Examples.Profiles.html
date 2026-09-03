@@ -19,6 +19,27 @@
 <h1 class="libtitle">Examples.Profiles</h1>
 
 <div class="code">
+</div>
+
+<div class="doc">
+<a id="lab190"></a><h1 class="section">Schulze's three concrete strength measures as <span class="inlinecode"><a class="idref" href="Semiring.MeasureN.html#Measure"><span class="id" title="record">Measure</span></a></span>s</h1>
+
+
+<div class="paragraph"> </div>
+
+    MeasureN.v asks a strength measure for Schulze's two conditions (2.1.1)
+    and (2.1.2), and BallotN.v discharges the ballot-level hypotheses of the
+    criterion theorems for any measure that has them.  This file supplies the
+    conditions for margin, winning votes, and losing votes, each proved once
+    from the order characterisation its own file already provides, and then
+    instantiates the profile-level theorems at margin and at winning votes.
+
+<div class="paragraph"> </div>
+
+    Ratio is not treated: it is not among the measures formalised in this
+    directory. 
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">From</span> <span class="id" title="var">Stdlib</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <span class="id" title="library">Utf8</span> <span class="id" title="library">List</span> <span class="id" title="library">Arith</span> <span class="id" title="library">Lia</span>.<br/>
@@ -30,6 +51,18 @@
 <span class="id" title="keyword">Import</span> <span class="id" title="module">ListNotations</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab191"></a><h2 class="section">Margin</h2>
+
+
+<div class="paragraph"> </div>
+
+    <span class="inlinecode"><a class="idref" href="Examples.MarginMeasure.html#mle"><span class="id" title="definition">mle</span></a></span> <span class="inlinecode">(<span class="id" title="var">x1</span>,<span class="id" title="var">x2</span>)</span> <span class="inlinecode">(<span class="id" title="var">y1</span>,<span class="id" title="var">y2</span>)</span> is <span class="inlinecode"><span class="id" title="var">x1</span></span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" title="var">y2</span></span> <span class="inlinecode">≤</span> <span class="inlinecode"><span class="id" title="var">y1</span></span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" title="var">x2</span></span>.  Both conditions
+    say that the left margin is strictly larger, which is arithmetic. 
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">Lemma</span> <a id="margin_211" class="idref" href="#margin_211"><span class="id" title="lemma">margin_211</span></a> : <span class="id" title="keyword">∀</span> <a id="x1:1" class="idref" href="#x1:1"><span class="id" title="binder">x1</span></a> <a id="x2:2" class="idref" href="#x2:2"><span class="id" title="binder">x2</span></a> <a id="y1:3" class="idref" href="#y1:3"><span class="id" title="binder">y1</span></a> <a id="y2:4" class="idref" href="#y2:4"><span class="id" title="binder">y2</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>,<br/>
@@ -46,10 +79,30 @@
 &nbsp;&nbsp;{| <a class="idref" href="Semiring.MeasureN.html#m_pre"><span class="id" title="projection">m_pre</span></a> := <a class="idref" href="Examples.MarginMeasure.html#margin_pre"><span class="id" title="definition">margin_pre</span></a>; <a class="idref" href="Semiring.MeasureN.html#m_211"><span class="id" title="projection">m_211</span></a> := <a class="idref" href="Examples.Profiles.html#margin_211"><span class="id" title="lemma">margin_211</span></a>; <a class="idref" href="Semiring.MeasureN.html#m_212"><span class="id" title="projection">m_212</span></a> := <a class="idref" href="Examples.Profiles.html#margin_212"><span class="id" title="lemma">margin_212</span></a> |}.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+The carrier is the one MarginMeasure.v already built, definitionally. 
+</div>
+<div class="code">
 <span class="id" title="keyword">Check</span> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#eq_refl"><span class="id" title="constructor">eq_refl</span></a> : <a class="idref" href="Semiring.MeasureN.html#Strength"><span class="id" title="definition">Strength</span></a> <a class="idref" href="Examples.Profiles.html#margin_measure"><span class="id" title="definition">margin_measure</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="Examples.MarginMeasure.html#Margin"><span class="id" title="definition">Margin</span></a>).<br/>
 <span class="id" title="keyword">Check</span> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#eq_refl"><span class="id" title="constructor">eq_refl</span></a> : <a class="idref" href="Semiring.MeasureN.html#spec"><span class="id" title="definition">spec</span></a> <a class="idref" href="Examples.Profiles.html#margin_measure"><span class="id" title="definition">margin_measure</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="Examples.MarginMeasure.html#margin_spec"><span class="id" title="definition">margin_spec</span></a>).<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab192"></a><h2 class="section">Winning votes and losing votes</h2>
+
+
+<div class="paragraph"> </div>
+
+    Both orders are characterised arithmetically (<span class="inlinecode"><a class="idref" href="Examples.WinningVotes.html#wle_spec"><span class="id" title="lemma">wle_spec</span></a></span>,
+    <span class="inlinecode"><a class="idref" href="Examples.LosingVotes.html#lle_spec"><span class="id" title="lemma">lle_spec</span></a></span>) in terms of the victory/tie/defeat class <span class="inlinecode"><a class="idref" href="Examples.WinningVotes.html#vclass"><span class="id" title="definition">vclass</span></a></span>.
+    Each condition is then a case analysis on the two classes and the
+    clauses of the characterisation, closed by <span class="inlinecode"><span class="id" title="var">lia</span></span>. 
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">Lemma</span> <a id="wv_211" class="idref" href="#wv_211"><span class="id" title="lemma">wv_211</span></a> : <span class="id" title="keyword">∀</span> <a id="x1:9" class="idref" href="#x1:9"><span class="id" title="binder">x1</span></a> <a id="x2:10" class="idref" href="#x2:10"><span class="id" title="binder">x2</span></a> <a id="y1:11" class="idref" href="#y1:11"><span class="id" title="binder">y1</span></a> <a id="y2:12" class="idref" href="#y2:12"><span class="id" title="binder">y2</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>,<br/>
@@ -122,6 +175,19 @@
 <span class="id" title="keyword">Check</span> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#eq_refl"><span class="id" title="constructor">eq_refl</span></a> : <a class="idref" href="Semiring.MeasureN.html#Strength"><span class="id" title="definition">Strength</span></a> <a class="idref" href="Examples.Profiles.html#lv_measure"><span class="id" title="definition">lv_measure</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="Examples.LosingVotes.html#LosingVotes"><span class="id" title="definition">LosingVotes</span></a>).<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab193"></a><h2 class="section">Margin-strength Schulze, from the ballots</h2>
+
+
+<div class="paragraph"> </div>
+
+    Every hypothesis below is about the profile.  Everything the
+    algebra needed is discharged: selectivity and the meet property by
+    the carrier, the matrix conditions by BallotN. 
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">Section</span> <a id="MarginProfiles" class="idref" href="#MarginProfiles"><span class="id" title="section">MarginProfiles</span></a>.<br/>
@@ -267,6 +333,13 @@ Resolvability, second formulation (4.2.2): one added ballot makes any
 <span class="id" title="keyword">End</span> <a class="idref" href="Examples.Profiles.html#MarginProfiles"><span class="id" title="section">MarginProfiles</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab194"></a><h2 class="section">…and the same for winning votes, to show nothing was margin-specific</h2>
+
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">Section</span> <a id="WinningVotesProfiles" class="idref" href="#WinningVotesProfiles"><span class="id" title="section">WinningVotesProfiles</span></a>.<br/>

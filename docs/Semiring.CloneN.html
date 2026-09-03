@@ -29,6 +29,21 @@
 <span class="id" title="keyword">Local Infix</span> <a id="3ccab6e0e5cec5d8305913b11c2aa678" class="idref" href="#3ccab6e0e5cec5d8305913b11c2aa678"><span class="id" title="notation">&quot;</span></a>≤" := <a class="idref" href="Semiring.OrelN.html#Orel"><span class="id" title="definition">Orel</span></a> (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 70).<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab25"></a><h1 class="section">Independence of clones (Schulze, Section 4.6).</h1>
+
+
+<div class="paragraph"> </div>
+
+    One alternative <span class="inlinecode"><a class="idref" href="Semiring.SmithiiaN.html#SmithIIA.RemovalStrong.d"><span class="id" title="variable">d</span></a></span> is replaced by a set of clones <span class="inlinecode"><a class="idref" href="Semiring.CloneN.html#CloneReplacement.K"><span class="id" title="variable">K</span></a></span>.  Both
+    elections run over a single ambient <span class="inlinecode"><a class="idref" href="Examples.WinningVotes.html#WinningVotesSchulze.Node"><span class="id" title="variable">Node</span></a></span> type and differ only in
+    which candidate list the closure folds over, which is what makes the
+    comparison statable at all.  Both matrices carry <span class="inlinecode">1</span> on the
+    diagonal, the standing hypothesis used throughout SemimoduleN. 
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">Section</span> <a id="CloneReplacement" class="idref" href="#CloneReplacement"><span class="id" title="section">CloneReplacement</span></a>.<br/>
@@ -114,6 +129,13 @@ Sending every clone back to <span class="inlinecode"><a class="idref" href="Semi
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">fun</span> <a id="x:37" class="idref" href="#x:37"><span class="id" title="binder">x</span></a> ⇒ <span class="id" title="keyword">if</span> <span class="id" title="lemma">List.in_dec</span> <a class="idref" href="Semiring.Structures.html#fin_eq_dec"><span class="id" title="definition">fin_eq_dec</span></a> <a class="idref" href="Semiring.CloneN.html#x:37"><span class="id" title="variable">x</span></a> <a class="idref" href="Semiring.CloneN.html#CloneReplacement.K"><span class="id" title="variable">K</span></a> <span class="id" title="keyword">then</span> <a class="idref" href="Semiring.CloneN.html#CloneReplacement.d"><span class="id" title="variable">d</span></a> <span class="id" title="keyword">else</span> <a class="idref" href="Semiring.CloneN.html#x:37"><span class="id" title="variable">x</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab26"></a><h2 class="section">Membership bookkeeping</h2>
+
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="A_new_nonempty" class="idref" href="#A_new_nonempty"><span class="id" title="lemma">A_new_nonempty</span></a> : <a class="idref" href="Semiring.CloneN.html#A_new"><span class="id" title="definition">A_new</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'&lt;&gt;'_x"><span class="id" title="notation">≠</span></a> <span class="id" title="notation">[]</span>.<br/>
@@ -218,12 +240,14 @@ An original alternative is never a clone.
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
-
-<br/>
 </div>
 
 <div class="doc">
-Expansion: replacing <span class="inlinecode"><a class="idref" href="Semiring.SmithiiaN.html#SmithIIA.RemovalStrong.d"><span class="id" title="variable">d</span></a></span> by a chosen clone <span class="inlinecode"><span class="id" title="var">g</span></span> carries the old closure
+<a id="lab27"></a><h2 class="section">The two transports</h2>
+
+<div class="paragraph"> </div>
+
+ Expansion: replacing <span class="inlinecode"><a class="idref" href="Semiring.SmithiiaN.html#SmithIIA.RemovalStrong.d"><span class="id" title="variable">d</span></a></span> by a chosen clone <span class="inlinecode"><span class="id" title="var">g</span></span> carries the old closure
       below the new one.  Every edge of the image has exactly the weight the
       original edge had, by the three clone hypotheses. 
 </div>
@@ -307,12 +331,14 @@ Collapse: sending every clone back to <span class="inlinecode"><a class="idref" 
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
-
-<br/>
 </div>
 
 <div class="doc">
-(4.6.23) Strengths between surviving alternatives are unchanged. 
+<a id="lab28"></a><h2 class="section">Path strengths are preserved (Schulze 4.6.21 to 4.6.23)</h2>
+
+<div class="paragraph"> </div>
+
+ (4.6.23) Strengths between surviving alternatives are unchanged. 
 </div>
 <div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Theorem</span> <a id="clone_strength_survivors" class="idref" href="#clone_strength_survivors"><span class="id" title="lemma">clone_strength_survivors</span></a> (<a id="a:59" class="idref" href="#a:59"><span class="id" title="binder">a</span></a> <a id="b:60" class="idref" href="#b:60"><span class="id" title="binder">b</span></a> : <a class="idref" href="Semiring.CloneN.html#CloneReplacement.Node"><span class="id" title="variable">Node</span></a>) :<br/>

@@ -29,6 +29,13 @@
 <span class="id" title="keyword">Local Infix</span> <a id=":::x_'&lt;'_x" class="idref" href="#:::x_'&lt;'_x"><span class="id" title="notation">&quot;</span></a>&lt;" := (<span class="id" title="keyword">fun</span> <a id="x:1" class="idref" href="#x:1"><span class="id" title="binder">x</span></a> <a id="y:2" class="idref" href="#y:2"><span class="id" title="binder">y</span></a> ⇒ <a class="idref" href="Semiring.SchulzeDefsN.html#x:1"><span class="id" title="variable">x</span></a> <a class="idref" href="Semiring.SchulzeDefsN.html#3ccab6e0e5cec5d8305913b11c2aa678"><span class="id" title="notation">≤</span></a> <a class="idref" href="Semiring.SchulzeDefsN.html#y:2"><span class="id" title="variable">y</span></a> <span class="id" title="notation">∧</span> <a class="idref" href="Semiring.SchulzeDefsN.html#x:1"><span class="id" title="variable">x</span></a> <span class="id" title="notation">≠</span> <a class="idref" href="Semiring.SchulzeDefsN.html#y:2"><span class="id" title="variable">y</span></a>) (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 70).<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Schulze over a semiring: the five definitions and the Kleene star
+    Split out of the former monolithic SocialchoiceN.v. 
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">Section</span> <a id="SchulzeDefsN" class="idref" href="#SchulzeDefsN"><span class="id" title="section">SchulzeDefsN</span></a>.<br/>
@@ -40,6 +47,13 @@
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="kleene_exp" class="idref" href="#kleene_exp"><span class="id" title="definition">kleene_exp</span></a> := (<span class="id" title="abbreviation">List.length</span> (@<a class="idref" href="Semiring.Structures.html#elements"><span class="id" title="definition">elements</span></a> <a class="idref" href="Semiring.SchulzeDefsN.html#SchulzeDefsN.Node"><span class="id" title="variable">Node</span></a>) <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Peano.html#::nat_scope:x_'-'_x"><span class="id" title="notation">-</span></a> 1)%<span class="id" title="var">nat</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab150"></a><h1 class="section">Kleene star as a named definition for readability</h1>
+
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="mat_star" class="idref" href="#mat_star"><span class="id" title="definition">mat_star</span></a> {<a id="R:4" class="idref" href="#R:4"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} (<a id="M:5" class="idref" href="#M:5"><span class="id" title="binder">M</span></a> : @<a class="idref" href="Semiring.OrelN.html#Matrix"><span class="id" title="definition">Matrix</span></a> <a class="idref" href="Semiring.SchulzeDefsN.html#SchulzeDefsN.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="Semiring.SchulzeDefsN.html#R:4"><span class="id" title="variable">R</span></a>)<br/>
@@ -69,8 +83,31 @@
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
 
-<br/>
+<div class="doc">
+<a id="lab151"></a><h1 class="section">Relationship between the four definitions (all built from beats):</h1>
+
+
+<div class="paragraph"> </div>
+
+        beats N a b          := N</i>{ba} &lt; N{ab}     (fundamental)
+        condorcet_winner M a := ∀X≠a, beats M a X   (direct matrix)
+        schulze_beats M a b  := beats (mat_star M) a b  (Kleene star order)
+        strict_winner M a    := ∀X≠a, schulze_beats M a X  (beats all)
+        schulze_winner M a   := ∀b≠a, ~ schulze_beats M b a  (undefeated)
+
+<div class="paragraph"> </div>
+
+      The paper's Definition 2.2.1 (relation O) is schulze_beats.
+      The paper's Definition 2.2.2 (winner set S) is schulze_winner.
+      Stabilization lemma: pow (M+I) stabilizes after |N|-1 steps. 
+<div class="paragraph"> </div>
+
+ Fundamental: a beats b in matrix N if N{ba} &lt; N{ab}
+      — i.e., N b a ≤ N a b  ∧  N b a ≠ N a b. 
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="beats" class="idref" href="#beats"><span class="id" title="definition">beats</span></a> {<a id="R:10" class="idref" href="#R:10"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>}<br/>
@@ -78,6 +115,13 @@
 &nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Semiring.SchulzeDefsN.html#N:11"><span class="id" title="variable">N</span></a> <a class="idref" href="Semiring.SchulzeDefsN.html#b:13"><span class="id" title="variable">b</span></a> <a class="idref" href="Semiring.SchulzeDefsN.html#a:12"><span class="id" title="variable">a</span></a> <a class="idref" href="Semiring.SchulzeDefsN.html#:::x_'&lt;'_x"><span class="id" title="notation">&lt;</span></a> <a class="idref" href="Semiring.SchulzeDefsN.html#N:11"><span class="id" title="variable">N</span></a> <a class="idref" href="Semiring.SchulzeDefsN.html#a:12"><span class="id" title="variable">a</span></a> <a class="idref" href="Semiring.SchulzeDefsN.html#b:13"><span class="id" title="variable">b</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Condorcet winner: beats everyone in the DIRECT matrix M
+      condorcet_winner M a := ∀X≠a, beats M a X 
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="condorcet_winner" class="idref" href="#condorcet_winner"><span class="id" title="definition">condorcet_winner</span></a> {<a id="R:14" class="idref" href="#R:14"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>}<br/>
@@ -85,6 +129,14 @@
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">∀</span> (<a id="X:17" class="idref" href="#X:17"><span class="id" title="binder">X</span></a> : <a class="idref" href="Semiring.SchulzeDefsN.html#SchulzeDefsN.Node"><span class="id" title="variable">Node</span></a>), <a class="idref" href="Semiring.SchulzeDefsN.html#X:17"><span class="id" title="variable">X</span></a> <span class="id" title="notation">≠</span> <a class="idref" href="Semiring.SchulzeDefsN.html#a:16"><span class="id" title="variable">a</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Semiring.SchulzeDefsN.html#beats"><span class="id" title="definition">beats</span></a> <a class="idref" href="Semiring.SchulzeDefsN.html#M:15"><span class="id" title="variable">M</span></a> <a class="idref" href="Semiring.SchulzeDefsN.html#a:16"><span class="id" title="variable">a</span></a> <a class="idref" href="Semiring.SchulzeDefsN.html#X:17"><span class="id" title="variable">X</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Schulze order: beats in the Kleene star M*
+      schulze_beats M a b := beats (mat_star M) a b
+      (Definition 2.2.1 in the paper) 
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="schulze_beats" class="idref" href="#schulze_beats"><span class="id" title="definition">schulze_beats</span></a> {<a id="R:18" class="idref" href="#R:18"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>}<br/>
@@ -92,6 +144,13 @@
 &nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Semiring.SchulzeDefsN.html#beats"><span class="id" title="definition">beats</span></a> (<a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <a class="idref" href="Semiring.SchulzeDefsN.html#M:19"><span class="id" title="variable">M</span></a>) <a class="idref" href="Semiring.SchulzeDefsN.html#a:20"><span class="id" title="variable">a</span></a> <a class="idref" href="Semiring.SchulzeDefsN.html#b:21"><span class="id" title="variable">b</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Strict winner: beats everyone in the Schulze sense (via M* )
+      strict_winner M a := ∀X≠a, schulze_beats M a X 
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="strict_winner" class="idref" href="#strict_winner"><span class="id" title="definition">strict_winner</span></a> {<a id="R:22" class="idref" href="#R:22"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>}<br/>
@@ -99,6 +158,14 @@
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">∀</span> (<a id="X:25" class="idref" href="#X:25"><span class="id" title="binder">X</span></a> : <a class="idref" href="Semiring.SchulzeDefsN.html#SchulzeDefsN.Node"><span class="id" title="variable">Node</span></a>), <a class="idref" href="Semiring.SchulzeDefsN.html#X:25"><span class="id" title="variable">X</span></a> <span class="id" title="notation">≠</span> <a class="idref" href="Semiring.SchulzeDefsN.html#a:24"><span class="id" title="variable">a</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Semiring.SchulzeDefsN.html#schulze_beats"><span class="id" title="definition">schulze_beats</span></a> <a class="idref" href="Semiring.SchulzeDefsN.html#M:23"><span class="id" title="variable">M</span></a> <a class="idref" href="Semiring.SchulzeDefsN.html#a:24"><span class="id" title="variable">a</span></a> <a class="idref" href="Semiring.SchulzeDefsN.html#X:25"><span class="id" title="variable">X</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Schulze winner: nobody beats me in the Schulze sense
+      schulze_winner M a := ∀b≠a, ~ schulze_beats M b a
+      (Definition 2.2.2 in the paper) 
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="schulze_winner" class="idref" href="#schulze_winner"><span class="id" title="definition">schulze_winner</span></a> {<a id="R:26" class="idref" href="#R:26"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>}<br/>
@@ -106,6 +173,14 @@
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">∀</span> (<a id="b:29" class="idref" href="#b:29"><span class="id" title="binder">b</span></a> : <a class="idref" href="Semiring.SchulzeDefsN.html#SchulzeDefsN.Node"><span class="id" title="variable">Node</span></a>), <a class="idref" href="Semiring.SchulzeDefsN.html#b:29"><span class="id" title="variable">b</span></a> <span class="id" title="notation">≠</span> <a class="idref" href="Semiring.SchulzeDefsN.html#a:28"><span class="id" title="variable">a</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#63a68285c81db8f9bc456233bb9ed181"><span class="id" title="notation">¬</span></a> <a class="idref" href="Semiring.SchulzeDefsN.html#schulze_beats"><span class="id" title="definition">schulze_beats</span></a> <a class="idref" href="Semiring.SchulzeDefsN.html#M:27"><span class="id" title="variable">M</span></a> <a class="idref" href="Semiring.SchulzeDefsN.html#b:29"><span class="id" title="variable">b</span></a> <a class="idref" href="Semiring.SchulzeDefsN.html#a:28"><span class="id" title="variable">a</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Strict partial order (Definition in §2.1): transitive and asymmetric.
+      This is the shape the paper claims for the output relation O; see
+      <span class="inlinecode"><a class="idref" href="Semiring.WinnerexistenceN.html#schulze_output_well_formed"><span class="id" title="lemma">schulze_output_well_formed</span></a></span> below. 
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="strict_partial_order" class="idref" href="#strict_partial_order"><span class="id" title="definition">strict_partial_order</span></a> (<a id="Rel:30" class="idref" href="#Rel:30"><span class="id" title="binder">Rel</span></a> : <a class="idref" href="Semiring.SchulzeDefsN.html#SchulzeDefsN.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Semiring.SchulzeDefsN.html#SchulzeDefsN.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <span class="id" title="keyword">Prop</span>) : <span class="id" title="keyword">Prop</span> :=<br/>

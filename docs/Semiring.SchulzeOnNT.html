@@ -19,6 +19,38 @@
 <h1 class="libtitle">Semiring.SchulzeOnNT</h1>
 
 <div class="code">
+</div>
+
+<div class="doc">
+<a id="lab152"></a><h1 class="section">The Schulze theorems on a normalised carrier</h1>
+
+
+<div class="paragraph"> </div>
+
+    Several results in SocialchoiceN.v are stated with hypotheses on the
+    carrier: selectivity of <span class="inlinecode">+</span>, the meet-lower-bound property of <span class="inlinecode">×</span>, and
+    decidable equality.  Read as assumptions about an arbitrary semiring
+    those look strong — the comment on <span class="inlinecode"><span class="id" title="var">H_meet_lower_bound</span></span> in that file
+    calls it "simply max-min semiring in disguise".
+
+<div class="paragraph"> </div>
+
+    For a carrier built by NormalizedOrder they are not assumptions.  They
+    are consequences of the construction: <span class="inlinecode">+</span> is the join and <span class="inlinecode">×</span> the meet
+    of a total order, so both return one of their arguments.  This file
+    discharges them once, so the theorems apply to EVERY link-strength
+    measure fed through the pipeline with nothing left to supply.
+
+<div class="paragraph"> </div>
+
+    What does NOT become free is worth noting too.  <span class="inlinecode"><a class="idref" href="Semiring.SmithN.html#smith_criterion_weaker"><span class="id" title="lemma">smith_criterion_weaker</span></a></span>
+    and <span class="inlinecode"><a class="idref" href="Semiring.CondorcetN.html#condorcet_implies_strict_winner_weaker"><span class="id" title="lemma">condorcet_implies_strict_winner_weaker</span></a></span> each keep a condition about
+    the MATRIX — a value separating the two blocks, and dominance of the
+    Condorcet winner respectively.  Those are properties of a profile, not
+    of an algebra, and no carrier construction can supply them.  The split
+    is exactly the algebraic / ballot-level division of labour. 
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">From</span> <span class="id" title="var">Stdlib</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <span class="id" title="library">Utf8</span> <span class="id" title="library">List</span>.<br/>
@@ -27,6 +59,13 @@
 <span class="id" title="keyword">Import</span> <span class="id" title="module">ListNotations</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+The order notations are Local to SocialchoiceN.v, so they are restated
+    here; they unfold to the same thing. 
+</div>
+<div class="code">
 <span class="id" title="keyword">Local Infix</span> <a id="3ccab6e0e5cec5d8305913b11c2aa678" class="idref" href="#3ccab6e0e5cec5d8305913b11c2aa678"><span class="id" title="notation">&quot;</span></a>≤" := <a class="idref" href="Semiring.OrelN.html#Orel"><span class="id" title="definition">Orel</span></a> (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 70).<br/>
 <span class="id" title="keyword">Local Infix</span> <a id=":::x_'&lt;'_x" class="idref" href="#:::x_'&lt;'_x"><span class="id" title="notation">&quot;</span></a>&lt;" := (<span class="id" title="keyword">fun</span> <a id="x:1" class="idref" href="#x:1"><span class="id" title="binder">x</span></a> <a id="y:2" class="idref" href="#y:2"><span class="id" title="binder">y</span></a> ⇒ <a class="idref" href="Semiring.SchulzeOnNT.html#x:1"><span class="id" title="variable">x</span></a> <a class="idref" href="Semiring.SchulzeOnNT.html#3ccab6e0e5cec5d8305913b11c2aa678"><span class="id" title="notation">≤</span></a> <a class="idref" href="Semiring.SchulzeOnNT.html#y:2"><span class="id" title="variable">y</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#ba2b0e492d2b4675a0acf3ea92aabadd"><span class="id" title="notation">∧</span></a> <a class="idref" href="Semiring.SchulzeOnNT.html#x:1"><span class="id" title="variable">x</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'&lt;&gt;'_x"><span class="id" title="notation">≠</span></a> <a class="idref" href="Semiring.SchulzeOnNT.html#y:2"><span class="id" title="variable">y</span></a>) (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 70).<br/>
 
@@ -137,12 +176,12 @@ The resolution step of Schulze 4.2.1: an untied winner is the only
 </div>
 
 <div class="doc">
-The remaining Pareto 2 conclusions (4.3.2.3 / .4 / .5).  These carry
+The remaining Pareto <span class="inlinecode">#2</span> conclusions (4.3.2.3 / .4 / .5).  These carry
       no algebraic hypotheses even in the general file — only conditions on
       the matrix — so there is nothing for the normalised carrier to shed;
       they are listed here only to keep the paper-section index in one place.
-      See [pareto_weaker_beats_transfer], [pareto_weaker_loses_transfer] and
-      [pareto_weaker_winner_transfer] in [SocialchoiceN.v]. 
+      See <span class="inlinecode"><a class="idref" href="Semiring.ParetoN.html#pareto_weaker_beats_transfer"><span class="id" title="lemma">pareto_weaker_beats_transfer</span></a></span>, <span class="inlinecode"><a class="idref" href="Semiring.ParetoN.html#pareto_weaker_loses_transfer"><span class="id" title="lemma">pareto_weaker_loses_transfer</span></a></span> and
+      <span class="inlinecode"><a class="idref" href="Semiring.ParetoN.html#pareto_weaker_winner_transfer"><span class="id" title="lemma">pareto_weaker_winner_transfer</span></a></span> in <span class="inlinecode"><span class="id" title="var">SocialchoiceN.v</span></span>. 
 <div class="paragraph"> </div>
 
  Schulze's corollary (4.1.14): every non-winner is beaten by a winner. 

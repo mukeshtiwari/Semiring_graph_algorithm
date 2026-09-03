@@ -55,6 +55,13 @@ A <span class="inlinecode"><a class="idref" href="Semiring.SemimoduleN.html#Vect
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">fun</span> <a id="i:15" class="idref" href="#i:15"><span class="id" title="binder">i</span></a> ⇒ <a class="idref" href="Semiring.Structures.html#scale"><span class="id" title="definition">scale</span></a> <a class="idref" href="Semiring.SemimoduleN.html#a:13"><span class="id" title="variable">a</span></a> (<a class="idref" href="Semiring.SemimoduleN.html#v:14"><span class="id" title="variable">v</span></a> <a class="idref" href="Semiring.SemimoduleN.html#i:15"><span class="id" title="variable">i</span></a>).<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+(m · v)<i>i  :=  Σ_{j ∈ finN}  (v_j) ⊙ m</i>{i,j}
+      v is a column vector 
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="matrix_vector_action" class="idref" href="#matrix_vector_action"><span class="id" title="definition">matrix_vector_action</span></a> {<a id="R:16" class="idref" href="#R:16"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} <br/>
@@ -65,6 +72,12 @@ A <span class="inlinecode"><a class="idref" href="Semiring.SemimoduleN.html#Vect
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Semiring.Structures.html#zero"><span class="id" title="definition">zero</span></a> <a class="idref" href="Semiring.Structures.html#elements"><span class="id" title="definition">elements</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Efficient list-based version: map each row → fold (scale v_j m{i,j}) 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="matrix_vector_action_eff" class="idref" href="#matrix_vector_action_eff"><span class="id" title="definition">matrix_vector_action_eff</span></a> {<a id="R:23" class="idref" href="#R:23"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;{<a id="U:24" class="idref" href="#U:24"><span class="id" title="binder">U</span></a> : <a class="idref" href="Semiring.Structures.html#Semimodule.type"><span class="id" title="record">Semimodule.type</span></a> <a class="idref" href="Semiring.SemimoduleN.html#R:23"><span class="id" title="variable">R</span></a>} (<a id="m:25" class="idref" href="#m:25"><span class="id" title="binder">m</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.SemimoduleN.html#R:23"><span class="id" title="variable">R</span></a>)) (<a id="v:26" class="idref" href="#v:26"><span class="id" title="binder">v</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.SemimoduleN.html#U:24"><span class="id" title="variable">U</span></a>) : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.SemimoduleN.html#U:24"><span class="id" title="variable">U</span></a> :=<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="abbreviation">List.map</span> (<span class="id" title="keyword">fun</span> <a id="row:27" class="idref" href="#row:27"><span class="id" title="binder">row</span></a> ⇒<br/>
@@ -73,6 +86,12 @@ A <span class="inlinecode"><a class="idref" href="Semiring.SemimoduleN.html#Vect
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="definition">List.combine</span> <a class="idref" href="Semiring.SemimoduleN.html#row:27"><span class="id" title="variable">row</span></a> <a class="idref" href="Semiring.SemimoduleN.html#v:26"><span class="id" title="variable">v</span></a>))) <a class="idref" href="Semiring.SemimoduleN.html#m:25"><span class="id" title="variable">m</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Look up a node in parallel with a value list ordered by finN 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Fixpoint</span> <a id="list_lookup" class="idref" href="#list_lookup"><span class="id" title="definition">list_lookup</span></a> {<a id="R:31" class="idref" href="#R:31"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;{<a id="U:32" class="idref" href="#U:32"><span class="id" title="binder">U</span></a> : <a class="idref" href="Semiring.Structures.html#Semimodule.type"><span class="id" title="record">Semimodule.type</span></a> <a class="idref" href="Semiring.SemimoduleN.html#R:31"><span class="id" title="variable">R</span></a>} (<a id="keys:33" class="idref" href="#keys:33"><span class="id" title="binder">keys</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.SemimoduleN.html#Semimodule.Node"><span class="id" title="variable">Node</span></a>) (<a id="vals:34" class="idref" href="#vals:34"><span class="id" title="binder">vals</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.SemimoduleN.html#U:32"><span class="id" title="variable">U</span></a>) (<a id="key:35" class="idref" href="#key:35"><span class="id" title="binder">key</span></a> : <a class="idref" href="Semiring.SemimoduleN.html#Semimodule.Node"><span class="id" title="variable">Node</span></a>) : <a class="idref" href="Semiring.SemimoduleN.html#U:32"><span class="id" title="variable">U</span></a> :=<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="Semiring.SemimoduleN.html#keys:33"><span class="id" title="variable">keys</span></a>, <a class="idref" href="Semiring.SemimoduleN.html#vals:34"><span class="id" title="variable">vals</span></a> <span class="id" title="keyword">with</span><br/>
@@ -81,6 +100,13 @@ A <span class="inlinecode"><a class="idref" href="Semiring.SemimoduleN.html#Vect
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Functional wrapper: convert Matrix/Vector to lists, compute, convert back. 
+     Vector v is a column vector  
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="matrix_vector_action_eff_fun" class="idref" href="#matrix_vector_action_eff_fun"><span class="id" title="definition">matrix_vector_action_eff_fun</span></a> {<a id="R:39" class="idref" href="#R:39"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;{<a id="U:40" class="idref" href="#U:40"><span class="id" title="binder">U</span></a> : <a class="idref" href="Semiring.Structures.html#Semimodule.type"><span class="id" title="record">Semimodule.type</span></a> <a class="idref" href="Semiring.SemimoduleN.html#R:39"><span class="id" title="variable">R</span></a>} (<a id="m:41" class="idref" href="#m:41"><span class="id" title="binder">m</span></a> : @<a class="idref" href="Semiring.OrelN.html#Matrix"><span class="id" title="definition">Matrix</span></a> <a class="idref" href="Semiring.SemimoduleN.html#Semimodule.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="Semiring.SemimoduleN.html#R:39"><span class="id" title="variable">R</span></a>) (<a id="v:42" class="idref" href="#v:42"><span class="id" title="binder">v</span></a> : @<a class="idref" href="Semiring.SemimoduleN.html#Vector"><span class="id" title="definition">Vector</span></a> <a class="idref" href="Semiring.SemimoduleN.html#R:39"><span class="id" title="variable">R</span></a> <a class="idref" href="Semiring.SemimoduleN.html#U:40"><span class="id" title="variable">U</span></a>) : <a class="idref" href="Semiring.SemimoduleN.html#Vector"><span class="id" title="definition">Vector</span></a> :=<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">let</span> <a id="la:45" class="idref" href="#la:45"><span class="id" title="binder">la</span></a> := <span class="id" title="abbreviation">List.map</span> (<span class="id" title="keyword">fun</span> <a id="r:43" class="idref" href="#r:43"><span class="id" title="binder">r</span></a> ⇒ <span class="id" title="abbreviation">List.map</span> (<span class="id" title="keyword">fun</span> <a id="c:44" class="idref" href="#c:44"><span class="id" title="binder">c</span></a> ⇒ <a class="idref" href="Semiring.SemimoduleN.html#m:41"><span class="id" title="variable">m</span></a> <a class="idref" href="Semiring.SemimoduleN.html#r:43"><span class="id" title="variable">r</span></a> <a class="idref" href="Semiring.SemimoduleN.html#c:44"><span class="id" title="variable">c</span></a>) <a class="idref" href="Semiring.Structures.html#elements"><span class="id" title="definition">elements</span></a>) <a class="idref" href="Semiring.Structures.html#elements"><span class="id" title="definition">elements</span></a> <span class="id" title="tactic">in</span> <br/>
@@ -89,6 +115,12 @@ A <span class="inlinecode"><a class="idref" href="Semiring.SemimoduleN.html#Vect
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">fun</span> <a id="i:49" class="idref" href="#i:49"><span class="id" title="binder">i</span></a> ⇒ <a class="idref" href="Semiring.SemimoduleN.html#list_lookup"><span class="id" title="definition">list_lookup</span></a> <a class="idref" href="Semiring.Structures.html#elements"><span class="id" title="definition">elements</span></a> <a class="idref" href="Semiring.SemimoduleN.html#result:48"><span class="id" title="variable">result</span></a> <a class="idref" href="Semiring.SemimoduleN.html#i:49"><span class="id" title="variable">i</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Generic list_lookup_map: works for any list l 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="list_lookup_map_gen" class="idref" href="#list_lookup_map_gen"><span class="id" title="lemma">list_lookup_map_gen</span></a> {<a id="R:50" class="idref" href="#R:50"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;{<a id="U:51" class="idref" href="#U:51"><span class="id" title="binder">U</span></a> : <a class="idref" href="Semiring.Structures.html#Semimodule.type"><span class="id" title="record">Semimodule.type</span></a> <a class="idref" href="Semiring.SemimoduleN.html#R:50"><span class="id" title="variable">R</span></a>} : <span class="id" title="keyword">∀</span> (<a id="f:52" class="idref" href="#f:52"><span class="id" title="binder">f</span></a> : <a class="idref" href="Semiring.SemimoduleN.html#Semimodule.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Semiring.SemimoduleN.html#U:51"><span class="id" title="variable">U</span></a>) (<a id="l:53" class="idref" href="#l:53"><span class="id" title="binder">l</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.SemimoduleN.html#Semimodule.Node"><span class="id" title="variable">Node</span></a>),<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">∀</span> (<a id="i:54" class="idref" href="#i:54"><span class="id" title="binder">i</span></a> : <a class="idref" href="Semiring.SemimoduleN.html#Semimodule.Node"><span class="id" title="variable">Node</span></a>), <span class="id" title="inductive">NoDup</span> <a class="idref" href="Semiring.SemimoduleN.html#l:53"><span class="id" title="variable">l</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <span class="id" title="definition">List.In</span> <a class="idref" href="Semiring.SemimoduleN.html#i:54"><span class="id" title="variable">i</span></a> <a class="idref" href="Semiring.SemimoduleN.html#l:53"><span class="id" title="variable">l</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <br/>
@@ -109,8 +141,15 @@ A <span class="inlinecode"><a class="idref" href="Semiring.SemimoduleN.html#Vect
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
 
-<br/>
+<div class="doc">
+Generic: the efficient computation looked up equals the functional one 
+<div class="paragraph"> </div>
+
+ combine + map + fold_right = direct fold_right over the same list 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="combine_fold_eq" class="idref" href="#combine_fold_eq"><span class="id" title="lemma">combine_fold_eq</span></a> {<a id="R:55" class="idref" href="#R:55"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} {<a id="U:56" class="idref" href="#U:56"><span class="id" title="binder">U</span></a> : <a class="idref" href="Semiring.Structures.html#Semimodule.type"><span class="id" title="record">Semimodule.type</span></a> <a class="idref" href="Semiring.SemimoduleN.html#R:55"><span class="id" title="variable">R</span></a>} : <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">∀</span> (<a id="l:57" class="idref" href="#l:57"><span class="id" title="binder">l</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.SemimoduleN.html#Semimodule.Node"><span class="id" title="variable">Node</span></a>) (<a id="A:58" class="idref" href="#A:58"><span class="id" title="binder">A</span></a> : <a class="idref" href="Semiring.SemimoduleN.html#Semimodule.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Semiring.SemimoduleN.html#Semimodule.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Semiring.SemimoduleN.html#R:55"><span class="id" title="variable">R</span></a>) (<a id="x:59" class="idref" href="#x:59"><span class="id" title="binder">x</span></a> : <a class="idref" href="Semiring.SemimoduleN.html#Semimodule.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Semiring.SemimoduleN.html#U:56"><span class="id" title="variable">U</span></a>) (<a id="r:60" class="idref" href="#r:60"><span class="id" title="binder">r</span></a> : <a class="idref" href="Semiring.SemimoduleN.html#Semimodule.Node"><span class="id" title="variable">Node</span></a>),<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">(</span></a><span class="id" title="definition">List.fold_right</span> <a class="idref" href="Semiring.Structures.html#add"><span class="id" title="definition">add</span></a> <a class="idref" href="Semiring.Structures.html#zero"><span class="id" title="definition">zero</span></a><br/>
@@ -351,6 +390,12 @@ In a bounded semiring, the module addition is idempotent:
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">Hbound</span> : <a class="idref" href="Semiring.Structures.html#add"><span class="id" title="definition">add</span></a> (<a class="idref" href="Semiring.Structures.html#one"><span class="id" title="definition">one</span></a> (<span class="id" title="var">s</span> := <span class="id" title="var">R</span>)) (<a class="idref" href="Semiring.Structures.html#one"><span class="id" title="definition">one</span></a> (<span class="id" title="var">s</span> := <span class="id" title="var">R</span>)) <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="Semiring.Structures.html#one"><span class="id" title="definition">one</span></a> (<span class="id" title="var">s</span> := <span class="id" title="var">R</span>))<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">by</span> <span class="id" title="tactic">apply</span> (<a class="idref" href="Semiring.Structures.html#add_bound"><span class="id" title="definition">add_bound</span></a> (<span class="id" title="var">s</span> := <span class="id" title="var">R</span>) <a class="idref" href="Semiring.Structures.html#one"><span class="id" title="definition">one</span></a>).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">pose</span> <span class="id" title="var">proof</span> (<a class="idref" href="Semiring.Structures.html#scale_distr_r"><span class="id" title="definition">scale_distr_r</span></a> (<span class="id" title="var">s</span> := <span class="id" title="var">U</span>) <a class="idref" href="Semiring.Structures.html#one"><span class="id" title="definition">one</span></a> <a class="idref" href="Semiring.Structures.html#one"><span class="id" title="definition">one</span></a> <span class="id" title="var">v</span>) <span class="id" title="keyword">as</span> <span class="id" title="var">Hdist</span>.<br/>
+</div>
+
+<div class="doc">
+Hdist: scale (1+1) v = scale 1 v + scale 1 v 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> <span class="id" title="var">Hbound</span> <span class="id" title="tactic">in</span> <span class="id" title="var">Hdist</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> !(<a class="idref" href="Semiring.Structures.html#scale_one"><span class="id" title="definition">scale_one</span></a> (<span class="id" title="var">s</span> := <span class="id" title="var">U</span>) <span class="id" title="var">v</span>) <span class="id" title="tactic">in</span> <span class="id" title="var">Hdist</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">symmetry</span>. <span class="id" title="tactic">exact</span> <span class="id" title="var">Hdist</span>.<br/>
@@ -411,6 +456,12 @@ Double sum interchange over the same list:
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">set</span> (<span class="id" title="var">D</span> := <span class="id" title="definition">List.fold_right</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">fun</span> <a id="j:231" class="idref" href="#j:231"><span class="id" title="binder"><span id="j:235" class="id">j</span></span></a> <a id="acc:232" class="idref" href="#acc:232"><span class="id" title="binder"><span id="acc:236" class="id">acc</span></span></a> ⇒<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Semiring.Structures.html#add"><span class="id" title="definition">add</span></a> (<span class="id" title="definition">List.fold_right</span> (<span class="id" title="keyword">fun</span> <a id="k:233" class="idref" href="#k:233"><span class="id" title="binder"><span id="k:237" class="id">k</span></span></a> <a id="acc':234" class="idref" href="#acc':234"><span class="id" title="binder"><span id="acc':238" class="id">acc'</span></span></a> ⇒ <a class="idref" href="Semiring.Structures.html#add"><span class="id" title="definition">add</span></a> (<span class="id" title="var">f</span> <a class="idref" href="Semiring.SemimoduleN.html#j:231"><span class="id" title="variable">j</span></a> <a class="idref" href="Semiring.SemimoduleN.html#k:233"><span class="id" title="variable">k</span></a>) <a class="idref" href="Semiring.SemimoduleN.html#acc':234"><span class="id" title="variable">acc'</span></a>) <a class="idref" href="Semiring.Structures.html#zero"><span class="id" title="definition">zero</span></a> <span class="id" title="var">t</span>) <a class="idref" href="Semiring.SemimoduleN.html#acc:232"><span class="id" title="variable">acc</span></a>) <a class="idref" href="Semiring.Structures.html#zero"><span class="id" title="definition">zero</span></a> <span class="id" title="var">t</span>).<br/>
+</div>
+
+<div class="doc">
+LHS = plusV (A + B) (plusV C D) via fold_right_split 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">HL</span> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#eq"><span class="id" title="inductive">eq</span></a><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="definition">List.fold_right</span> (<span class="id" title="keyword">fun</span> <a id="j:239" class="idref" href="#j:239"><span class="id" title="binder"><span id="j:243" class="id">j</span></span></a> <a id="acc:240" class="idref" href="#acc:240"><span class="id" title="binder"><span id="acc:244" class="id">acc</span></span></a> ⇒<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Semiring.Structures.html#add"><span class="id" title="definition">add</span></a> (<span class="id" title="definition">List.fold_right</span> (<span class="id" title="keyword">fun</span> <a id="k:241" class="idref" href="#k:241"><span class="id" title="binder"><span id="k:245" class="id">k</span></span></a> <a id="acc':242" class="idref" href="#acc':242"><span class="id" title="binder"><span id="acc':246" class="id">acc'</span></span></a> ⇒ <a class="idref" href="Semiring.Structures.html#add"><span class="id" title="definition">add</span></a> (<span class="id" title="var">f</span> <a class="idref" href="Semiring.SemimoduleN.html#j:239"><span class="id" title="variable">j</span></a> <a class="idref" href="Semiring.SemimoduleN.html#k:241"><span class="id" title="variable">k</span></a>) <a class="idref" href="Semiring.SemimoduleN.html#acc':242"><span class="id" title="variable">acc'</span></a>) <a class="idref" href="Semiring.Structures.html#zero"><span class="id" title="definition">zero</span></a> (<span class="id" title="var">h</span> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#::list_scope:x_'::'_x"><span class="id" title="notation">::</span></a> <span class="id" title="var">t</span>)) <a class="idref" href="Semiring.SemimoduleN.html#acc:240"><span class="id" title="variable">acc</span></a>)<br/>
@@ -421,7 +472,12 @@ Double sum interchange over the same list:
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> &lt;-<a class="idref" href="Semiring.SemimoduleN.html#fold_right_split"><span class="id" title="lemma">fold_right_split</span></a>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">reflexivity</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+
+<div class="doc">
+RHS = plusV (A + C) (plusV B D) via fold_right_split 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">HR</span> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#eq"><span class="id" title="inductive">eq</span></a><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="definition">List.fold_right</span> (<span class="id" title="keyword">fun</span> <a id="k:247" class="idref" href="#k:247"><span class="id" title="binder"><span id="k:251" class="id">k</span></span></a> <a id="acc:248" class="idref" href="#acc:248"><span class="id" title="binder"><span id="acc:252" class="id">acc</span></span></a> ⇒<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Semiring.Structures.html#add"><span class="id" title="definition">add</span></a> (<span class="id" title="definition">List.fold_right</span> (<span class="id" title="keyword">fun</span> <a id="j:249" class="idref" href="#j:249"><span class="id" title="binder"><span id="j:253" class="id">j</span></span></a> <a id="acc':250" class="idref" href="#acc':250"><span class="id" title="binder"><span id="acc':254" class="id">acc'</span></span></a> ⇒ <a class="idref" href="Semiring.Structures.html#add"><span class="id" title="definition">add</span></a> (<span class="id" title="var">f</span> <a class="idref" href="Semiring.SemimoduleN.html#j:249"><span class="id" title="variable">j</span></a> <a class="idref" href="Semiring.SemimoduleN.html#k:247"><span class="id" title="variable">k</span></a>) <a class="idref" href="Semiring.SemimoduleN.html#acc':250"><span class="id" title="variable">acc'</span></a>) <a class="idref" href="Semiring.Structures.html#zero"><span class="id" title="definition">zero</span></a> (<span class="id" title="var">h</span> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#::list_scope:x_'::'_x"><span class="id" title="notation">::</span></a> <span class="id" title="var">t</span>)) <a class="idref" href="Semiring.SemimoduleN.html#acc:248"><span class="id" title="variable">acc</span></a>)<br/>
@@ -460,10 +516,28 @@ Matrix-multiplication associativity for the matrix-vector action:
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Semiring.Structures.html#zero"><span class="id" title="definition">zero</span></a> <a class="idref" href="Semiring.SemimoduleN.html#l:265"><span class="id" title="variable">l</span></a>.<br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Proof</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">l</span> <span class="id" title="var">M1</span> <span class="id" title="var">M2</span> <span class="id" title="var">v</span> <span class="id" title="var">i</span>.<br/>
+</div>
+
+<div class="doc">
+f(j,k) := scale (M1 i k) (scale (M2 k j) (v j)) 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">set</span> (<span class="id" title="var">f</span> := <span class="id" title="keyword">fun</span> (<a id="j:278" class="idref" href="#j:278"><span class="id" title="binder"><span id="j:280" class="id">j</span></span></a> <a id="k:279" class="idref" href="#k:279"><span class="id" title="binder"><span id="k:281" class="id">k</span></span></a> : <a class="idref" href="Semiring.SemimoduleN.html#Semimodule.Node"><span class="id" title="variable">Node</span></a>) ⇒ <a class="idref" href="Semiring.Structures.html#scale"><span class="id" title="definition">scale</span></a> (<span class="id" title="var">M1</span> <span class="id" title="var">i</span> <a class="idref" href="Semiring.SemimoduleN.html#k:279"><span class="id" title="variable">k</span></a>) (<a class="idref" href="Semiring.Structures.html#scale"><span class="id" title="definition">scale</span></a> (<span class="id" title="var">M2</span> <a class="idref" href="Semiring.SemimoduleN.html#k:279"><span class="id" title="variable">k</span></a> <a class="idref" href="Semiring.SemimoduleN.html#j:278"><span class="id" title="variable">j</span></a>) (<span class="id" title="var">v</span> <a class="idref" href="Semiring.SemimoduleN.html#j:278"><span class="id" title="variable">j</span></a>))).<br/>
+</div>
+
+<div class="doc">
+g(j,k) := scale (M1 i j) (scale (M2 j k) (v k)) 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">set</span> (<span class="id" title="var">g</span> := <span class="id" title="keyword">fun</span> (<a id="j:282" class="idref" href="#j:282"><span class="id" title="binder"><span id="j:284" class="id">j</span></span></a> <a id="k:283" class="idref" href="#k:283"><span class="id" title="binder"><span id="k:285" class="id">k</span></span></a> : <a class="idref" href="Semiring.SemimoduleN.html#Semimodule.Node"><span class="id" title="variable">Node</span></a>) ⇒ <a class="idref" href="Semiring.Structures.html#scale"><span class="id" title="definition">scale</span></a> (<span class="id" title="var">M1</span> <span class="id" title="var">i</span> <a class="idref" href="Semiring.SemimoduleN.html#j:282"><span class="id" title="variable">j</span></a>) (<a class="idref" href="Semiring.Structures.html#scale"><span class="id" title="definition">scale</span></a> (<span class="id" title="var">M2</span> <a class="idref" href="Semiring.SemimoduleN.html#j:282"><span class="id" title="variable">j</span></a> <a class="idref" href="Semiring.SemimoduleN.html#k:283"><span class="id" title="variable">k</span></a>) (<span class="id" title="var">v</span> <a class="idref" href="Semiring.SemimoduleN.html#k:283"><span class="id" title="variable">k</span></a>))).<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Step 1: LHS = sum_j sum_k f(j,k) 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">HL</span> :<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="definition">List.fold_right</span> (<span class="id" title="keyword">fun</span> <a id="j:286" class="idref" href="#j:286"><span class="id" title="binder"><span id="j:294" class="id">j</span></span></a> <a id="acc:287" class="idref" href="#acc:287"><span class="id" title="binder"><span id="acc:295" class="id">acc</span></span></a> ⇒ <a class="idref" href="Semiring.Structures.html#add"><span class="id" title="definition">add</span></a> (<a class="idref" href="Semiring.Structures.html#scale"><span class="id" title="definition">scale</span></a><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="definition">List.fold_right</span> (<span class="id" title="keyword">fun</span> <a id="k:288" class="idref" href="#k:288"><span class="id" title="binder"><span id="k:296" class="id">k</span></span></a> <a id="acc2:289" class="idref" href="#acc2:289"><span class="id" title="binder"><span id="acc2:297" class="id">acc2</span></span></a> ⇒ <span class="id" title="var">M1</span> <span class="id" title="var">i</span> <a class="idref" href="Semiring.SemimoduleN.html#k:288"><span class="id" title="variable">k</span></a> <a class="idref" href="Semiring.Structures.html#df06337ab011822b2792d206fc407479"><span class="id" title="notation">×</span></a> <span class="id" title="var">M2</span> <a class="idref" href="Semiring.SemimoduleN.html#k:288"><span class="id" title="variable">k</span></a> <a class="idref" href="Semiring.SemimoduleN.html#j:286"><span class="id" title="variable">j</span></a> <a class="idref" href="Semiring.Structures.html#5a105efba9ec815920c0186c077a884f"><span class="id" title="notation">+</span></a> <a class="idref" href="Semiring.SemimoduleN.html#acc2:289"><span class="id" title="variable">acc2</span></a>) 0 <span class="id" title="var">l</span>) (<span class="id" title="var">v</span> <a class="idref" href="Semiring.SemimoduleN.html#j:286"><span class="id" title="variable">j</span></a>)) <a class="idref" href="Semiring.SemimoduleN.html#acc:287"><span class="id" title="variable">acc</span></a>)<br/>
@@ -482,7 +556,12 @@ Matrix-multiplication associativity for the matrix-vector action:
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">intro</span> <span class="id" title="var">k</span>. <span class="id" title="tactic">unfold</span> <span class="id" title="var">f</span>. <span class="id" title="tactic">rewrite</span> <a class="idref" href="Semiring.Structures.html#scale_assoc"><span class="id" title="definition">scale_assoc</span></a>. <span class="id" title="tactic">reflexivity</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;}<br/>
 <br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;</div>
+
+<div class="doc">
+Step 2: RHS = sum_j sum_k g(j,k) 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">HR</span> :<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="definition">List.fold_right</span> (<span class="id" title="keyword">fun</span> <a id="j:321" class="idref" href="#j:321"><span class="id" title="binder"><span id="j:329" class="id">j</span></span></a> <a id="acc:322" class="idref" href="#acc:322"><span class="id" title="binder"><span id="acc:330" class="id">acc</span></span></a> ⇒ <a class="idref" href="Semiring.Structures.html#add"><span class="id" title="definition">add</span></a> (<a class="idref" href="Semiring.Structures.html#scale"><span class="id" title="definition">scale</span></a> (<span class="id" title="var">M1</span> <span class="id" title="var">i</span> <a class="idref" href="Semiring.SemimoduleN.html#j:321"><span class="id" title="variable">j</span></a>)<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="definition">List.fold_right</span> (<span class="id" title="keyword">fun</span> <a id="k:323" class="idref" href="#k:323"><span class="id" title="binder"><span id="k:331" class="id">k</span></span></a> <a id="acc2:324" class="idref" href="#acc2:324"><span class="id" title="binder"><span id="acc2:332" class="id">acc2</span></span></a> ⇒ <a class="idref" href="Semiring.Structures.html#add"><span class="id" title="definition">add</span></a> (<a class="idref" href="Semiring.Structures.html#scale"><span class="id" title="definition">scale</span></a> (<span class="id" title="var">M2</span> <a class="idref" href="Semiring.SemimoduleN.html#j:321"><span class="id" title="variable">j</span></a> <a class="idref" href="Semiring.SemimoduleN.html#k:323"><span class="id" title="variable">k</span></a>) (<span class="id" title="var">v</span> <a class="idref" href="Semiring.SemimoduleN.html#k:323"><span class="id" title="variable">k</span></a>)) <a class="idref" href="Semiring.SemimoduleN.html#acc2:324"><span class="id" title="variable">acc2</span></a>) <a class="idref" href="Semiring.Structures.html#zero"><span class="id" title="definition">zero</span></a> <span class="id" title="var">l</span>)) <a class="idref" href="Semiring.SemimoduleN.html#acc:322"><span class="id" title="variable">acc</span></a>)<br/>
@@ -502,7 +581,12 @@ Matrix-multiplication associativity for the matrix-vector action:
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">intro</span> <span class="id" title="var">k</span>. <span class="id" title="tactic">unfold</span> <span class="id" title="var">g</span>. <span class="id" title="tactic">reflexivity</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;}<br/>
 <br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;</div>
+
+<div class="doc">
+Step 3: sum_j sum_k g(j,k) = sum_k sum_j g(j,k) via double commute 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">Hcomm</span> :<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="definition">List.fold_right</span> (<span class="id" title="keyword">fun</span> <a id="j:356" class="idref" href="#j:356"><span class="id" title="binder"><span id="j:364" class="id">j</span></span></a> <a id="acc:357" class="idref" href="#acc:357"><span class="id" title="binder"><span id="acc:365" class="id">acc</span></span></a> ⇒<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Semiring.Structures.html#add"><span class="id" title="definition">add</span></a> (<span class="id" title="definition">List.fold_right</span> (<span class="id" title="keyword">fun</span> <a id="k:358" class="idref" href="#k:358"><span class="id" title="binder"><span id="k:366" class="id">k</span></span></a> <a id="acc':359" class="idref" href="#acc':359"><span class="id" title="binder"><span id="acc':367" class="id">acc'</span></span></a> ⇒ <a class="idref" href="Semiring.Structures.html#add"><span class="id" title="definition">add</span></a> (<span class="id" title="var">g</span> <a class="idref" href="Semiring.SemimoduleN.html#j:356"><span class="id" title="variable">j</span></a> <a class="idref" href="Semiring.SemimoduleN.html#k:358"><span class="id" title="variable">k</span></a>) <a class="idref" href="Semiring.SemimoduleN.html#acc':359"><span class="id" title="variable">acc'</span></a>) <a class="idref" href="Semiring.Structures.html#zero"><span class="id" title="definition">zero</span></a> <span class="id" title="var">l</span>) <a class="idref" href="Semiring.SemimoduleN.html#acc:357"><span class="id" title="variable">acc</span></a>)<br/>
@@ -512,7 +596,12 @@ Matrix-multiplication associativity for the matrix-vector action:
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Semiring.Structures.html#zero"><span class="id" title="definition">zero</span></a> <span class="id" title="var">l</span>).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;{ <span class="id" title="tactic">apply</span> (<a class="idref" href="Semiring.SemimoduleN.html#fold_right_double_commute"><span class="id" title="lemma">fold_right_double_commute</span></a> <span class="id" title="var">l</span> <span class="id" title="var">g</span>). }<br/>
 <br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;</div>
+
+<div class="doc">
+Step 4: sum_k sum_j g(j,k) = sum_j sum_k g(k,j) (alpha-rename) 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">H_alpha</span> :<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="definition">List.fold_right</span> (<span class="id" title="keyword">fun</span> <a id="k:372" class="idref" href="#k:372"><span class="id" title="binder"><span id="k:380" class="id">k</span></span></a> <a id="acc:373" class="idref" href="#acc:373"><span class="id" title="binder"><span id="acc:381" class="id">acc</span></span></a> ⇒<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Semiring.Structures.html#add"><span class="id" title="definition">add</span></a> (<span class="id" title="definition">List.fold_right</span> (<span class="id" title="keyword">fun</span> <a id="j:374" class="idref" href="#j:374"><span class="id" title="binder"><span id="j:382" class="id">j</span></span></a> <a id="acc':375" class="idref" href="#acc':375"><span class="id" title="binder"><span id="acc':383" class="id">acc'</span></span></a> ⇒ <a class="idref" href="Semiring.Structures.html#add"><span class="id" title="definition">add</span></a> (<span class="id" title="var">g</span> <a class="idref" href="Semiring.SemimoduleN.html#j:374"><span class="id" title="variable">j</span></a> <a class="idref" href="Semiring.SemimoduleN.html#k:372"><span class="id" title="variable">k</span></a>) <a class="idref" href="Semiring.SemimoduleN.html#acc':375"><span class="id" title="variable">acc'</span></a>) <a class="idref" href="Semiring.Structures.html#zero"><span class="id" title="definition">zero</span></a> <span class="id" title="var">l</span>) <a class="idref" href="Semiring.SemimoduleN.html#acc:373"><span class="id" title="variable">acc</span></a>)<br/>
@@ -522,7 +611,12 @@ Matrix-multiplication associativity for the matrix-vector action:
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Semiring.Structures.html#zero"><span class="id" title="definition">zero</span></a> <span class="id" title="var">l</span>).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;{ <span class="id" title="tactic">apply</span> (<a class="idref" href="Semiring.SemimoduleN.html#fold_right_nest_alpha"><span class="id" title="lemma">fold_right_nest_alpha</span></a> <span class="id" title="var">l</span> <span class="id" title="var">l</span> <span class="id" title="var">g</span>). }<br/>
 <br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;</div>
+
+<div class="doc">
+Step 5: g(k,j) = f(j,k), so sum_j sum_k g(k,j) = sum_j sum_k f(j,k) 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">Hgf</span> :<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="definition">List.fold_right</span> (<span class="id" title="keyword">fun</span> <a id="j:388" class="idref" href="#j:388"><span class="id" title="binder"><span id="j:396" class="id">j</span></span></a> <a id="acc:389" class="idref" href="#acc:389"><span class="id" title="binder"><span id="acc:397" class="id">acc</span></span></a> ⇒<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Semiring.Structures.html#add"><span class="id" title="definition">add</span></a> (<span class="id" title="definition">List.fold_right</span> (<span class="id" title="keyword">fun</span> <a id="k:390" class="idref" href="#k:390"><span class="id" title="binder"><span id="k:398" class="id">k</span></span></a> <a id="acc':391" class="idref" href="#acc':391"><span class="id" title="binder"><span id="acc':399" class="id">acc'</span></span></a> ⇒ <a class="idref" href="Semiring.Structures.html#add"><span class="id" title="definition">add</span></a> (<span class="id" title="var">g</span> <a class="idref" href="Semiring.SemimoduleN.html#k:390"><span class="id" title="variable">k</span></a> <a class="idref" href="Semiring.SemimoduleN.html#j:388"><span class="id" title="variable">j</span></a>) <a class="idref" href="Semiring.SemimoduleN.html#acc':391"><span class="id" title="variable">acc'</span></a>) <a class="idref" href="Semiring.Structures.html#zero"><span class="id" title="definition">zero</span></a> <span class="id" title="var">l</span>) <a class="idref" href="Semiring.SemimoduleN.html#acc:389"><span class="id" title="variable">acc</span></a>)<br/>
@@ -540,7 +634,12 @@ Matrix-multiplication associativity for the matrix-vector action:
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">reflexivity</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;}<br/>
 <br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;</div>
+
+<div class="doc">
+Chain: LHS = sum_j sum_k f = sum_j sum_k g(k,j) = sum_k sum_j g(j,k) = sum_j sum_k g(j,k) = RHS 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> <span class="id" title="var">HL</span>. <span class="id" title="tactic">rewrite</span> &lt;-<span class="id" title="var">Hgf</span>, &lt;- <span class="id" title="var">Hcomm</span>, &lt;- <span class="id" title="var">HR</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">reflexivity</span>.<br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
@@ -660,12 +759,25 @@ Kleene fixed point: <span class="inlinecode"><a class="idref" href="Semiring.Sch
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">pose</span> <span class="id" title="var">proof</span> (<a class="idref" href="Semiring.SemimoduleN.html#geom_sum_fixpoint"><span class="id" title="lemma">geom_sum_fixpoint</span></a> <span class="id" title="var">A</span> <span class="id" title="var">Hdiag</span>) <span class="id" title="keyword">as</span> <span class="id" title="var">Hstar</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Replace x i with (Astar·b) i, then unfold definitions 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> (<span class="id" title="var">Hx</span> <span class="id" title="var">i</span>).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">unfold</span> <a class="idref" href="Semiring.SemimoduleN.html#vec_add"><span class="id" title="definition">vec_add</span></a>, <a class="idref" href="Semiring.SemimoduleN.html#matrix_vector_action"><span class="id" title="definition">matrix_vector_action</span></a>.<br/>
 
 <br/>
+</div>
 
-<br/>
+<div class="doc">
+Goal: (Astar·b) i = (A·x) i + b i 
+<div class="paragraph"> </div>
+
+ Step 1: (Astar·b) i = ((I + A·Astar)·b) i via fixpoint 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">H1</span> :<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="definition">List.fold_right</span> (<span class="id" title="keyword">fun</span> <a id="j:459" class="idref" href="#j:459"><span class="id" title="binder"><span id="j:463" class="id">j</span></span></a> <a id="acc:460" class="idref" href="#acc:460"><span class="id" title="binder"><span id="acc:464" class="id">acc</span></span></a> ⇒ <a class="idref" href="Semiring.Structures.html#add"><span class="id" title="definition">add</span></a> (<a class="idref" href="Semiring.Structures.html#scale"><span class="id" title="definition">scale</span></a> (<span class="id" title="var">Astar</span> <span class="id" title="var">i</span> <a class="idref" href="Semiring.SemimoduleN.html#j:459"><span class="id" title="variable">j</span></a>) (<span class="id" title="var">b</span> <a class="idref" href="Semiring.SemimoduleN.html#j:459"><span class="id" title="variable">j</span></a>)) <a class="idref" href="Semiring.SemimoduleN.html#acc:460"><span class="id" title="variable">acc</span></a>) <a class="idref" href="Semiring.Structures.html#zero"><span class="id" title="definition">zero</span></a> <a class="idref" href="Semiring.Structures.html#elements"><span class="id" title="definition">elements</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="definition">List.fold_right</span> (<span class="id" title="keyword">fun</span> <a id="j:461" class="idref" href="#j:461"><span class="id" title="binder"><span id="j:465" class="id">j</span></span></a> <a id="acc:462" class="idref" href="#acc:462"><span class="id" title="binder"><span id="acc:466" class="id">acc</span></span></a> ⇒<br/>
@@ -677,15 +789,29 @@ Kleene fixed point: <span class="inlinecode"><a class="idref" href="Semiring.Sch
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#eq_trans"><span class="id" title="lemma">eq_trans</span></a> <span class="id" title="var">H1</span>). <span class="id" title="tactic">clear</span> <span class="id" title="var">H1</span>.<br/>
 
 <br/>
+</div>
 
-<br/>
+<div class="doc">
+LHS = ((I + A·Astar)·b) i 
+<div class="paragraph"> </div>
+
+ Step 2: distribute scale over matrix addition 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">unfold</span> <a class="idref" href="Semiring.MatN.html#matrix_add"><span class="id" title="definition">matrix_add</span></a> <span class="id" title="tactic">at</span> 1.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> (<a class="idref" href="Semiring.SemimoduleN.html#fold_right_scale_add"><span class="id" title="lemma">fold_right_scale_add</span></a> <a class="idref" href="Semiring.Structures.html#elements"><span class="id" title="definition">elements</span></a><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">fun</span> <a id="j:474" class="idref" href="#j:474"><span class="id" title="binder"><span id="j:476" class="id"><span id="j:478" class="id">j</span></span></span></a> ⇒ <a class="idref" href="Semiring.MatN.html#I"><span class="id" title="definition">I</span></a> <span class="id" title="var">i</span> <a class="idref" href="Semiring.SemimoduleN.html#j:474"><span class="id" title="variable">j</span></a>) (<span class="id" title="keyword">fun</span> <a id="j:473" class="idref" href="#j:473"><span class="id" title="binder"><span id="j:475" class="id"><span id="j:477" class="id">j</span></span></span></a> ⇒ (<a class="idref" href="Semiring.MatN.html#matrix_mul"><span class="id" title="definition">matrix_mul</span></a> <span class="id" title="var">A</span> <span class="id" title="var">Astar</span>) <span class="id" title="var">i</span> <a class="idref" href="Semiring.SemimoduleN.html#j:473"><span class="id" title="variable">j</span></a>) <span class="id" title="var">b</span>).<br/>
 
 <br/>
+</div>
 
-<br/>
+<div class="doc">
+LHS = (I·b) i + ((A·Astar)·b) i 
+<div class="paragraph"> </div>
+
+ Step 3: I·b = b via identity 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">H_id</span> :<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="definition">List.fold_right</span> (<span class="id" title="keyword">fun</span> <a id="j:479" class="idref" href="#j:479"><span class="id" title="binder"><span id="j:481" class="id">j</span></span></a> <a id="acc:480" class="idref" href="#acc:480"><span class="id" title="binder"><span id="acc:482" class="id">acc</span></span></a> ⇒ <a class="idref" href="Semiring.Structures.html#add"><span class="id" title="definition">add</span></a> (<a class="idref" href="Semiring.Structures.html#scale"><span class="id" title="definition">scale</span></a> (<a class="idref" href="Semiring.MatN.html#I"><span class="id" title="definition">I</span></a> <span class="id" title="var">i</span> <a class="idref" href="Semiring.SemimoduleN.html#j:479"><span class="id" title="variable">j</span></a>) (<span class="id" title="var">b</span> <a class="idref" href="Semiring.SemimoduleN.html#j:479"><span class="id" title="variable">j</span></a>)) <a class="idref" href="Semiring.SemimoduleN.html#acc:480"><span class="id" title="variable">acc</span></a>) <a class="idref" href="Semiring.Structures.html#zero"><span class="id" title="definition">zero</span></a> <a class="idref" href="Semiring.Structures.html#elements"><span class="id" title="definition">elements</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <span class="id" title="var">b</span> <span class="id" title="var">i</span>).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;{ <span class="id" title="tactic">apply</span> (<a class="idref" href="Semiring.SemimoduleN.html#fold_right_identity"><span class="id" title="lemma">fold_right_identity</span></a> <a class="idref" href="Semiring.Structures.html#elements"><span class="id" title="definition">elements</span></a> <span class="id" title="var">b</span> <span class="id" title="var">i</span><br/>
@@ -694,8 +820,15 @@ Kleene fixed point: <span class="inlinecode"><a class="idref" href="Semiring.Sch
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#eq_trans"><span class="id" title="lemma">eq_trans</span></a> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#f_equal2"><span class="id" title="lemma">f_equal2</span></a> <a class="idref" href="Semiring.Structures.html#add"><span class="id" title="definition">add</span></a> <span class="id" title="var">H_id</span> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#eq_refl"><span class="id" title="constructor">eq_refl</span></a>)).<br/>
 
 <br/>
+</div>
 
-<br/>
+<div class="doc">
+LHS = b i + ((A·Astar)·b) i 
+<div class="paragraph"> </div>
+
+ Step 4: prove ((A·Astar)·b) i = (A·x) i, then add b i 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">cut</span> (<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="definition">List.fold_right</span> (<span class="id" title="keyword">fun</span> <a id="j:483" class="idref" href="#j:483"><span class="id" title="binder"><span id="j:487" class="id">j</span></span></a> <a id="acc:484" class="idref" href="#acc:484"><span class="id" title="binder"><span id="acc:488" class="id">acc</span></span></a> ⇒ <a class="idref" href="Semiring.Structures.html#add"><span class="id" title="definition">add</span></a> (<a class="idref" href="Semiring.Structures.html#scale"><span class="id" title="definition">scale</span></a> ((<a class="idref" href="Semiring.MatN.html#matrix_mul"><span class="id" title="definition">matrix_mul</span></a> <span class="id" title="var">A</span> <span class="id" title="var">Astar</span>) <span class="id" title="var">i</span> <a class="idref" href="Semiring.SemimoduleN.html#j:483"><span class="id" title="variable">j</span></a>) (<span class="id" title="var">b</span> <a class="idref" href="Semiring.SemimoduleN.html#j:483"><span class="id" title="variable">j</span></a>)) <a class="idref" href="Semiring.SemimoduleN.html#acc:484"><span class="id" title="variable">acc</span></a>) <a class="idref" href="Semiring.Structures.html#zero"><span class="id" title="definition">zero</span></a> <a class="idref" href="Semiring.Structures.html#elements"><span class="id" title="definition">elements</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="definition">List.fold_right</span> (<span class="id" title="keyword">fun</span> <a id="j:485" class="idref" href="#j:485"><span class="id" title="binder"><span id="j:489" class="id">j</span></span></a> <a id="acc:486" class="idref" href="#acc:486"><span class="id" title="binder"><span id="acc:490" class="id">acc</span></span></a> ⇒ <a class="idref" href="Semiring.Structures.html#add"><span class="id" title="definition">add</span></a> (<a class="idref" href="Semiring.Structures.html#scale"><span class="id" title="definition">scale</span></a> (<span class="id" title="var">A</span> <span class="id" title="var">i</span> <a class="idref" href="Semiring.SemimoduleN.html#j:485"><span class="id" title="variable">j</span></a>) (<span class="id" title="var">x</span> <a class="idref" href="Semiring.SemimoduleN.html#j:485"><span class="id" title="variable">j</span></a>)) <a class="idref" href="Semiring.SemimoduleN.html#acc:486"><span class="id" title="variable">acc</span></a>) <a class="idref" href="Semiring.Structures.html#zero"><span class="id" title="definition">zero</span></a> <a class="idref" href="Semiring.Structures.html#elements"><span class="id" title="definition">elements</span></a>).<br/>
@@ -748,6 +881,12 @@ From <span class="inlinecode"><a class="idref" href="Semiring.SchulzeWitnessN.ht
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">A</span> <span class="id" title="var">b</span> <span class="id" title="var">x</span> <span class="id" title="var">Hfix</span> <span class="id" title="var">i</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">unfold</span> <a class="idref" href="Semiring.OrelN.html#Orel"><span class="id" title="definition">Orel</span></a>, <a class="idref" href="Semiring.SemimoduleN.html#vec_add"><span class="id" title="definition">vec_add</span></a> <span class="id" title="tactic">in</span> ×.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> (<span class="id" title="var">Hfix</span> <span class="id" title="var">i</span>).<br/>
+</div>
+
+<div class="doc">
+Goal: b i + (A·x i + b i) = A·x i + b i 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> &lt;- (<a class="idref" href="Semiring.Structures.html#addA"><span class="id" title="definition">addA</span></a> (<span class="id" title="var">b</span> <span class="id" title="var">i</span>) (<a class="idref" href="Semiring.SemimoduleN.html#matrix_vector_action"><span class="id" title="definition">matrix_vector_action</span></a> <span class="id" title="var">A</span> <span class="id" title="var">x</span> <span class="id" title="var">i</span>) (<span class="id" title="var">b</span> <span class="id" title="var">i</span>)).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> (<a class="idref" href="Semiring.Structures.html#addC"><span class="id" title="definition">addC</span></a> (<span class="id" title="var">b</span> <span class="id" title="var">i</span>) (<a class="idref" href="Semiring.SemimoduleN.html#matrix_vector_action"><span class="id" title="definition">matrix_vector_action</span></a> <span class="id" title="var">A</span> <span class="id" title="var">x</span> <span class="id" title="var">i</span>)).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> (<a class="idref" href="Semiring.Structures.html#addA"><span class="id" title="definition">addA</span></a> (<a class="idref" href="Semiring.SemimoduleN.html#matrix_vector_action"><span class="id" title="definition">matrix_vector_action</span></a> <span class="id" title="var">A</span> <span class="id" title="var">x</span> <span class="id" title="var">i</span>) (<span class="id" title="var">b</span> <span class="id" title="var">i</span>) (<span class="id" title="var">b</span> <span class="id" title="var">i</span>)).<br/>
@@ -770,6 +909,12 @@ From <span class="inlinecode"><a class="idref" href="Semiring.SchulzeWitnessN.ht
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">A</span> <span class="id" title="var">b</span> <span class="id" title="var">x</span> <span class="id" title="var">Hfix</span> <span class="id" title="var">i</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">unfold</span> <a class="idref" href="Semiring.OrelN.html#Orel"><span class="id" title="definition">Orel</span></a>, <a class="idref" href="Semiring.SemimoduleN.html#vec_add"><span class="id" title="definition">vec_add</span></a> <span class="id" title="tactic">in</span> ×.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> (<span class="id" title="var">Hfix</span> <span class="id" title="var">i</span>).<br/>
+</div>
+
+<div class="doc">
+Goal: (A·x) i + ((A·x) i + b i) = (A·x) i + b i 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> &lt;- (<a class="idref" href="Semiring.Structures.html#addA"><span class="id" title="definition">addA</span></a> (<a class="idref" href="Semiring.SemimoduleN.html#matrix_vector_action"><span class="id" title="definition">matrix_vector_action</span></a> <span class="id" title="var">A</span> <span class="id" title="var">x</span> <span class="id" title="var">i</span>)<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<a class="idref" href="Semiring.SemimoduleN.html#matrix_vector_action"><span class="id" title="definition">matrix_vector_action</span></a> <span class="id" title="var">A</span> <span class="id" title="var">x</span> <span class="id" title="var">i</span>) (<span class="id" title="var">b</span> <span class="id" title="var">i</span>)).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> (<a class="idref" href="Semiring.SemimoduleN.html#add_idem_module"><span class="id" title="lemma">add_idem_module</span></a> (<a class="idref" href="Semiring.SemimoduleN.html#matrix_vector_action"><span class="id" title="definition">matrix_vector_action</span></a> <span class="id" title="var">A</span> <span class="id" title="var">x</span> <span class="id" title="var">i</span>)).<br/>
@@ -791,9 +936,21 @@ Matrix-vector action is monotone with respect to the Orel order.
 &nbsp;&nbsp;<span class="id" title="keyword">Proof</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">A</span> <span class="id" title="var">u</span> <span class="id" title="var">v</span> <span class="id" title="var">Hle</span> <span class="id" title="var">i</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">unfold</span> <a class="idref" href="Semiring.OrelN.html#Orel"><span class="id" title="definition">Orel</span></a>, <a class="idref" href="Semiring.SemimoduleN.html#matrix_vector_action"><span class="id" title="definition">matrix_vector_action</span></a> <span class="id" title="tactic">in</span> ×.<br/>
+</div>
+
+<div class="doc">
+Goal: (Σ scale (A i j) (v j)) + (Σ scale (A i j) (u j)) = Σ scale (A i j) (u j) 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">refine</span> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#eq_trans"><span class="id" title="lemma">eq_trans</span></a> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#eq_sym"><span class="id" title="lemma">eq_sym</span></a> (<a class="idref" href="Semiring.SemimoduleN.html#fold_right_split"><span class="id" title="lemma">fold_right_split</span></a> <a class="idref" href="Semiring.Structures.html#elements"><span class="id" title="definition">elements</span></a><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">fun</span> <a id="j:546" class="idref" href="#j:546"><span class="id" title="binder"><span id="j:548" class="id">j</span></span></a> ⇒ <a class="idref" href="Semiring.Structures.html#scale"><span class="id" title="definition">scale</span></a> (<span class="id" title="var">A</span> <span class="id" title="var">i</span> <a class="idref" href="Semiring.SemimoduleN.html#j:546"><span class="id" title="variable">j</span></a>) (<span class="id" title="var">v</span> <a class="idref" href="Semiring.SemimoduleN.html#j:546"><span class="id" title="variable">j</span></a>))<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">fun</span> <a id="j:545" class="idref" href="#j:545"><span class="id" title="binder"><span id="j:547" class="id">j</span></span></a> ⇒ <a class="idref" href="Semiring.Structures.html#scale"><span class="id" title="definition">scale</span></a> (<span class="id" title="var">A</span> <span class="id" title="var">i</span> <a class="idref" href="Semiring.SemimoduleN.html#j:545"><span class="id" title="variable">j</span></a>) (<span class="id" title="var">u</span> <a class="idref" href="Semiring.SemimoduleN.html#j:545"><span class="id" title="variable">j</span></a>)))) <span class="id" title="var">_</span>).<br/>
+</div>
+
+<div class="doc">
+Goal: Σ (scale (A i j) (v j) + scale (A i j) (u j)) = Σ scale (A i j) (u j) 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> (@<a class="idref" href="Semiring.SemimoduleN.html#fold_right_congr"><span class="id" title="lemma">fold_right_congr</span></a> <span class="id" title="var">R</span> <span class="id" title="var">U</span> <a class="idref" href="Semiring.Structures.html#elements"><span class="id" title="definition">elements</span></a><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">fun</span> <a id="j:549" class="idref" href="#j:549"><span class="id" title="binder"><span id="j:551" class="id">j</span></span></a> ⇒ <a class="idref" href="Semiring.Structures.html#add"><span class="id" title="definition">add</span></a> (<a class="idref" href="Semiring.Structures.html#scale"><span class="id" title="definition">scale</span></a> (<span class="id" title="var">A</span> <span class="id" title="var">i</span> <a class="idref" href="Semiring.SemimoduleN.html#j:549"><span class="id" title="variable">j</span></a>) (<span class="id" title="var">v</span> <a class="idref" href="Semiring.SemimoduleN.html#j:549"><span class="id" title="variable">j</span></a>)) (<a class="idref" href="Semiring.Structures.html#scale"><span class="id" title="definition">scale</span></a> (<span class="id" title="var">A</span> <span class="id" title="var">i</span> <a class="idref" href="Semiring.SemimoduleN.html#j:549"><span class="id" title="variable">j</span></a>) (<span class="id" title="var">u</span> <a class="idref" href="Semiring.SemimoduleN.html#j:549"><span class="id" title="variable">j</span></a>)))<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">fun</span> <a id="j:550" class="idref" href="#j:550"><span class="id" title="binder"><span id="j:552" class="id">j</span></span></a> ⇒ <a class="idref" href="Semiring.Structures.html#scale"><span class="id" title="definition">scale</span></a> (<span class="id" title="var">A</span> <span class="id" title="var">i</span> <a class="idref" href="Semiring.SemimoduleN.html#j:550"><span class="id" title="variable">j</span></a>) (<span class="id" title="var">u</span> <a class="idref" href="Semiring.SemimoduleN.html#j:550"><span class="id" title="variable">j</span></a>))).<br/>
@@ -831,6 +988,12 @@ Absorption lifts through matrix powers:
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">unfold</span> <a class="idref" href="Semiring.OrelN.html#Orel"><span class="id" title="definition">Orel</span></a>, <a class="idref" href="Semiring.SemimoduleN.html#matrix_vector_action"><span class="id" title="definition">matrix_vector_action</span></a> <span class="id" title="tactic">in</span> ×.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Prove ((A·A^k)·b) i = (A·(A^k·b)) i 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">H_mul_assoc</span> :<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="definition">List.fold_right</span> (<span class="id" title="keyword">fun</span> <a id="j:562" class="idref" href="#j:562"><span class="id" title="binder"><span id="j:568" class="id">j</span></span></a> <a id="acc:563" class="idref" href="#acc:563"><span class="id" title="binder"><span id="acc:569" class="id">acc</span></span></a> ⇒<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Semiring.Structures.html#add"><span class="id" title="definition">add</span></a> (<a class="idref" href="Semiring.Structures.html#scale"><span class="id" title="definition">scale</span></a> ((<a class="idref" href="Semiring.MatN.html#matrix_mul"><span class="id" title="definition">matrix_mul</span></a> <span class="id" title="var">A</span> (<a class="idref" href="Semiring.MatN.html#pow"><span class="id" title="definition">pow</span></a> <span class="id" title="var">A</span> <span class="id" title="var">k</span>)) <span class="id" title="var">i</span> <a class="idref" href="Semiring.SemimoduleN.html#j:562"><span class="id" title="variable">j</span></a>) (<span class="id" title="var">b</span> <a class="idref" href="Semiring.SemimoduleN.html#j:562"><span class="id" title="variable">j</span></a>)) <a class="idref" href="Semiring.SemimoduleN.html#acc:563"><span class="id" title="variable">acc</span></a>) <a class="idref" href="Semiring.Structures.html#zero"><span class="id" title="definition">zero</span></a> <a class="idref" href="Semiring.Structures.html#elements"><span class="id" title="definition">elements</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a><br/>
@@ -850,13 +1013,30 @@ Absorption lifts through matrix powers:
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<a class="idref" href="Semiring.SemimoduleN.html#fold_right_alpha_R"><span class="id" title="lemma">fold_right_alpha_R</span></a> <a class="idref" href="Semiring.Structures.html#elements"><span class="id" title="definition">elements</span></a> (<span class="id" title="keyword">fun</span> <a id="x:575" class="idref" href="#x:575"><span class="id" title="binder"><span id="x:585" class="id">x</span></span></a> <a id="y:576" class="idref" href="#y:576"><span class="id" title="binder"><span id="y:586" class="id">y</span></span></a> ⇒ <span class="id" title="var">A</span> <span class="id" title="var">i</span> <a class="idref" href="Semiring.SemimoduleN.html#x:575"><span class="id" title="variable">x</span></a> <a class="idref" href="Semiring.Structures.html#df06337ab011822b2792d206fc407479"><span class="id" title="notation">×</span></a> (<a class="idref" href="Semiring.MatN.html#pow"><span class="id" title="definition">pow</span></a> <span class="id" title="var">A</span> <span class="id" title="var">k</span>) <a class="idref" href="Semiring.SemimoduleN.html#x:575"><span class="id" title="variable">x</span></a> <a class="idref" href="Semiring.SemimoduleN.html#y:576"><span class="id" title="variable">y</span></a>) <a class="idref" href="Semiring.SemimoduleN.html#j:574"><span class="id" title="variable">j</span></a>)))).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> (<a class="idref" href="Semiring.SemimoduleN.html#fold_right_mul_assoc"><span class="id" title="lemma">fold_right_mul_assoc</span></a> <a class="idref" href="Semiring.Structures.html#elements"><span class="id" title="definition">elements</span></a> <span class="id" title="var">A</span> (<a class="idref" href="Semiring.MatN.html#pow"><span class="id" title="definition">pow</span></a> <span class="id" title="var">A</span> <span class="id" title="var">k</span>) <span class="id" title="var">b</span> <span class="id" title="var">i</span>). }<br/>
 <br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+
+<div class="doc">
+Apply the associativity to the LHS of the goal 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#eq_trans"><span class="id" title="lemma">eq_trans</span></a> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#f_equal"><span class="id" title="lemma">f_equal</span></a> (<span class="id" title="keyword">fun</span> <a id="s:594" class="idref" href="#s:594"><span class="id" title="binder"><span id="s:595" class="id">s</span></span></a> ⇒ <a class="idref" href="Semiring.Structures.html#add"><span class="id" title="definition">add</span></a> <a class="idref" href="Semiring.SemimoduleN.html#s:594"><span class="id" title="variable">s</span></a> (<span class="id" title="var">x</span> <span class="id" title="var">i</span>)) <span class="id" title="var">H_mul_assoc</span>)).<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Goal: (A·(A^k·b) i) + x i = x i 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">pose</span> <span class="id" title="var">proof</span> (<a class="idref" href="Semiring.SemimoduleN.html#mva_monotone_Orel"><span class="id" title="lemma">mva_monotone_Orel</span></a> <span class="id" title="var">A</span> <span class="id" title="var">x</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<a class="idref" href="Semiring.SemimoduleN.html#matrix_vector_action"><span class="id" title="definition">matrix_vector_action</span></a> (<a class="idref" href="Semiring.MatN.html#pow"><span class="id" title="definition">pow</span></a> <span class="id" title="var">A</span> <span class="id" title="var">k</span>) <span class="id" title="var">b</span>) <span class="id" title="var">IH</span> <span class="id" title="var">i</span>) <span class="id" title="keyword">as</span> <span class="id" title="var">H_mid</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">unfold</span> <a class="idref" href="Semiring.OrelN.html#Orel"><span class="id" title="definition">Orel</span></a>, <a class="idref" href="Semiring.SemimoduleN.html#matrix_vector_action"><span class="id" title="definition">matrix_vector_action</span></a> <span class="id" title="tactic">in</span> <span class="id" title="var">H_mid</span>.<br/>
+</div>
+
+<div class="doc">
+Transitivity: (A·(A^k·b) i) + x i = x i 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> &lt;- (<span class="id" title="var">HAx</span> <span class="id" title="var">i</span>) <span class="id" title="tactic">at</span> 1.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> &lt;- (<a class="idref" href="Semiring.Structures.html#addA"><span class="id" title="definition">addA</span></a> <span class="id" title="var">_</span> (<a class="idref" href="Semiring.SemimoduleN.html#matrix_vector_action"><span class="id" title="definition">matrix_vector_action</span></a> <span class="id" title="var">A</span> <span class="id" title="var">x</span> <span class="id" title="var">i</span>) (<span class="id" title="var">x</span> <span class="id" title="var">i</span>)).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">setoid_rewrite</span> <span class="id" title="var">H_mid</span>.<br/>
@@ -911,12 +1091,25 @@ Right Kleene fixed point: <span class="inlinecode"><a class="idref" href="Semiri
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">pose</span> <span class="id" title="var">proof</span> (<a class="idref" href="Semiring.SemimoduleN.html#geom_sum_fixpoint_right"><span class="id" title="lemma">geom_sum_fixpoint_right</span></a> <span class="id" title="var">A</span> <span class="id" title="var">Hdiag</span>) <span class="id" title="keyword">as</span> <span class="id" title="var">Hstar</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Replace x i with (Astar·b) i, then unfold definitions 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> (<span class="id" title="var">Hx</span> <span class="id" title="var">i</span>).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">unfold</span> <a class="idref" href="Semiring.SemimoduleN.html#vec_add"><span class="id" title="definition">vec_add</span></a>, <a class="idref" href="Semiring.SemimoduleN.html#matrix_vector_action"><span class="id" title="definition">matrix_vector_action</span></a>.<br/>
 
 <br/>
+</div>
 
-<br/>
+<div class="doc">
+Goal: (Astar·b) i = (Astar·(A·b)) i + b i 
+<div class="paragraph"> </div>
+
+ Step 1: (Astar·b) i = ((I + Astar·A)·b) i via fixpoint 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">H1</span> :<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="definition">List.fold_right</span> (<span class="id" title="keyword">fun</span> <a id="j:611" class="idref" href="#j:611"><span class="id" title="binder"><span id="j:615" class="id">j</span></span></a> <a id="acc:612" class="idref" href="#acc:612"><span class="id" title="binder"><span id="acc:616" class="id">acc</span></span></a> ⇒ <a class="idref" href="Semiring.Structures.html#add"><span class="id" title="definition">add</span></a> (<a class="idref" href="Semiring.Structures.html#scale"><span class="id" title="definition">scale</span></a> (<span class="id" title="var">Astar</span> <span class="id" title="var">i</span> <a class="idref" href="Semiring.SemimoduleN.html#j:611"><span class="id" title="variable">j</span></a>) (<span class="id" title="var">b</span> <a class="idref" href="Semiring.SemimoduleN.html#j:611"><span class="id" title="variable">j</span></a>)) <a class="idref" href="Semiring.SemimoduleN.html#acc:612"><span class="id" title="variable">acc</span></a>) <a class="idref" href="Semiring.Structures.html#zero"><span class="id" title="definition">zero</span></a> <a class="idref" href="Semiring.Structures.html#elements"><span class="id" title="definition">elements</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="definition">List.fold_right</span> (<span class="id" title="keyword">fun</span> <a id="j:613" class="idref" href="#j:613"><span class="id" title="binder"><span id="j:617" class="id">j</span></span></a> <a id="acc:614" class="idref" href="#acc:614"><span class="id" title="binder"><span id="acc:618" class="id">acc</span></span></a> ⇒<br/>
@@ -928,15 +1121,29 @@ Right Kleene fixed point: <span class="inlinecode"><a class="idref" href="Semiri
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#eq_trans"><span class="id" title="lemma">eq_trans</span></a> <span class="id" title="var">H1</span>). <span class="id" title="tactic">clear</span> <span class="id" title="var">H1</span>.<br/>
 
 <br/>
+</div>
 
-<br/>
+<div class="doc">
+LHS = ((I + Astar·A)·b) i 
+<div class="paragraph"> </div>
+
+ Step 2: distribute scale over matrix addition 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">unfold</span> <a class="idref" href="Semiring.MatN.html#matrix_add"><span class="id" title="definition">matrix_add</span></a> <span class="id" title="tactic">at</span> 1.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> (<a class="idref" href="Semiring.SemimoduleN.html#fold_right_scale_add"><span class="id" title="lemma">fold_right_scale_add</span></a> <a class="idref" href="Semiring.Structures.html#elements"><span class="id" title="definition">elements</span></a><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">fun</span> <a id="j:626" class="idref" href="#j:626"><span class="id" title="binder"><span id="j:628" class="id"><span id="j:630" class="id">j</span></span></span></a> ⇒ <a class="idref" href="Semiring.MatN.html#I"><span class="id" title="definition">I</span></a> <span class="id" title="var">i</span> <a class="idref" href="Semiring.SemimoduleN.html#j:626"><span class="id" title="variable">j</span></a>) (<span class="id" title="keyword">fun</span> <a id="j:625" class="idref" href="#j:625"><span class="id" title="binder"><span id="j:627" class="id"><span id="j:629" class="id">j</span></span></span></a> ⇒ (<a class="idref" href="Semiring.MatN.html#matrix_mul"><span class="id" title="definition">matrix_mul</span></a> <span class="id" title="var">Astar</span> <span class="id" title="var">A</span>) <span class="id" title="var">i</span> <a class="idref" href="Semiring.SemimoduleN.html#j:625"><span class="id" title="variable">j</span></a>) <span class="id" title="var">b</span>).<br/>
 
 <br/>
+</div>
 
-<br/>
+<div class="doc">
+LHS = (I·b) i + ((Astar·A)·b) i 
+<div class="paragraph"> </div>
+
+ Step 3: I·b = b via identity 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">H_id</span> :<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="definition">List.fold_right</span> (<span class="id" title="keyword">fun</span> <a id="j:631" class="idref" href="#j:631"><span class="id" title="binder"><span id="j:633" class="id">j</span></span></a> <a id="acc:632" class="idref" href="#acc:632"><span class="id" title="binder"><span id="acc:634" class="id">acc</span></span></a> ⇒ <a class="idref" href="Semiring.Structures.html#add"><span class="id" title="definition">add</span></a> (<a class="idref" href="Semiring.Structures.html#scale"><span class="id" title="definition">scale</span></a> (<a class="idref" href="Semiring.MatN.html#I"><span class="id" title="definition">I</span></a> <span class="id" title="var">i</span> <a class="idref" href="Semiring.SemimoduleN.html#j:631"><span class="id" title="variable">j</span></a>) (<span class="id" title="var">b</span> <a class="idref" href="Semiring.SemimoduleN.html#j:631"><span class="id" title="variable">j</span></a>)) <a class="idref" href="Semiring.SemimoduleN.html#acc:632"><span class="id" title="variable">acc</span></a>) <a class="idref" href="Semiring.Structures.html#zero"><span class="id" title="definition">zero</span></a> <a class="idref" href="Semiring.Structures.html#elements"><span class="id" title="definition">elements</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <span class="id" title="var">b</span> <span class="id" title="var">i</span>).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;{ <span class="id" title="tactic">apply</span> (<a class="idref" href="Semiring.SemimoduleN.html#fold_right_identity"><span class="id" title="lemma">fold_right_identity</span></a> <a class="idref" href="Semiring.Structures.html#elements"><span class="id" title="definition">elements</span></a> <span class="id" title="var">b</span> <span class="id" title="var">i</span><br/>
@@ -945,8 +1152,15 @@ Right Kleene fixed point: <span class="inlinecode"><a class="idref" href="Semiri
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#eq_trans"><span class="id" title="lemma">eq_trans</span></a> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#f_equal2"><span class="id" title="lemma">f_equal2</span></a> <a class="idref" href="Semiring.Structures.html#add"><span class="id" title="definition">add</span></a> <span class="id" title="var">H_id</span> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#eq_refl"><span class="id" title="constructor">eq_refl</span></a>)).<br/>
 
 <br/>
+</div>
 
-<br/>
+<div class="doc">
+LHS = b i + ((Astar·A)·b) i 
+<div class="paragraph"> </div>
+
+ Step 4: ((Astar·A)·b) i = (Astar·(A·b)) i via associativity 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">cut</span> (<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="definition">List.fold_right</span> (<span class="id" title="keyword">fun</span> <a id="j:635" class="idref" href="#j:635"><span class="id" title="binder"><span id="j:641" class="id">j</span></span></a> <a id="acc:636" class="idref" href="#acc:636"><span class="id" title="binder"><span id="acc:642" class="id">acc</span></span></a> ⇒ <a class="idref" href="Semiring.Structures.html#add"><span class="id" title="definition">add</span></a> (<a class="idref" href="Semiring.Structures.html#scale"><span class="id" title="definition">scale</span></a> ((<a class="idref" href="Semiring.MatN.html#matrix_mul"><span class="id" title="definition">matrix_mul</span></a> <span class="id" title="var">Astar</span> <span class="id" title="var">A</span>) <span class="id" title="var">i</span> <a class="idref" href="Semiring.SemimoduleN.html#j:635"><span class="id" title="variable">j</span></a>) (<span class="id" title="var">b</span> <a class="idref" href="Semiring.SemimoduleN.html#j:635"><span class="id" title="variable">j</span></a>)) <a class="idref" href="Semiring.SemimoduleN.html#acc:636"><span class="id" title="variable">acc</span></a>) <a class="idref" href="Semiring.Structures.html#zero"><span class="id" title="definition">zero</span></a> <a class="idref" href="Semiring.Structures.html#elements"><span class="id" title="definition">elements</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="definition">List.fold_right</span> (<span class="id" title="keyword">fun</span> <a id="j:637" class="idref" href="#j:637"><span class="id" title="binder"><span id="j:643" class="id">j</span></span></a> <a id="acc:638" class="idref" href="#acc:638"><span class="id" title="binder"><span id="acc:644" class="id">acc</span></span></a> ⇒ <a class="idref" href="Semiring.Structures.html#add"><span class="id" title="definition">add</span></a> (<a class="idref" href="Semiring.Structures.html#scale"><span class="id" title="definition">scale</span></a> (<span class="id" title="var">Astar</span> <span class="id" title="var">i</span> <a class="idref" href="Semiring.SemimoduleN.html#j:637"><span class="id" title="variable">j</span></a>)<br/>
@@ -988,12 +1202,24 @@ Leastness of the Kleene fixed point: <span class="inlinecode"><a class="idref" h
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">set</span> (<span class="id" title="var">Astar</span> := <span class="id" title="keyword">fun</span> <a id="n:674" class="idref" href="#n:674"><span class="id" title="binder"><span id="n:675" class="id">n</span></span></a> ⇒ <a class="idref" href="Semiring.MatN.html#geom_sum"><span class="id" title="definition">geom_sum</span></a> <span class="id" title="var">A</span> <a class="idref" href="Semiring.SemimoduleN.html#n:674"><span class="id" title="variable">n</span></a>).<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+From the fixpoint, derive b ≤ x and A·x ≤ x 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">pose</span> <span class="id" title="var">proof</span> (<a class="idref" href="Semiring.SemimoduleN.html#absorb_b_fixpoint"><span class="id" title="lemma">absorb_b_fixpoint</span></a> <span class="id" title="var">A</span> <span class="id" title="var">b</span> <span class="id" title="var">x</span> <span class="id" title="var">Hfix</span>) <span class="id" title="keyword">as</span> <span class="id" title="var">Hb_all</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">pose</span> <span class="id" title="var">proof</span> (<a class="idref" href="Semiring.SemimoduleN.html#absorb_Ax_fixpoint"><span class="id" title="lemma">absorb_Ax_fixpoint</span></a> <span class="id" title="var">A</span> <span class="id" title="var">b</span> <span class="id" title="var">x</span> <span class="id" title="var">Hfix</span>) <span class="id" title="keyword">as</span> <span class="id" title="var">HAx_all</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">pose</span> <span class="id" title="var">proof</span> (<span class="id" title="var">Hb_all</span> <span class="id" title="var">i</span>) <span class="id" title="keyword">as</span> <span class="id" title="var">Hb</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">pose</span> <span class="id" title="var">proof</span> (<span class="id" title="var">HAx_all</span> <span class="id" title="var">i</span>) <span class="id" title="keyword">as</span> <span class="id" title="var">HAx</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Prove by induction: for all n, x i + ((Astar n)·b) i = x i 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">H_all</span> : <span class="id" title="keyword">∀</span> <a id="n:676" class="idref" href="#n:676"><span class="id" title="binder"><span id="n:679" class="id">n</span></span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>,<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Semiring.Structures.html#add"><span class="id" title="definition">add</span></a> (<span class="id" title="var">x</span> <span class="id" title="var">i</span>)<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="definition">List.fold_right</span> (<span class="id" title="keyword">fun</span> <a id="j:677" class="idref" href="#j:677"><span class="id" title="binder"><span id="j:680" class="id">j</span></span></a> <a id="acc:678" class="idref" href="#acc:678"><span class="id" title="binder"><span id="acc:681" class="id">acc</span></span></a> ⇒ <a class="idref" href="Semiring.Structures.html#add"><span class="id" title="definition">add</span></a> (<a class="idref" href="Semiring.Structures.html#scale"><span class="id" title="definition">scale</span></a> ((<span class="id" title="var">Astar</span> <a class="idref" href="Semiring.SemimoduleN.html#n:676"><span class="id" title="variable">n</span></a>) <span class="id" title="var">i</span> <a class="idref" href="Semiring.SemimoduleN.html#j:677"><span class="id" title="variable">j</span></a>) (<span class="id" title="var">b</span> <a class="idref" href="Semiring.SemimoduleN.html#j:677"><span class="id" title="variable">j</span></a>)) <a class="idref" href="Semiring.SemimoduleN.html#acc:678"><span class="id" title="variable">acc</span></a>) <a class="idref" href="Semiring.Structures.html#zero"><span class="id" title="definition">zero</span></a> <a class="idref" href="Semiring.Structures.html#elements"><span class="id" title="definition">elements</span></a>)<br/>
@@ -1004,17 +1230,41 @@ Leastness of the Kleene fixed point: <span class="inlinecode"><a class="idref" h
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">setoid_rewrite</span> (<a class="idref" href="Semiring.SemimoduleN.html#fold_right_identity"><span class="id" title="lemma">fold_right_identity</span></a> <a class="idref" href="Semiring.Structures.html#elements"><span class="id" title="definition">elements</span></a> <span class="id" title="var">b</span> <span class="id" title="var">i</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<a class="idref" href="Semiring.Structures.html#elements_nodup"><span class="id" title="definition">elements_nodup</span></a> (<span class="id" title="var">s</span> := <a class="idref" href="Semiring.SemimoduleN.html#Semimodule.Node"><span class="id" title="variable">Node</span></a>))<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<a class="idref" href="Semiring.Structures.html#elements_complete"><span class="id" title="definition">elements_complete</span></a> (<span class="id" title="var">s</span> := <a class="idref" href="Semiring.SemimoduleN.html#Semimodule.Node"><span class="id" title="variable">Node</span></a>) <span class="id" title="var">i</span>)).<br/>
+</div>
+
+<div class="doc">
+Goal: x i + b i = x i, but Hb: b i + x i = x i 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#eq_trans"><span class="id" title="lemma">eq_trans</span></a> (<a class="idref" href="Semiring.Structures.html#addC"><span class="id" title="definition">addC</span></a> (<span class="id" title="var">x</span> <span class="id" title="var">i</span>) (<span class="id" title="var">b</span> <span class="id" title="var">i</span>))). <span class="id" title="tactic">apply</span> <span class="id" title="var">Hb</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">unfold</span> <span class="id" title="var">Astar</span> <span class="id" title="tactic">at</span> 1.<br/>
+</div>
+
+<div class="doc">
+Distribute: (Astar n + pow A (S n))·b = (Astar n)·b + pow A (S n)·b 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">unfold</span> <a class="idref" href="Semiring.MatN.html#matrix_add"><span class="id" title="definition">matrix_add</span></a>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#eq_trans"><span class="id" title="lemma">eq_trans</span></a> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#f_equal"><span class="id" title="lemma">f_equal</span></a> (<span class="id" title="keyword">fun</span> <a id="s:684" class="idref" href="#s:684"><span class="id" title="binder"><span id="s:687" class="id">s</span></span></a> ⇒ <a class="idref" href="Semiring.Structures.html#add"><span class="id" title="definition">add</span></a> (<span class="id" title="var">x</span> <span class="id" title="var">i</span>) <a class="idref" href="Semiring.SemimoduleN.html#s:684"><span class="id" title="variable">s</span></a>)<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<a class="idref" href="Semiring.SemimoduleN.html#fold_right_scale_add"><span class="id" title="lemma">fold_right_scale_add</span></a> <a class="idref" href="Semiring.Structures.html#elements"><span class="id" title="definition">elements</span></a><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">fun</span> <a id="j:683" class="idref" href="#j:683"><span class="id" title="binder"><span id="j:686" class="id">j</span></span></a> ⇒ (<a class="idref" href="Semiring.MatN.html#geom_sum"><span class="id" title="definition">geom_sum</span></a> <span class="id" title="var">A</span> <span class="id" title="var">n</span>) <span class="id" title="var">i</span> <a class="idref" href="Semiring.SemimoduleN.html#j:683"><span class="id" title="variable">j</span></a>)<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">fun</span> <a id="j:682" class="idref" href="#j:682"><span class="id" title="binder"><span id="j:685" class="id">j</span></span></a> ⇒ (<a class="idref" href="Semiring.MatN.html#pow"><span class="id" title="definition">pow</span></a> <span class="id" title="var">A</span> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#S"><span class="id" title="constructor">S</span></a> <span class="id" title="var">n</span>)) <span class="id" title="var">i</span> <a class="idref" href="Semiring.SemimoduleN.html#j:682"><span class="id" title="variable">j</span></a>) <span class="id" title="var">b</span>))).<br/>
+</div>
+
+<div class="doc">
+Goal: x i + ((Astar n)·b i + (pow A (S n))·b i) = x i 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> &lt;- (<a class="idref" href="Semiring.Structures.html#addA"><span class="id" title="definition">addA</span></a> (<span class="id" title="var">x</span> <span class="id" title="var">i</span>) <span class="id" title="var">_</span> <span class="id" title="var">_</span>).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">unfold</span> <span class="id" title="var">Astar</span> <span class="id" title="tactic">in</span> <span class="id" title="var">IH</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> <span class="id" title="var">IH</span>.<br/>
+</div>
+
+<div class="doc">
+Goal: x i + (pow A (S n))·b i = x i 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#eq_trans"><span class="id" title="lemma">eq_trans</span></a> (<a class="idref" href="Semiring.Structures.html#addC"><span class="id" title="definition">addC</span></a> (<span class="id" title="var">x</span> <span class="id" title="var">i</span>) <span class="id" title="var">_</span>)).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> (<a class="idref" href="Semiring.SemimoduleN.html#matrix_pow_absorb"><span class="id" title="lemma">matrix_pow_absorb</span></a> <span class="id" title="var">A</span> <span class="id" title="var">x</span> <span class="id" title="var">b</span> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#S"><span class="id" title="constructor">S</span></a> <span class="id" title="var">n</span>) <span class="id" title="var">Hb_all</span> <span class="id" title="var">HAx_all</span> <span class="id" title="var">i</span>). }<br/>
 <br/>
@@ -1051,8 +1301,20 @@ Post-fixpoint induction axiom for the Kleene star.  If <span class="inlinecode">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">∀</span> <a id="i:705" class="idref" href="#i:705"><span class="id" title="binder">i</span></a>, <a class="idref" href="Semiring.SemimoduleN.html#x:696"><span class="id" title="variable">x</span></a> <a class="idref" href="Semiring.SemimoduleN.html#i:705"><span class="id" title="variable">i</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="Semiring.SemimoduleN.html#y:697"><span class="id" title="variable">y</span></a> <a class="idref" href="Semiring.SemimoduleN.html#i:705"><span class="id" title="variable">i</span></a>.<br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Proof</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">A</span> <span class="id" title="var">b</span> <span class="id" title="var">x</span> <span class="id" title="var">y</span> <span class="id" title="var">star_post_fixpoint</span> <span class="id" title="var">Hx</span> <span class="id" title="var">Hy</span> <span class="id" title="var">i</span>.<br/>
+</div>
+
+<div class="doc">
+From the fixpoint: A*·b ≤ x (by kleene_fixed_point_least) 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">pose</span> <span class="id" title="var">proof</span> (<a class="idref" href="Semiring.SemimoduleN.html#kleene_fixed_point_least"><span class="id" title="lemma">kleene_fixed_point_least</span></a> <span class="id" title="var">A</span> <span class="id" title="var">b</span> <span class="id" title="var">x</span> <span class="id" title="var">Hx</span> <span class="id" title="var">i</span>) <span class="id" title="keyword">as</span> <span class="id" title="var">Hx_least</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">pose</span> <span class="id" title="var">proof</span> (<a class="idref" href="Semiring.SemimoduleN.html#kleene_fixed_point_least"><span class="id" title="lemma">kleene_fixed_point_least</span></a> <span class="id" title="var">A</span> <span class="id" title="var">b</span> <span class="id" title="var">y</span> <span class="id" title="var">Hy</span> <span class="id" title="var">i</span>) <span class="id" title="keyword">as</span> <span class="id" title="var">Hy_least</span>.<br/>
+</div>
+
+<div class="doc">
+Also: x ≤ A·x + b = x, so x ≤ A·x + b holds (by idempotence) 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">Hx_post</span> : <span class="id" title="keyword">∀</span> <a id="i:706" class="idref" href="#i:706"><span class="id" title="binder"><span id="i:707" class="id">i</span></span></a>, <a class="idref" href="Semiring.OrelN.html#Orel"><span class="id" title="definition">Orel</span></a> (<span class="id" title="var">x</span> <a class="idref" href="Semiring.SemimoduleN.html#i:706"><span class="id" title="variable">i</span></a>) (<a class="idref" href="Semiring.SemimoduleN.html#vec_add"><span class="id" title="definition">vec_add</span></a> (<a class="idref" href="Semiring.SemimoduleN.html#matrix_vector_action"><span class="id" title="definition">matrix_vector_action</span></a> <span class="id" title="var">A</span> <span class="id" title="var">x</span>) <span class="id" title="var">b</span> <a class="idref" href="Semiring.SemimoduleN.html#i:706"><span class="id" title="variable">i</span></a>)).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;{ <span class="id" title="tactic">intro</span> <span class="id" title="var">j</span>. <span class="id" title="tactic">unfold</span> <a class="idref" href="Semiring.OrelN.html#Orel"><span class="id" title="definition">Orel</span></a>, <a class="idref" href="Semiring.SemimoduleN.html#vec_add"><span class="id" title="definition">vec_add</span></a> <span class="id" title="tactic">in</span> ×.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> (<span class="id" title="var">Hx</span> <span class="id" title="var">j</span>).<br/>
@@ -1061,9 +1323,20 @@ Post-fixpoint induction axiom for the Kleene star.  If <span class="inlinecode">
 &nbsp;&nbsp;&nbsp;&nbsp;{ <span class="id" title="tactic">intro</span> <span class="id" title="var">j</span>. <span class="id" title="tactic">unfold</span> <a class="idref" href="Semiring.OrelN.html#Orel"><span class="id" title="definition">Orel</span></a>, <a class="idref" href="Semiring.SemimoduleN.html#vec_add"><span class="id" title="definition">vec_add</span></a> <span class="id" title="tactic">in</span> ×.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> (<span class="id" title="var">Hy</span> <span class="id" title="var">j</span>).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <a class="idref" href="Semiring.SemimoduleN.html#add_idem_module"><span class="id" title="lemma">add_idem_module</span></a>. }<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;</div>
+
+<div class="doc">
+By star_post_fixpoint: x ≤ A*·b and y ≤ A*·b 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">pose</span> <span class="id" title="var">proof</span> (<span class="id" title="var">star_post_fixpoint</span> <span class="id" title="var">A</span> <span class="id" title="var">x</span> <span class="id" title="var">b</span> <span class="id" title="var">Hx_post</span> <span class="id" title="var">i</span>) <span class="id" title="keyword">as</span> <span class="id" title="var">Hx_star</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">pose</span> <span class="id" title="var">proof</span> (<span class="id" title="var">star_post_fixpoint</span> <span class="id" title="var">A</span> <span class="id" title="var">y</span> <span class="id" title="var">b</span> <span class="id" title="var">Hy_post</span> <span class="id" title="var">i</span>) <span class="id" title="keyword">as</span> <span class="id" title="var">Hy_star</span>.<br/>
+</div>
+
+<div class="doc">
+Antisymmetry: Astar·b = x and Astar·b = y, so x = y 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">pose</span> <span class="id" title="var">proof</span> (<a class="idref" href="Semiring.OrelN.html#orel_antisym"><span class="id" title="lemma">orel_antisym</span></a> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">Hx_least</span> <span class="id" title="var">Hx_star</span>) <span class="id" title="keyword">as</span> <span class="id" title="var">Hx_eq</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">pose</span> <span class="id" title="var">proof</span> (<a class="idref" href="Semiring.OrelN.html#orel_antisym"><span class="id" title="lemma">orel_antisym</span></a> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">Hy_least</span> <span class="id" title="var">Hy_star</span>) <span class="id" title="keyword">as</span> <span class="id" title="var">Hy_eq</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#eq_trans"><span class="id" title="lemma">eq_trans</span></a> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#eq_sym"><span class="id" title="lemma">eq_sym</span></a> <span class="id" title="var">Hx_eq</span>) <span class="id" title="var">Hy_eq</span>).<br/>
@@ -1096,42 +1369,155 @@ Kleene star idempotence (vector-action level):
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">set</span> (<span class="id" title="var">x</span> := <span class="id" title="keyword">fun</span> <a id="i:722" class="idref" href="#i:722"><span class="id" title="binder"><span id="i:723" class="id">i</span></span></a> : <a class="idref" href="Semiring.SemimoduleN.html#Semimodule.Node"><span class="id" title="variable">Node</span></a> ⇒ <a class="idref" href="Semiring.SemimoduleN.html#matrix_vector_action"><span class="id" title="definition">matrix_vector_action</span></a> <span class="id" title="var">Astar</span> <span class="id" title="var">b</span> <a class="idref" href="Semiring.SemimoduleN.html#i:722"><span class="id" title="variable">i</span></a>).<br/>
 
 <br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">pose</span> <span class="id" title="var">proof</span> (<a class="idref" href="Semiring.SemimoduleN.html#kleene_fixed_point"><span class="id" title="lemma">kleene_fixed_point</span></a> <span class="id" title="var">A</span> <span class="id" title="var">b</span> <span class="id" title="var">x</span> <span class="id" title="var">Hdiag</span> (<span class="id" title="keyword">fun</span> <span class="id" title="var">_</span> ⇒ <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#eq_refl"><span class="id" title="constructor">eq_refl</span></a>)) <span class="id" title="keyword">as</span> <span class="id" title="var">Hx_fix</span>.<br/>
+</div>
 
-<br/>
+<div class="doc">
+1. From kleene_fixed_point: x = A·x + b 
+</div>
+<div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">pose</span> <span class="id" title="var">proof</span> (<a class="idref" href="Semiring.SemimoduleN.html#kleene_fixed_point"><span class="id" title="lemma">kleene_fixed_point</span></a> <span class="id" title="var">A</span> <span class="id" title="var">b</span> <span class="id" title="var">x</span> <span class="id" title="var">Hdiag</span> (<span class="id" title="keyword">fun</span> <span class="id" title="var">_</span> ⇒ <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#eq_refl"><span class="id" title="constructor">eq_refl</span></a>)) <span class="id" title="keyword">as</span> <span class="id" title="var">Hx_fix</span>.<br/>
+</div>
+
+<div class="doc">
+Hx_fix : forall i, x i = vec_add (matrix_vector_action A x) b i 
+<div class="paragraph"> </div>
+
+ 2. From idempotence: x = A·x + x 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">Hx_fix_self</span> : <span class="id" title="keyword">∀</span> <a id="i:724" class="idref" href="#i:724"><span class="id" title="binder"><span id="i:725" class="id">i</span></span></a>, <span class="id" title="var">x</span> <a class="idref" href="Semiring.SemimoduleN.html#i:724"><span class="id" title="variable">i</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="Semiring.SemimoduleN.html#vec_add"><span class="id" title="definition">vec_add</span></a> (<a class="idref" href="Semiring.SemimoduleN.html#matrix_vector_action"><span class="id" title="definition">matrix_vector_action</span></a> <span class="id" title="var">A</span> <span class="id" title="var">x</span>) <span class="id" title="var">x</span> <a class="idref" href="Semiring.SemimoduleN.html#i:724"><span class="id" title="variable">i</span></a>).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;{ <span class="id" title="tactic">intro</span> <span class="id" title="var">j</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> <a class="idref" href="Semiring.SemimoduleN.html#vec_add_pointwise"><span class="id" title="lemma">vec_add_pointwise</span></a>.<br/>
+</div>
+
+<div class="doc">
+Goal: x j = (matrix_vector_action A x) j + x j 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#eq_sym"><span class="id" title="lemma">eq_sym</span></a>.<br/>
+</div>
+
+<div class="doc">
+Goal: (matrix_vector_action A x) j + x j = x j 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> (<span class="id" title="var">Hx_fix</span> <span class="id" title="var">j</span>).<br/>
+</div>
+
+<div class="doc">
+Goal: (matrix_vector_action A x) j + vec_add (matrix_vector_action A x) b j = x j 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> (<a class="idref" href="Semiring.SemimoduleN.html#vec_add_pointwise"><span class="id" title="lemma">vec_add_pointwise</span></a> (<a class="idref" href="Semiring.SemimoduleN.html#matrix_vector_action"><span class="id" title="definition">matrix_vector_action</span></a> <span class="id" title="var">A</span> <span class="id" title="var">x</span>) <span class="id" title="var">b</span> <span class="id" title="var">j</span>).<br/>
+</div>
+
+<div class="doc">
+Goal: (matrix_vector_action A x) j + ((matrix_vector_action A x) j + b j) = x j 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> &lt;- (<a class="idref" href="Semiring.Structures.html#addA"><span class="id" title="definition">addA</span></a> ((<a class="idref" href="Semiring.SemimoduleN.html#matrix_vector_action"><span class="id" title="definition">matrix_vector_action</span></a> <span class="id" title="var">A</span> <span class="id" title="var">x</span>) <span class="id" title="var">j</span>) ((<a class="idref" href="Semiring.SemimoduleN.html#matrix_vector_action"><span class="id" title="definition">matrix_vector_action</span></a> <span class="id" title="var">A</span> <span class="id" title="var">x</span>) <span class="id" title="var">j</span>) (<span class="id" title="var">b</span> <span class="id" title="var">j</span>)).<br/>
+</div>
+
+<div class="doc">
+Goal: ((matrix_vector_action A x) j + (matrix_vector_action A x) j) + b j = x j 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> (<a class="idref" href="Semiring.SemimoduleN.html#add_idem_module"><span class="id" title="lemma">add_idem_module</span></a> ((<a class="idref" href="Semiring.SemimoduleN.html#matrix_vector_action"><span class="id" title="definition">matrix_vector_action</span></a> <span class="id" title="var">A</span> <span class="id" title="var">x</span>) <span class="id" title="var">j</span>)).<br/>
+</div>
+
+<div class="doc">
+Goal: (matrix_vector_action A x) j + b j = x j 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> &lt;- (<a class="idref" href="Semiring.SemimoduleN.html#vec_add_pointwise"><span class="id" title="lemma">vec_add_pointwise</span></a> (<a class="idref" href="Semiring.SemimoduleN.html#matrix_vector_action"><span class="id" title="definition">matrix_vector_action</span></a> <span class="id" title="var">A</span> <span class="id" title="var">x</span>) <span class="id" title="var">b</span> <span class="id" title="var">j</span>).<br/>
+</div>
+
+<div class="doc">
+Goal: vec_add (matrix_vector_action A x) b j = x j 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> &lt;- (<span class="id" title="var">Hx_fix</span> <span class="id" title="var">j</span>).<br/>
+</div>
+
+<div class="doc">
+Goal: vec_add (matrix_vector_action A x) b j = vec_add (matrix_vector_action A x) b j 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">reflexivity</span>. }<br/>
 <br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;</div>
+
+<div class="doc">
+3. kleene_fixed_point_least with (b:=x, x:=x) gives A*·x ≤ x 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">pose</span> <span class="id" title="var">proof</span> (<a class="idref" href="Semiring.SemimoduleN.html#kleene_fixed_point_least"><span class="id" title="lemma">kleene_fixed_point_least</span></a> <span class="id" title="var">A</span> <span class="id" title="var">x</span> <span class="id" title="var">x</span> <span class="id" title="var">Hx_fix_self</span> <span class="id" title="var">i</span>) <span class="id" title="keyword">as</span> <span class="id" title="var">H_least</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">unfold</span> <span class="id" title="var">x</span>, <span class="id" title="var">Astar</span> <span class="id" title="tactic">in</span> <span class="id" title="var">H_least</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+4. b ≤ x via absorb_b_fixpoint 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">pose</span> <span class="id" title="var">proof</span> (<a class="idref" href="Semiring.SemimoduleN.html#absorb_b_fixpoint"><span class="id" title="lemma">absorb_b_fixpoint</span></a> <span class="id" title="var">A</span> <span class="id" title="var">b</span> <span class="id" title="var">x</span> <span class="id" title="var">Hx_fix</span>) <span class="id" title="keyword">as</span> <span class="id" title="var">Hb_le_x</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+5. Prove x ≤ A·x + x to apply star_post_fixpoint 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">Hx_post</span> : <span class="id" title="keyword">∀</span> <a id="i:726" class="idref" href="#i:726"><span class="id" title="binder"><span id="i:727" class="id">i</span></span></a>, <a class="idref" href="Semiring.OrelN.html#Orel"><span class="id" title="definition">Orel</span></a> (<span class="id" title="var">x</span> <a class="idref" href="Semiring.SemimoduleN.html#i:726"><span class="id" title="variable">i</span></a>) (<a class="idref" href="Semiring.SemimoduleN.html#vec_add"><span class="id" title="definition">vec_add</span></a> (<a class="idref" href="Semiring.SemimoduleN.html#matrix_vector_action"><span class="id" title="definition">matrix_vector_action</span></a> <span class="id" title="var">A</span> <span class="id" title="var">x</span>) <span class="id" title="var">x</span> <a class="idref" href="Semiring.SemimoduleN.html#i:726"><span class="id" title="variable">i</span></a>)).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;{ <span class="id" title="tactic">intro</span> <span class="id" title="var">j</span>. <span class="id" title="tactic">unfold</span> <a class="idref" href="Semiring.OrelN.html#Orel"><span class="id" title="definition">Orel</span></a>, <a class="idref" href="Semiring.SemimoduleN.html#vec_add"><span class="id" title="definition">vec_add</span></a>.<br/>
+</div>
+
+<div class="doc">
+Goal: x j + (A·x j + x j) = A·x j + x j 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> &lt;- (<a class="idref" href="Semiring.Structures.html#addA"><span class="id" title="definition">addA</span></a> (<span class="id" title="var">x</span> <span class="id" title="var">j</span>) (<a class="idref" href="Semiring.SemimoduleN.html#matrix_vector_action"><span class="id" title="definition">matrix_vector_action</span></a> <span class="id" title="var">A</span> <span class="id" title="var">x</span> <span class="id" title="var">j</span>) (<span class="id" title="var">x</span> <span class="id" title="var">j</span>)).<br/>
+</div>
+
+<div class="doc">
+Goal: (x j + A·x j) + x j = A·x j + x j 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> (<a class="idref" href="Semiring.Structures.html#addC"><span class="id" title="definition">addC</span></a> (<span class="id" title="var">x</span> <span class="id" title="var">j</span>) (<a class="idref" href="Semiring.SemimoduleN.html#matrix_vector_action"><span class="id" title="definition">matrix_vector_action</span></a> <span class="id" title="var">A</span> <span class="id" title="var">x</span> <span class="id" title="var">j</span>)).<br/>
+</div>
+
+<div class="doc">
+Goal: (A·x j + x j) + x j = A·x j + x j 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> (<a class="idref" href="Semiring.Structures.html#addA"><span class="id" title="definition">addA</span></a> (<a class="idref" href="Semiring.SemimoduleN.html#matrix_vector_action"><span class="id" title="definition">matrix_vector_action</span></a> <span class="id" title="var">A</span> <span class="id" title="var">x</span> <span class="id" title="var">j</span>) (<span class="id" title="var">x</span> <span class="id" title="var">j</span>) (<span class="id" title="var">x</span> <span class="id" title="var">j</span>)).<br/>
+</div>
+
+<div class="doc">
+Goal: A·x j + (x j + x j) = A·x j + x j 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> (<a class="idref" href="Semiring.SemimoduleN.html#add_idem_module"><span class="id" title="lemma">add_idem_module</span></a> (<span class="id" title="var">x</span> <span class="id" title="var">j</span>)).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">reflexivity</span>. }<br/>
 <br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;</div>
+
+<div class="doc">
+6. star_post_fixpoint gives x ≤ A*·x 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">pose</span> <span class="id" title="var">proof</span> (<span class="id" title="var">star_post</span> <span class="id" title="var">A</span> <span class="id" title="var">x</span> <span class="id" title="var">x</span> <span class="id" title="var">Hx_post</span> <span class="id" title="var">i</span>) <span class="id" title="keyword">as</span> <span class="id" title="var">H_star</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">unfold</span> <span class="id" title="var">Astar</span> <span class="id" title="tactic">in</span> <span class="id" title="var">H_star</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+7. Antisymmetry: A*·x = x 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> (<a class="idref" href="Semiring.OrelN.html#orel_antisym"><span class="id" title="lemma">orel_antisym</span></a> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">H_least</span> <span class="id" title="var">H_star</span>).<br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 

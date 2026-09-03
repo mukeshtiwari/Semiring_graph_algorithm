@@ -30,6 +30,13 @@
 <span class="id" title="keyword">Local Infix</span> <a id=":::x_'&lt;'_x" class="idref" href="#:::x_'&lt;'_x"><span class="id" title="notation">&quot;</span></a>&lt;" := (<span class="id" title="keyword">fun</span> <a id="x:1" class="idref" href="#x:1"><span class="id" title="binder">x</span></a> <a id="y:2" class="idref" href="#y:2"><span class="id" title="binder">y</span></a> ⇒ <a class="idref" href="Semiring.SchulzeOrderN.html#x:1"><span class="id" title="variable">x</span></a> <a class="idref" href="Semiring.SchulzeOrderN.html#3ccab6e0e5cec5d8305913b11c2aa678"><span class="id" title="notation">≤</span></a> <a class="idref" href="Semiring.SchulzeOrderN.html#y:2"><span class="id" title="variable">y</span></a> <span class="id" title="notation">∧</span> <a class="idref" href="Semiring.SchulzeOrderN.html#x:1"><span class="id" title="variable">x</span></a> <span class="id" title="notation">≠</span> <a class="idref" href="Semiring.SchulzeOrderN.html#y:2"><span class="id" title="variable">y</span></a>) (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 70).<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Schulze over a semiring: order and semiring algebra over a bounded semiring
+    Split out of the former monolithic SocialchoiceN.v. 
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">Section</span> <a id="SchulzeOrderN" class="idref" href="#SchulzeOrderN"><span class="id" title="section">SchulzeOrderN</span></a>.<br/>
@@ -38,6 +45,13 @@
 &nbsp;&nbsp;<span class="id" title="keyword">Context</span> {<a id="SchulzeOrderN.Node" class="idref" href="#SchulzeOrderN.Node"><span class="id" title="variable">Node</span></a> : <a class="idref" href="Semiring.Structures.html#FinType.type"><span class="id" title="record">FinType.type</span></a>}.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<span class="inlinecode"><a class="idref" href="Semiring.PathN.html#bounded_add_idem"><span class="id" title="lemma">bounded_add_idem</span></a></span> (a + a = a) is proved once, in PathN.v, and used
+      throughout here.  It was duplicated in this file before the split. 
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="bounded_orel_refl" class="idref" href="#bounded_orel_refl"><span class="id" title="lemma">bounded_orel_refl</span></a> {<a id="R:4" class="idref" href="#R:4"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#BoundedSemiring.type"><span class="id" title="record">BoundedSemiring.type</span></a>} (<a id="a:5" class="idref" href="#a:5"><span class="id" title="binder">a</span></a> : <a class="idref" href="Semiring.SchulzeOrderN.html#R:4"><span class="id" title="variable">R</span></a>) : <a class="idref" href="Semiring.SchulzeOrderN.html#a:5"><span class="id" title="variable">a</span></a> <a class="idref" href="Semiring.SchulzeOrderN.html#3ccab6e0e5cec5d8305913b11c2aa678"><span class="id" title="notation">≤</span></a> <a class="idref" href="Semiring.SchulzeOrderN.html#a:5"><span class="id" title="variable">a</span></a>.<br/>
@@ -116,6 +130,17 @@ Commutativity is not an independent axiom of the classification: on a
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+The structure theorem for bottleneck carriers, pointwise: on a carrier
+      that is selective (so the natural order is a chain) addition returns
+      the larger argument and, given the meet-lower-bound property,
+      multiplication returns the smaller.  Together: + is the join (max) and
+<a id="lab153"></a><h1 class="section">is the meet (min) of the chain.</h1>
+
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="structure_add_is_max" class="idref" href="#structure_add_is_max"><span class="id" title="lemma">structure_add_is_max</span></a> {<a id="R:39" class="idref" href="#R:39"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#BoundedSemiring.type"><span class="id" title="record">BoundedSemiring.type</span></a>} (<a id="a:40" class="idref" href="#a:40"><span class="id" title="binder">a</span></a> <a id="b:41" class="idref" href="#b:41"><span class="id" title="binder">b</span></a> : <a class="idref" href="Semiring.SchulzeOrderN.html#R:39"><span class="id" title="variable">R</span></a>) :<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Semiring.SchulzeOrderN.html#a:40"><span class="id" title="variable">a</span></a> <a class="idref" href="Semiring.SchulzeOrderN.html#3ccab6e0e5cec5d8305913b11c2aa678"><span class="id" title="notation">≤</span></a> <a class="idref" href="Semiring.SchulzeOrderN.html#b:41"><span class="id" title="variable">b</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Semiring.SchulzeOrderN.html#a:40"><span class="id" title="variable">a</span></a> <a class="idref" href="Semiring.Structures.html#5a105efba9ec815920c0186c077a884f"><span class="id" title="notation">+</span></a> <a class="idref" href="Semiring.SchulzeOrderN.html#b:41"><span class="id" title="variable">b</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="Semiring.SchulzeOrderN.html#b:41"><span class="id" title="variable">b</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#ba2b0e492d2b4675a0acf3ea92aabadd"><span class="id" title="notation">∧</span></a> <a class="idref" href="Semiring.SchulzeOrderN.html#b:41"><span class="id" title="variable">b</span></a> <a class="idref" href="Semiring.Structures.html#5a105efba9ec815920c0186c077a884f"><span class="id" title="notation">+</span></a> <a class="idref" href="Semiring.SchulzeOrderN.html#a:40"><span class="id" title="variable">a</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="Semiring.SchulzeOrderN.html#b:41"><span class="id" title="variable">b</span></a>.<br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Proof</span>.<br/>
@@ -136,6 +161,12 @@ Commutativity is not an independent axiom of the classification: on a
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+If every term of a sum is ≤ v, then the whole sum is ≤ v. 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="sum_orel_bound" class="idref" href="#sum_orel_bound"><span class="id" title="lemma">sum_orel_bound</span></a> {<a id="R:49" class="idref" href="#R:49"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;(<a id="f:50" class="idref" href="#f:50"><span class="id" title="binder">f</span></a> : <a class="idref" href="Semiring.SchulzeOrderN.html#SchulzeOrderN.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Semiring.SchulzeOrderN.html#R:49"><span class="id" title="variable">R</span></a>) (<a id="v:51" class="idref" href="#v:51"><span class="id" title="binder">v</span></a> : <a class="idref" href="Semiring.SchulzeOrderN.html#R:49"><span class="id" title="variable">R</span></a>) :<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">(</span></a><span class="id" title="keyword">∀</span> <a id="x:52" class="idref" href="#x:52"><span class="id" title="binder">x</span></a>, <a class="idref" href="Semiring.SchulzeOrderN.html#3ccab6e0e5cec5d8305913b11c2aa678"><span class="id" title="notation">(</span></a><a class="idref" href="Semiring.SchulzeOrderN.html#f:50"><span class="id" title="variable">f</span></a> <a class="idref" href="Semiring.SchulzeOrderN.html#x:52"><span class="id" title="variable">x</span></a><a class="idref" href="Semiring.SchulzeOrderN.html#3ccab6e0e5cec5d8305913b11c2aa678"><span class="id" title="notation">)</span></a> <a class="idref" href="Semiring.SchulzeOrderN.html#3ccab6e0e5cec5d8305913b11c2aa678"><span class="id" title="notation">≤</span></a> <a class="idref" href="Semiring.SchulzeOrderN.html#v:51"><span class="id" title="variable">v</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">)</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Semiring.SchulzeOrderN.html#3ccab6e0e5cec5d8305913b11c2aa678"><span class="id" title="notation">(</span></a><a class="idref" href="Semiring.MatN.html#sum"><span class="id" title="definition">sum</span></a> <a class="idref" href="Semiring.SchulzeOrderN.html#f:50"><span class="id" title="variable">f</span></a><a class="idref" href="Semiring.SchulzeOrderN.html#3ccab6e0e5cec5d8305913b11c2aa678"><span class="id" title="notation">)</span></a> <a class="idref" href="Semiring.SchulzeOrderN.html#3ccab6e0e5cec5d8305913b11c2aa678"><span class="id" title="notation">≤</span></a> <a class="idref" href="Semiring.SchulzeOrderN.html#v:51"><span class="id" title="variable">v</span></a>.<br/>
@@ -145,7 +176,12 @@ Commutativity is not an independent axiom of the classification: on a
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">induction</span> (@<a class="idref" href="Semiring.Structures.html#elements"><span class="id" title="definition">elements</span></a> <a class="idref" href="Semiring.SchulzeOrderN.html#SchulzeOrderN.Node"><span class="id" title="variable">Node</span></a>) <span class="id" title="keyword">as</span> [|<span class="id" title="var">a</span> <span class="id" title="var">l</span> <span class="id" title="var">IH</span>]; <span class="id" title="var">cbn</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;- <span class="id" title="tactic">apply</span> <a class="idref" href="Semiring.Structures.html#add0r"><span class="id" title="definition">add0r</span></a>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;- <br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+
+<div class="doc">
+addA: (x+y)+z = x+(y+z) 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">transitivity</span> (<span class="id" title="var">f</span> <span class="id" title="var">a</span> <a class="idref" href="Semiring.Structures.html#5a105efba9ec815920c0186c077a884f"><span class="id" title="notation">+</span></a> <a class="idref" href="Semiring.Structures.html#5a105efba9ec815920c0186c077a884f"><span class="id" title="notation">(</span></a><span class="id" title="definition">fold_right</span> (<span class="id" title="keyword">fun</span> (<a id="x:53" class="idref" href="#x:53"><span class="id" title="binder"><span id="x:55" class="id">x</span></span></a> : <a class="idref" href="Semiring.SchulzeOrderN.html#SchulzeOrderN.Node"><span class="id" title="variable">Node</span></a>) (<a id="y:54" class="idref" href="#y:54"><span class="id" title="binder"><span id="y:56" class="id">y</span></span></a> : <span class="id" title="var">R</span>) ⇒ <span class="id" title="var">f</span> <a class="idref" href="Semiring.SchulzeOrderN.html#x:53"><span class="id" title="variable">x</span></a> <a class="idref" href="Semiring.Structures.html#5a105efba9ec815920c0186c077a884f"><span class="id" title="notation">+</span></a> <a class="idref" href="Semiring.SchulzeOrderN.html#y:54"><span class="id" title="variable">y</span></a>) 0 <span class="id" title="var">l</span> <a class="idref" href="Semiring.Structures.html#5a105efba9ec815920c0186c077a884f"><span class="id" title="notation">+</span></a> <span class="id" title="var">v</span><a class="idref" href="Semiring.Structures.html#5a105efba9ec815920c0186c077a884f"><span class="id" title="notation">)</span></a>).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" title="tactic">apply</span> <a class="idref" href="Semiring.Structures.html#addA"><span class="id" title="definition">addA</span></a>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" title="tactic">assert</span> (<span class="id" title="var">Htmp</span> : <span class="id" title="definition">fold_right</span> (<span class="id" title="keyword">fun</span> (<a id="x:57" class="idref" href="#x:57"><span class="id" title="binder"><span id="x:59" class="id">x</span></span></a> : <a class="idref" href="Semiring.SchulzeOrderN.html#SchulzeOrderN.Node"><span class="id" title="variable">Node</span></a>) (<a id="y:58" class="idref" href="#y:58"><span class="id" title="binder"><span id="y:60" class="id">y</span></span></a> : <span class="id" title="var">R</span>) ⇒ <span class="id" title="var">f</span> <a class="idref" href="Semiring.SchulzeOrderN.html#x:57"><span class="id" title="variable">x</span></a> <a class="idref" href="Semiring.Structures.html#5a105efba9ec815920c0186c077a884f"><span class="id" title="notation">+</span></a> <a class="idref" href="Semiring.SchulzeOrderN.html#y:58"><span class="id" title="variable">y</span></a>) 0 <span class="id" title="var">l</span> <a class="idref" href="Semiring.Structures.html#5a105efba9ec815920c0186c077a884f"><span class="id" title="notation">+</span></a> <span class="id" title="var">v</span> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <span class="id" title="var">v</span>).<br/>
@@ -154,6 +190,12 @@ Commutativity is not an independent axiom of the classification: on a
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+If a ≤ c and b ≤ c then a+b ≤ c.  Works for any commutative monoid. 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="add_orel_bound" class="idref" href="#add_orel_bound"><span class="id" title="lemma">add_orel_bound</span></a> {<a id="R:61" class="idref" href="#R:61"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#CommutativeMonoid.type"><span class="id" title="record">CommutativeMonoid.type</span></a>} (<a id="a:62" class="idref" href="#a:62"><span class="id" title="binder">a</span></a> <a id="b:63" class="idref" href="#b:63"><span class="id" title="binder">b</span></a> <a id="c:64" class="idref" href="#c:64"><span class="id" title="binder">c</span></a> : <a class="idref" href="Semiring.SchulzeOrderN.html#R:61"><span class="id" title="variable">R</span></a>) :<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Semiring.SchulzeOrderN.html#a:62"><span class="id" title="variable">a</span></a> <a class="idref" href="Semiring.SchulzeOrderN.html#3ccab6e0e5cec5d8305913b11c2aa678"><span class="id" title="notation">≤</span></a> <a class="idref" href="Semiring.SchulzeOrderN.html#c:64"><span class="id" title="variable">c</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Semiring.SchulzeOrderN.html#b:63"><span class="id" title="variable">b</span></a> <a class="idref" href="Semiring.SchulzeOrderN.html#3ccab6e0e5cec5d8305913b11c2aa678"><span class="id" title="notation">≤</span></a> <a class="idref" href="Semiring.SchulzeOrderN.html#c:64"><span class="id" title="variable">c</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Semiring.SchulzeOrderN.html#3ccab6e0e5cec5d8305913b11c2aa678"><span class="id" title="notation">(</span></a><a class="idref" href="Semiring.SchulzeOrderN.html#a:62"><span class="id" title="variable">a</span></a> <a class="idref" href="Semiring.Structures.html#5a105efba9ec815920c0186c077a884f"><span class="id" title="notation">+</span></a> <a class="idref" href="Semiring.SchulzeOrderN.html#b:63"><span class="id" title="variable">b</span></a><a class="idref" href="Semiring.SchulzeOrderN.html#3ccab6e0e5cec5d8305913b11c2aa678"><span class="id" title="notation">)</span></a> <a class="idref" href="Semiring.SchulzeOrderN.html#3ccab6e0e5cec5d8305913b11c2aa678"><span class="id" title="notation">≤</span></a> <a class="idref" href="Semiring.SchulzeOrderN.html#c:64"><span class="id" title="variable">c</span></a>.<br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Proof</span>.<br/>
@@ -215,6 +257,12 @@ Transitivity: x ≤ y and y &lt; z implies x &lt; z.
 <br/>
 
 <br/>
+</div>
+
+<div class="doc">
+In a bounded semiring, the diagonal of geom_sum is always 1. 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="geom_sum_diag_one" class="idref" href="#geom_sum_diag_one"><span class="id" title="lemma">geom_sum_diag_one</span></a> {<a id="R:79" class="idref" href="#R:79"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#BoundedSemiring.type"><span class="id" title="record">BoundedSemiring.type</span></a>}<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;(<a id="M:80" class="idref" href="#M:80"><span class="id" title="binder">M</span></a> : @<a class="idref" href="Semiring.OrelN.html#Matrix"><span class="id" title="definition">Matrix</span></a> <a class="idref" href="Semiring.SchulzeOrderN.html#SchulzeOrderN.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="Semiring.SchulzeOrderN.html#R:79"><span class="id" title="variable">R</span></a>) (<a id="n:81" class="idref" href="#n:81"><span class="id" title="binder">n</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>) (<a id="A:82" class="idref" href="#A:82"><span class="id" title="binder">A</span></a> : <a class="idref" href="Semiring.SchulzeOrderN.html#SchulzeOrderN.Node"><span class="id" title="variable">Node</span></a>) :<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Semiring.MatN.html#geom_sum"><span class="id" title="definition">geom_sum</span></a> <a class="idref" href="Semiring.SchulzeOrderN.html#M:80"><span class="id" title="variable">M</span></a> <a class="idref" href="Semiring.SchulzeOrderN.html#n:81"><span class="id" title="variable">n</span></a> <a class="idref" href="Semiring.SchulzeOrderN.html#A:82"><span class="id" title="variable">A</span></a> <a class="idref" href="Semiring.SchulzeOrderN.html#A:82"><span class="id" title="variable">A</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> 1.<br/>
@@ -225,12 +273,31 @@ Transitivity: x ≤ y and y &lt; z implies x &lt; z.
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
-
-<br/>
 </div>
 
 <div class="doc">
-With a total order the meet of two elements is one of them. 
+<a id="lab154"></a><h1 class="section">Selectivity: the closure invents no new values</h1>
+
+
+<div class="paragraph"> </div>
+
+      <span class="inlinecode"><a class="idref" href="Semiring.SmithiiaN.html#SmithIIA.RemovalStrong.Htotal"><span class="id" title="variable">Htotal</span></a></span> and <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.Hmeet"><span class="id" title="variable">Hmeet</span></a></span> together — the pair already assumed by
+      <span class="inlinecode"><a class="idref" href="Semiring.PrudenceN.html#prudence"><span class="id" title="lemma">prudence</span></a></span> and <span class="inlinecode"><a class="idref" href="Semiring.MinMaxN.html#minmax_beats"><span class="id" title="lemma">minmax_beats</span></a></span>, and satisfied by the max-min semiring
+      of the Schulze instance — make both operations SELECTIVE: <span class="inlinecode"><a class="idref" href="Semiring.SchulzeWitnessN.html#SchulzeWitnessN.Square.x"><span class="id" title="variable">x</span></a></span> <span class="inlinecode">+</span> <span class="inlinecode"><a class="idref" href="Semiring.SchulzeWitnessN.html#SchulzeWitnessN.Square.y"><span class="id" title="variable">y</span></a></span>
+      and <span class="inlinecode"><a class="idref" href="Semiring.SchulzeWitnessN.html#SchulzeWitnessN.Square.x"><span class="id" title="variable">x</span></a></span> <span class="inlinecode">×</span> <span class="inlinecode"><a class="idref" href="Semiring.SchulzeWitnessN.html#SchulzeWitnessN.Square.y"><span class="id" title="variable">y</span></a></span> each return one of their arguments.  So every entry of
+      the closure is either a bound or the strength of an actual link.
+      This is the algebraic content of the paper's habit of naming the
+      critical link of a strongest path, e.g. in 4.2.1.
+
+<div class="paragraph"> </div>
+
+      Note what this does NOT give: the value being some link's strength
+      says nothing about WHICH link, or that it lies on a path from <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a></span> to
+      <span class="inlinecode"><a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.b"><span class="id" title="variable">b</span></a></span>.  Recovering that — and with it the paper's path-splitting
+      arguments — needs the witness, not just the value. 
+<div class="paragraph"> </div>
+
+ With a total order the meet of two elements is one of them. 
 </div>
 <div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="mul_selective" class="idref" href="#mul_selective"><span class="id" title="lemma">mul_selective</span></a> {<a id="R:83" class="idref" href="#R:83"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#BoundedSemiring.type"><span class="id" title="record">BoundedSemiring.type</span></a>}<br/>
@@ -278,12 +345,14 @@ A selective join over a list returns <span class="inlinecode">0</span> or one of
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
-
-<br/>
 </div>
 
 <div class="doc">
-If every element of a list is ≤ v, then the fold-right sum is ≤ v. 
+<a id="lab155"></a><h1 class="section">Helper lemmas for the Pareto proofs</h1>
+
+<div class="paragraph"> </div>
+
+ If every element of a list is ≤ v, then the fold-right sum is ≤ v. 
 </div>
 <div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="fold_right_orel_bound" class="idref" href="#fold_right_orel_bound"><span class="id" title="lemma">fold_right_orel_bound</span></a> {<a id="R:113" class="idref" href="#R:113"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#CommutativeMonoid.type"><span class="id" title="record">CommutativeMonoid.type</span></a>} (<a id="l:114" class="idref" href="#l:114"><span class="id" title="binder">l</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.SchulzeOrderN.html#R:113"><span class="id" title="variable">R</span></a>) (<a id="v:115" class="idref" href="#v:115"><span class="id" title="binder">v</span></a> : <a class="idref" href="Semiring.SchulzeOrderN.html#R:113"><span class="id" title="variable">R</span></a>) :<br/>
@@ -376,12 +445,14 @@ Finite sums stay strictly below a bound if every summand does
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
-
-<br/>
 </div>
 
 <div class="doc">
-Every term of a finite sum lies below the sum. 
+<a id="lab156"></a><h1 class="section">Shared helpers for prudence (§4.9) and the MinMax set (§4.8)</h1>
+
+<div class="paragraph"> </div>
+
+ Every term of a finite sum lies below the sum. 
 </div>
 <div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="fold_right_in_le" class="idref" href="#fold_right_in_le"><span class="id" title="lemma">fold_right_in_le</span></a> {<a id="R:155" class="idref" href="#R:155"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#BoundedSemiring.type"><span class="id" title="record">BoundedSemiring.type</span></a>}<br/>

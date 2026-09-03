@@ -27,23 +27,70 @@
 <span class="id" title="keyword">Import</span> <span class="id" title="module">ListNotations</span> <a class="idref" href="Semiring.Structures.html#SemiringNotations"><span class="id" title="module">SemiringNotations</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Take from Schulze's paper https://link.springer.com/content/pdf/10.1007/s00355-010-0475-4.pdf 
+</div>
+<div class="code">
 <span class="id" title="keyword">Section</span> <a id="Comp" class="idref" href="#Comp"><span class="id" title="section">Comp</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+
+<div class="paragraph"> </div>
+
+   8 voters a ≻v c ≻v d ≻v b
+   2 voters b ≻v a ≻v d ≻v c
+   4 voters c ≻v d ≻v b ≻v a
+   4 voters d ≻v b ≻v a ≻v c
+   3 voters d ≻v c ≻v b ≻v a
+
+<div class="paragraph"> </div>
+
+    Define Candidates 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Inductive</span> <a id="Node" class="idref" href="#Node"><span class="id" title="definition, inductive"><span id="Node_rect" class="id"><span id="Node_ind" class="id"><span id="Node_rec" class="id"><span id="Node_sind" class="id">Node</span></span></span></span></span></a> := <a id="A" class="idref" href="#A"><span class="id" title="constructor">A</span></a> | <a id="B" class="idref" href="#B"><span class="id" title="constructor">B</span></a> | <a id="C" class="idref" href="#C"><span class="id" title="constructor">C</span></a> | <a id="D" class="idref" href="#D"><span class="id" title="constructor">D</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Nat extended with Infinity 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Inductive</span> <a id="R" class="idref" href="#R"><span class="id" title="definition, inductive"><span id="R_rect" class="id"><span id="R_ind" class="id"><span id="R_rec" class="id"><span id="R_sind" class="id">R</span></span></span></span></span></a> := <br/>
 &nbsp;&nbsp;| <a id="Left" class="idref" href="#Left"><span class="id" title="constructor">Left</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Examples.Schulze.html#R:3"><span class="id" title="inductive">R</span></a> <br/>
 &nbsp;&nbsp;| <a id="Infinity" class="idref" href="#Infinity"><span class="id" title="constructor">Infinity</span></a> : <a class="idref" href="Examples.Schulze.html#R:3"><span class="id" title="inductive">R</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+zeroR 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="zeroR" class="idref" href="#zeroR"><span class="id" title="definition">zeroR</span></a> : <a class="idref" href="Examples.Schulze.html#R"><span class="id" title="inductive">R</span></a> := <a class="idref" href="Examples.Schulze.html#Left"><span class="id" title="constructor">Left</span></a> 0.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+oneR 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="oneR" class="idref" href="#oneR"><span class="id" title="definition">oneR</span></a> : <a class="idref" href="Examples.Schulze.html#R"><span class="id" title="inductive">R</span></a> := <a class="idref" href="Examples.Schulze.html#Infinity"><span class="id" title="constructor">Infinity</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+plusR 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="plusR" class="idref" href="#plusR"><span class="id" title="definition">plusR</span></a> (<a id="u:5" class="idref" href="#u:5"><span class="id" title="binder">u</span></a> <a id="v:6" class="idref" href="#v:6"><span class="id" title="binder">v</span></a> : <a class="idref" href="Examples.Schulze.html#R"><span class="id" title="inductive">R</span></a>) : <a class="idref" href="Examples.Schulze.html#R"><span class="id" title="inductive">R</span></a> :=<br/>
 &nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="Examples.Schulze.html#u:5"><span class="id" title="variable">u</span></a>, <a class="idref" href="Examples.Schulze.html#v:6"><span class="id" title="variable">v</span></a> <span class="id" title="keyword">with</span> <br/>
 &nbsp;&nbsp;| <a class="idref" href="Examples.Schulze.html#Left"><span class="id" title="constructor">Left</span></a> <span class="id" title="var">x</span>, <a class="idref" href="Examples.Schulze.html#Left"><span class="id" title="constructor">Left</span></a> <span class="id" title="var">y</span> ⇒ <a class="idref" href="Examples.Schulze.html#Left"><span class="id" title="constructor">Left</span></a> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Nat.html#max"><span class="id" title="definition">Nat.max</span></a> <span class="id" title="var">x</span> <span class="id" title="var">y</span>) <br/>
@@ -51,6 +98,12 @@
 &nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+mulR 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="mulR" class="idref" href="#mulR"><span class="id" title="definition">mulR</span></a> (<a id="u:9" class="idref" href="#u:9"><span class="id" title="binder">u</span></a> <a id="v:10" class="idref" href="#v:10"><span class="id" title="binder">v</span></a> : <a class="idref" href="Examples.Schulze.html#R"><span class="id" title="inductive">R</span></a>) : <a class="idref" href="Examples.Schulze.html#R"><span class="id" title="inductive">R</span></a> :=<br/>
 &nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="Examples.Schulze.html#u:9"><span class="id" title="variable">u</span></a>, <a class="idref" href="Examples.Schulze.html#v:10"><span class="id" title="variable">v</span></a> <span class="id" title="keyword">with</span> <br/>
 &nbsp;&nbsp;| <a class="idref" href="Examples.Schulze.html#Left"><span class="id" title="constructor">Left</span></a> <span class="id" title="var">x</span>, <a class="idref" href="Examples.Schulze.html#Left"><span class="id" title="constructor">Left</span></a> <span class="id" title="var">y</span> ⇒ <a class="idref" href="Examples.Schulze.html#Left"><span class="id" title="constructor">Left</span></a> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Nat.html#min"><span class="id" title="definition">Nat.min</span></a> <span class="id" title="var">x</span> <span class="id" title="var">y</span>)<br/>
@@ -68,11 +121,31 @@
 <span class="id" title="keyword">End</span> <a class="idref" href="Examples.Schulze.html#Comp"><span class="id" title="section">Comp</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab195"></a><h1 class="section">HB Instances: FinType Node, BoundedSemiring R</h1>
+
+
+<div class="paragraph"> </div>
+
+    These instances let us use <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#powN_fun"><span class="id" title="definition">powN_fun</span></a></span> from MatN and the full
+    Kleene-star theory from SemimoduleN (kleene_fixed_point,
+    geom_sum_idempotent_action, etc.) on the Schulze max-min semiring. 
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">Section</span> <a id="HBInstances" class="idref" href="#HBInstances"><span class="id" title="section">HBInstances</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab196"></a><h1 class="section">Node as a Finite Type</h1>
+
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="fin_eq_dec" class="idref" href="#fin_eq_dec"><span class="id" title="definition">fin_eq_dec</span></a> (<a id="x:13" class="idref" href="#x:13"><span class="id" title="binder">x</span></a> <a id="y:14" class="idref" href="#y:14"><span class="id" title="binder">y</span></a> : <a class="idref" href="Examples.Schulze.html#Node"><span class="id" title="inductive">Node</span></a>) : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Specif.html#87727981cdc1579fef00b9d9c1d3b9da"><span class="id" title="notation">{</span></a><a class="idref" href="Examples.Schulze.html#x:13"><span class="id" title="variable">x</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="Examples.Schulze.html#y:14"><span class="id" title="variable">y</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Specif.html#87727981cdc1579fef00b9d9c1d3b9da"><span class="id" title="notation">}</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Specif.html#87727981cdc1579fef00b9d9c1d3b9da"><span class="id" title="notation">+</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Specif.html#87727981cdc1579fef00b9d9c1d3b9da"><span class="id" title="notation">{</span></a><a class="idref" href="Examples.Schulze.html#x:13"><span class="id" title="variable">x</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'&lt;&gt;'_x"><span class="id" title="notation">≠</span></a> <a class="idref" href="Examples.Schulze.html#y:14"><span class="id" title="variable">y</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Specif.html#87727981cdc1579fef00b9d9c1d3b9da"><span class="id" title="notation">}</span></a>.<br/>
@@ -86,21 +159,45 @@
 &nbsp;&nbsp;<span class="id" title="keyword">Proof</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">unfold</span> <a class="idref" href="Examples.Schulze.html#elements_list"><span class="id" title="definition">elements_list</span></a>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="constructor">NoDup_cons</span>.<br/>
+</div>
+
+<div class="doc">
+~ In A <span class="inlinecode"><a class="idref" href="Examples.WidestShortestPath.html#B"><span class="id" title="constructor">B</span></a>;<a class="idref" href="Examples.WidestShortestPath.html#C"><span class="id" title="constructor">C</span></a>;<a class="idref" href="Examples.Schulze.html#D"><span class="id" title="constructor">D</span></a></span> 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">intro</span> <span class="id" title="var">H</span>. <span class="id" title="tactic">simpl</span> <span class="id" title="tactic">in</span> <span class="id" title="var">H</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">H</span> <span class="id" title="keyword">as</span> [<span class="id" title="var">Heq</span>|<span class="id" title="var">H</span>]; [<span class="id" title="tactic">inversion</span> <span class="id" title="var">Heq</span>|].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">simpl</span> <span class="id" title="tactic">in</span> <span class="id" title="var">H</span>. <span class="id" title="tactic">destruct</span> <span class="id" title="var">H</span> <span class="id" title="keyword">as</span> [<span class="id" title="var">Heq</span>|<span class="id" title="var">H</span>]; [<span class="id" title="tactic">inversion</span> <span class="id" title="var">Heq</span>|].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">simpl</span> <span class="id" title="tactic">in</span> <span class="id" title="var">H</span>. <span class="id" title="tactic">destruct</span> <span class="id" title="var">H</span> <span class="id" title="keyword">as</span> [<span class="id" title="var">Heq</span>|<span class="id" title="var">H</span>]; [<span class="id" title="tactic">inversion</span> <span class="id" title="var">Heq</span>|].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">simpl</span> <span class="id" title="tactic">in</span> <span class="id" title="var">H</span>. <span class="id" title="tactic">destruct</span> <span class="id" title="var">H</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="constructor">NoDup_cons</span>.<br/>
+</div>
+
+<div class="doc">
+~ In B <span class="inlinecode"><a class="idref" href="Examples.WidestShortestPath.html#C"><span class="id" title="constructor">C</span></a>;<a class="idref" href="Examples.Schulze.html#D"><span class="id" title="constructor">D</span></a></span> 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">intro</span> <span class="id" title="var">H</span>. <span class="id" title="tactic">simpl</span> <span class="id" title="tactic">in</span> <span class="id" title="var">H</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">H</span> <span class="id" title="keyword">as</span> [<span class="id" title="var">Heq</span>|<span class="id" title="var">H</span>]; [<span class="id" title="tactic">inversion</span> <span class="id" title="var">Heq</span>|].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">simpl</span> <span class="id" title="tactic">in</span> <span class="id" title="var">H</span>. <span class="id" title="tactic">destruct</span> <span class="id" title="var">H</span> <span class="id" title="keyword">as</span> [<span class="id" title="var">Heq</span>|<span class="id" title="var">H</span>]; [<span class="id" title="tactic">inversion</span> <span class="id" title="var">Heq</span>|].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">simpl</span> <span class="id" title="tactic">in</span> <span class="id" title="var">H</span>. <span class="id" title="tactic">destruct</span> <span class="id" title="var">H</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="constructor">NoDup_cons</span>.<br/>
+</div>
+
+<div class="doc">
+~ In C <span class="inlinecode"><a class="idref" href="Examples.Schulze.html#D"><span class="id" title="constructor">D</span></a></span> 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">intro</span> <span class="id" title="var">H</span>. <span class="id" title="tactic">simpl</span> <span class="id" title="tactic">in</span> <span class="id" title="var">H</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">H</span> <span class="id" title="keyword">as</span> [<span class="id" title="var">Heq</span>|<span class="id" title="var">H</span>]; [<span class="id" title="tactic">inversion</span> <span class="id" title="var">Heq</span>|].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">simpl</span> <span class="id" title="tactic">in</span> <span class="id" title="var">H</span>. <span class="id" title="tactic">destruct</span> <span class="id" title="var">H</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="constructor">NoDup_cons</span>.<br/>
+</div>
+
+<div class="doc">
+~ In D <font size=-2>&#9744;</font> 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">intro</span> <span class="id" title="var">H</span>. <span class="id" title="tactic">simpl</span> <span class="id" title="tactic">in</span> <span class="id" title="var">H</span>. <span class="id" title="tactic">destruct</span> <span class="id" title="var">H</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="constructor">NoDup_nil</span>.<br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
@@ -126,6 +223,13 @@
 &nbsp;&nbsp;&nbsp;&nbsp;<a id="HB_unnamed_factory_1" class="idref" href="#HB_unnamed_factory_1"><span class="id" title="definition"><span id="Schulze_Node__canonical__Structures_FinType" class="id">fin_eq_dec</span></span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab197"></a><h1 class="section">R as a Commutative Monoid  (max–semilattice with zero)</h1>
+
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="addA_proof" class="idref" href="#addA_proof"><span class="id" title="lemma">addA_proof</span></a> : <span class="id" title="keyword">∀</span> <a id="x:16" class="idref" href="#x:16"><span class="id" title="binder">x</span></a> <a id="y:17" class="idref" href="#y:17"><span class="id" title="binder">y</span></a> <a id="z:18" class="idref" href="#z:18"><span class="id" title="binder">z</span></a> : <a class="idref" href="Examples.Schulze.html#R"><span class="id" title="inductive">R</span></a>, <a class="idref" href="Examples.Schulze.html#plusR"><span class="id" title="definition">plusR</span></a> (<a class="idref" href="Examples.Schulze.html#plusR"><span class="id" title="definition">plusR</span></a> <a class="idref" href="Examples.Schulze.html#x:16"><span class="id" title="variable">x</span></a> <a class="idref" href="Examples.Schulze.html#y:17"><span class="id" title="variable">y</span></a>) <a class="idref" href="Examples.Schulze.html#z:18"><span class="id" title="variable">z</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="Examples.Schulze.html#plusR"><span class="id" title="definition">plusR</span></a> <a class="idref" href="Examples.Schulze.html#x:16"><span class="id" title="variable">x</span></a> (<a class="idref" href="Examples.Schulze.html#plusR"><span class="id" title="definition">plusR</span></a> <a class="idref" href="Examples.Schulze.html#y:17"><span class="id" title="variable">y</span></a> <a class="idref" href="Examples.Schulze.html#z:18"><span class="id" title="variable">z</span></a>).<br/>
@@ -162,6 +266,13 @@
 &nbsp;&nbsp;&nbsp;&nbsp;<a id="HB_unnamed_factory_3" class="idref" href="#HB_unnamed_factory_3"><span class="id" title="definition"><span id="Schulze_R__canonical__Structures_CommutativeMonoid" class="id">zeroR</span></span></a> <a id="HB_unnamed_factory_3" class="idref" href="#HB_unnamed_factory_3"><span class="id" title="definition"><span id="Schulze_R__canonical__Structures_CommutativeMonoid" class="id">plusR</span></span></a> <a id="HB_unnamed_factory_3" class="idref" href="#HB_unnamed_factory_3"><span class="id" title="definition"><span id="Schulze_R__canonical__Structures_CommutativeMonoid" class="id">addA_proof</span></span></a> <a id="HB_unnamed_factory_3" class="idref" href="#HB_unnamed_factory_3"><span class="id" title="definition"><span id="Schulze_R__canonical__Structures_CommutativeMonoid" class="id">addC_proof</span></span></a> <a id="HB_unnamed_factory_3" class="idref" href="#HB_unnamed_factory_3"><span class="id" title="definition"><span id="Schulze_R__canonical__Structures_CommutativeMonoid" class="id">add0r_proof</span></span></a> <a id="HB_unnamed_factory_3" class="idref" href="#HB_unnamed_factory_3"><span class="id" title="definition"><span id="Schulze_R__canonical__Structures_CommutativeMonoid" class="id">addr0_proof</span></span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab198"></a><h1 class="section">R as a Semiring  (min-multiplication distributes over max-add)</h1>
+
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="mulA_proof" class="idref" href="#mulA_proof"><span class="id" title="lemma">mulA_proof</span></a> : <span class="id" title="keyword">∀</span> <a id="a:23" class="idref" href="#a:23"><span class="id" title="binder">a</span></a> <a id="b:24" class="idref" href="#b:24"><span class="id" title="binder">b</span></a> <a id="c:25" class="idref" href="#c:25"><span class="id" title="binder">c</span></a> : <a class="idref" href="Examples.Schulze.html#R"><span class="id" title="inductive">R</span></a>, <a class="idref" href="Examples.Schulze.html#mulR"><span class="id" title="definition">mulR</span></a> (<a class="idref" href="Examples.Schulze.html#mulR"><span class="id" title="definition">mulR</span></a> <a class="idref" href="Examples.Schulze.html#a:23"><span class="id" title="variable">a</span></a> <a class="idref" href="Examples.Schulze.html#b:24"><span class="id" title="variable">b</span></a>) <a class="idref" href="Examples.Schulze.html#c:25"><span class="id" title="variable">c</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="Examples.Schulze.html#mulR"><span class="id" title="definition">mulR</span></a> <a class="idref" href="Examples.Schulze.html#a:23"><span class="id" title="variable">a</span></a> (<a class="idref" href="Examples.Schulze.html#mulR"><span class="id" title="definition">mulR</span></a> <a class="idref" href="Examples.Schulze.html#b:24"><span class="id" title="variable">b</span></a> <a class="idref" href="Examples.Schulze.html#c:25"><span class="id" title="variable">c</span></a>).<br/>
@@ -215,6 +326,13 @@
 &nbsp;&nbsp;&nbsp;&nbsp;<a id="HB_unnamed_factory_5" class="idref" href="#HB_unnamed_factory_5"><span class="id" title="definition"><span id="Schulze_R__canonical__Structures_Semiring" class="id">mulDr_proof</span></span></a> <a id="HB_unnamed_factory_5" class="idref" href="#HB_unnamed_factory_5"><span class="id" title="definition"><span id="Schulze_R__canonical__Structures_Semiring" class="id">mulDl_proof</span></span></a> <a id="HB_unnamed_factory_5" class="idref" href="#HB_unnamed_factory_5"><span class="id" title="definition"><span id="Schulze_R__canonical__Structures_Semiring" class="id">mul0r_proof</span></span></a> <a id="HB_unnamed_factory_5" class="idref" href="#HB_unnamed_factory_5"><span class="id" title="definition"><span id="Schulze_R__canonical__Structures_Semiring" class="id">mulr0_proof</span></span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab199"></a><h1 class="section">R as a Bounded Semiring  (Infinity absorbs in addition)</h1>
+
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="add_bound_proof" class="idref" href="#add_bound_proof"><span class="id" title="lemma">add_bound_proof</span></a> : <span class="id" title="keyword">∀</span> <a id="a:36" class="idref" href="#a:36"><span class="id" title="binder">a</span></a> : <a class="idref" href="Examples.Schulze.html#R"><span class="id" title="inductive">R</span></a>, <a class="idref" href="Examples.Schulze.html#plusR"><span class="id" title="definition">plusR</span></a> <a class="idref" href="Examples.Schulze.html#oneR"><span class="id" title="definition">oneR</span></a> <a class="idref" href="Examples.Schulze.html#a:36"><span class="id" title="variable">a</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="Examples.Schulze.html#oneR"><span class="id" title="definition">oneR</span></a>.<br/>
@@ -226,6 +344,13 @@
 &nbsp;&nbsp;<a id="HB_unnamed_factory_7" class="idref" href="#HB_unnamed_factory_7"><span class="id" title="definition"><span id="Schulze_R__canonical__Structures_BoundedSemiring" class="id">HB.instance</span></span></a> <a id="HB_unnamed_factory_7" class="idref" href="#HB_unnamed_factory_7"><span class="id" title="definition"><span id="Schulze_R__canonical__Structures_BoundedSemiring" class="id">Definition</span></span></a> <a id="HB_unnamed_factory_7" class="idref" href="#HB_unnamed_factory_7"><span class="id" title="definition"><span id="Schulze_R__canonical__Structures_BoundedSemiring" class="id">_</span></span></a> <a id="HB_unnamed_factory_7" class="idref" href="#HB_unnamed_factory_7"><span class="id" title="definition"><span id="Schulze_R__canonical__Structures_BoundedSemiring" class="id">:=</span></span></a> <a id="HB_unnamed_factory_7" class="idref" href="#HB_unnamed_factory_7"><span class="id" title="definition"><span id="Schulze_R__canonical__Structures_BoundedSemiring" class="id">IsBoundedSemiring.Build</span></span></a> <a id="HB_unnamed_factory_7" class="idref" href="#HB_unnamed_factory_7"><span class="id" title="definition"><span id="Schulze_R__canonical__Structures_BoundedSemiring" class="id">R</span></span></a> <a id="HB_unnamed_factory_7" class="idref" href="#HB_unnamed_factory_7"><span class="id" title="definition"><span id="Schulze_R__canonical__Structures_BoundedSemiring" class="id">add_bound_proof</span></span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab200"></a><h1 class="section">R as a Semimodule over itself  (scale := mulR)</h1>
+
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<a id="HB_unnamed_factory_9" class="idref" href="#HB_unnamed_factory_9"><span class="id" title="definition"><span id="Schulze_R__canonical__Structures_Semimodule" class="id">HB.instance</span></span></a> <a id="HB_unnamed_factory_9" class="idref" href="#HB_unnamed_factory_9"><span class="id" title="definition"><span id="Schulze_R__canonical__Structures_Semimodule" class="id">Definition</span></span></a> <a id="HB_unnamed_factory_9" class="idref" href="#HB_unnamed_factory_9"><span class="id" title="definition"><span id="Schulze_R__canonical__Structures_Semimodule" class="id">_</span></span></a> <a id="HB_unnamed_factory_9" class="idref" href="#HB_unnamed_factory_9"><span class="id" title="definition"><span id="Schulze_R__canonical__Structures_Semimodule" class="id">:=</span></span></a> <a id="HB_unnamed_factory_9" class="idref" href="#HB_unnamed_factory_9"><span class="id" title="definition"><span id="Schulze_R__canonical__Structures_Semimodule" class="id">IsSemimodule.Build</span></span></a> <a id="HB_unnamed_factory_9" class="idref" href="#HB_unnamed_factory_9"><span class="id" title="definition"><span id="Schulze_R__canonical__Structures_Semimodule" class="id">R</span></span></a> <a id="HB_unnamed_factory_9" class="idref" href="#HB_unnamed_factory_9"><span class="id" title="definition"><span id="Schulze_R__canonical__Structures_Semimodule" class="id">R</span></span></a><br/>

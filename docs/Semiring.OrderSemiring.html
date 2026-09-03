@@ -19,6 +19,42 @@
 <h1 class="libtitle">Semiring.OrderSemiring</h1>
 
 <div class="code">
+</div>
+
+<div class="doc">
+<a id="lab103"></a><h1 class="section">Building semirings from a totally ordered carrier</h1>
+
+
+<div class="paragraph"> </div>
+
+    A recurring pattern in this development: the carrier comes with a total
+    order, addition is "pick the better of the two", and multiplication is
+    some composition operation.  This file isolates exactly what has to be
+    checked in that situation.
+
+<div class="paragraph"> </div>
+
+    The single obligation is that multiplication is MONOTONE in the order;
+    both distributive laws then follow, and the whole additive commutative
+    monoid comes for free from the order axioms alone.
+
+<div class="paragraph"> </div>
+
+    This is the abstract form of an argument carried out by hand for the
+    widest-shortest-path semiring in examples/WidestShortestPath.v.  The
+    naive encoding rejected at the top of that file fails precisely because
+    monotonicity fails: multiplying by a saturated "no path" value leaves
+    the lexicographic tiebreaker live, so it can reorder the results.
+
+<div class="paragraph"> </div>
+
+    Note which hypothesis does the work.  <span class="inlinecode"><a class="idref" href="Semiring.OrderSemiring.html#OrderMax.le_antisym"><span class="id" title="variable">le_antisym</span></a></span> is with respect to
+    Leibniz equality, so an order that merely ranks elements up to an
+    equivalence (Schulze's strict weak orders on vote-count pairs, where
+    every pairwise tie is equivalent) does not qualify until the equivalence
+    classes have been collapsed to canonical representatives. 
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">From</span> <span class="id" title="var">Stdlib</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <span class="id" title="library">Utf8</span>.<br/>
@@ -45,6 +81,13 @@ Addition: the maximum under <span class="inlinecode"><a class="idref" href="Semi
 &nbsp;&nbsp;<span class="id" title="keyword">Hypothesis</span> <a id="OrderMax.le_total" class="idref" href="#OrderMax.le_total"><span class="id" title="variable">le_total</span></a>   : <span class="id" title="keyword">∀</span> <a id="a:17" class="idref" href="#a:17"><span class="id" title="binder">a</span></a> <a id="b:18" class="idref" href="#b:18"><span class="id" title="binder">b</span></a>, <a class="idref" href="Semiring.OrderSemiring.html#OrderMax.le"><span class="id" title="variable">le</span></a> <a class="idref" href="Semiring.OrderSemiring.html#a:17"><span class="id" title="variable">a</span></a> <a class="idref" href="Semiring.OrderSemiring.html#b:18"><span class="id" title="variable">b</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#true"><span class="id" title="constructor">true</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#f031fe1957c4a4a8e217aa46af2b4e25"><span class="id" title="notation">∨</span></a> <a class="idref" href="Semiring.OrderSemiring.html#OrderMax.le"><span class="id" title="variable">le</span></a> <a class="idref" href="Semiring.OrderSemiring.html#b:18"><span class="id" title="variable">b</span></a> <a class="idref" href="Semiring.OrderSemiring.html#a:17"><span class="id" title="variable">a</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#true"><span class="id" title="constructor">true</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab104"></a><h2 class="section"><span class="inlinecode"><a class="idref" href="Semiring.OrderSemiring.html#add_max"><span class="id" title="definition">add_max</span></a></span> computes the maximum</h2>
+
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="add_max_r" class="idref" href="#add_max_r"><span class="id" title="lemma">add_max_r</span></a> : <span class="id" title="keyword">∀</span> <a id="u:21" class="idref" href="#u:21"><span class="id" title="binder">u</span></a> <a id="v:22" class="idref" href="#v:22"><span class="id" title="binder">v</span></a>, <a class="idref" href="Semiring.OrderSemiring.html#OrderMax.le"><span class="id" title="variable">le</span></a> <a class="idref" href="Semiring.OrderSemiring.html#u:21"><span class="id" title="variable">u</span></a> <a class="idref" href="Semiring.OrderSemiring.html#v:22"><span class="id" title="variable">v</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#true"><span class="id" title="constructor">true</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Semiring.OrderSemiring.html#add_max"><span class="id" title="definition">add_max</span></a> <a class="idref" href="Semiring.OrderSemiring.html#u:21"><span class="id" title="variable">u</span></a> <a class="idref" href="Semiring.OrderSemiring.html#v:22"><span class="id" title="variable">v</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="Semiring.OrderSemiring.html#v:22"><span class="id" title="variable">v</span></a>.<br/>
@@ -59,6 +102,13 @@ Addition: the maximum under <span class="inlinecode"><a class="idref" href="Semi
 &nbsp;&nbsp;<span class="id" title="keyword">Proof</span>. <span class="id" title="tactic">intros</span> <span class="id" title="var">u</span> <span class="id" title="var">v</span> <span class="id" title="var">Hvu</span>. <span class="id" title="tactic">unfold</span> <a class="idref" href="Semiring.OrderSemiring.html#add_max"><span class="id" title="definition">add_max</span></a>. <span class="id" title="tactic">rewrite</span> <span class="id" title="var">Hvu</span>. <span class="id" title="tactic">reflexivity</span>. <span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab105"></a><h2 class="section">The additive commutative monoid, from the order axioms alone</h2>
+
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="add_max_idem" class="idref" href="#add_max_idem"><span class="id" title="lemma">add_max_idem</span></a> : <span class="id" title="keyword">∀</span> <a id="u:25" class="idref" href="#u:25"><span class="id" title="binder">u</span></a>, <a class="idref" href="Semiring.OrderSemiring.html#add_max"><span class="id" title="definition">add_max</span></a> <a class="idref" href="Semiring.OrderSemiring.html#u:25"><span class="id" title="variable">u</span></a> <a class="idref" href="Semiring.OrderSemiring.html#u:25"><span class="id" title="variable">u</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="Semiring.OrderSemiring.html#u:25"><span class="id" title="variable">u</span></a>.<br/>
@@ -119,6 +169,13 @@ A greatest element absorbs, which is <span class="inlinecode"><a class="idref" h
 &nbsp;&nbsp;<span class="id" title="keyword">Proof</span>. <span class="id" title="tactic">intro</span> <span class="id" title="var">a</span>. <span class="id" title="tactic">exact</span> (<a class="idref" href="Semiring.OrderSemiring.html#add_max_l"><span class="id" title="lemma">add_max_l</span></a> <span class="id" title="var">top</span> <span class="id" title="var">a</span> (<span class="id" title="var">Htop</span> <span class="id" title="var">a</span>)). <span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab106"></a><h2 class="section">Distributivity, from monotonicity of multiplication</h2>
+
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Section</span> <a id="OrderMax.Distributivity" class="idref" href="#OrderMax.Distributivity"><span class="id" title="section">Distributivity</span></a>.<br/>
@@ -160,6 +217,22 @@ A greatest element absorbs, which is <span class="inlinecode"><a class="idref" h
 &nbsp;&nbsp;<span class="id" title="keyword">End</span> <a class="idref" href="Semiring.OrderSemiring.html#OrderMax.Distributivity"><span class="id" title="section">Distributivity</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab107"></a><h2 class="section">The meet is always monotone</h2>
+
+
+<div class="paragraph"> </div>
+
+      So when multiplication is the minimum of the same order — the
+      "strength of a path is its weakest link" reading — distributivity
+      is automatic and nothing has to be checked.  This is the case for
+      every one of Schulze's link-strength measures, and it is what
+      separates them from the widest-shortest-path encoding, where
+      multiplication acts component-wise instead. 
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="meet" class="idref" href="#meet"><span class="id" title="definition">meet</span></a> (<a id="u:60" class="idref" href="#u:60"><span class="id" title="binder">u</span></a> <a id="v:61" class="idref" href="#v:61"><span class="id" title="binder">v</span></a> : <a class="idref" href="Semiring.OrderSemiring.html#OrderMax.A"><span class="id" title="variable">A</span></a>) : <a class="idref" href="Semiring.OrderSemiring.html#OrderMax.A"><span class="id" title="variable">A</span></a> := <span class="id" title="keyword">if</span> <a class="idref" href="Semiring.OrderSemiring.html#OrderMax.le"><span class="id" title="variable">le</span></a> <a class="idref" href="Semiring.OrderSemiring.html#u:60"><span class="id" title="variable">u</span></a> <a class="idref" href="Semiring.OrderSemiring.html#v:61"><span class="id" title="variable">v</span></a> <span class="id" title="keyword">then</span> <a class="idref" href="Semiring.OrderSemiring.html#u:60"><span class="id" title="variable">u</span></a> <span class="id" title="keyword">else</span> <a class="idref" href="Semiring.OrderSemiring.html#v:61"><span class="id" title="variable">v</span></a>.<br/>
@@ -200,6 +273,19 @@ A greatest element absorbs, which is <span class="inlinecode"><a class="idref" h
 &nbsp;&nbsp;<span class="id" title="keyword">Proof</span>. <span class="id" title="tactic">exact</span> (<a class="idref" href="Semiring.OrderSemiring.html#mul_add_max_distr_r"><span class="id" title="lemma">mul_add_max_distr_r</span></a> <a class="idref" href="Semiring.OrderSemiring.html#meet"><span class="id" title="definition">meet</span></a> <a class="idref" href="Semiring.OrderSemiring.html#meet_mono_l"><span class="id" title="lemma">meet_mono_l</span></a>). <span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab108"></a><h2 class="section"><span class="inlinecode"><a class="idref" href="Semiring.OrderSemiring.html#meet"><span class="id" title="definition">meet</span></a></span> as the multiplicative structure</h2>
+
+
+<div class="paragraph"> </div>
+
+      Dual to the <span class="inlinecode"><a class="idref" href="Semiring.OrderSemiring.html#add_max"><span class="id" title="definition">add_max</span></a></span> laws above, and together with the two
+      distributivity corollaries these are exactly the obligations of a
+      bounded commutative semiring with + = join and * = meet. 
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="meet_l" class="idref" href="#meet_l"><span class="id" title="lemma">meet_l</span></a> : <span class="id" title="keyword">∀</span> <a id="u:74" class="idref" href="#u:74"><span class="id" title="binder">u</span></a> <a id="v:75" class="idref" href="#v:75"><span class="id" title="binder">v</span></a>, <a class="idref" href="Semiring.OrderSemiring.html#OrderMax.le"><span class="id" title="variable">le</span></a> <a class="idref" href="Semiring.OrderSemiring.html#u:74"><span class="id" title="variable">u</span></a> <a class="idref" href="Semiring.OrderSemiring.html#v:75"><span class="id" title="variable">v</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#true"><span class="id" title="constructor">true</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Semiring.OrderSemiring.html#meet"><span class="id" title="definition">meet</span></a> <a class="idref" href="Semiring.OrderSemiring.html#u:74"><span class="id" title="variable">u</span></a> <a class="idref" href="Semiring.OrderSemiring.html#v:75"><span class="id" title="variable">v</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="Semiring.OrderSemiring.html#u:74"><span class="id" title="variable">u</span></a>.<br/>

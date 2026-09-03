@@ -19,6 +19,44 @@
 <h1 class="libtitle">Examples.Schulzepath</h1>
 
 <div class="code">
+</div>
+
+<div class="doc">
+<a id="lab201"></a><h1 class="section">Schulzepath.v — the language (trace) semiring for the Schulze method</h1>
+
+
+<div class="paragraph"> </div>
+
+    Unlike the value+witness pair (which is NOT a semiring), the pure
+    LANGUAGE semiring below IS a genuine semiring: every axiom of the
+    HB <span class="inlinecode"><a class="idref" href="Semiring.Structures.html#Semiring"><span class="id" title="abbreviation">Semiring</span></a></span> is proved, exactly as <span class="inlinecode"><span class="id" title="var">Schulze.v</span></span> proves its max-min
+    semiring.
+
+<div class="paragraph"> </div>
+
+    Carrier :  Lang := Edge -&gt; bool
+               a predicate on edge-paths (the "set" of paths)
+    add     :  pointwise boolean OR (set union)
+    mul     :  concatenation product: L⊗M is the set of all p1++p2 with
+               L p1 and M p2 (pairwise concatenation)
+    0       :  the empty language (constant false)
+    1       :  the singleton {<font size=-2>&#9744;</font>} (the empty path)
+
+<div class="paragraph"> </div>
+
+    Union and pairwise concatenation distribute EXACTLY (no witness is
+    ever discarded), so distributivity holds — the property that failed
+    for the single-witness and value+set constructions.  The only price
+    is that <span class="inlinecode"><a class="idref" href="Semiring.Structures.html#add"><span class="id" title="definition">add</span></a></span> equality needs functional extensionality (functions
+    are compared pointwise).
+
+<div class="paragraph"> </div>
+
+    The Schulze fixed point <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#geom_sum"><span class="id" title="definition">geom_sum</span></a></span> <span class="inlinecode">(<a class="idref" href="Examples.Schulzepath.html#lift"><span class="id" title="definition">lift</span></a></span> <span class="inlinecode"><a class="idref" href="Examples.Profiles.html#M"><span class="id" title="abbreviation">M</span></a>)</span> <span class="inlinecode"><a class="idref" href="Semiring.CloneN.html#CloneReplacement.K"><span class="id" title="variable">K</span></a></span> <span class="inlinecode"><span class="id" title="var">i</span></span> <span class="inlinecode"><span class="id" title="var">j</span></span> then denotes the
+    set of all paths from i to j of length ≤ K, from which the value
+    M*<span class="inlinecode"><span class="id" title="var">i</span>,<span class="id" title="var">j</span></span> = max measure is recovered. 
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">From</span> <span class="id" title="var">Stdlib</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <span class="id" title="library">List</span> <span class="id" title="library">Utf8</span> <span class="id" title="library">Bool</span> <span class="id" title="library">PeanoNat</span> <span class="id" title="library">Lia</span> <span class="id" title="library">BinNatDef</span><br/>
@@ -29,6 +67,13 @@
 <span class="id" title="keyword">Import</span> <span class="id" title="module">ListNotations</span> <a class="idref" href="Semiring.Structures.html#SemiringNotations"><span class="id" title="module">SemiringNotations</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab202"></a><h1 class="section">The language semiring over the max-min semiring R (from Schulze.v)</h1>
+
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">Section</span> <a id="LanguageSemiring" class="idref" href="#LanguageSemiring"><span class="id" title="section">LanguageSemiring</span></a>.<br/>
@@ -168,6 +213,13 @@ Every split of <span class="inlinecode"><a class="idref" href="Semiring.SchulzeW
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab203"></a><h2 class="section">Pointwise algebraic laws</h2>
+
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="lang_mul_one_l_point" class="idref" href="#lang_mul_one_l_point"><span class="id" title="lemma">lang_mul_one_l_point</span></a> (<a id="L:27" class="idref" href="#L:27"><span class="id" title="binder">L</span></a> : <a class="idref" href="Examples.Schulzepath.html#Lang"><span class="id" title="definition">Lang</span></a>) (<a id="p:28" class="idref" href="#p:28"><span class="id" title="binder">p</span></a> : <a class="idref" href="Examples.Schulzepath.html#Edge"><span class="id" title="definition">Edge</span></a>) : <a class="idref" href="Examples.Schulzepath.html#lang_mul"><span class="id" title="definition">lang_mul</span></a> <a class="idref" href="Examples.Schulzepath.html#lang_one"><span class="id" title="definition">lang_one</span></a> <a class="idref" href="Examples.Schulzepath.html#L:27"><span class="id" title="variable">L</span></a> <a class="idref" href="Examples.Schulzepath.html#p:28"><span class="id" title="variable">p</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="Examples.Schulzepath.html#L:27"><span class="id" title="variable">L</span></a> <a class="idref" href="Examples.Schulzepath.html#p:28"><span class="id" title="variable">p</span></a>.<br/>
@@ -336,11 +388,37 @@ Left distributivity: (L ⊕ M) ⊗ N = (L⊗N) ⊕ (M⊗N).
 <span class="id" title="keyword">End</span> <a class="idref" href="Examples.Schulzepath.html#LanguageSemiring"><span class="id" title="section">LanguageSemiring</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab204"></a><h1 class="section">Bridging <span class="inlinecode"><a class="idref" href="Examples.Schulzepath.html#Lang"><span class="id" title="definition">Lang</span></a></span> back to the numeric Schulze fixed point</h1>
+
+
+<div class="paragraph"> </div>
+
+    <span class="inlinecode"><a class="idref" href="Examples.Schulzepath.html#lift"><span class="id" title="definition">lift</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.m"><span class="id" title="variable">m</span></a></span> <span class="inlinecode"><span class="id" title="var">i</span></span> <span class="inlinecode"><span class="id" title="var">j</span></span> is the singleton language of exactly the one direct
+    edge (i,j,m i j).  Kleene-closing <span class="inlinecode"><a class="idref" href="Examples.Schulzepath.html#lift"><span class="id" title="definition">lift</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.m"><span class="id" title="variable">m</span></a></span> therefore denotes, at
+    <span class="inlinecode"><span class="id" title="var">i</span>,<span class="id" title="var">j</span></span>, the set of every walk of a given length from i to j (every
+    witness kept -- see the header comment on why the value+witness
+    pairing could not do this).  <span class="inlinecode"><a class="idref" href="Examples.Schulzepath.html#pow_lift_sound"><span class="id" title="lemma">pow_lift_sound</span></a></span>/<span class="inlinecode"><a class="idref" href="Examples.Schulzepath.html#pow_lift_complete"><span class="id" title="lemma">pow_lift_complete</span></a></span>
+    show the numeric <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#pow"><span class="id" title="definition">pow</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.m"><span class="id" title="variable">m</span></a></span> <span class="inlinecode"><span class="id" title="var">n</span></span> <span class="inlinecode"><span class="id" title="var">i</span></span> <span class="inlinecode"><span class="id" title="var">j</span></span> is exactly the max measure over that
+    set: no counted walk exceeds it, and whenever the value is not the
+    bottom <span class="inlinecode">0</span> (i.e. some walk really exists), some counted walk attains
+    it exactly. 
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">Section</span> <a id="LangInstances" class="idref" href="#LangInstances"><span class="id" title="section">LangInstances</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<hr/>
+ additive commutative monoid (union) ---- 
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="addA_proof" class="idref" href="#addA_proof"><span class="id" title="lemma">addA_proof</span></a> : <span class="id" title="keyword">∀</span> <a id="x:47" class="idref" href="#x:47"><span class="id" title="binder">x</span></a> <a id="y:48" class="idref" href="#y:48"><span class="id" title="binder">y</span></a> <a id="z:49" class="idref" href="#z:49"><span class="id" title="binder">z</span></a> : <a class="idref" href="Examples.Schulzepath.html#Lang"><span class="id" title="definition">Lang</span></a>, <a class="idref" href="Examples.Schulzepath.html#lang_add"><span class="id" title="definition">lang_add</span></a> (<a class="idref" href="Examples.Schulzepath.html#lang_add"><span class="id" title="definition">lang_add</span></a> <a class="idref" href="Examples.Schulzepath.html#x:47"><span class="id" title="variable">x</span></a> <a class="idref" href="Examples.Schulzepath.html#y:48"><span class="id" title="variable">y</span></a>) <a class="idref" href="Examples.Schulzepath.html#z:49"><span class="id" title="variable">z</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="Examples.Schulzepath.html#lang_add"><span class="id" title="definition">lang_add</span></a> <a class="idref" href="Examples.Schulzepath.html#x:47"><span class="id" title="variable">x</span></a> (<a class="idref" href="Examples.Schulzepath.html#lang_add"><span class="id" title="definition">lang_add</span></a> <a class="idref" href="Examples.Schulzepath.html#y:48"><span class="id" title="variable">y</span></a> <a class="idref" href="Examples.Schulzepath.html#z:49"><span class="id" title="variable">z</span></a>).<br/>
@@ -363,6 +441,13 @@ Left distributivity: (L ⊕ M) ⊗ N = (L⊗N) ⊕ (M⊗N).
 &nbsp;&nbsp;&nbsp;&nbsp;<a id="HB_unnamed_factory_1" class="idref" href="#HB_unnamed_factory_1"><span class="id" title="definition"><span id="Schulzepath_Lang__canonical__Structures_CommutativeMonoid" class="id">lang_zero</span></span></a> <a id="HB_unnamed_factory_1" class="idref" href="#HB_unnamed_factory_1"><span class="id" title="definition"><span id="Schulzepath_Lang__canonical__Structures_CommutativeMonoid" class="id">lang_add</span></span></a> <a id="HB_unnamed_factory_1" class="idref" href="#HB_unnamed_factory_1"><span class="id" title="definition"><span id="Schulzepath_Lang__canonical__Structures_CommutativeMonoid" class="id">addA_proof</span></span></a> <a id="HB_unnamed_factory_1" class="idref" href="#HB_unnamed_factory_1"><span class="id" title="definition"><span id="Schulzepath_Lang__canonical__Structures_CommutativeMonoid" class="id">addC_proof</span></span></a> <a id="HB_unnamed_factory_1" class="idref" href="#HB_unnamed_factory_1"><span class="id" title="definition"><span id="Schulzepath_Lang__canonical__Structures_CommutativeMonoid" class="id">add0r_proof</span></span></a> <a id="HB_unnamed_factory_1" class="idref" href="#HB_unnamed_factory_1"><span class="id" title="definition"><span id="Schulzepath_Lang__canonical__Structures_CommutativeMonoid" class="id">addr0_proof</span></span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<hr/>
+ multiplicative semiring (concatenation product) ---- 
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="mulA_proof" class="idref" href="#mulA_proof"><span class="id" title="lemma">mulA_proof</span></a> : <span class="id" title="keyword">∀</span> <a id="a:54" class="idref" href="#a:54"><span class="id" title="binder">a</span></a> <a id="b:55" class="idref" href="#b:55"><span class="id" title="binder">b</span></a> <a id="c:56" class="idref" href="#c:56"><span class="id" title="binder">c</span></a> : <a class="idref" href="Examples.Schulzepath.html#Lang"><span class="id" title="definition">Lang</span></a>, <a class="idref" href="Examples.Schulzepath.html#lang_mul"><span class="id" title="definition">lang_mul</span></a> (<a class="idref" href="Examples.Schulzepath.html#lang_mul"><span class="id" title="definition">lang_mul</span></a> <a class="idref" href="Examples.Schulzepath.html#a:54"><span class="id" title="variable">a</span></a> <a class="idref" href="Examples.Schulzepath.html#b:55"><span class="id" title="variable">b</span></a>) <a class="idref" href="Examples.Schulzepath.html#c:56"><span class="id" title="variable">c</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="Examples.Schulzepath.html#lang_mul"><span class="id" title="definition">lang_mul</span></a> <a class="idref" href="Examples.Schulzepath.html#a:54"><span class="id" title="variable">a</span></a> (<a class="idref" href="Examples.Schulzepath.html#lang_mul"><span class="id" title="definition">lang_mul</span></a> <a class="idref" href="Examples.Schulzepath.html#b:55"><span class="id" title="variable">b</span></a> <a class="idref" href="Examples.Schulzepath.html#c:56"><span class="id" title="variable">c</span></a>).<br/>
@@ -403,7 +488,7 @@ Left distributivity: (L ⊕ M) ⊗ N = (L⊗N) ⊕ (M⊗N).
 </div>
 
 <div class="doc">
-<a id="lab25"></a><h1 class="section">Lang is now a genuine Semiring (not bounded, not commutative),</h1>
+<a id="lab205"></a><h1 class="section">Lang is now a genuine Semiring (not bounded, not commutative),</h1>
 
       so the generic <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#pow"><span class="id" title="definition">pow</span></a></span> / <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#geom_sum"><span class="id" title="definition">geom_sum</span></a></span> / <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#matrix_mul"><span class="id" title="definition">matrix_mul</span></a></span> machinery from
       <span class="inlinecode"><span class="id" title="library">MatN</span></span> applies to Lang-valued matrices.
@@ -710,6 +795,16 @@ COMPLETENESS: whenever the numeric value at <span class="inlinecode"><span class
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Computable extraction: an actual witness path, not just a <span class="inlinecode"><span class="id" title="keyword">Prop</span></span>-
+      level existence proof.  <span class="inlinecode"><a class="idref" href="Examples.Schulzepath.html#pow_lift_complete"><span class="id" title="lemma">pow_lift_complete</span></a></span>'s proof term is erased
+      by extraction, so <span class="inlinecode"><a class="idref" href="Examples.Schulzepath.html#pow_witness"><span class="id" title="definition">pow_witness</span></a></span> below is a genuine <span class="inlinecode"><span class="id" title="keyword">Fixpoint</span></span>
+      mirroring the same induction with a real decision procedure
+      (<span class="inlinecode"><a class="idref" href="Examples.Schulzepath.html#R_leb"><span class="id" title="definition">R_leb</span></a></span>) standing in for <span class="inlinecode"><a class="idref" href="Examples.Schulzepath.html#R_total_order"><span class="id" title="lemma">R_total_order</span></a></span>'s bare disjunction. 
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Fixpoint</span> <a id="nat_leb" class="idref" href="#nat_leb"><span class="id" title="definition">nat_leb</span></a> (<a id="n:185" class="idref" href="#n:185"><span class="id" title="binder">n</span></a> <a id="k:186" class="idref" href="#k:186"><span class="id" title="binder">k</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>) : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#bool"><span class="id" title="inductive">bool</span></a> :=<br/>
@@ -877,12 +972,22 @@ CORRECTNESS of the computable extractor: it matches
 <span class="id" title="keyword">End</span> <a class="idref" href="Examples.Schulzepath.html#LiftBridge"><span class="id" title="section">LiftBridge</span></a>.<br/>
 
 <br/>
-
-<br/>
 </div>
 
 <div class="doc">
-Kleene-closure matrix: <span class="inlinecode">(<a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.m"><span class="id" title="variable">m</span></a></span> <span class="inlinecode">+</span> <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#I"><span class="id" title="definition">I</span></a>)³</span> — the strongest-path strengths
+<a id="lab206"></a><h1 class="section">Schulze beatpath strengths via the Kleene closure</h1>
+
+
+<div class="paragraph"> </div>
+
+    The single power <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.m"><span class="id" title="variable">m</span></a>³</span> counts only exact length-3 paths; the Schulze
+    strongest-path strengths are the geometric closure
+        (m + I)³ = I + m + m² + m³
+    (paths of up to three hops — with |Node| = 4 candidates, every
+    simple path has at most 3 edges, so this is the fixed point). 
+<div class="paragraph"> </div>
+
+ Kleene-closure matrix: <span class="inlinecode">(<a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.m"><span class="id" title="variable">m</span></a></span> <span class="inlinecode">+</span> <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#I"><span class="id" title="definition">I</span></a>)³</span> — the strongest-path strengths
     between all candidate pairs (the Schulze beatpath matrix). 
 </div>
 <div class="code">
@@ -910,12 +1015,17 @@ Functional matrix-vector action of the beatpath closure.
 &nbsp;&nbsp;<a class="idref" href="Semiring.SemimoduleN.html#matrix_vector_action"><span class="id" title="definition">SemimoduleN.matrix_vector_action</span></a> (<a class="idref" href="Examples.Schulzepath.html#schulze_star"><span class="id" title="definition">schulze_star</span></a> <a class="idref" href="Examples.Schulzepath.html#m:236"><span class="id" title="variable">m</span></a>) <a class="idref" href="Examples.Schulzepath.html#v:237"><span class="id" title="variable">v</span></a>.<br/>
 
 <br/>
-
-<br/>
 </div>
 
 <div class="doc">
-An actual strongest beatpath from <span class="inlinecode"><span class="id" title="var">i</span></span> to <span class="inlinecode"><span class="id" title="var">j</span></span> (up to 3 hops), or
+A real, computable witness path -- not just the strength value.
+    <span class="inlinecode"><a class="idref" href="Examples.Schulzepath.html#pow_witness_spec"><span class="id" title="lemma">pow_witness_spec</span></a></span> guarantees <span class="inlinecode"><a class="idref" href="Examples.Schulzepath.html#schulze_witness_value"><span class="id" title="definition">schulze_witness_value</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.m"><span class="id" title="variable">m</span></a></span> <span class="inlinecode"><span class="id" title="var">i</span></span> <span class="inlinecode"><span class="id" title="var">j</span></span> equals
+    <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#pow"><span class="id" title="definition">pow</span></a></span> <span class="inlinecode">(<a class="idref" href="Semiring.MatN.html#matrix_add"><span class="id" title="definition">matrix_add</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.m"><span class="id" title="variable">m</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#I"><span class="id" title="definition">I</span></a>)</span> <span class="inlinecode">3</span> <span class="inlinecode"><span class="id" title="var">i</span></span> <span class="inlinecode"><span class="id" title="var">j</span></span>, which -- since a beatpath closure of
+    up to 3 hops over 4 candidates has already stabilised -- coincides
+    with <span class="inlinecode"><a class="idref" href="Examples.Schulzepath.html#schulze_star"><span class="id" title="definition">schulze_star</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.m"><span class="id" title="variable">m</span></a></span> <span class="inlinecode"><span class="id" title="var">i</span></span> <span class="inlinecode"><span class="id" title="var">j</span></span> above. 
+<div class="paragraph"> </div>
+
+ An actual strongest beatpath from <span class="inlinecode"><span class="id" title="var">i</span></span> to <span class="inlinecode"><span class="id" title="var">j</span></span> (up to 3 hops), or
     <span class="inlinecode"><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#None"><span class="id" title="constructor">None</span></a></span> if <span class="inlinecode"><span class="id" title="var">i</span></span> cannot reach <span class="inlinecode"><span class="id" title="var">j</span></span> within that bound. 
 </div>
 <div class="code">

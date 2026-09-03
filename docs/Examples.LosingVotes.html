@@ -19,6 +19,27 @@
 <h1 class="libtitle">Examples.LosingVotes</h1>
 
 <div class="code">
+</div>
+
+<div class="doc">
+<a id="lab179"></a><h1 class="section">Schulze's LOSING VOTES measure</h1>
+
+
+<div class="paragraph"> </div>
+
+    Schulze §2.1, Example 4.  The mirror image of winning votes: strength is
+    measured primarily by the OPPOSITION N<span class="inlinecode"><a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.f"><span class="id" title="variable">f</span></a>,<a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.e"><span class="id" title="variable">e</span></a></span>, smaller being stronger, and
+    among equal opposition more support is stronger.  The stratification into
+    victory / tie / defeat is unchanged, as are the collapsed ties.
+
+<div class="paragraph"> </div>
+
+    The development follows WinningVotes.v exactly, with the roles of the two
+    components exchanged, so <span class="inlinecode"><a class="idref" href="Examples.WinningVotes.html#vclass"><span class="id" title="definition">vclass</span></a></span> is reused from there.  As before the
+    order is characterised once in <span class="inlinecode"><a class="idref" href="Examples.LosingVotes.html#lle_spec"><span class="id" title="lemma">lle_spec</span></a></span> and every law then follows by
+    arithmetic. 
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">From</span> <span class="id" title="var">Stdlib</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <span class="id" title="library">Utf8</span> <span class="id" title="library">Arith</span> <span class="id" title="library">Lia</span>.<br/>
@@ -28,6 +49,13 @@
 <span class="id" title="keyword">From</span> <span class="id" title="var">Examples</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="Examples.WinningVotes.html#"><span class="id" title="library">WinningVotes</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab180"></a><h2 class="section">The order: less opposition first, then more support</h2>
+
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">Definition</span> <a id="lle" class="idref" href="#lle"><span class="id" title="definition">lle</span></a> (<a id="p:1" class="idref" href="#p:1"><span class="id" title="binder">p</span></a> <a id="q:2" class="idref" href="#q:2"><span class="id" title="binder">q</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>) : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#bool"><span class="id" title="inductive">bool</span></a> :=<br/>
@@ -115,6 +143,13 @@ The arithmetic content of <span class="inlinecode"><a class="idref" href="Exampl
 <span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab181"></a><h2 class="section">Normalisation: only the ties collapse, exactly as before</h2>
+
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">Lemma</span> <a id="lnorm_le" class="idref" href="#lnorm_le"><span class="id" title="lemma">lnorm_le</span></a> : <span class="id" title="keyword">∀</span> <a id="p:11" class="idref" href="#p:11"><span class="id" title="binder">p</span></a>, <a class="idref" href="Examples.LosingVotes.html#lle"><span class="id" title="definition">lle</span></a> <a class="idref" href="Examples.LosingVotes.html#p:11"><span class="id" title="variable">p</span></a> (<a class="idref" href="Examples.WinningVotes.html#wnorm"><span class="id" title="definition">wnorm</span></a> <a class="idref" href="Examples.LosingVotes.html#p:11"><span class="id" title="variable">p</span></a>) <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#true"><span class="id" title="constructor">true</span></a>.<br/>
@@ -155,6 +190,13 @@ The arithmetic content of <span class="inlinecode"><a class="idref" href="Exampl
 <span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab182"></a><h2 class="section">…packaged</h2>
+
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">Definition</span> <a id="lv_pre" class="idref" href="#lv_pre"><span class="id" title="definition">lv_pre</span></a> : <a class="idref" href="Semiring.ExtendOrder.html#PreSpec"><span class="id" title="record">PreSpec</span></a> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>) :=<br/>
@@ -199,12 +241,26 @@ The arithmetic content of <span class="inlinecode"><a class="idref" href="Exampl
 <span class="id" title="keyword">End</span> <a class="idref" href="Examples.LosingVotes.html#LosingVotesSchulze"><span class="id" title="section">LosingVotesSchulze</span></a>.<br/>
 
 <br/>
+</div>
 
-<br/>
+<div class="doc">
+<a id="lab183"></a><h2 class="section">Sanity checks, and the contrast with winning votes</h2>
+
+<div class="paragraph"> </div>
+
+ Clause 3: among victories, less opposition wins. 
+</div>
+<div class="code">
 <span class="id" title="keyword">Example</span> <a id="lv_less_opposition" class="idref" href="#lv_less_opposition"><span class="id" title="definition">lv_less_opposition</span></a> : <a class="idref" href="Examples.LosingVotes.html#lle"><span class="id" title="definition">lle</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">(</span></a>9<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">,</span></a> 4<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">)</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">(</span></a>7<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">,</span></a> 2<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">)</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#true"><span class="id" title="constructor">true</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#ba2b0e492d2b4675a0acf3ea92aabadd"><span class="id" title="notation">∧</span></a> <a class="idref" href="Examples.LosingVotes.html#lle"><span class="id" title="definition">lle</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">(</span></a>7<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">,</span></a> 2<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">)</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">(</span></a>9<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">,</span></a> 4<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">)</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#false"><span class="id" title="constructor">false</span></a>.<br/>
 <span class="id" title="keyword">Proof</span>. <span class="id" title="tactic">split</span>; <span class="id" title="tactic">reflexivity</span>. <span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Clause 4: with equal opposition, more support wins. 
+</div>
+<div class="code">
 <span class="id" title="keyword">Example</span> <a id="lv_more_support" class="idref" href="#lv_more_support"><span class="id" title="definition">lv_more_support</span></a> : <a class="idref" href="Examples.LosingVotes.html#lle"><span class="id" title="definition">lle</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">(</span></a>7<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">,</span></a> 2<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">)</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">(</span></a>9<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">,</span></a> 2<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">)</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#true"><span class="id" title="constructor">true</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#ba2b0e492d2b4675a0acf3ea92aabadd"><span class="id" title="notation">∧</span></a> <a class="idref" href="Examples.LosingVotes.html#lle"><span class="id" title="definition">lle</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">(</span></a>9<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">,</span></a> 2<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">)</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">(</span></a>7<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">,</span></a> 2<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">)</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#false"><span class="id" title="constructor">false</span></a>.<br/>
 <span class="id" title="keyword">Proof</span>. <span class="id" title="tactic">split</span>; <span class="id" title="tactic">reflexivity</span>. <span class="id" title="keyword">Qed</span>.<br/>
 

@@ -19,11 +19,57 @@
 <h1 class="libtitle">Examples.SharpnessWitness</h1>
 
 <div class="code">
+</div>
+
+<div class="doc">
+<a id="lab207"></a><h1 class="section">Machine-checked sharpness witnesses for the two characterisations.</h1>
+
+
+<div class="paragraph"> </div>
+
+    Two carriers isolate the axioms of the transitivity and winner
+    characterisations in SocialchoiceN.v:
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> the TROPICAL semiring (min-plus, from Shortestpath.v) is bounded
+        and selective but lacks the meet property, and admits a 3x3
+        matrix whose beat relation is a 3-cycle with no winner at all;
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> the DIAMOND lattice D4 = {bot, p, q, top} with join/meet has the
+        meet property but is not selective, and yet EVERY matrix on
+        three alternatives admits a winner — checked by enumerating all
+        4^9 matrices — which is why the winner characterisation needs a
+        fourth alternative and why four is optimal.
+
+</li>
+</ul>
+
+<div class="paragraph"> </div>
+
+    The exhaustive facts are established by reflection: a boolean
+    winner-checker is proved sound against schulze_winner, and a single
+    vm_compute discharges the quantification over all tabulated matrices. 
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">From</span> <span class="id" title="var">Stdlib</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <span class="id" title="library">List</span> <span class="id" title="library">Psatz</span> <span class="id" title="library">Utf8</span>.<br/>
 <span class="id" title="keyword">From</span> <span class="id" title="var">HB</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <span class="id" title="library">structures</span>.<br/>
 <span class="id" title="keyword">From</span> <span class="id" title="var">Semiring</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="Semiring.Structures.html#"><span class="id" title="library">Structures</span></a> <a class="idref" href="Semiring.OrelN.html#"><span class="id" title="library">OrelN</span></a> <a class="idref" href="Semiring.MatN.html#"><span class="id" title="library">MatN</span></a> <a class="idref" href="Semiring.SemimoduleN.html#"><span class="id" title="library">SemimoduleN</span></a> <a class="idref" href="Semiring.SocialchoiceN.html#"><span class="id" title="library">SocialchoiceN</span></a>.<br/>
+</div>
+
+<div class="doc">
+Schulze is imported first so that Shortestpath's <span class="inlinecode"><a class="idref" href="Examples.WinningVotes.html#WinningVotesSchulze.Node"><span class="id" title="variable">Node</span></a></span>, <span class="inlinecode"><a class="idref" href="Examples.Wikimedia.html#R"><span class="id" title="inductive">R</span></a></span>, and
+    constructor names shadow its homonyms; the max-min carrier of the worked
+    example below is referred to by its qualified name <span class="inlinecode"><span class="id" title="var">Schulze.R</span></span>. 
+</div>
+<div class="code">
 <span class="id" title="keyword">From</span> <span class="id" title="var">Examples</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="Examples.Schulze.html#"><span class="id" title="library">Schulze</span></a> <a class="idref" href="Examples.Shortestpath.html#"><span class="id" title="library">Shortestpath</span></a>.<br/>
 <span class="id" title="keyword">Import</span> <span class="id" title="module">ListNotations</span> <a class="idref" href="Semiring.Structures.html#SemiringNotations"><span class="id" title="module">SemiringNotations</span></a>.<br/>
 
@@ -31,6 +77,19 @@
 <span class="id" title="keyword">Local Infix</span> <a id="3ccab6e0e5cec5d8305913b11c2aa678" class="idref" href="#3ccab6e0e5cec5d8305913b11c2aa678"><span class="id" title="notation">&quot;</span></a>≤" := <a class="idref" href="Semiring.OrelN.html#Orel"><span class="id" title="definition">Orel</span></a> (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 70).<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab208"></a><h1 class="section">Part 1: the tropical semiring breaks winner existence at three.</h1>
+
+
+<div class="paragraph"> </div>
+
+    Forward hops cost 1, backward hops cost 2.  Being closer is better
+    (the natural order of min-plus is REVERSED numeric order), so every
+    alternative beats its successor round the triangle. 
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">Section</span> <a id="Tropical" class="idref" href="#Tropical"><span class="id" title="section">Tropical</span></a>.<br/>
@@ -45,6 +104,12 @@
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+The tropical semiring is selective... 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="tropical_selective" class="idref" href="#tropical_selective"><span class="id" title="lemma">tropical_selective</span></a> : <span class="id" title="keyword">∀</span> <a id="x:5" class="idref" href="#x:5"><span class="id" title="binder">x</span></a> <a id="y:6" class="idref" href="#y:6"><span class="id" title="binder">y</span></a> : <a class="idref" href="Examples.Shortestpath.html#R"><span class="id" title="inductive">R</span></a>, <a class="idref" href="Examples.SharpnessWitness.html#x:5"><span class="id" title="variable">x</span></a> <a class="idref" href="Semiring.Structures.html#5a105efba9ec815920c0186c077a884f"><span class="id" title="notation">+</span></a> <a class="idref" href="Examples.SharpnessWitness.html#y:6"><span class="id" title="variable">y</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="Examples.SharpnessWitness.html#x:5"><span class="id" title="variable">x</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#f031fe1957c4a4a8e217aa46af2b4e25"><span class="id" title="notation">∨</span></a> <a class="idref" href="Examples.SharpnessWitness.html#x:5"><span class="id" title="variable">x</span></a> <a class="idref" href="Semiring.Structures.html#5a105efba9ec815920c0186c077a884f"><span class="id" title="notation">+</span></a> <a class="idref" href="Examples.SharpnessWitness.html#y:6"><span class="id" title="variable">y</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="Examples.SharpnessWitness.html#y:6"><span class="id" title="variable">y</span></a>.<br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Proof</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">intros</span> [<span class="id" title="var">x</span>|] [<span class="id" title="var">y</span>|]; <span class="id" title="var">cbn</span>; <span class="id" title="tactic">auto</span>.<br/>
@@ -53,6 +118,13 @@
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+...but it does not have the meet property: 1 ≤ 1 twice over, yet
+      1 * 1 = 2 and 1 ≤ 2 fails in the reversed order. 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="tropical_no_meet" class="idref" href="#tropical_no_meet"><span class="id" title="lemma">tropical_no_meet</span></a> :<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#63a68285c81db8f9bc456233bb9ed181"><span class="id" title="notation">¬</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#63a68285c81db8f9bc456233bb9ed181"><span class="id" title="notation">(</span></a><span class="id" title="keyword">∀</span> <a id="m:7" class="idref" href="#m:7"><span class="id" title="binder">m</span></a> <a id="a:8" class="idref" href="#a:8"><span class="id" title="binder">a</span></a> <a id="b:9" class="idref" href="#b:9"><span class="id" title="binder">b</span></a> : <a class="idref" href="Examples.Shortestpath.html#R"><span class="id" title="inductive">R</span></a>, <a class="idref" href="Examples.SharpnessWitness.html#m:7"><span class="id" title="variable">m</span></a> <a class="idref" href="Examples.SharpnessWitness.html#3ccab6e0e5cec5d8305913b11c2aa678"><span class="id" title="notation">≤</span></a> <a class="idref" href="Examples.SharpnessWitness.html#a:8"><span class="id" title="variable">a</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Examples.SharpnessWitness.html#m:7"><span class="id" title="variable">m</span></a> <a class="idref" href="Examples.SharpnessWitness.html#3ccab6e0e5cec5d8305913b11c2aa678"><span class="id" title="notation">≤</span></a> <a class="idref" href="Examples.SharpnessWitness.html#b:9"><span class="id" title="variable">b</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Examples.SharpnessWitness.html#m:7"><span class="id" title="variable">m</span></a> <a class="idref" href="Examples.SharpnessWitness.html#3ccab6e0e5cec5d8305913b11c2aa678"><span class="id" title="notation">≤</span></a> <a class="idref" href="Examples.SharpnessWitness.html#a:8"><span class="id" title="variable">a</span></a> <a class="idref" href="Semiring.Structures.html#df06337ab011822b2792d206fc407479"><span class="id" title="notation">×</span></a> <a class="idref" href="Examples.SharpnessWitness.html#b:9"><span class="id" title="variable">b</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#63a68285c81db8f9bc456233bb9ed181"><span class="id" title="notation">)</span></a>.<br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Proof</span>.<br/>
@@ -96,6 +168,13 @@ The beat relation of M0 is the 3-cycle A ≻ B ≻ C ≻ A: everyone is
 <span class="id" title="keyword">End</span> <a class="idref" href="Examples.SharpnessWitness.html#Tropical"><span class="id" title="section">Tropical</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab209"></a><h1 class="section">Part 2: the diamond lattice.</h1>
+
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">Inductive</span> <a id="D4" class="idref" href="#D4"><span class="id" title="definition, inductive"><span id="D4_rect" class="id"><span id="D4_ind" class="id"><span id="D4_rec" class="id"><span id="D4_sind" class="id">D4</span></span></span></span></span></a> : <span class="id" title="keyword">Type</span> := <a id="Dbot" class="idref" href="#Dbot"><span class="id" title="constructor">Dbot</span></a> | <a id="Dp" class="idref" href="#Dp"><span class="id" title="constructor">Dp</span></a> | <a id="Dq" class="idref" href="#Dq"><span class="id" title="constructor">Dq</span></a> | <a id="Dtop" class="idref" href="#Dtop"><span class="id" title="constructor">Dtop</span></a>.<br/>
@@ -245,6 +324,13 @@ The diamond admits no CYCLIC TRIPLE: no three values, each strictly
 <span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab210"></a><h1 class="section">Reflection machinery: a sound boolean winner checker.</h1>
+
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">Section</span> <a id="Reflection" class="idref" href="#Reflection"><span class="id" title="section">Reflection</span></a>.<br/>
@@ -283,6 +369,12 @@ The diamond admits no CYCLIC TRIPLE: no three values, each strictly
 &nbsp;&nbsp;<span class="id" title="keyword">Proof</span>. <span class="id" title="tactic">intros</span> [| |]; <span class="id" title="var">cbn</span>; <span class="id" title="tactic">auto</span>. <span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+A matrix tabulated as nine nested pairs, row-major. 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="T9" class="idref" href="#T9"><span class="id" title="definition">T9</span></a> : <span class="id" title="keyword">Type</span> :=<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;(<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">(((((((</span></a><a class="idref" href="Examples.SharpnessWitness.html#D4"><span class="id" title="inductive">D4</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="Examples.SharpnessWitness.html#D4"><span class="id" title="inductive">D4</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">)</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="Examples.SharpnessWitness.html#D4"><span class="id" title="inductive">D4</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">)</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="Examples.SharpnessWitness.html#D4"><span class="id" title="inductive">D4</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">)</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="Examples.SharpnessWitness.html#D4"><span class="id" title="inductive">D4</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">)</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="Examples.SharpnessWitness.html#D4"><span class="id" title="inductive">D4</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">)</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="Examples.SharpnessWitness.html#D4"><span class="id" title="inductive">D4</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">)</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="Examples.SharpnessWitness.html#D4"><span class="id" title="inductive">D4</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">)</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="Examples.SharpnessWitness.html#D4"><span class="id" title="inductive">D4</span></a>).<br/>
 
@@ -327,6 +419,12 @@ The diamond admits no CYCLIC TRIPLE: no three values, each strictly
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+The closure of a tabulated matrix, computed once per table. 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="star9" class="idref" href="#star9"><span class="id" title="definition">star9</span></a> (<a id="t:75" class="idref" href="#t:75"><span class="id" title="binder">t</span></a> : <a class="idref" href="Examples.SharpnessWitness.html#T9"><span class="id" title="definition">T9</span></a>) : <a class="idref" href="Examples.SharpnessWitness.html#T9"><span class="id" title="definition">T9</span></a> :=<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">let</span> <a id="Mf:76" class="idref" href="#Mf:76"><span class="id" title="binder">Mf</span></a> := <a class="idref" href="Examples.SharpnessWitness.html#mtx"><span class="id" title="definition">mtx</span></a> <a class="idref" href="Examples.SharpnessWitness.html#t:75"><span class="id" title="variable">t</span></a> <span class="id" title="tactic">in</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">((((((((</span></a><a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <a class="idref" href="Examples.SharpnessWitness.html#Mf:76"><span class="id" title="variable">Mf</span></a> <a class="idref" href="Examples.Shortestpath.html#A"><span class="id" title="constructor">A</span></a> <a class="idref" href="Examples.Shortestpath.html#A"><span class="id" title="constructor">A</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">,</span></a> <a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <a class="idref" href="Examples.SharpnessWitness.html#Mf:76"><span class="id" title="variable">Mf</span></a> <a class="idref" href="Examples.Shortestpath.html#A"><span class="id" title="constructor">A</span></a> <a class="idref" href="Examples.Shortestpath.html#B"><span class="id" title="constructor">B</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">),</span></a> <a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <a class="idref" href="Examples.SharpnessWitness.html#Mf:76"><span class="id" title="variable">Mf</span></a> <a class="idref" href="Examples.Shortestpath.html#A"><span class="id" title="constructor">A</span></a> <a class="idref" href="Examples.Shortestpath.html#C"><span class="id" title="constructor">C</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">),</span></a><br/>
@@ -348,6 +446,12 @@ The diamond admits no CYCLIC TRIPLE: no three values, each strictly
 &nbsp;&nbsp;<span class="id" title="keyword">Proof</span>. <span class="id" title="tactic">intros</span> <span class="id" title="var">t</span> [| |] [| |]; <span class="id" title="tactic">reflexivity</span>. <span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a></span> beats <span class="inlinecode"><a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.b"><span class="id" title="variable">b</span></a></span>, read off a closure table. 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="beatsb" class="idref" href="#beatsb"><span class="id" title="definition">beatsb</span></a> (<a id="s:86" class="idref" href="#s:86"><span class="id" title="binder">s</span></a> : <a class="idref" href="Examples.SharpnessWitness.html#T9"><span class="id" title="definition">T9</span></a>) (<a id="a:87" class="idref" href="#a:87"><span class="id" title="binder">a</span></a> <a id="b:88" class="idref" href="#b:88"><span class="id" title="binder">b</span></a> : <a class="idref" href="Examples.Shortestpath.html#Node"><span class="id" title="inductive">Node</span></a>) : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#bool"><span class="id" title="inductive">bool</span></a> :=<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#andb"><span class="id" title="definition">andb</span></a> (<a class="idref" href="Examples.SharpnessWitness.html#Deqb"><span class="id" title="definition">Deqb</span></a> (<a class="idref" href="Examples.SharpnessWitness.html#getS"><span class="id" title="definition">getS</span></a> <a class="idref" href="Examples.SharpnessWitness.html#s:86"><span class="id" title="variable">s</span></a> <a class="idref" href="Examples.SharpnessWitness.html#b:88"><span class="id" title="variable">b</span></a> <a class="idref" href="Examples.SharpnessWitness.html#a:87"><span class="id" title="variable">a</span></a> <a class="idref" href="Semiring.Structures.html#5a105efba9ec815920c0186c077a884f"><span class="id" title="notation">+</span></a> <a class="idref" href="Examples.SharpnessWitness.html#getS"><span class="id" title="definition">getS</span></a> <a class="idref" href="Examples.SharpnessWitness.html#s:86"><span class="id" title="variable">s</span></a> <a class="idref" href="Examples.SharpnessWitness.html#a:87"><span class="id" title="variable">a</span></a> <a class="idref" href="Examples.SharpnessWitness.html#b:88"><span class="id" title="variable">b</span></a>) (<a class="idref" href="Examples.SharpnessWitness.html#getS"><span class="id" title="definition">getS</span></a> <a class="idref" href="Examples.SharpnessWitness.html#s:86"><span class="id" title="variable">s</span></a> <a class="idref" href="Examples.SharpnessWitness.html#a:87"><span class="id" title="variable">a</span></a> <a class="idref" href="Examples.SharpnessWitness.html#b:88"><span class="id" title="variable">b</span></a>))<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#negb"><span class="id" title="definition">negb</span></a> (<a class="idref" href="Examples.SharpnessWitness.html#Deqb"><span class="id" title="definition">Deqb</span></a> (<a class="idref" href="Examples.SharpnessWitness.html#getS"><span class="id" title="definition">getS</span></a> <a class="idref" href="Examples.SharpnessWitness.html#s:86"><span class="id" title="variable">s</span></a> <a class="idref" href="Examples.SharpnessWitness.html#b:88"><span class="id" title="variable">b</span></a> <a class="idref" href="Examples.SharpnessWitness.html#a:87"><span class="id" title="variable">a</span></a>) (<a class="idref" href="Examples.SharpnessWitness.html#getS"><span class="id" title="definition">getS</span></a> <a class="idref" href="Examples.SharpnessWitness.html#s:86"><span class="id" title="variable">s</span></a> <a class="idref" href="Examples.SharpnessWitness.html#a:87"><span class="id" title="variable">a</span></a> <a class="idref" href="Examples.SharpnessWitness.html#b:88"><span class="id" title="variable">b</span></a>))).<br/>
@@ -402,6 +506,14 @@ The diamond admits no CYCLIC TRIPLE: no three values, each strictly
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Pointwise congruence for the closure, to move between a matrix and
+      its tabulation.  <span class="inlinecode"><a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a></span>'s body is built from <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#sum"><span class="id" title="definition">sum</span></a></span>, so this is a
+      straightforward induction. 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="pow_ext" class="idref" href="#pow_ext"><span class="id" title="lemma">pow_ext</span></a> (<a id="M:102" class="idref" href="#M:102"><span class="id" title="binder">M</span></a> <a id="N:103" class="idref" href="#N:103"><span class="id" title="binder">N</span></a> : @<a class="idref" href="Semiring.OrelN.html#Matrix"><span class="id" title="definition">Matrix</span></a> <a class="idref" href="Examples.Shortestpath.html#Node"><span class="id" title="inductive">Node</span></a> <a class="idref" href="Examples.SharpnessWitness.html#D4"><span class="id" title="inductive">D4</span></a>)<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;(<a id="Hpt:106" class="idref" href="#Hpt:106"><span class="id" title="binder">Hpt</span></a> : <span class="id" title="keyword">∀</span> <a id="x:104" class="idref" href="#x:104"><span class="id" title="binder">x</span></a> <a id="y:105" class="idref" href="#y:105"><span class="id" title="binder">y</span></a>, <a class="idref" href="Examples.SharpnessWitness.html#M:102"><span class="id" title="variable">M</span></a> <a class="idref" href="Examples.SharpnessWitness.html#x:104"><span class="id" title="variable">x</span></a> <a class="idref" href="Examples.SharpnessWitness.html#y:105"><span class="id" title="variable">y</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="Examples.SharpnessWitness.html#N:103"><span class="id" title="variable">N</span></a> <a class="idref" href="Examples.SharpnessWitness.html#x:104"><span class="id" title="variable">x</span></a> <a class="idref" href="Examples.SharpnessWitness.html#y:105"><span class="id" title="variable">y</span></a>) :<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">∀</span> (<a id="k:107" class="idref" href="#k:107"><span class="id" title="binder">k</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>) (<a id="x:108" class="idref" href="#x:108"><span class="id" title="binder">x</span></a> <a id="y:109" class="idref" href="#y:109"><span class="id" title="binder">y</span></a> : <a class="idref" href="Examples.Shortestpath.html#Node"><span class="id" title="inductive">Node</span></a>), <a class="idref" href="Semiring.MatN.html#pow"><span class="id" title="definition">pow</span></a> <a class="idref" href="Examples.SharpnessWitness.html#M:102"><span class="id" title="variable">M</span></a> <a class="idref" href="Examples.SharpnessWitness.html#k:107"><span class="id" title="variable">k</span></a> <a class="idref" href="Examples.SharpnessWitness.html#x:108"><span class="id" title="variable">x</span></a> <a class="idref" href="Examples.SharpnessWitness.html#y:109"><span class="id" title="variable">y</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="Semiring.MatN.html#pow"><span class="id" title="definition">pow</span></a> <a class="idref" href="Examples.SharpnessWitness.html#N:103"><span class="id" title="variable">N</span></a> <a class="idref" href="Examples.SharpnessWitness.html#k:107"><span class="id" title="variable">k</span></a> <a class="idref" href="Examples.SharpnessWitness.html#x:108"><span class="id" title="variable">x</span></a> <a class="idref" href="Examples.SharpnessWitness.html#y:109"><span class="id" title="variable">y</span></a>.<br/>
@@ -469,6 +581,13 @@ A winner of a concrete matrix, certified by the boolean checker.
 <span class="id" title="keyword">End</span> <a class="idref" href="Examples.SharpnessWitness.html#Reflection"><span class="id" title="section">Reflection</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+The exhaustive check: one vm_compute over all 4^9 = 262144 matrices.
+    It is taking too much time though. 
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">Lemma</span> <a id="diamond_all_tabs_have_winner" class="idref" href="#diamond_all_tabs_have_winner"><span class="id" title="lemma">diamond_all_tabs_have_winner</span></a> :<br/>
@@ -500,11 +619,25 @@ Over the diamond, EVERY profile on three alternatives has a winner —
 <span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+The order-3 counts over the diamond with diagonal top: exactly 36 of
+    the 4096 matrices have an intransitive beat relation, and none has a
+    cyclic one. 
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">Section</span> <a id="Counts" class="idref" href="#Counts"><span class="id" title="section">Counts</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Six off-diagonal entries; diagonal fixed at top. 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="T6" class="idref" href="#T6"><span class="id" title="definition">T6</span></a> : <span class="id" title="keyword">Type</span> := (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">((((</span></a><a class="idref" href="Examples.SharpnessWitness.html#D4"><span class="id" title="inductive">D4</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="Examples.SharpnessWitness.html#D4"><span class="id" title="inductive">D4</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">)</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="Examples.SharpnessWitness.html#D4"><span class="id" title="inductive">D4</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">)</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="Examples.SharpnessWitness.html#D4"><span class="id" title="inductive">D4</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">)</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="Examples.SharpnessWitness.html#D4"><span class="id" title="inductive">D4</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">)</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="Examples.SharpnessWitness.html#D4"><span class="id" title="inductive">D4</span></a>).<br/>
 
 <br/>
@@ -548,11 +681,33 @@ Over the diamond, EVERY profile on three alternatives has a winner —
 <span class="id" title="keyword">End</span> <a class="idref" href="Examples.SharpnessWitness.html#Counts"><span class="id" title="section">Counts</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab211"></a><h1 class="section">Part 3: the Level-1 rows of the classification are tight.</h1>
+
+
+<div class="paragraph"> </div>
+
+    Over the diamond, the hypotheses of the Smith criterion, of Condorcet
+    consistency and of the resolution step can all hold while their
+    conclusions fail.  Each failure is one concrete 3x3 matrix, and each
+    works by the same mechanism: two incomparable path strengths join to
+    a value that is no link strength, which selectivity would forbid. 
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">Section</span> <a id="Level1Tight" class="idref" href="#Level1Tight"><span class="id" title="section">Level1Tight</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<hr/>
+ Smith: the threshold hypotheses hold, a winner escapes B1. ---- 
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="Msmith" class="idref" href="#Msmith"><span class="id" title="definition">Msmith</span></a> : <a class="idref" href="Examples.Shortestpath.html#Node"><span class="id" title="inductive">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Examples.Shortestpath.html#Node"><span class="id" title="inductive">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Examples.SharpnessWitness.html#D4"><span class="id" title="inductive">D4</span></a> :=<br/>
@@ -588,6 +743,14 @@ Over the diamond, EVERY profile on three alternatives has a winner —
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<hr/>
+ Condorcet: a Condorcet winner satisfying the cross-pair
+           condition that still fails to be a strict winner. ---- 
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="Mcond" class="idref" href="#Mcond"><span class="id" title="definition">Mcond</span></a> : <a class="idref" href="Examples.Shortestpath.html#Node"><span class="id" title="inductive">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Examples.Shortestpath.html#Node"><span class="id" title="inductive">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Examples.SharpnessWitness.html#D4"><span class="id" title="inductive">D4</span></a> :=<br/>
@@ -617,6 +780,13 @@ Over the diamond, EVERY profile on three alternatives has a winner —
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<hr/>
+ Resolution step: an untied winner that is not unique. ---- 
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="Muntied" class="idref" href="#Muntied"><span class="id" title="definition">Muntied</span></a> : <a class="idref" href="Examples.Shortestpath.html#Node"><span class="id" title="inductive">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Examples.Shortestpath.html#Node"><span class="id" title="inductive">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Examples.SharpnessWitness.html#D4"><span class="id" title="inductive">D4</span></a> :=<br/>
@@ -643,6 +813,17 @@ Over the diamond, EVERY profile on three alternatives has a winner —
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<hr/>
+ Smith-IIA (isolation form): every hypothesis of
+           <span class="inlinecode"><a class="idref" href="Semiring.IsolateN.html#smith_iia_isolate"><span class="id" title="lemma">smith_iia_isolate</span></a></span> holds, yet isolating the non-Smith
+           alternative changes the beat relation on B1: the beat B &gt; C
+           travelled through the outside alternative A, its two routes
+           joining to top, and dies with it. ---- 
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="Miia" class="idref" href="#Miia"><span class="id" title="definition">Miia</span></a> : <a class="idref" href="Examples.Shortestpath.html#Node"><span class="id" title="inductive">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Examples.Shortestpath.html#Node"><span class="id" title="inductive">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Examples.SharpnessWitness.html#D4"><span class="id" title="inductive">D4</span></a> :=<br/>
@@ -682,6 +863,17 @@ Over the diamond, EVERY profile on three alternatives has a winner —
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<hr/>
+ Smith-IIA, strong-removal form (Schulze 4.7.6): every
+           hypothesis of <span class="inlinecode"><a class="idref" href="Semiring.IsolateN.html#smith_iia_isolate_strong"><span class="id" title="lemma">smith_iia_isolate_strong</span></a></span> holds, yet isolating
+           the strong alternative A changes the beat relation on B2: the
+           tie between B and C rested on C's route to B through A, whose
+           strength q joined with the direct p to top, and dies with A. ---- 
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="Mstrong" class="idref" href="#Mstrong"><span class="id" title="definition">Mstrong</span></a> : <a class="idref" href="Examples.Shortestpath.html#Node"><span class="id" title="inductive">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Examples.Shortestpath.html#Node"><span class="id" title="inductive">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Examples.SharpnessWitness.html#D4"><span class="id" title="inductive">D4</span></a> :=<br/>
@@ -721,6 +913,29 @@ Over the diamond, EVERY profile on three alternatives has a winner —
 <span class="id" title="keyword">End</span> <a class="idref" href="Examples.SharpnessWitness.html#Level1Tight"><span class="id" title="section">Level1Tight</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab212"></a><h1 class="section">Part 4: the worked beatpath example, machine-checked.</h1>
+
+
+<div class="paragraph"> </div>
+
+    The introductory example of the semiring reading: over the max-min
+    carrier (nat extended with infinity, from Schulze.v, whose zero
+    <span class="inlinecode"><a class="idref" href="Examples.Wikimedia.html#Left"><span class="id" title="constructor">Left</span></a></span> <span class="inlinecode">0</span> plays the bottom), the profile with direct links
+    A -&gt; B at 8, B -&gt; C at 6, and C -&gt; A at 4 has closure
+
+<div class="paragraph"> </div>
+
+        star = <span class="inlinecode">[<span class="id" title="var">top</span>,</span> <span class="inlinecode">8,</span> <span class="inlinecode">6],</span> <span class="inlinecode">[4,</span> <span class="inlinecode"><span class="id" title="var">top</span>,</span> <span class="inlinecode">6],</span> <span class="inlinecode">[4,</span> <span class="inlinecode">4,</span> <span class="inlinecode"><span class="id" title="var">top</span>]</span>,
+
+<div class="paragraph"> </div>
+
+    so the beat relation is the strict order A &gt; B &gt; C and A is the
+    unique winner: the beatpaths break the direct cycle. 
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">Section</span> <a id="WorkedExample" class="idref" href="#WorkedExample"><span class="id" title="section">WorkedExample</span></a>.<br/>
@@ -792,6 +1007,23 @@ A is the unique winner.
 <span class="id" title="keyword">End</span> <a class="idref" href="Examples.SharpnessWitness.html#WorkedExample"><span class="id" title="section">WorkedExample</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab213"></a><h1 class="section">The four-alternative witness over the diamond.</h1>
+
+
+<div class="paragraph"> </div>
+
+    This is not a new construction.  It is the alternating square of the
+    winner-existence characterisation, <span class="inlinecode"><a class="idref" href="Semiring.SchulzeWitnessN.html#sq_no_winner"><span class="id" title="lemma">sq_no_winner</span></a></span>, instantiated at
+    x := Dp and y := Dq.  The two facts that construction needs,
+    x * y &lt; y and y * x &lt; x, hold over the diamond because Dp and Dq are
+    incomparable and their meet is Dbot.  Together with
+    <span class="inlinecode"><a class="idref" href="Examples.SharpnessWitness.html#diamond_every_profile_has_winner"><span class="id" title="lemma">diamond_every_profile_has_winner</span></a></span> this shows four alternatives are
+    both sufficient and necessary to refute winner existence over D4. 
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">Inductive</span> <a id="Node4" class="idref" href="#Node4"><span class="id" title="definition, inductive"><span id="Node4_rect" class="id"><span id="Node4_ind" class="id"><span id="Node4_rec" class="id"><span id="Node4_sind" class="id">Node4</span></span></span></span></span></a> := <a id="W1" class="idref" href="#W1"><span class="id" title="constructor">W1</span></a> | <a id="W2" class="idref" href="#W2"><span class="id" title="constructor">W2</span></a> | <a id="W3" class="idref" href="#W3"><span class="id" title="constructor">W3</span></a> | <a id="W4" class="idref" href="#W4"><span class="id" title="constructor">W4</span></a>.<br/>

@@ -19,6 +19,17 @@
 <h1 class="libtitle">Semiring.MatN</h1>
 
 <div class="code">
+</div>
+
+<div class="doc">
+Matrix Operations over a Finite Semiring (list-based)
+    File: MatN.v
+    Matrix is `Node -&gt; Node -&gt; R` where `Node` is a finite type
+    and `R` is a semiring.  This file provides both functional
+    (high‑level) and list‑based (computationally efficient) matrix
+    operations together with proofs of their equivalence. 
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">From</span> <span class="id" title="var">Stdlib</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <span class="id" title="library">List</span> <span class="id" title="library">Utf8</span><br/>
@@ -29,6 +40,14 @@
 <span class="id" title="keyword">Import</span> <span class="id" title="module">ListNotations</span> <a class="idref" href="Semiring.Structures.html#SemiringNotations"><span class="id" title="module">SemiringNotations</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Section: Generic Definitions
+    General‑purpose combinators on lists used by the matrix
+    operations below.  These are polymorphic in the element type. 
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">Section</span> <a id="GenericDef" class="idref" href="#GenericDef"><span class="id" title="section">GenericDef</span></a>.<br/>
@@ -79,6 +98,13 @@
 <span class="id" title="keyword">End</span> <a class="idref" href="Semiring.MatN.html#GenericDef"><span class="id" title="section">GenericDef</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab46"></a><h1 class="section">Section: Proofs about the generic list combinators</h1>
+
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">Section</span> <a id="GenericDefProofs" class="idref" href="#GenericDefProofs"><span class="id" title="section">GenericDefProofs</span></a>.<br/>
@@ -152,7 +178,12 @@ In a rectangular matrix, row length equals the length of the transpose.
 &nbsp;&nbsp;&nbsp;&nbsp;0 <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Peano.html#::nat_scope:x_'&lt;'_x"><span class="id" title="notation">&lt;</span></a> <span class="id" title="abbreviation">List.length</span> <a class="idref" href="Semiring.MatN.html#xst:27"><span class="id" title="variable">xst</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> 0 <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Peano.html#::nat_scope:x_'&lt;'_x"><span class="id" title="notation">&lt;</span></a> <span class="id" title="abbreviation">List.length</span> <a class="idref" href="Semiring.MatN.html#xsh:28"><span class="id" title="variable">xsh</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">(</span></a><span class="id" title="notation">∀</span> <a id="xs:29" class="idref" href="#xs:29"><span class="id" title="binder">xs</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.MatN.html#A:26"><span class="id" title="variable">A</span></a><span class="id" title="notation">,</span> <span class="id" title="definition">In</span> <a class="idref" href="Semiring.MatN.html#xs:29"><span class="id" title="variable">xs</span></a> (<a class="idref" href="Semiring.MatN.html#xsh:28"><span class="id" title="variable">xsh</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#::list_scope:x_'::'_x"><span class="id" title="notation">::</span></a> <a class="idref" href="Semiring.MatN.html#xst:27"><span class="id" title="variable">xst</span></a>) <span class="id" title="notation">→</span> <span class="id" title="notation">∀</span> <a id="ys:30" class="idref" href="#ys:30"><span class="id" title="binder">ys</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.MatN.html#A:26"><span class="id" title="variable">A</span></a><span class="id" title="notation">,</span> <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="definition">In</span> <a class="idref" href="Semiring.MatN.html#ys:30"><span class="id" title="variable">ys</span></a> (<a class="idref" href="Semiring.MatN.html#xsh:28"><span class="id" title="variable">xsh</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#::list_scope:x_'::'_x"><span class="id" title="notation">::</span></a> <a class="idref" href="Semiring.MatN.html#xst:27"><span class="id" title="variable">xst</span></a>) <span class="id" title="notation">→</span> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#length"><span class="id" title="definition">length</span></a> <a class="idref" href="Semiring.MatN.html#xs:29"><span class="id" title="variable">xs</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#length"><span class="id" title="definition">length</span></a> <a class="idref" href="Semiring.MatN.html#ys:30"><span class="id" title="variable">ys</span></a> <span class="id" title="notation">∧</span> 0 <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Peano.html#::nat_scope:x_'&lt;'_x"><span class="id" title="notation">&lt;</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#length"><span class="id" title="definition">length</span></a> <a class="idref" href="Semiring.MatN.html#xs:29"><span class="id" title="variable">xs</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">)</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;</div>
+
+<div class="doc">
+transpose_eff (transpose_eff xst) = xst -&gt; 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#length"><span class="id" title="definition">length</span></a> <a class="idref" href="Semiring.MatN.html#xsh:28"><span class="id" title="variable">xsh</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#length"><span class="id" title="definition">length</span></a> (<a class="idref" href="Semiring.MatN.html#transpose_list"><span class="id" title="definition">transpose_list</span></a> <a class="idref" href="Semiring.MatN.html#xst:27"><span class="id" title="variable">xst</span></a>).<br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Proof</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">induction</span> <span class="id" title="var">xst</span> <span class="id" title="keyword">as</span> [|<span class="id" title="var">xsth</span> <span class="id" title="var">xstt</span> <span class="id" title="var">ih</span>].<br/>
@@ -172,7 +203,12 @@ In a rectangular matrix, row length equals the length of the transpose.
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">cbn</span>. <span class="id" title="tactic">rewrite</span> <span class="id" title="lemma">length_map</span>, &lt;-<span class="id" title="var">hel</span>;<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">reflexivity</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+
+<div class="doc">
+induction case 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">hd</span> : <a class="idref" href="Semiring.MatN.html#transpose_list"><span class="id" title="definition">transpose_list</span></a> (<span class="id" title="var">xsth</span> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#::list_scope:x_'::'_x"><span class="id" title="notation">::</span></a> <span class="id" title="var">xsstth</span> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#::list_scope:x_'::'_x"><span class="id" title="notation">::</span></a> <span class="id" title="var">xssttt</span>) <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Semiring.MatN.html#zip_with"><span class="id" title="definition">zip_with</span></a> <span class="id" title="abbreviation">List.cons</span> <span class="id" title="var">xsth</span> (<a class="idref" href="Semiring.MatN.html#transpose_list"><span class="id" title="definition">transpose_list</span></a> (<span class="id" title="var">xsstth</span> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#::list_scope:x_'::'_x"><span class="id" title="notation">::</span></a> <span class="id" title="var">xssttt</span>))).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">cbn</span>. <span class="id" title="tactic">reflexivity</span>.<br/>
@@ -205,6 +241,12 @@ In a rectangular matrix, row length equals the length of the transpose.
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Helper: nth does not depend on default when index is in bounds. 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="nth_default_indep" class="idref" href="#nth_default_indep"><span class="id" title="lemma">nth_default_indep</span></a> :<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">∀</span> (<a id="A:35" class="idref" href="#A:35"><span class="id" title="binder">A</span></a> : <span class="id" title="keyword">Type</span>) (<a id="idx:36" class="idref" href="#idx:36"><span class="id" title="binder">idx</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>) (<a id="l:37" class="idref" href="#l:37"><span class="id" title="binder">l</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.MatN.html#A:35"><span class="id" title="variable">A</span></a>) (<a id="d1:38" class="idref" href="#d1:38"><span class="id" title="binder">d1</span></a> <a id="d2:39" class="idref" href="#d2:39"><span class="id" title="binder">d2</span></a> : <a class="idref" href="Semiring.MatN.html#A:35"><span class="id" title="variable">A</span></a>),<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;(<a class="idref" href="Semiring.MatN.html#idx:36"><span class="id" title="variable">idx</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Peano.html#::nat_scope:x_'&lt;'_x"><span class="id" title="notation">&lt;</span></a> <span class="id" title="abbreviation">List.length</span> <a class="idref" href="Semiring.MatN.html#l:37"><span class="id" title="variable">l</span></a>)%<span class="id" title="var">nat</span> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <span class="id" title="abbreviation">List.nth</span> <a class="idref" href="Semiring.MatN.html#idx:36"><span class="id" title="variable">idx</span></a> <a class="idref" href="Semiring.MatN.html#l:37"><span class="id" title="variable">l</span></a> <a class="idref" href="Semiring.MatN.html#d1:38"><span class="id" title="variable">d1</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <span class="id" title="abbreviation">List.nth</span> <a class="idref" href="Semiring.MatN.html#idx:36"><span class="id" title="variable">idx</span></a> <a class="idref" href="Semiring.MatN.html#l:37"><span class="id" title="variable">l</span></a> <a class="idref" href="Semiring.MatN.html#d2:39"><span class="id" title="variable">d2</span></a>.<br/>
@@ -220,6 +262,12 @@ In a rectangular matrix, row length equals the length of the transpose.
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Helper lemma: nth 0 of nth i on map singletons = nth i on original 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="nth_0_map_singleton" class="idref" href="#nth_0_map_singleton"><span class="id" title="lemma">nth_0_map_singleton</span></a> :<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">∀</span> (<a id="A:40" class="idref" href="#A:40"><span class="id" title="binder">A</span></a> : <span class="id" title="keyword">Type</span>) (<a id="l:41" class="idref" href="#l:41"><span class="id" title="binder">l</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.MatN.html#A:40"><span class="id" title="variable">A</span></a>) (<a id="i:42" class="idref" href="#i:42"><span class="id" title="binder">i</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>) (<a id="d:43" class="idref" href="#d:43"><span class="id" title="binder">d</span></a> : <a class="idref" href="Semiring.MatN.html#A:40"><span class="id" title="variable">A</span></a>),<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="abbreviation">List.nth</span> 0 (<span class="id" title="abbreviation">List.nth</span> <a class="idref" href="Semiring.MatN.html#i:42"><span class="id" title="variable">i</span></a> (<span class="id" title="abbreviation">List.map</span> (<span class="id" title="keyword">fun</span> <a id="y:44" class="idref" href="#y:44"><span class="id" title="binder">y</span></a> ⇒ <span class="id" title="notation">[</span><a class="idref" href="Semiring.MatN.html#y:44"><span class="id" title="variable">y</span></a><span class="id" title="notation">]</span>) <a class="idref" href="Semiring.MatN.html#l:41"><span class="id" title="variable">l</span></a>) (<span class="id" title="notation">[]</span> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.MatN.html#A:40"><span class="id" title="variable">A</span></a>)) <a class="idref" href="Semiring.MatN.html#d:43"><span class="id" title="variable">d</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a><br/>
@@ -249,18 +297,43 @@ A matrix over semiring <span class="inlinecode"><a class="idref" href="Examples.
 &nbsp;&nbsp;<span class="id" title="keyword">Let</span> <a id="Matrix.Matrix" class="idref" href="#Matrix.Matrix"><span class="id" title="variable">Matrix</span></a> {<a id="R:46" class="idref" href="#R:46"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} := @<a class="idref" href="Semiring.OrelN.html#Matrix"><span class="id" title="definition">OrelN.Matrix</span></a> <a class="idref" href="Semiring.MatN.html#Matrix.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="Semiring.MatN.html#R:46"><span class="id" title="variable">R</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+returns the cth row of m 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="row" class="idref" href="#row"><span class="id" title="definition">row</span></a> {<a id="R:47" class="idref" href="#R:47"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} (<a id="m:48" class="idref" href="#m:48"><span class="id" title="binder">m</span></a> : <a class="idref" href="Semiring.MatN.html#Matrix.Matrix"><span class="id" title="variable">Matrix</span></a>) (<a id="c:49" class="idref" href="#c:49"><span class="id" title="binder">c</span></a> : <a class="idref" href="Semiring.MatN.html#Matrix.Node"><span class="id" title="variable">Node</span></a>) : <a class="idref" href="Semiring.MatN.html#Matrix.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Semiring.MatN.html#R:47"><span class="id" title="variable">R</span></a> := <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">fun</span> <a id="d:50" class="idref" href="#d:50"><span class="id" title="binder">d</span></a> ⇒ <a class="idref" href="Semiring.MatN.html#m:48"><span class="id" title="variable">m</span></a> <a class="idref" href="Semiring.MatN.html#c:49"><span class="id" title="variable">c</span></a> <a class="idref" href="Semiring.MatN.html#d:50"><span class="id" title="variable">d</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+returns the cth column of m 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="col" class="idref" href="#col"><span class="id" title="definition">col</span></a> {<a id="R:51" class="idref" href="#R:51"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} (<a id="m:52" class="idref" href="#m:52"><span class="id" title="binder">m</span></a> : <a class="idref" href="Semiring.MatN.html#Matrix.Matrix"><span class="id" title="variable">Matrix</span></a>) (<a id="c:53" class="idref" href="#c:53"><span class="id" title="binder">c</span></a> : <a class="idref" href="Semiring.MatN.html#Matrix.Node"><span class="id" title="variable">Node</span></a>) : <a class="idref" href="Semiring.MatN.html#Matrix.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Semiring.MatN.html#R:51"><span class="id" title="variable">R</span></a> :=<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">fun</span> <a id="d:54" class="idref" href="#d:54"><span class="id" title="binder">d</span></a> ⇒ <a class="idref" href="Semiring.MatN.html#m:52"><span class="id" title="variable">m</span></a> <a class="idref" href="Semiring.MatN.html#d:54"><span class="id" title="variable">d</span></a> <a class="idref" href="Semiring.MatN.html#c:53"><span class="id" title="variable">c</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+zero matrix, additive identity of plus 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="zeroM" class="idref" href="#zeroM"><span class="id" title="definition">zeroM</span></a> {<a id="R:55" class="idref" href="#R:55"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} : @<a class="idref" href="Semiring.MatN.html#Matrix.Matrix"><span class="id" title="variable">Matrix</span></a> <a class="idref" href="Semiring.MatN.html#R:55"><span class="id" title="variable">R</span></a> := <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">fun</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> ⇒ 0.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+identity matrix, mulitplicative identity of mul
+      Idenitity Matrix 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="I" class="idref" href="#I"><span class="id" title="definition">I</span></a> {<a id="R:56" class="idref" href="#R:56"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} : @<a class="idref" href="Semiring.MatN.html#Matrix.Matrix"><span class="id" title="variable">Matrix</span></a> <a class="idref" href="Semiring.MatN.html#R:56"><span class="id" title="variable">R</span></a> := <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">fun</span> (<a id="c:57" class="idref" href="#c:57"><span class="id" title="binder">c</span></a> <a id="d:58" class="idref" href="#d:58"><span class="id" title="binder">d</span></a> : <a class="idref" href="Semiring.MatN.html#Matrix.Node"><span class="id" title="variable">Node</span></a>) ⇒<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="Semiring.Structures.html#fin_eq_dec"><span class="id" title="definition">fin_eq_dec</span></a> <a class="idref" href="Semiring.MatN.html#c:57"><span class="id" title="variable">c</span></a> <a class="idref" href="Semiring.MatN.html#d:58"><span class="id" title="variable">d</span></a> <span class="id" title="keyword">with</span> <br/>
@@ -269,10 +342,22 @@ A matrix over semiring <span class="inlinecode"><a class="idref" href="Examples.
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+transpose the matrix m 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="transpose" class="idref" href="#transpose"><span class="id" title="definition">transpose</span></a> {<a id="R:59" class="idref" href="#R:59"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} (<a id="m:60" class="idref" href="#m:60"><span class="id" title="binder">m</span></a> : @<a class="idref" href="Semiring.MatN.html#Matrix.Matrix"><span class="id" title="variable">Matrix</span></a> <a class="idref" href="Semiring.MatN.html#R:59"><span class="id" title="variable">R</span></a>) : @<a class="idref" href="Semiring.MatN.html#Matrix.Matrix"><span class="id" title="variable">Matrix</span></a> <a class="idref" href="Semiring.MatN.html#R:59"><span class="id" title="variable">R</span></a>  := <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">fun</span> (<a id="c:61" class="idref" href="#c:61"><span class="id" title="binder">c</span></a> <a id="d:62" class="idref" href="#d:62"><span class="id" title="binder">d</span></a> : <a class="idref" href="Semiring.MatN.html#Matrix.Node"><span class="id" title="variable">Node</span></a>) ⇒ <a class="idref" href="Semiring.MatN.html#m:60"><span class="id" title="variable">m</span></a> <a class="idref" href="Semiring.MatN.html#d:62"><span class="id" title="variable">d</span></a> <a class="idref" href="Semiring.MatN.html#c:61"><span class="id" title="variable">c</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+pointwise addition to two matrices 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="matrix_add" class="idref" href="#matrix_add"><span class="id" title="definition">matrix_add</span></a> {<a id="R:63" class="idref" href="#R:63"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} (<a id="6f5377b848eeac88c0d000fd7a267f14" class="idref" href="#6f5377b848eeac88c0d000fd7a267f14"><span class="id" title="binder">m₁</span></a> <a id="f63f792db4fdd95d9c94630895849f09" class="idref" href="#f63f792db4fdd95d9c94630895849f09"><span class="id" title="binder">m₂</span></a> : @<a class="idref" href="Semiring.MatN.html#Matrix.Matrix"><span class="id" title="variable">Matrix</span></a> <a class="idref" href="Semiring.MatN.html#R:63"><span class="id" title="variable">R</span></a>) : @<a class="idref" href="Semiring.MatN.html#Matrix.Matrix"><span class="id" title="variable">Matrix</span></a> <a class="idref" href="Semiring.MatN.html#R:63"><span class="id" title="variable">R</span></a> :=<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">fun</span> <a id="c:66" class="idref" href="#c:66"><span class="id" title="binder">c</span></a> <a id="d:67" class="idref" href="#d:67"><span class="id" title="binder">d</span></a> ⇒ (<a class="idref" href="Semiring.MatN.html#6f5377b848eeac88c0d000fd7a267f14"><span class="id" title="variable">m₁</span></a> <a class="idref" href="Semiring.MatN.html#c:66"><span class="id" title="variable">c</span></a> <a class="idref" href="Semiring.MatN.html#d:67"><span class="id" title="variable">d</span></a> <a class="idref" href="Semiring.Structures.html#5a105efba9ec815920c0186c077a884f"><span class="id" title="notation">+</span></a> <a class="idref" href="Semiring.MatN.html#f63f792db4fdd95d9c94630895849f09"><span class="id" title="variable">m₂</span></a> <a class="idref" href="Semiring.MatN.html#c:66"><span class="id" title="variable">c</span></a> <a class="idref" href="Semiring.MatN.html#d:67"><span class="id" title="variable">d</span></a>).<br/>
 
@@ -304,12 +389,25 @@ Extensionality of <span class="inlinecode"><a class="idref" href="Semiring.MatN.
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+generalised matrix multiplication 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="matrix_mul" class="idref" href="#matrix_mul"><span class="id" title="definition">matrix_mul</span></a> {<a id="R:76" class="idref" href="#R:76"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>}<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;(<a id="c488570eec6c2de00d8afdffb5f8ba28" class="idref" href="#c488570eec6c2de00d8afdffb5f8ba28"><span class="id" title="binder">m₁</span></a> <a id="e83f91df0de2cfd55788cb4c70e4679f" class="idref" href="#e83f91df0de2cfd55788cb4c70e4679f"><span class="id" title="binder">m₂</span></a> : @<a class="idref" href="Semiring.MatN.html#Matrix.Matrix"><span class="id" title="variable">Matrix</span></a> <a class="idref" href="Semiring.MatN.html#R:76"><span class="id" title="variable">R</span></a>) : @<a class="idref" href="Semiring.MatN.html#Matrix.Matrix"><span class="id" title="variable">Matrix</span></a> <a class="idref" href="Semiring.MatN.html#R:76"><span class="id" title="variable">R</span></a>:=<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">fun</span> (<a id="c:79" class="idref" href="#c:79"><span class="id" title="binder">c</span></a> <a id="d:80" class="idref" href="#d:80"><span class="id" title="binder">d</span></a> : <a class="idref" href="Semiring.MatN.html#Matrix.Node"><span class="id" title="variable">Node</span></a>) ⇒ <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Semiring.MatN.html#sum"><span class="id" title="definition">sum</span></a> (<span class="id" title="keyword">fun</span> <a id="y:81" class="idref" href="#y:81"><span class="id" title="binder">y</span></a> ⇒ (<a class="idref" href="Semiring.MatN.html#c488570eec6c2de00d8afdffb5f8ba28"><span class="id" title="variable">m₁</span></a> <a class="idref" href="Semiring.MatN.html#c:79"><span class="id" title="variable">c</span></a> <a class="idref" href="Semiring.MatN.html#y:81"><span class="id" title="variable">y</span></a> <a class="idref" href="Semiring.Structures.html#df06337ab011822b2792d206fc407479"><span class="id" title="notation">×</span></a> <a class="idref" href="Semiring.MatN.html#e83f91df0de2cfd55788cb4c70e4679f"><span class="id" title="variable">m₂</span></a> <a class="idref" href="Semiring.MatN.html#y:81"><span class="id" title="variable">y</span></a> <a class="idref" href="Semiring.MatN.html#d:80"><span class="id" title="variable">d</span></a>)).<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab47"></a><h2 class="section">Matrix exponentiation</h2>
+
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Local Infix</span> <a id="102d127e8b30bfefc75444bfabe59512" class="idref" href="#102d127e8b30bfefc75444bfabe59512"><span class="id" title="notation">&quot;</span></a>+M" := <a class="idref" href="Semiring.MatN.html#matrix_add"><span class="id" title="definition">matrix_add</span></a> (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 50, <span class="id" title="var">only</span> <span class="id" title="var">parsing</span>).<br/>
@@ -358,6 +456,13 @@ Matrix exponentiation for <span class="inlinecode"><a class="idref" href="http:/
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab48"></a><h2 class="section">Scalar exponentiation and partial sums</h2>
+
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Fixpoint</span> <a id="scalar_pow" class="idref" href="#scalar_pow"><span class="id" title="definition">scalar_pow</span></a> {<a id="R:99" class="idref" href="#R:99"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} (<a id="a:100" class="idref" href="#a:100"><span class="id" title="binder">a</span></a> : <a class="idref" href="Semiring.MatN.html#R:99"><span class="id" title="variable">R</span></a>) (<a id="n:101" class="idref" href="#n:101"><span class="id" title="binder">n</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>) : <a class="idref" href="Semiring.MatN.html#R:99"><span class="id" title="variable">R</span></a> :=<br/>
@@ -393,13 +498,27 @@ Matrix geometric series: <span class="inlinecode"><a class="idref" href="Semirin
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
 
 <br/>
+</div>
 
-<br/>
+<div class="doc">
+<a id="lab49"></a><h2 class="section">Efficient list-based matrix operations</h2>
+
+<div class="paragraph"> </div>
+
+ Dot product of two lists 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="dot_product" class="idref" href="#dot_product"><span class="id" title="definition">dot_product</span></a> {<a id="R:114" class="idref" href="#R:114"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} (<a id="v1:115" class="idref" href="#v1:115"><span class="id" title="binder">v1</span></a> <a id="v2:116" class="idref" href="#v2:116"><span class="id" title="binder">v2</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.MatN.html#R:114"><span class="id" title="variable">R</span></a>) : <a class="idref" href="Semiring.MatN.html#R:114"><span class="id" title="variable">R</span></a> :=<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="definition">fold_left</span> <a class="idref" href="Semiring.Structures.html#add"><span class="id" title="definition">add</span></a> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Lists.ListDef.html#map"><span class="id" title="definition">map</span></a> (<span class="id" title="keyword">fun</span> '<a id="pat:119" class="idref" href="#pat:119"><span class="id" title="binder">(</span></a><a id="x:118" class="idref" href="#x:118"><span class="id" title="binder"><span id="pat:119" class="id">x</span></span></a><a id="pat:119" class="idref" href="#pat:119"><span class="id" title="binder">,</span></a> <a id="y:117" class="idref" href="#y:117"><span class="id" title="binder"><span id="pat:119" class="id">y</span></span></a><a id="pat:119" class="idref" href="#pat:119"><span class="id" title="binder">)</span></a> ⇒ <a class="idref" href="Semiring.Structures.html#mul"><span class="id" title="definition">mul</span></a> <a class="idref" href="Semiring.MatN.html#x:118"><span class="id" title="variable">x</span></a> <a class="idref" href="Semiring.MatN.html#y:117"><span class="id" title="variable">y</span></a>) <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="definition">combine</span> <a class="idref" href="Semiring.MatN.html#v1:115"><span class="id" title="variable">v1</span></a> <a class="idref" href="Semiring.MatN.html#v2:116"><span class="id" title="variable">v2</span></a>)) <a class="idref" href="Semiring.Structures.html#zero"><span class="id" title="definition">zero</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Matrix multiplication (list-based) 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="mul_list" class="idref" href="#mul_list"><span class="id" title="definition">mul_list</span></a> {<a id="R:120" class="idref" href="#R:120"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} (<a id="la:121" class="idref" href="#la:121"><span class="id" title="binder">la</span></a> <a id="lb:122" class="idref" href="#lb:122"><span class="id" title="binder">lb</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.MatN.html#R:120"><span class="id" title="variable">R</span></a>)) : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.MatN.html#R:120"><span class="id" title="variable">R</span></a>) :=<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">let</span> <a id="lbT:123" class="idref" href="#lbT:123"><span class="id" title="binder">lbT</span></a> := <a class="idref" href="Semiring.MatN.html#transpose_list"><span class="id" title="definition">transpose_list</span></a> <a class="idref" href="Semiring.MatN.html#lb:122"><span class="id" title="variable">lb</span></a> <span class="id" title="tactic">in</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Lists.ListDef.html#map"><span class="id" title="definition">map</span></a> (<span class="id" title="keyword">fun</span> <a id="row:124" class="idref" href="#row:124"><span class="id" title="binder">row</span></a> ⇒<br/>
@@ -451,12 +570,26 @@ Matrix exponentiation for <span class="inlinecode"><a class="idref" href="http:/
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
 
 <br/>
+</div>
 
-<br/>
+<div class="doc">
+<a id="lab50"></a><h2 class="section">Lookup &amp; conversion helpers (mirrors list_lookup in Semimodule)</h2>
+
+<div class="paragraph"> </div>
+
+ Boolean decidable equality on Node 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="eq_decb" class="idref" href="#eq_decb"><span class="id" title="definition">eq_decb</span></a> (<a id="x:147" class="idref" href="#x:147"><span class="id" title="binder">x</span></a> <a id="y:148" class="idref" href="#y:148"><span class="id" title="binder">y</span></a> : <a class="idref" href="Semiring.MatN.html#Matrix.Node"><span class="id" title="variable">Node</span></a>) : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#bool"><span class="id" title="inductive">bool</span></a> :=<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="Semiring.Structures.html#fin_eq_dec"><span class="id" title="definition">fin_eq_dec</span></a> <a class="idref" href="Semiring.MatN.html#x:147"><span class="id" title="variable">x</span></a> <a class="idref" href="Semiring.MatN.html#y:148"><span class="id" title="variable">y</span></a> <span class="id" title="keyword">with</span> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Specif.html#left"><span class="id" title="constructor">left</span></a> <span class="id" title="var">_</span> ⇒ <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#true"><span class="id" title="constructor">true</span></a> | <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Specif.html#right"><span class="id" title="constructor">right</span></a> <span class="id" title="var">_</span> ⇒ <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#false"><span class="id" title="constructor">false</span></a> <span class="id" title="keyword">end</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Parallel list lookup keyed by finN with a default value 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Fixpoint</span> <a id="list_lookup" class="idref" href="#list_lookup"><span class="id" title="definition">list_lookup</span></a> {<a id="A:149" class="idref" href="#A:149"><span class="id" title="binder">A</span></a> : <span class="id" title="keyword">Type</span>} (<a id="def:150" class="idref" href="#def:150"><span class="id" title="binder">def</span></a> : <a class="idref" href="Semiring.MatN.html#A:149"><span class="id" title="variable">A</span></a>)<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;(<a id="keys:151" class="idref" href="#keys:151"><span class="id" title="binder">keys</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.MatN.html#Matrix.Node"><span class="id" title="variable">Node</span></a>) (<a id="vals:152" class="idref" href="#vals:152"><span class="id" title="binder">vals</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.MatN.html#A:149"><span class="id" title="variable">A</span></a>) (<a id="key:153" class="idref" href="#key:153"><span class="id" title="binder">key</span></a> : <a class="idref" href="Semiring.MatN.html#Matrix.Node"><span class="id" title="variable">Node</span></a>) : <a class="idref" href="Semiring.MatN.html#A:149"><span class="id" title="variable">A</span></a> :=<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="Semiring.MatN.html#keys:151"><span class="id" title="variable">keys</span></a>, <a class="idref" href="Semiring.MatN.html#vals:152"><span class="id" title="variable">vals</span></a> <span class="id" title="keyword">with</span><br/>
@@ -465,6 +598,12 @@ Matrix exponentiation for <span class="inlinecode"><a class="idref" href="http:/
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Convert between functional and list-of-lists representations 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="to_list" class="idref" href="#to_list"><span class="id" title="definition">to_list</span></a> {<a id="R:157" class="idref" href="#R:157"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} (<a id="m:158" class="idref" href="#m:158"><span class="id" title="binder">m</span></a> : <a class="idref" href="Semiring.MatN.html#Matrix.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Semiring.MatN.html#Matrix.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Semiring.MatN.html#R:157"><span class="id" title="variable">R</span></a>) : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.MatN.html#R:157"><span class="id" title="variable">R</span></a>) :=<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="abbreviation">List.map</span> (<span class="id" title="keyword">fun</span> <a id="r:159" class="idref" href="#r:159"><span class="id" title="binder">r</span></a> ⇒ <span class="id" title="abbreviation">List.map</span> (<span class="id" title="keyword">fun</span> <a id="c:160" class="idref" href="#c:160"><span class="id" title="binder">c</span></a> ⇒ <a class="idref" href="Semiring.MatN.html#m:158"><span class="id" title="variable">m</span></a> <a class="idref" href="Semiring.MatN.html#r:159"><span class="id" title="variable">r</span></a> <a class="idref" href="Semiring.MatN.html#c:160"><span class="id" title="variable">c</span></a>) <a class="idref" href="Semiring.Structures.html#elements"><span class="id" title="definition">elements</span></a>) <a class="idref" href="Semiring.Structures.html#elements"><span class="id" title="definition">elements</span></a>.<br/>
 
@@ -503,6 +642,13 @@ Matrix exponentiation for <span class="inlinecode"><a class="idref" href="http:/
 &nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Semiring.MatN.html#of_list"><span class="id" title="definition">of_list</span></a> (<a class="idref" href="Semiring.MatN.html#powN_list"><span class="id" title="definition">powN_list</span></a> (<a class="idref" href="Semiring.MatN.html#to_list"><span class="id" title="definition">to_list</span></a> <a class="idref" href="Semiring.MatN.html#m:170"><span class="id" title="variable">m</span></a>) <a class="idref" href="Semiring.MatN.html#n:171"><span class="id" title="variable">n</span></a>).<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab51"></a><h2 class="section">Correctness: looking up a tabulated matrix returns the original</h2>
+
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="list_lookup_map_aux" class="idref" href="#list_lookup_map_aux"><span class="id" title="lemma">list_lookup_map_aux</span></a> : <span class="id" title="keyword">∀</span> (<a id="A:172" class="idref" href="#A:172"><span class="id" title="binder">A</span></a> : <span class="id" title="keyword">Type</span>) (<a id="def:173" class="idref" href="#def:173"><span class="id" title="binder">def</span></a> : <a class="idref" href="Semiring.MatN.html#A:172"><span class="id" title="variable">A</span></a>) (<a id="f:174" class="idref" href="#f:174"><span class="id" title="binder">f</span></a> : <a class="idref" href="Semiring.MatN.html#Matrix.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Semiring.MatN.html#A:172"><span class="id" title="variable">A</span></a>) <br/>
@@ -555,14 +701,36 @@ Round-trip: <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#o
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">m</span> <span class="id" title="var">r</span> <span class="id" title="var">c</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">unfold</span> <a class="idref" href="Semiring.MatN.html#of_list"><span class="id" title="definition">of_list</span></a>, <a class="idref" href="Semiring.MatN.html#to_list"><span class="id" title="definition">to_list</span></a>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">simpl</span>.<br/>
+</div>
+
+<div class="doc">
+list_lookup 0 elements (list_lookup <font size=-2>&#9744;</font> elements 
+        (map (fun r0 =&gt; map (fun c0 =&gt; m r0 c0) elements) elements) r) c = m r c 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> <a class="idref" href="Semiring.MatN.html#list_lookup_map"><span class="id" title="lemma">list_lookup_map</span></a> <span class="id" title="keyword">with</span> (<span class="id" title="var">def</span> := <span class="id" title="notation">[]</span>) <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">f</span> := <span class="id" title="keyword">fun</span> <a id="r:185" class="idref" href="#r:185"><span class="id" title="binder"><span id="r:187" class="id"><span id="r:189" class="id">r</span></span></span></a> ⇒ <span class="id" title="abbreviation">List.map</span> (<span class="id" title="keyword">fun</span> <a id="c:186" class="idref" href="#c:186"><span class="id" title="binder"><span id="c:188" class="id"><span id="c:190" class="id">c</span></span></span></a> ⇒ <span class="id" title="var">m</span> <a class="idref" href="Semiring.MatN.html#r:185"><span class="id" title="variable">r</span></a> <a class="idref" href="Semiring.MatN.html#c:186"><span class="id" title="variable">c</span></a>) <a class="idref" href="Semiring.Structures.html#elements"><span class="id" title="definition">elements</span></a>).<br/>
+</div>
+
+<div class="doc">
+Now: list_lookup 0 elements (map (fun c0 =&gt; m r c0) elements) c = m r c 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <a class="idref" href="Semiring.MatN.html#list_lookup_map"><span class="id" title="lemma">list_lookup_map</span></a>.<br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
 
-<br/>
+<div class="doc">
+<a id="lab52"></a><h2 class="section">pow = pow_fun  (mathematical = efficient, unary case)</h2>
+
+<div class="paragraph"> </div>
+
+<a id="lab53"></a><h2 class="section">Helper: positional index of a node in elements</h2>
+
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Fixpoint</span> <a id="index_of_aux" class="idref" href="#index_of_aux"><span class="id" title="definition">index_of_aux</span></a> (<a id="k:191" class="idref" href="#k:191"><span class="id" title="binder">k</span></a> : <a class="idref" href="Semiring.MatN.html#Matrix.Node"><span class="id" title="variable">Node</span></a>) (<a id="xs:192" class="idref" href="#xs:192"><span class="id" title="binder">xs</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.MatN.html#Matrix.Node"><span class="id" title="variable">Node</span></a>) : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a> :=<br/>
@@ -603,6 +771,13 @@ The index of any node is within the element list length.
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab54"></a><h2 class="section">list_lookup expressed via nth + index_of</h2>
+
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="list_lookup_nth_gen_aux" class="idref" href="#list_lookup_nth_gen_aux"><span class="id" title="lemma">list_lookup_nth_gen_aux</span></a> : <span class="id" title="keyword">∀</span> (<a id="A:197" class="idref" href="#A:197"><span class="id" title="binder">A</span></a> : <span class="id" title="keyword">Type</span>) (<a id="d:198" class="idref" href="#d:198"><span class="id" title="binder">d</span></a> : <a class="idref" href="Semiring.MatN.html#A:197"><span class="id" title="variable">A</span></a>) (<a id="xs:199" class="idref" href="#xs:199"><span class="id" title="binder">xs</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.MatN.html#Matrix.Node"><span class="id" title="variable">Node</span></a>) (<a id="l:200" class="idref" href="#l:200"><span class="id" title="binder">l</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.MatN.html#A:197"><span class="id" title="variable">A</span></a>) (<a id="k:201" class="idref" href="#k:201"><span class="id" title="binder">k</span></a> : <a class="idref" href="Semiring.MatN.html#Matrix.Node"><span class="id" title="variable">Node</span></a>),<br/>
@@ -646,6 +821,12 @@ The index of any node is within the element list length.
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Use the lemma to get specialized versions 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="list_lookup_nth_list" class="idref" href="#list_lookup_nth_list"><span class="id" title="lemma">list_lookup_nth_list</span></a> {<a id="R:206" class="idref" href="#R:206"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} (<a id="l:207" class="idref" href="#l:207"><span class="id" title="binder">l</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.MatN.html#R:206"><span class="id" title="variable">R</span></a>)) (<a id="k:208" class="idref" href="#k:208"><span class="id" title="binder">k</span></a> : <a class="idref" href="Semiring.MatN.html#Matrix.Node"><span class="id" title="variable">Node</span></a>) :<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Semiring.MatN.html#list_lookup"><span class="id" title="definition">list_lookup</span></a> <span class="id" title="notation">[]</span> <a class="idref" href="Semiring.Structures.html#elements"><span class="id" title="definition">elements</span></a> <a class="idref" href="Semiring.MatN.html#l:207"><span class="id" title="variable">l</span></a> <a class="idref" href="Semiring.MatN.html#k:208"><span class="id" title="variable">k</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <span class="id" title="abbreviation">List.nth</span> (<a class="idref" href="Semiring.MatN.html#index_of"><span class="id" title="definition">index_of</span></a> <a class="idref" href="Semiring.MatN.html#k:208"><span class="id" title="variable">k</span></a>) <a class="idref" href="Semiring.MatN.html#l:207"><span class="id" title="variable">l</span></a> <span class="id" title="notation">[]</span>.<br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Proof</span>. <span class="id" title="tactic">apply</span> <a class="idref" href="Semiring.MatN.html#list_lookup_nth_gen"><span class="id" title="lemma">list_lookup_nth_gen</span></a>. <span class="id" title="keyword">Qed</span>.<br/>
@@ -662,6 +843,13 @@ Specialization of <span class="inlinecode"><a class="idref" href="Semiring.MatN.
 &nbsp;&nbsp;<span class="id" title="keyword">Proof</span>. <span class="id" title="tactic">apply</span> <a class="idref" href="Semiring.MatN.html#list_lookup_nth_gen"><span class="id" title="lemma">list_lookup_nth_gen</span></a>. <span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab55"></a><h2 class="section">nth_map with custom defaults (in-bounds version)</h2>
+
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="nth_map_inbound" class="idref" href="#nth_map_inbound"><span class="id" title="lemma">nth_map_inbound</span></a> : <span class="id" title="keyword">∀</span> (<a id="A:212" class="idref" href="#A:212"><span class="id" title="binder">A</span></a> <a id="B:213" class="idref" href="#B:213"><span class="id" title="binder">B</span></a> : <span class="id" title="keyword">Type</span>) (<a id="f:214" class="idref" href="#f:214"><span class="id" title="binder">f</span></a> : <a class="idref" href="Semiring.MatN.html#A:212"><span class="id" title="variable">A</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Semiring.MatN.html#B:213"><span class="id" title="variable">B</span></a>) (<a id="l:215" class="idref" href="#l:215"><span class="id" title="binder">l</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.MatN.html#A:212"><span class="id" title="variable">A</span></a>) (<a id="i:216" class="idref" href="#i:216"><span class="id" title="binder">i</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>) (<a id="dA:217" class="idref" href="#dA:217"><span class="id" title="binder">dA</span></a> : <a class="idref" href="Semiring.MatN.html#A:212"><span class="id" title="variable">A</span></a>) (<a id="dB:218" class="idref" href="#dB:218"><span class="id" title="binder">dB</span></a> : <a class="idref" href="Semiring.MatN.html#B:213"><span class="id" title="variable">B</span></a>),<br/>
@@ -669,6 +857,12 @@ Specialization of <span class="inlinecode"><a class="idref" href="Semiring.MatN.
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="abbreviation">List.nth</span> <a class="idref" href="Semiring.MatN.html#i:216"><span class="id" title="variable">i</span></a> (<span class="id" title="abbreviation">List.map</span> <a class="idref" href="Semiring.MatN.html#f:214"><span class="id" title="variable">f</span></a> <a class="idref" href="Semiring.MatN.html#l:215"><span class="id" title="variable">l</span></a>) <a class="idref" href="Semiring.MatN.html#dB:218"><span class="id" title="variable">dB</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="Semiring.MatN.html#f:214"><span class="id" title="variable">f</span></a> (<span class="id" title="abbreviation">List.nth</span> <a class="idref" href="Semiring.MatN.html#i:216"><span class="id" title="variable">i</span></a> <a class="idref" href="Semiring.MatN.html#l:215"><span class="id" title="variable">l</span></a> <a class="idref" href="Semiring.MatN.html#dA:217"><span class="id" title="variable">dA</span></a>).<br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Proof</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">A</span> <span class="id" title="var">B</span> <span class="id" title="var">f</span> <span class="id" title="var">l</span> <span class="id" title="var">i</span> <span class="id" title="var">dA</span> <span class="id" title="var">dB</span> <span class="id" title="var">Hbound</span>.<br/>
+</div>
+
+<div class="doc">
+Use nth_indep to switch default, then nth_map 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">Heq_default</span> : <span class="id" title="abbreviation">List.nth</span> <span class="id" title="var">i</span> (<span class="id" title="abbreviation">List.map</span> <span class="id" title="var">f</span> <span class="id" title="var">l</span>) <span class="id" title="var">dB</span> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <span class="id" title="abbreviation">List.nth</span> <span class="id" title="var">i</span> (<span class="id" title="abbreviation">List.map</span> <span class="id" title="var">f</span> <span class="id" title="var">l</span>) (<span class="id" title="var">f</span> <span class="id" title="var">dA</span>)).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;{ <span class="id" title="tactic">apply</span> <a class="idref" href="Semiring.MatN.html#nth_default_indep"><span class="id" title="lemma">nth_default_indep</span></a>. <span class="id" title="tactic">rewrite</span> <span class="id" title="lemma">List.length_map</span>. <span class="id" title="tactic">exact</span> <span class="id" title="var">Hbound</span>. }<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> <span class="id" title="var">Heq_default</span>.<br/>
@@ -676,6 +870,13 @@ Specialization of <span class="inlinecode"><a class="idref" href="Semiring.MatN.
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab56"></a><h2 class="section">fold_left add = fold_right add for the additive monoid</h2>
+
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="fold_left_add_acc" class="idref" href="#fold_left_add_acc"><span class="id" title="lemma">fold_left_add_acc</span></a> {<a id="R:219" class="idref" href="#R:219"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} : <span class="id" title="keyword">∀</span> (<a id="l:220" class="idref" href="#l:220"><span class="id" title="binder">l</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.MatN.html#R:219"><span class="id" title="variable">R</span></a>) (<a id="a:221" class="idref" href="#a:221"><span class="id" title="binder">a</span></a> : <a class="idref" href="Semiring.MatN.html#R:219"><span class="id" title="variable">R</span></a>),<br/>
@@ -684,6 +885,12 @@ Specialization of <span class="inlinecode"><a class="idref" href="Semiring.MatN.
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">induction</span> <span class="id" title="var">l</span> <span class="id" title="keyword">as</span> [|<span class="id" title="var">x</span> <span class="id" title="var">l'</span> <span class="id" title="var">IH</span>]; <span class="id" title="tactic">intros</span> <span class="id" title="var">a</span>; <span class="id" title="tactic">simpl</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;- <span class="id" title="tactic">rewrite</span> <a class="idref" href="Semiring.Structures.html#addr0"><span class="id" title="definition">addr0</span></a>. <span class="id" title="tactic">reflexivity</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;- <span class="id" title="tactic">rewrite</span> <span class="id" title="var">IH</span>.<br/>
+</div>
+
+<div class="doc">
+(a + x) + fold_right add 0 l' = a + (x + fold_right add 0 l') 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> <a class="idref" href="Semiring.Structures.html#addA"><span class="id" title="definition">addA</span></a>. <span class="id" title="tactic">reflexivity</span>.<br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
@@ -701,6 +908,13 @@ Specialization of <span class="inlinecode"><a class="idref" href="Semiring.MatN.
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab57"></a><h2 class="section">combine distributes over map</h2>
+
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="combine_map" class="idref" href="#combine_map"><span class="id" title="lemma">combine_map</span></a> : <span class="id" title="keyword">∀</span> (<a id="A:224" class="idref" href="#A:224"><span class="id" title="binder">A</span></a> <a id="B:225" class="idref" href="#B:225"><span class="id" title="binder">B</span></a> <a id="C:226" class="idref" href="#C:226"><span class="id" title="binder">C</span></a> : <span class="id" title="keyword">Type</span>) (<a id="f:227" class="idref" href="#f:227"><span class="id" title="binder">f</span></a> : <a class="idref" href="Semiring.MatN.html#A:224"><span class="id" title="variable">A</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Semiring.MatN.html#B:225"><span class="id" title="variable">B</span></a>) (<a id="g:228" class="idref" href="#g:228"><span class="id" title="binder">g</span></a> : <a class="idref" href="Semiring.MatN.html#A:224"><span class="id" title="variable">A</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Semiring.MatN.html#C:226"><span class="id" title="variable">C</span></a>) (<a id="l:229" class="idref" href="#l:229"><span class="id" title="binder">l</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.MatN.html#A:224"><span class="id" title="variable">A</span></a>),<br/>
@@ -711,6 +925,13 @@ Specialization of <span class="inlinecode"><a class="idref" href="Semiring.MatN.
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab58"></a><h2 class="section">dot_product of tabulated lists = sum of pointwise products</h2>
+
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="fold_right_add_map" class="idref" href="#fold_right_add_map"><span class="id" title="lemma">fold_right_add_map</span></a> {<a id="R:231" class="idref" href="#R:231"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} : <span class="id" title="keyword">∀</span> (<a id="h:232" class="idref" href="#h:232"><span class="id" title="binder">h</span></a> : <a class="idref" href="Semiring.MatN.html#Matrix.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Semiring.MatN.html#R:231"><span class="id" title="variable">R</span></a>),<br/>
@@ -743,6 +964,13 @@ Dot product of tabulated vectors equals the sum of pointwise products.
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab59"></a><h2 class="section">Re-tabulation lemma: map over elements reconstructs the list</h2>
+
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="list_lookup_tabulate" class="idref" href="#list_lookup_tabulate"><span class="id" title="lemma">list_lookup_tabulate</span></a> : <span class="id" title="keyword">∀</span> (<a id="A:242" class="idref" href="#A:242"><span class="id" title="binder">A</span></a> : <span class="id" title="keyword">Type</span>) (<a id="d:243" class="idref" href="#d:243"><span class="id" title="binder">d</span></a> : <a class="idref" href="Semiring.MatN.html#A:242"><span class="id" title="variable">A</span></a>) (<a id="l:244" class="idref" href="#l:244"><span class="id" title="binder">l</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.MatN.html#A:242"><span class="id" title="variable">A</span></a>),<br/>
@@ -770,6 +998,13 @@ Dot product of tabulated vectors equals the sum of pointwise products.
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab60"></a><h2 class="section">Helper lemmas for transpose_list via nth</h2>
+
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="nth_zip_with_cons_in_bounds" class="idref" href="#nth_zip_with_cons_in_bounds"><span class="id" title="lemma">nth_zip_with_cons_in_bounds</span></a> : <span class="id" title="keyword">∀</span> (<a id="A:254" class="idref" href="#A:254"><span class="id" title="binder">A</span></a> : <span class="id" title="keyword">Type</span>) (<a id="xs:255" class="idref" href="#xs:255"><span class="id" title="binder">xs</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.MatN.html#A:254"><span class="id" title="variable">A</span></a>) (<a id="yss:256" class="idref" href="#yss:256"><span class="id" title="binder">yss</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.MatN.html#A:254"><span class="id" title="variable">A</span></a>))<br/>
@@ -831,14 +1066,18 @@ Dot product with an empty vector is zero.
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
-
-<br/>
-
-<br/>
 </div>
 
 <div class="doc">
-Key lemma: transpose swaps indices under <span class="inlinecode"><span class="id" title="abbreviation">nth</span></span> for rectangular matrices. 
+<a id="lab61"></a><h2 class="section">Key lemma: transpose_list swaps element access under nth</h2>
+
+<div class="paragraph"> </div>
+
+ The unrestricted statement is false for ragged inputs such as <span class="inlinecode">[];</span> <span class="inlinecode">[<a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a>]</span>.
+      The intended transpose law is the rectangular, in-bounds form below. 
+<div class="paragraph"> </div>
+
+ Key lemma: transpose swaps indices under <span class="inlinecode"><span class="id" title="abbreviation">nth</span></span> for rectangular matrices. 
 </div>
 <div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="nth_transpose_swap" class="idref" href="#nth_transpose_swap"><span class="id" title="lemma">nth_transpose_swap</span></a> {<a id="R:270" class="idref" href="#R:270"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} : <span class="id" title="keyword">∀</span> (<a id="L:271" class="idref" href="#L:271"><span class="id" title="binder">L</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.MatN.html#R:270"><span class="id" title="variable">R</span></a>)) (<a id="i:272" class="idref" href="#i:272"><span class="id" title="binder">i</span></a> <a id="j:273" class="idref" href="#j:273"><span class="id" title="binder">j</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>),<br/>
@@ -870,6 +1109,12 @@ Key lemma: transpose swaps indices under <span class="inlinecode"><span class="i
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ <span class="id" title="tactic">apply</span> (<span class="id" title="lemma">Nat.lt_le_trans</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">Hi</span>). <span class="id" title="tactic">rewrite</span> <span class="id" title="var">Hlen_eq</span>. <span class="id" title="tactic">apply</span> <span class="id" title="lemma">Nat.le_refl</span>. }<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">specialize</span> (<span class="id" title="var">IH</span> <span class="id" title="var">Hne_tail</span> <span class="id" title="var">Hrect_tail</span>).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">simpl</span> (<a class="idref" href="Semiring.MatN.html#transpose_list"><span class="id" title="definition">transpose_list</span></a> (<span class="id" title="var">xsh</span> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#::list_scope:x_'::'_x"><span class="id" title="notation">::</span></a> <span class="id" title="var">xssth</span> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#::list_scope:x_'::'_x"><span class="id" title="notation">::</span></a> <span class="id" title="var">L''</span>)).<br/>
+</div>
+
+<div class="doc">
+shared helper lemmas 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">Hpos_xsh</span> : 0 <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Peano.html#::nat_scope:x_'&lt;'_x"><span class="id" title="notation">&lt;</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#length"><span class="id" title="definition">length</span></a> <span class="id" title="var">xsh</span>) <span class="id" title="tactic">by</span> <span class="id" title="var">nia</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">Hpos_xssth</span> : 0 <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Peano.html#::nat_scope:x_'&lt;'_x"><span class="id" title="notation">&lt;</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#length"><span class="id" title="definition">length</span></a> (<span class="id" title="var">xssth</span> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#::list_scope:x_'::'_x"><span class="id" title="notation">::</span></a> <span class="id" title="var">L''</span>)) <span class="id" title="tactic">by</span> (<span class="id" title="var">cbn</span>; <span class="id" title="var">nia</span>).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">Hrect_full</span> : <span class="id" title="keyword">∀</span> <a id="xs:280" class="idref" href="#xs:280"><span class="id" title="binder"><span id="xs:282" class="id">xs</span></span></a> <a id="ys:281" class="idref" href="#ys:281"><span class="id" title="binder"><span id="ys:283" class="id">ys</span></span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <span class="id" title="var">R</span>,<br/>
@@ -900,6 +1145,13 @@ Key lemma: transpose swaps indices under <span class="inlinecode"><span class="i
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Key lemma: dot_product v1 v2 = sum(λk. v1<span class="inlinecode"><span class="id" title="var">k</span></span>*v2<span class="inlinecode"><span class="id" title="var">k</span></span>) when
+      |v1| = |v2| = |elements| 
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="dot_product_eq_sum" class="idref" href="#dot_product_eq_sum"><span class="id" title="lemma">dot_product_eq_sum</span></a> {<a id="R:292" class="idref" href="#R:292"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} : <span class="id" title="keyword">∀</span> (<a id="v1:293" class="idref" href="#v1:293"><span class="id" title="binder">v1</span></a> <a id="v2:294" class="idref" href="#v2:294"><span class="id" title="binder">v2</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.MatN.html#R:292"><span class="id" title="variable">R</span></a>),<br/>
@@ -916,6 +1168,13 @@ Key lemma: transpose swaps indices under <span class="inlinecode"><span class="i
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Key lemma: of_list (mul_list L1 L2) r c =
+                 dot_product(row_r(L1), col_c(L2)) 
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="of_list_mul_list_as_dot_product" class="idref" href="#of_list_mul_list_as_dot_product"><span class="id" title="lemma">of_list_mul_list_as_dot_product</span></a> {<a id="R:296" class="idref" href="#R:296"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} : <span class="id" title="keyword">∀</span> (<a id="L1:297" class="idref" href="#L1:297"><span class="id" title="binder">L1</span></a> <a id="L2:298" class="idref" href="#L2:298"><span class="id" title="binder">L2</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.MatN.html#R:296"><span class="id" title="variable">R</span></a>)) (<a id="r:299" class="idref" href="#r:299"><span class="id" title="binder">r</span></a> <a id="c:300" class="idref" href="#c:300"><span class="id" title="binder">c</span></a> : <a class="idref" href="Semiring.MatN.html#Matrix.Node"><span class="id" title="variable">Node</span></a>),<br/>
@@ -957,6 +1216,12 @@ Key lemma: transpose swaps indices under <span class="inlinecode"><span class="i
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Helper: for a list where all rows have equal length, transpose has that many rows 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="transpose_list_length_eq_n" class="idref" href="#transpose_list_length_eq_n"><span class="id" title="lemma">transpose_list_length_eq_n</span></a> {<a id="R:307" class="idref" href="#R:307"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} : <span class="id" title="keyword">∀</span> (<a id="L:308" class="idref" href="#L:308"><span class="id" title="binder">L</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.MatN.html#R:307"><span class="id" title="variable">R</span></a>)) (<a id="m:309" class="idref" href="#m:309"><span class="id" title="binder">m</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>),<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Semiring.MatN.html#L:308"><span class="id" title="variable">L</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'&lt;&gt;'_x"><span class="id" title="notation">≠</span></a> <span class="id" title="notation">[]</span> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">(</span></a><span class="id" title="keyword">∀</span> <a id="row:310" class="idref" href="#row:310"><span class="id" title="binder">row</span></a>, <span class="id" title="definition">In</span> <a class="idref" href="Semiring.MatN.html#row:310"><span class="id" title="variable">row</span></a> <a class="idref" href="Semiring.MatN.html#L:308"><span class="id" title="variable">L</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#length"><span class="id" title="definition">length</span></a> <a class="idref" href="Semiring.MatN.html#row:310"><span class="id" title="variable">row</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="Semiring.MatN.html#m:309"><span class="id" title="variable">m</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">)</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a><br/>
@@ -979,6 +1244,12 @@ Key lemma: transpose swaps indices under <span class="inlinecode"><span class="i
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Helper: each row of transpose_list L has length = length L (rectangular, nonempty) 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="transpose_row_len_eq" class="idref" href="#transpose_row_len_eq"><span class="id" title="lemma">transpose_row_len_eq</span></a> {<a id="R:315" class="idref" href="#R:315"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} : <span class="id" title="keyword">∀</span> (<a id="L:316" class="idref" href="#L:316"><span class="id" title="binder">L</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.MatN.html#R:315"><span class="id" title="variable">R</span></a>)),<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Semiring.MatN.html#L:316"><span class="id" title="variable">L</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'&lt;&gt;'_x"><span class="id" title="notation">≠</span></a> <span class="id" title="notation">[]</span> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">(</span></a><span class="id" title="keyword">∀</span> <a id="xs:317" class="idref" href="#xs:317"><span class="id" title="binder">xs</span></a> <a id="ys:318" class="idref" href="#ys:318"><span class="id" title="binder">ys</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.MatN.html#R:315"><span class="id" title="variable">R</span></a>, <span class="id" title="definition">In</span> <a class="idref" href="Semiring.MatN.html#xs:317"><span class="id" title="variable">xs</span></a> <a class="idref" href="Semiring.MatN.html#L:316"><span class="id" title="variable">L</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <span class="id" title="definition">In</span> <a class="idref" href="Semiring.MatN.html#ys:318"><span class="id" title="variable">ys</span></a> <a class="idref" href="Semiring.MatN.html#L:316"><span class="id" title="variable">L</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#length"><span class="id" title="definition">length</span></a> <a class="idref" href="Semiring.MatN.html#xs:317"><span class="id" title="variable">xs</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#length"><span class="id" title="definition">length</span></a> <a class="idref" href="Semiring.MatN.html#ys:318"><span class="id" title="variable">ys</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">)</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a><br/>
@@ -992,6 +1263,12 @@ Key lemma: transpose swaps indices under <span class="inlinecode"><span class="i
 &nbsp;&nbsp;&nbsp;&nbsp;- <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">change</span> (<a class="idref" href="Semiring.MatN.html#transpose_list"><span class="id" title="definition">transpose_list</span></a> (<span class="id" title="var">xsh</span> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#::list_scope:x_'::'_x"><span class="id" title="notation">::</span></a> <span class="id" title="var">xssth</span> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#::list_scope:x_'::'_x"><span class="id" title="notation">::</span></a> <span class="id" title="var">L''</span>))<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">with</span> (<a class="idref" href="Semiring.MatN.html#zip_with"><span class="id" title="definition">zip_with</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#cons"><span class="id" title="constructor">cons</span></a> <span class="id" title="var">xsh</span> (<a class="idref" href="Semiring.MatN.html#transpose_list"><span class="id" title="definition">transpose_list</span></a> (<span class="id" title="var">xssth</span> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#::list_scope:x_'::'_x"><span class="id" title="notation">::</span></a> <span class="id" title="var">L''</span>))) <span class="id" title="tactic">in</span> <span class="id" title="var">Hin</span>.<br/>
+</div>
+
+<div class="doc">
+Any element of zip_with is at some index k 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> (<span class="id" title="lemma">In_nth</span> (<span class="id" title="var">A</span> := <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <span class="id" title="var">R</span>) <span class="id" title="var">_</span> <span class="id" title="var">_</span> (<span class="id" title="notation">[]</span> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <span class="id" title="var">R</span>)) <span class="id" title="tactic">in</span> <span class="id" title="var">Hin</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">Hin</span> <span class="id" title="keyword">as</span> (<span class="id" title="var">k</span> &amp; <span class="id" title="var">Hk</span> &amp; <span class="id" title="var">Hrow</span>).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">Hk_xsh</span> : (<span class="id" title="var">k</span> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Peano.html#::nat_scope:x_'&lt;'_x"><span class="id" title="notation">&lt;</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#length"><span class="id" title="definition">length</span></a> <span class="id" title="var">xsh</span>)%<span class="id" title="var">nat</span>).<br/>
@@ -1001,6 +1278,12 @@ Key lemma: transpose swaps indices under <span class="inlinecode"><span class="i
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">subst</span> <span class="id" title="var">row</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> (<a class="idref" href="Semiring.MatN.html#nth_zip_with_cons_in_bounds"><span class="id" title="lemma">nth_zip_with_cons_in_bounds</span></a> <span class="id" title="var">R</span> <span class="id" title="var">xsh</span> (<a class="idref" href="Semiring.MatN.html#transpose_list"><span class="id" title="definition">transpose_list</span></a> (<span class="id" title="var">xssth</span> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#::list_scope:x_'::'_x"><span class="id" title="notation">::</span></a> <span class="id" title="var">L''</span>)) <span class="id" title="var">k</span> (0 : <span class="id" title="var">R</span>) <span class="id" title="var">Hk_xsh</span> <span class="id" title="var">Hk_T</span>).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">simpl</span>. <span class="id" title="tactic">f_equal</span>.<br/>
+</div>
+
+<div class="doc">
+Need: length (nth k (transpose_list (xssth :: L'')) <font size=-2>&#9744;</font>) = length (xssth :: L'') 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">pose</span> <span class="id" title="var">proof</span> (<span class="id" title="lemma">nth_In</span> (<span class="id" title="var">A</span> := <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <span class="id" title="var">R</span>) (<a class="idref" href="Semiring.MatN.html#transpose_list"><span class="id" title="definition">transpose_list</span></a> (<span class="id" title="var">xssth</span> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#::list_scope:x_'::'_x"><span class="id" title="notation">::</span></a> <span class="id" title="var">L''</span>)) (<span class="id" title="notation">[]</span> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <span class="id" title="var">R</span>) <span class="id" title="var">Hk_T</span>) <span class="id" title="keyword">as</span> <span class="id" title="var">Hin_T</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="var">IH</span> <span class="id" title="keyword">with</span> (<span class="id" title="var">row</span> := <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Lists.ListDef.html#nth"><span class="id" title="definition">nth</span></a> <span class="id" title="var">k</span> (<a class="idref" href="Semiring.MatN.html#transpose_list"><span class="id" title="definition">transpose_list</span></a> (<span class="id" title="var">xssth</span> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#::list_scope:x_'::'_x"><span class="id" title="notation">::</span></a> <span class="id" title="var">L''</span>)) <span class="id" title="notation">[]</span>); <span class="id" title="tactic">auto</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" title="tactic">intro</span> <span class="id" title="var">Hc</span>; <span class="id" title="tactic">congruence</span>.<br/>
@@ -1008,6 +1291,13 @@ Key lemma: transpose swaps indices under <span class="inlinecode"><span class="i
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab62"></a><h2 class="section">list_lookup_transpose: transpose swaps key lookup</h2>
+
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="list_lookup_transpose" class="idref" href="#list_lookup_transpose"><span class="id" title="lemma">list_lookup_transpose</span></a> {<a id="R:320" class="idref" href="#R:320"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} : <span class="id" title="keyword">∀</span> (<a id="L:321" class="idref" href="#L:321"><span class="id" title="binder">L</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.MatN.html#R:320"><span class="id" title="variable">R</span></a>)) (<a id="c:322" class="idref" href="#c:322"><span class="id" title="binder">c</span></a> <a id="y:323" class="idref" href="#y:323"><span class="id" title="binder">y</span></a> : <a class="idref" href="Semiring.MatN.html#Matrix.Node"><span class="id" title="variable">Node</span></a>),<br/>
@@ -1022,7 +1312,12 @@ Key lemma: transpose swaps indices under <span class="inlinecode"><span class="i
 &nbsp;&nbsp;&nbsp;&nbsp;{ <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">HL</span> : <span class="id" title="var">L</span> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <span class="id" title="notation">[]</span>) <span class="id" title="tactic">by</span> (<span class="id" title="tactic">destruct</span> <span class="id" title="var">L</span>; <span class="id" title="var">cbn</span> <span class="id" title="tactic">in</span> <span class="id" title="var">Hlen0</span>; [<span class="id" title="tactic">reflexivity</span> | <span class="id" title="var">nia</span>]).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">subst</span> <span class="id" title="var">L</span>. <span class="id" title="var">cbn</span>. <span class="id" title="tactic">destruct</span> <span class="id" title="var">j</span>; <span class="id" title="tactic">destruct</span> <span class="id" title="var">i</span>; <span class="id" title="tactic">reflexivity</span>. }<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;</div>
+
+<div class="doc">
+L is nonempty 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">HLne</span> : <span class="id" title="var">L</span> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'&lt;&gt;'_x"><span class="id" title="notation">≠</span></a> <span class="id" title="notation">[]</span>) <span class="id" title="tactic">by</span> (<span class="id" title="tactic">intro</span> <span class="id" title="var">H</span>; <span class="id" title="tactic">subst</span> <span class="id" title="var">L</span>; <span class="id" title="var">cbn</span> <span class="id" title="tactic">in</span> <span class="id" title="var">Hlen_pos</span>; <span class="id" title="var">nia</span>).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">set</span> (<span class="id" title="var">h</span> := <span class="id" title="definition">List.hd</span> (<span class="id" title="notation">[]</span> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <span class="id" title="var">R</span>) <span class="id" title="var">L</span>).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">set</span> (<span class="id" title="var">m</span> := <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#length"><span class="id" title="definition">length</span></a> <span class="id" title="var">h</span>).<br/>
@@ -1053,6 +1348,12 @@ Key lemma: transpose swaps indices under <span class="inlinecode"><span class="i
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">Hnth_i_T</span> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Lists.ListDef.html#nth"><span class="id" title="definition">nth</span></a> <span class="id" title="var">i</span> (<a class="idref" href="Semiring.MatN.html#transpose_list"><span class="id" title="definition">transpose_list</span></a> <span class="id" title="var">L</span>) (<span class="id" title="notation">[]</span> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <span class="id" title="var">R</span>) <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">(</span></a><span class="id" title="notation">[]</span> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <span class="id" title="var">R</span><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">)</span></a>).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ <span class="id" title="tactic">apply</span> <span class="id" title="lemma">List.nth_overflow</span>. <span class="id" title="tactic">rewrite</span> <span class="id" title="var">HlenT</span>. <span class="id" title="tactic">exact</span> <span class="id" title="var">Hi_ge</span>. }<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> <span class="id" title="var">Hnth_i_T</span>.<br/>
+</div>
+
+<div class="doc">
+Prove nth j <font size=-2>&#9744;</font> 0 = 0 by destructing j, then handle RHS 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">j</span> <span class="id" title="keyword">as</span> [|<span class="id" title="var">j'</span>].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ <span class="id" title="tactic">simpl</span>. <span class="id" title="tactic">apply</span> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#eq_sym"><span class="id" title="lemma">eq_sym</span></a>. <span class="id" title="tactic">apply</span> <span class="id" title="lemma">List.nth_overflow</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">Hlen_row_j</span> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#length"><span class="id" title="definition">length</span></a> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Lists.ListDef.html#nth"><span class="id" title="definition">nth</span></a> 0 <span class="id" title="var">L</span> (<span class="id" title="notation">[]</span> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <span class="id" title="var">R</span>)) <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <span class="id" title="var">m</span>).<br/>
@@ -1070,6 +1371,13 @@ Key lemma: transpose swaps indices under <span class="inlinecode"><span class="i
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab63"></a><h2 class="section">Main proof: of_list_mul_list_gen</h2>
+
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="of_list_mul_list_gen" class="idref" href="#of_list_mul_list_gen"><span class="id" title="lemma">of_list_mul_list_gen</span></a> {<a id="R:328" class="idref" href="#R:328"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} : <span class="id" title="keyword">∀</span> (<a id="L1:329" class="idref" href="#L1:329"><span class="id" title="binder">L1</span></a> <a id="L2:330" class="idref" href="#L2:330"><span class="id" title="binder">L2</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.MatN.html#R:328"><span class="id" title="variable">R</span></a>)) (<a id="r:331" class="idref" href="#r:331"><span class="id" title="binder">r</span></a> <a id="c:332" class="idref" href="#c:332"><span class="id" title="binder">c</span></a> : <a class="idref" href="Semiring.MatN.html#Matrix.Node"><span class="id" title="variable">Node</span></a>),<br/>
@@ -1104,6 +1412,13 @@ Key lemma: transpose swaps indices under <span class="inlinecode"><span class="i
 &nbsp;&nbsp;&nbsp;&nbsp;- <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> <a class="idref" href="Semiring.MatN.html#list_lookup_nth_gen"><span class="id" title="lemma">list_lookup_nth_gen</span></a>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">set</span> (<span class="id" title="var">i</span> := <a class="idref" href="Semiring.MatN.html#index_of"><span class="id" title="definition">index_of</span></a> <span class="id" title="var">c</span>).<br/>
+</div>
+
+<div class="doc">
+Need: length (nth i (transpose_list L2) <font size=-2>&#9744;</font>) = n
+          Lemma: for n×n rectangular L2, each row of transpose has length = length L2 = n 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">Htranspose_nth_len</span> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#length"><span class="id" title="definition">length</span></a> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Lists.ListDef.html#nth"><span class="id" title="definition">nth</span></a> <span class="id" title="var">i</span> (<a class="idref" href="Semiring.MatN.html#transpose_list"><span class="id" title="definition">transpose_list</span></a> <span class="id" title="var">L2</span>) <span class="id" title="notation">[]</span>) <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#length"><span class="id" title="definition">length</span></a> <span class="id" title="var">L2</span>).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">L2_nonempty</span> : <span class="id" title="var">L2</span> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'&lt;&gt;'_x"><span class="id" title="notation">≠</span></a> <span class="id" title="notation">[]</span>).<br/>
@@ -1138,6 +1453,13 @@ Base case: <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#po
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab64"></a><h2 class="section">Helper lemmas: to_list and pow_list preserve the square shape</h2>
+
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="to_list_length" class="idref" href="#to_list_length"><span class="id" title="lemma">to_list_length</span></a> {<a id="R:345" class="idref" href="#R:345"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} : <span class="id" title="keyword">∀</span> (<a id="m:346" class="idref" href="#m:346"><span class="id" title="binder">m</span></a> : @<a class="idref" href="Semiring.MatN.html#Matrix.Matrix"><span class="id" title="variable">Matrix</span></a> <a class="idref" href="Semiring.MatN.html#R:345"><span class="id" title="variable">R</span></a>),<br/>
@@ -1225,6 +1547,13 @@ Rows of <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#mul_l
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab65"></a><h2 class="section">Helper: mul_list preserves square shape</h2>
+
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="mul_list_square" class="idref" href="#mul_list_square"><span class="id" title="lemma">mul_list_square</span></a> {<a id="R:361" class="idref" href="#R:361"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} : <span class="id" title="keyword">∀</span> (<a id="la:362" class="idref" href="#la:362"><span class="id" title="binder">la</span></a> <a id="lb:363" class="idref" href="#lb:363"><span class="id" title="binder">lb</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.MatN.html#R:361"><span class="id" title="variable">R</span></a>)),<br/>
@@ -1271,6 +1600,13 @@ Rows of <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#mul_l
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab66"></a><h2 class="section">pow = pow_fun  (mathematical = efficient, unary case)</h2>
+
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="pow_pow_fun_eqv" class="idref" href="#pow_pow_fun_eqv"><span class="id" title="lemma">pow_pow_fun_eqv</span></a> {<a id="R:371" class="idref" href="#R:371"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} : <span class="id" title="keyword">∀</span> (<a id="m:372" class="idref" href="#m:372"><span class="id" title="binder">m</span></a> : @<a class="idref" href="Semiring.MatN.html#Matrix.Matrix"><span class="id" title="variable">Matrix</span></a> <a class="idref" href="Semiring.MatN.html#R:371"><span class="id" title="variable">R</span></a>) (<a id="n:373" class="idref" href="#n:373"><span class="id" title="binder">n</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>) <a id="c:374" class="idref" href="#c:374"><span class="id" title="binder">c</span></a> <a id="d:375" class="idref" href="#d:375"><span class="id" title="binder">d</span></a>,<br/>
@@ -1296,8 +1632,16 @@ Rows of <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#mul_l
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
 
-<br/>
+<div class="doc">
+<a id="lab67"></a><h2 class="section">pow via N.to_nat = powN  (unary = binary exponentiation)</h2>
+
+<div class="paragraph"> </div>
+
+ When NoDup l and d ∉ l, all I y d = 0, so the fold is 0. 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="fold_I_zero" class="idref" href="#fold_I_zero"><span class="id" title="lemma">fold_I_zero</span></a> {<a id="R:376" class="idref" href="#R:376"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} : <span class="id" title="keyword">∀</span> (<a id="l:377" class="idref" href="#l:377"><span class="id" title="binder">l</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.MatN.html#Matrix.Node"><span class="id" title="variable">Node</span></a>) (<a id="c:378" class="idref" href="#c:378"><span class="id" title="binder">c</span></a> <a id="d:379" class="idref" href="#d:379"><span class="id" title="binder">d</span></a> : <a class="idref" href="Semiring.MatN.html#Matrix.Node"><span class="id" title="variable">Node</span></a>) (<a id="m:380" class="idref" href="#m:380"><span class="id" title="binder">m</span></a> : @<a class="idref" href="Semiring.MatN.html#Matrix.Matrix"><span class="id" title="variable">Matrix</span></a> <a class="idref" href="Semiring.MatN.html#R:376"><span class="id" title="variable">R</span></a>),<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">(</span></a><span class="id" title="keyword">∀</span> <a id="y:381" class="idref" href="#y:381"><span class="id" title="binder">y</span></a>, <span class="id" title="definition">In</span> <a class="idref" href="Semiring.MatN.html#y:381"><span class="id" title="variable">y</span></a> <a class="idref" href="Semiring.MatN.html#l:377"><span class="id" title="variable">l</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Semiring.MatN.html#y:381"><span class="id" title="variable">y</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'&lt;&gt;'_x"><span class="id" title="notation">≠</span></a> <a class="idref" href="Semiring.MatN.html#d:379"><span class="id" title="variable">d</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">)</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="definition">fold_right</span> (<span class="id" title="keyword">fun</span> <a id="y:382" class="idref" href="#y:382"><span class="id" title="binder">y</span></a> <a id="acc:383" class="idref" href="#acc:383"><span class="id" title="binder">acc</span></a> ⇒<br/>
@@ -1498,6 +1842,12 @@ Left-distributivity of sum over multiplication: <span class="inlinecode"><span c
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Generalized sum_add: works on any list, not just elements 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="fold_right_add_gen" class="idref" href="#fold_right_add_gen"><span class="id" title="lemma">fold_right_add_gen</span></a> {<a id="R:425" class="idref" href="#R:425"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} : <span class="id" title="keyword">∀</span> (<a id="g:426" class="idref" href="#g:426"><span class="id" title="binder">g</span></a> <a id="h:427" class="idref" href="#h:427"><span class="id" title="binder">h</span></a> : <a class="idref" href="Semiring.MatN.html#Matrix.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Semiring.MatN.html#R:425"><span class="id" title="variable">R</span></a>) (<a id="l:428" class="idref" href="#l:428"><span class="id" title="binder">l</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.MatN.html#Matrix.Node"><span class="id" title="variable">Node</span></a>),<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="definition">fold_right</span> (<span class="id" title="keyword">fun</span> <a id="x:429" class="idref" href="#x:429"><span class="id" title="binder">x</span></a> <a id="acc:430" class="idref" href="#acc:430"><span class="id" title="binder">acc</span></a> ⇒ <a class="idref" href="Semiring.MatN.html#g:426"><span class="id" title="variable">g</span></a> <a class="idref" href="Semiring.MatN.html#x:429"><span class="id" title="variable">x</span></a> <a class="idref" href="Semiring.Structures.html#5a105efba9ec815920c0186c077a884f"><span class="id" title="notation">+</span></a> <a class="idref" href="Semiring.MatN.html#acc:430"><span class="id" title="variable">acc</span></a>) 0 <a class="idref" href="Semiring.MatN.html#l:428"><span class="id" title="variable">l</span></a> <a class="idref" href="Semiring.Structures.html#5a105efba9ec815920c0186c077a884f"><span class="id" title="notation">+</span></a> <span class="id" title="definition">fold_right</span> (<span class="id" title="keyword">fun</span> <a id="x:431" class="idref" href="#x:431"><span class="id" title="binder">x</span></a> <a id="acc:432" class="idref" href="#acc:432"><span class="id" title="binder">acc</span></a> ⇒ <a class="idref" href="Semiring.MatN.html#h:427"><span class="id" title="variable">h</span></a> <a class="idref" href="Semiring.MatN.html#x:431"><span class="id" title="variable">x</span></a> <a class="idref" href="Semiring.Structures.html#5a105efba9ec815920c0186c077a884f"><span class="id" title="notation">+</span></a> <a class="idref" href="Semiring.MatN.html#acc:432"><span class="id" title="variable">acc</span></a>) 0 <a class="idref" href="Semiring.MatN.html#l:428"><span class="id" title="variable">l</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="definition">fold_right</span> (<span class="id" title="keyword">fun</span> <a id="x:433" class="idref" href="#x:433"><span class="id" title="binder">x</span></a> <a id="acc:434" class="idref" href="#acc:434"><span class="id" title="binder">acc</span></a> ⇒ <a class="idref" href="Semiring.Structures.html#5a105efba9ec815920c0186c077a884f"><span class="id" title="notation">(</span></a><a class="idref" href="Semiring.MatN.html#g:426"><span class="id" title="variable">g</span></a> <a class="idref" href="Semiring.MatN.html#x:433"><span class="id" title="variable">x</span></a> <a class="idref" href="Semiring.Structures.html#5a105efba9ec815920c0186c077a884f"><span class="id" title="notation">+</span></a> <a class="idref" href="Semiring.MatN.html#h:427"><span class="id" title="variable">h</span></a> <a class="idref" href="Semiring.MatN.html#x:433"><span class="id" title="variable">x</span></a><a class="idref" href="Semiring.Structures.html#5a105efba9ec815920c0186c077a884f"><span class="id" title="notation">)</span></a> <a class="idref" href="Semiring.Structures.html#5a105efba9ec815920c0186c077a884f"><span class="id" title="notation">+</span></a> <a class="idref" href="Semiring.MatN.html#acc:434"><span class="id" title="variable">acc</span></a>) 0 <a class="idref" href="Semiring.MatN.html#l:428"><span class="id" title="variable">l</span></a>.<br/>
@@ -1512,6 +1862,12 @@ Left-distributivity of sum over multiplication: <span class="inlinecode"><span c
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Interchange of double sums over a semiring. 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="sum_interchange" class="idref" href="#sum_interchange"><span class="id" title="lemma">sum_interchange</span></a> {<a id="R:443" class="idref" href="#R:443"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} : <span class="id" title="keyword">∀</span> (<a id="f:444" class="idref" href="#f:444"><span class="id" title="binder">f</span></a> : <a class="idref" href="Semiring.MatN.html#Matrix.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Semiring.MatN.html#Matrix.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Semiring.MatN.html#R:443"><span class="id" title="variable">R</span></a>),<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Semiring.MatN.html#sum"><span class="id" title="definition">sum</span></a> (<span class="id" title="keyword">fun</span> <a id="y:445" class="idref" href="#y:445"><span class="id" title="binder">y</span></a> ⇒ <a class="idref" href="Semiring.MatN.html#sum"><span class="id" title="definition">sum</span></a> (<span class="id" title="keyword">fun</span> <a id="z:446" class="idref" href="#z:446"><span class="id" title="binder">z</span></a> ⇒ <a class="idref" href="Semiring.MatN.html#f:444"><span class="id" title="variable">f</span></a> <a class="idref" href="Semiring.MatN.html#y:445"><span class="id" title="variable">y</span></a> <a class="idref" href="Semiring.MatN.html#z:446"><span class="id" title="variable">z</span></a>)) <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Semiring.MatN.html#sum"><span class="id" title="definition">sum</span></a> (<span class="id" title="keyword">fun</span> <a id="z:447" class="idref" href="#z:447"><span class="id" title="binder">z</span></a> ⇒ <a class="idref" href="Semiring.MatN.html#sum"><span class="id" title="definition">sum</span></a> (<span class="id" title="keyword">fun</span> <a id="y:448" class="idref" href="#y:448"><span class="id" title="binder">y</span></a> ⇒ <a class="idref" href="Semiring.MatN.html#f:444"><span class="id" title="variable">f</span></a> <a class="idref" href="Semiring.MatN.html#y:448"><span class="id" title="variable">y</span></a> <a class="idref" href="Semiring.MatN.html#z:447"><span class="id" title="variable">z</span></a>)).<br/>
@@ -1642,8 +1998,16 @@ Binary exponentiation agrees with linear exponentiation for matrices.
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
 
-<br/>
+<div class="doc">
+<a id="lab68"></a><h2 class="section">pow_fun via N.to_nat = powN_fun</h2>
+
+<div class="paragraph"> </div>
+
+ Helper: pow_pos_list preserves square shape 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="pow_pos_list_square" class="idref" href="#pow_pos_list_square"><span class="id" title="lemma">pow_pos_list_square</span></a> {<a id="R:511" class="idref" href="#R:511"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} : <span class="id" title="keyword">∀</span> (<a id="m:512" class="idref" href="#m:512"><span class="id" title="binder">m</span></a> : @<a class="idref" href="Semiring.MatN.html#Matrix.Matrix"><span class="id" title="variable">Matrix</span></a> <a class="idref" href="Semiring.MatN.html#R:511"><span class="id" title="variable">R</span></a>) (<a id="p:513" class="idref" href="#p:513"><span class="id" title="binder">p</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Numbers.BinNums.html#positive"><span class="id" title="inductive">positive</span></a>),<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#length"><span class="id" title="definition">length</span></a> (<a class="idref" href="Semiring.MatN.html#pow_pos_list"><span class="id" title="definition">pow_pos_list</span></a> (<a class="idref" href="Semiring.MatN.html#to_list"><span class="id" title="definition">to_list</span></a> <a class="idref" href="Semiring.MatN.html#m:512"><span class="id" title="variable">m</span></a>) <a class="idref" href="Semiring.MatN.html#p:513"><span class="id" title="variable">p</span></a>) <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#length"><span class="id" title="definition">length</span></a> (<a class="idref" href="Semiring.Structures.html#elements"><span class="id" title="definition">elements</span></a> (<span class="id" title="var">s</span> := <a class="idref" href="Semiring.MatN.html#Matrix.Node"><span class="id" title="variable">Node</span></a>))<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#ba2b0e492d2b4675a0acf3ea92aabadd"><span class="id" title="notation">∧</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#ba2b0e492d2b4675a0acf3ea92aabadd"><span class="id" title="notation">(</span></a><span class="id" title="keyword">∀</span> <a id="row:514" class="idref" href="#row:514"><span class="id" title="binder">row</span></a>, <span class="id" title="definition">In</span> <a class="idref" href="Semiring.MatN.html#row:514"><span class="id" title="variable">row</span></a> (<a class="idref" href="Semiring.MatN.html#pow_pos_list"><span class="id" title="definition">pow_pos_list</span></a> (<a class="idref" href="Semiring.MatN.html#to_list"><span class="id" title="definition">to_list</span></a> <a class="idref" href="Semiring.MatN.html#m:512"><span class="id" title="variable">m</span></a>) <a class="idref" href="Semiring.MatN.html#p:513"><span class="id" title="variable">p</span></a>) <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#length"><span class="id" title="definition">length</span></a> <a class="idref" href="Semiring.MatN.html#row:514"><span class="id" title="variable">row</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#length"><span class="id" title="definition">length</span></a> (<a class="idref" href="Semiring.Structures.html#elements"><span class="id" title="definition">elements</span></a> (<span class="id" title="var">s</span> := <a class="idref" href="Semiring.MatN.html#Matrix.Node"><span class="id" title="variable">Node</span></a>))<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#ba2b0e492d2b4675a0acf3ea92aabadd"><span class="id" title="notation">)</span></a>.<br/>
@@ -1669,6 +2033,12 @@ Binary exponentiation agrees with linear exponentiation for matrices.
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Helper: of_list (pow_pos_list (to_list m) p) = pow_pos m p 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="of_list_pow_pos_list" class="idref" href="#of_list_pow_pos_list"><span class="id" title="lemma">of_list_pow_pos_list</span></a> {<a id="R:515" class="idref" href="#R:515"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} : <span class="id" title="keyword">∀</span> (<a id="m:516" class="idref" href="#m:516"><span class="id" title="binder">m</span></a> : @<a class="idref" href="Semiring.MatN.html#Matrix.Matrix"><span class="id" title="variable">Matrix</span></a> <a class="idref" href="Semiring.MatN.html#R:515"><span class="id" title="variable">R</span></a>) (<a id="p:517" class="idref" href="#p:517"><span class="id" title="binder">p</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Numbers.BinNums.html#positive"><span class="id" title="inductive">positive</span></a>) (<a id="c:518" class="idref" href="#c:518"><span class="id" title="binder">c</span></a> <a id="d:519" class="idref" href="#d:519"><span class="id" title="binder">d</span></a> : <a class="idref" href="Semiring.MatN.html#Matrix.Node"><span class="id" title="variable">Node</span></a>),<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Semiring.MatN.html#of_list"><span class="id" title="definition">of_list</span></a> (<a class="idref" href="Semiring.MatN.html#pow_pos_list"><span class="id" title="definition">pow_pos_list</span></a> (<a class="idref" href="Semiring.MatN.html#to_list"><span class="id" title="definition">to_list</span></a> <a class="idref" href="Semiring.MatN.html#m:516"><span class="id" title="variable">m</span></a>) <a class="idref" href="Semiring.MatN.html#p:517"><span class="id" title="variable">p</span></a>) <a class="idref" href="Semiring.MatN.html#c:518"><span class="id" title="variable">c</span></a> <a class="idref" href="Semiring.MatN.html#d:519"><span class="id" title="variable">d</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="Semiring.MatN.html#pow_pos"><span class="id" title="definition">pow_pos</span></a> <a class="idref" href="Semiring.MatN.html#m:516"><span class="id" title="variable">m</span></a> <a class="idref" href="Semiring.MatN.html#p:517"><span class="id" title="variable">p</span></a> <a class="idref" href="Semiring.MatN.html#c:518"><span class="id" title="variable">c</span></a> <a class="idref" href="Semiring.MatN.html#d:519"><span class="id" title="variable">d</span></a>.<br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Proof</span>.<br/>
@@ -1710,12 +2080,14 @@ Binary exponentiation agrees with linear exponentiation for matrices.
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
-
-<br/>
 </div>
 
 <div class="doc">
-<span class="inlinecode"><a class="idref" href="Semiring.MatN.html#pow_fun"><span class="id" title="definition">pow_fun</span></a></span> via <span class="inlinecode"><span class="id" title="var">N.to_nat</span></span> equals <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#powN_fun"><span class="id" title="definition">powN_fun</span></a></span>. 
+List-level analogue of pow_pos_correct.
+      Only holds for square lists (same length and row length as elements). 
+<div class="paragraph"> </div>
+
+ <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#pow_fun"><span class="id" title="definition">pow_fun</span></a></span> via <span class="inlinecode"><span class="id" title="var">N.to_nat</span></span> equals <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#powN_fun"><span class="id" title="definition">powN_fun</span></a></span>. 
 </div>
 <div class="code">
 
@@ -1739,6 +2111,13 @@ Binary exponentiation agrees with linear exponentiation for matrices.
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab69"></a><h2 class="section">Main theorem: mathematical binary = efficient binary</h2>
+
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="powN_eqv" class="idref" href="#powN_eqv"><span class="id" title="lemma">powN_eqv</span></a> {<a id="R:525" class="idref" href="#R:525"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} : <span class="id" title="keyword">∀</span> (<a id="n:526" class="idref" href="#n:526"><span class="id" title="binder">n</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Numbers.BinNums.html#N"><span class="id" title="inductive">N</span></a>) (<a id="m:527" class="idref" href="#m:527"><span class="id" title="binder">m</span></a> : @<a class="idref" href="Semiring.MatN.html#Matrix.Matrix"><span class="id" title="variable">Matrix</span></a> <a class="idref" href="Semiring.MatN.html#R:525"><span class="id" title="variable">R</span></a>) <a id="c:528" class="idref" href="#c:528"><span class="id" title="binder">c</span></a> <a id="d:529" class="idref" href="#d:529"><span class="id" title="binder">d</span></a>,<br/>
@@ -1797,7 +2176,7 @@ Recurrence: <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#s
 </div>
 
 <div class="doc">
-<a id="lab2"></a><h2 class="section">k-closed semirings</h2>
+<a id="lab70"></a><h2 class="section">k-closed semirings</h2>
 
 <div class="paragraph"> </div>
 
@@ -1997,7 +2376,19 @@ Powers of a matrix commute with the matrix: <span class="inlinecode"><a class="i
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">induction</span> <span class="id" title="var">k</span> <span class="id" title="keyword">as</span> [|<span class="id" title="var">k</span> <span class="id" title="var">IH</span>]; <span class="id" title="tactic">intros</span> <span class="id" title="var">c</span> <span class="id" title="var">d</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;- <span class="id" title="var">cbn</span>. <span class="id" title="tactic">rewrite</span> (<a class="idref" href="Semiring.MatN.html#matrix_mul_I_r"><span class="id" title="lemma">matrix_mul_I_r</span></a> <span class="id" title="var">m</span> <span class="id" title="var">c</span> <span class="id" title="var">d</span>). <span class="id" title="tactic">rewrite</span> (<a class="idref" href="Semiring.MatN.html#matrix_mul_I_l"><span class="id" title="lemma">matrix_mul_I_l</span></a> <span class="id" title="var">m</span> <span class="id" title="var">c</span> <span class="id" title="var">d</span>). <span class="id" title="tactic">reflexivity</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;- <span class="id" title="var">cbn</span> [<a class="idref" href="Semiring.MatN.html#pow"><span class="id" title="definition">pow</span></a>].<br/>
+</div>
+
+<div class="doc">
+Goal: (m *M (m *M pow m k)) c d = ((m *M pow m k) *M m) c d 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> (<a class="idref" href="Semiring.MatN.html#matrix_mul_assoc"><span class="id" title="lemma">matrix_mul_assoc</span></a> <span class="id" title="var">m</span> (<a class="idref" href="Semiring.MatN.html#pow"><span class="id" title="definition">pow</span></a> <span class="id" title="var">m</span> <span class="id" title="var">k</span>) <span class="id" title="var">m</span> <span class="id" title="var">c</span> <span class="id" title="var">d</span>).<br/>
+</div>
+
+<div class="doc">
+Goal: (m *M (m *M pow m k)) c d = (m *M (pow m k *M m)) c d 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">unfold</span> <a class="idref" href="Semiring.MatN.html#matrix_mul"><span class="id" title="definition">matrix_mul</span></a>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <a class="idref" href="Semiring.MatN.html#sum_ext"><span class="id" title="lemma">sum_ext</span></a>. <span class="id" title="tactic">intro</span> <span class="id" title="var">y</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#f_equal"><span class="id" title="lemma">f_equal</span></a> (<span class="id" title="keyword">fun</span> <a id="t:576" class="idref" href="#t:576"><span class="id" title="binder"><span id="t:577" class="id">t</span></span></a> ⇒ <span class="id" title="var">m</span> <span class="id" title="var">c</span> <span class="id" title="var">y</span> <a class="idref" href="Semiring.Structures.html#df06337ab011822b2792d206fc407479"><span class="id" title="notation">×</span></a> <a class="idref" href="Semiring.MatN.html#t:576"><span class="id" title="variable">t</span></a>)).<br/>
@@ -2022,6 +2413,13 @@ Right-distributivity of matrix multiplication over matrix addition:
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Right-sided version of <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#geom_sum_S"><span class="id" title="lemma">geom_sum_S</span></a></span>:
+      <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#geom_sum"><span class="id" title="definition">geom_sum</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.m"><span class="id" title="variable">m</span></a></span> <span class="inlinecode">(<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#S"><span class="id" title="constructor">S</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.NeutralityN.html#NeutralityN.Neutrality.t"><span class="id" title="variable">t</span></a>)</span> <span class="inlinecode">=</span> <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#I"><span class="id" title="definition">I</span></a></span> <span class="inlinecode">+</span> <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#geom_sum"><span class="id" title="definition">geom_sum</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.m"><span class="id" title="variable">m</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.NeutralityN.html#NeutralityN.Neutrality.t"><span class="id" title="variable">t</span></a></span> <span class="inlinecode">×<a class="idref" href="Examples.Profiles.html#M"><span class="id" title="abbreviation">M</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.m"><span class="id" title="variable">m</span></a></span>. 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="geom_sum_S_right" class="idref" href="#geom_sum_S_right"><span class="id" title="lemma">geom_sum_S_right</span></a> {<a id="R:586" class="idref" href="#R:586"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} :<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">∀</span> (<a id="t:587" class="idref" href="#t:587"><span class="id" title="binder">t</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>) (<a id="m:588" class="idref" href="#m:588"><span class="id" title="binder">m</span></a> : @<a class="idref" href="Semiring.MatN.html#Matrix.Matrix"><span class="id" title="variable">Matrix</span></a> <a class="idref" href="Semiring.MatN.html#R:586"><span class="id" title="variable">R</span></a>) (<a id="c:589" class="idref" href="#c:589"><span class="id" title="binder">c</span></a> <a id="d:590" class="idref" href="#d:590"><span class="id" title="binder">d</span></a> : <a class="idref" href="Semiring.MatN.html#Matrix.Node"><span class="id" title="variable">Node</span></a>),<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">(</span></a><a class="idref" href="Semiring.MatN.html#geom_sum"><span class="id" title="definition">geom_sum</span></a> <a class="idref" href="Semiring.MatN.html#m:588"><span class="id" title="variable">m</span></a> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#S"><span class="id" title="constructor">S</span></a> <a class="idref" href="Semiring.MatN.html#t:587"><span class="id" title="variable">t</span></a>) <a class="idref" href="Semiring.MatN.html#c:589"><span class="id" title="variable">c</span></a> <a class="idref" href="Semiring.MatN.html#d:590"><span class="id" title="variable">d</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">)</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="Semiring.MatN.html#102d127e8b30bfefc75444bfabe59512"><span class="id" title="notation">(</span></a><a class="idref" href="Semiring.MatN.html#I"><span class="id" title="definition">I</span></a> <a class="idref" href="Semiring.MatN.html#102d127e8b30bfefc75444bfabe59512"><span class="id" title="notation">+</span></a><a class="idref" href="Semiring.MatN.html#102d127e8b30bfefc75444bfabe59512"><span class="id" title="notation">M</span></a> <a class="idref" href="Semiring.MatN.html#102d127e8b30bfefc75444bfabe59512"><span class="id" title="notation">(</span></a><a class="idref" href="Semiring.MatN.html#geom_sum"><span class="id" title="definition">geom_sum</span></a> <a class="idref" href="Semiring.MatN.html#m:588"><span class="id" title="variable">m</span></a> <a class="idref" href="Semiring.MatN.html#t:587"><span class="id" title="variable">t</span></a> <a class="idref" href="Semiring.MatN.html#5dcc4bc61cb3deebc46818a54f7f2d89"><span class="id" title="notation">×</span></a><a class="idref" href="Semiring.MatN.html#5dcc4bc61cb3deebc46818a54f7f2d89"><span class="id" title="notation">M</span></a> <a class="idref" href="Semiring.MatN.html#m:588"><span class="id" title="variable">m</span></a><a class="idref" href="Semiring.MatN.html#102d127e8b30bfefc75444bfabe59512"><span class="id" title="notation">))</span></a> <a class="idref" href="Semiring.MatN.html#102d127e8b30bfefc75444bfabe59512"><span class="id" title="notation">c</span></a> <a class="idref" href="Semiring.MatN.html#102d127e8b30bfefc75444bfabe59512"><span class="id" title="notation">d</span></a>.<br/>
@@ -2283,7 +2681,7 @@ The power of the closure matrix stabilizes after the finite-node
 </div>
 
 <div class="doc">
-<a id="lab3"></a><h2 class="section">1.  Monotonicity of <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#pow"><span class="id" title="definition">pow</span></a></span> in the matrix argument</h2>
+<a id="lab71"></a><h2 class="section">1.  Monotonicity of <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#pow"><span class="id" title="definition">pow</span></a></span> in the matrix argument</h2>
 
 
 <div class="paragraph"> </div>
@@ -2333,7 +2731,7 @@ The power of the closure matrix stabilizes after the finite-node
 </div>
 
 <div class="doc">
-<a id="lab4"></a><h2 class="section">2.  Monotonicity of <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#geom_sum"><span class="id" title="definition">geom_sum</span></a></span> in the matrix argument</h2>
+<a id="lab72"></a><h2 class="section">2.  Monotonicity of <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#geom_sum"><span class="id" title="definition">geom_sum</span></a></span> in the matrix argument</h2>
 
 
 <div class="paragraph"> </div>
@@ -2361,7 +2759,7 @@ The power of the closure matrix stabilizes after the finite-node
 </div>
 
 <div class="doc">
-<a id="lab5"></a><h2 class="section">3.  Each power term is below the geometric sum</h2>
+<a id="lab73"></a><h2 class="section">3.  Each power term is below the geometric sum</h2>
 
 
 <div class="paragraph"> </div>
@@ -2397,7 +2795,7 @@ The power of the closure matrix stabilizes after the finite-node
 </div>
 
 <div class="doc">
-<a id="lab6"></a><h2 class="section">4.  Geometric sum is monotone in <span class="inlinecode"><span class="id" title="var">n</span></span></h2>
+<a id="lab74"></a><h2 class="section">4.  Geometric sum is monotone in <span class="inlinecode"><span class="id" title="var">n</span></span></h2>
 
 
 <div class="paragraph"> </div>
@@ -2419,7 +2817,7 @@ The power of the closure matrix stabilizes after the finite-node
 </div>
 
 <div class="doc">
-<a id="lab7"></a><h2 class="section">5.  Closure matrix has <span class="inlinecode">1</span> on the diagonal</h2>
+<a id="lab75"></a><h2 class="section">5.  Closure matrix has <span class="inlinecode">1</span> on the diagonal</h2>
 
 
 <div class="paragraph"> </div>
@@ -2444,7 +2842,7 @@ The power of the closure matrix stabilizes after the finite-node
 </div>
 
 <div class="doc">
-<a id="lab8"></a><h2 class="section">6.  <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#I"><span class="id" title="definition">I</span></a></span> is the top element for the <span class="inlinecode"><a class="idref" href="Semiring.OrelN.html#Orel"><span class="id" title="definition">Orel</span></a></span> preorder on the diagonal</h2>
+<a id="lab76"></a><h2 class="section">6.  <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#I"><span class="id" title="definition">I</span></a></span> is the top element for the <span class="inlinecode"><a class="idref" href="Semiring.OrelN.html#Orel"><span class="id" title="definition">Orel</span></a></span> preorder on the diagonal</h2>
 
 
 <div class="paragraph"> </div>
@@ -2470,7 +2868,7 @@ The power of the closure matrix stabilizes after the finite-node
 </div>
 
 <div class="doc">
-<a id="lab9"></a><h1 class="section">Supplementary matrix facts</h1>
+<a id="lab77"></a><h1 class="section">Supplementary matrix facts</h1>
 
 
 <div class="paragraph"> </div>
@@ -2482,7 +2880,7 @@ The power of the closure matrix stabilizes after the finite-node
       rather than reproving the sum-monotonicity machinery inline. 
 <div class="paragraph"> </div>
 
-<a id="lab10"></a><h2 class="section">7.  Transpose is involutive</h2>
+<a id="lab78"></a><h2 class="section">7.  Transpose is involutive</h2>
 
 
 <div class="paragraph"> </div>
@@ -2501,7 +2899,7 @@ The power of the closure matrix stabilizes after the finite-node
 </div>
 
 <div class="doc">
-<a id="lab11"></a><h2 class="section">8.  Transpose is monotone in the matrix argument</h2>
+<a id="lab79"></a><h2 class="section">8.  Transpose is monotone in the matrix argument</h2>
 
 
 <div class="paragraph"> </div>
@@ -2522,7 +2920,7 @@ The power of the closure matrix stabilizes after the finite-node
 </div>
 
 <div class="doc">
-<a id="lab12"></a><h2 class="section">9.  The identity matrix is its own transpose</h2>
+<a id="lab80"></a><h2 class="section">9.  The identity matrix is its own transpose</h2>
 
 
 <div class="paragraph"> </div>
@@ -2542,7 +2940,7 @@ The power of the closure matrix stabilizes after the finite-node
 </div>
 
 <div class="doc">
-<a id="lab13"></a><h2 class="section">10.  Matrix multiplication is monotone in both arguments</h2>
+<a id="lab81"></a><h2 class="section">10.  Matrix multiplication is monotone in both arguments</h2>
 
 
 <div class="paragraph"> </div>
@@ -2591,7 +2989,7 @@ The power of the closure matrix stabilizes after the finite-node
 </div>
 
 <div class="doc">
-<a id="lab14"></a><h2 class="section">11.  Transpose reverses matrix products</h2>
+<a id="lab82"></a><h2 class="section">11.  Transpose reverses matrix products</h2>
 
 
 <div class="paragraph"> </div>
@@ -2612,7 +3010,7 @@ The power of the closure matrix stabilizes after the finite-node
 </div>
 
 <div class="doc">
-<a id="lab15"></a><h2 class="section">12.  The zero matrix is the <span class="inlinecode"><a class="idref" href="Semiring.OrelN.html#Orel"><span class="id" title="definition">Orel</span></a></span>-bottom</h2>
+<a id="lab83"></a><h2 class="section">12.  The zero matrix is the <span class="inlinecode"><a class="idref" href="Semiring.OrelN.html#Orel"><span class="id" title="definition">Orel</span></a></span>-bottom</h2>
 
 
 <div class="paragraph"> </div>

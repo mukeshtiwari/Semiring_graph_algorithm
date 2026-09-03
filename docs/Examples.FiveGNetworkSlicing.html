@@ -27,6 +27,37 @@
 <span class="id" title="keyword">Import</span> <span class="id" title="module">ListNotations</span> <a class="idref" href="Semiring.Structures.html#SemiringNotations"><span class="id" title="module">SemiringNotations</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab175"></a><h1 class="section">5G Network Slicing - Latency-Bandwidth Product Semiring</h1>
+
+
+<div class="paragraph"> </div>
+
+    This models resource allocation across virtual network slices in a 5G
+    core network. Each link has two attributes:
+<a id="lab176"></a><h1 class="section">latency (ms)     - minimized (min-plus / tropical semiring)</h1>
+
+<a id="lab177"></a><h1 class="section">bandwidth (Mbps) - maximized (max-min semiring)</h1>
+
+
+<div class="paragraph"> </div>
+
+    The semiring R = Latency x Bandwidth is the DIRECT PRODUCT of the two
+    bounded semirings above. Since all axioms hold componentwise, the
+    product is again a bounded semiring.
+
+<div class="paragraph"> </div>
+
+    Topology:  4 nodes representing the 5G user plane data path:
+      UE (user equipment) -&gt; gNB (base station) -&gt; UPF (user plane) -&gt; DN
+
+<div class="paragraph"> </div>
+
+    A* computes the optimal path weights between all node pairs. 
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">Section</span> <a id="Comp" class="idref" href="#Comp"><span class="id" title="section">Comp</span></a>.<br/>
@@ -35,6 +66,12 @@
 &nbsp;&nbsp;<span class="id" title="keyword">Inductive</span> <a id="Node" class="idref" href="#Node"><span class="id" title="definition, inductive"><span id="Node_rect" class="id"><span id="Node_ind" class="id"><span id="Node_rec" class="id"><span id="Node_sind" class="id">Node</span></span></span></span></span></a> := <a id="UE" class="idref" href="#UE"><span class="id" title="constructor">UE</span></a> | <a id="gNB" class="idref" href="#gNB"><span class="id" title="constructor">gNB</span></a> | <a id="UPF" class="idref" href="#UPF"><span class="id" title="constructor">UPF</span></a> | <a id="DN" class="idref" href="#DN"><span class="id" title="constructor">DN</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Bandwidth: Nat with an Infinity marker 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Inductive</span> <a id="BW" class="idref" href="#BW"><span class="id" title="definition, inductive"><span id="BW_rect" class="id"><span id="BW_ind" class="id"><span id="BW_rec" class="id"><span id="BW_sind" class="id">BW</span></span></span></span></span></a> :=<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;| <a id="BW_fin" class="idref" href="#BW_fin"><span class="id" title="constructor">BW_fin</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Examples.FiveGNetworkSlicing.html#BW:3"><span class="id" title="inductive">BW</span></a><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;| <a id="BW_inf" class="idref" href="#BW_inf"><span class="id" title="constructor">BW_inf</span></a> : <a class="idref" href="Examples.FiveGNetworkSlicing.html#BW:3"><span class="id" title="inductive">BW</span></a>.<br/>
@@ -42,6 +79,12 @@
 <br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Product semiring: R = Latency(nat) x Bandwidth(BW) 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Inductive</span> <a id="R" class="idref" href="#R"><span class="id" title="definition, inductive"><span id="R_rect" class="id"><span id="R_ind" class="id"><span id="R_rec" class="id"><span id="R_sind" class="id">R</span></span></span></span></span></a> :=<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;| <a id="Rpair" class="idref" href="#Rpair"><span class="id" title="constructor">Rpair</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Examples.FiveGNetworkSlicing.html#BW"><span class="id" title="inductive">BW</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Examples.FiveGNetworkSlicing.html#R:5"><span class="id" title="inductive">R</span></a><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;| <a id="Unreachable" class="idref" href="#Unreachable"><span class="id" title="constructor">Unreachable</span></a> : <a class="idref" href="Examples.FiveGNetworkSlicing.html#R:5"><span class="id" title="inductive">R</span></a>.<br/>
@@ -51,6 +94,12 @@
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="oneR" class="idref" href="#oneR"><span class="id" title="definition">oneR</span></a> : <a class="idref" href="Examples.FiveGNetworkSlicing.html#R"><span class="id" title="inductive">R</span></a> := <a class="idref" href="Examples.FiveGNetworkSlicing.html#Rpair"><span class="id" title="constructor">Rpair</span></a> 0 <a class="idref" href="Examples.FiveGNetworkSlicing.html#BW_inf"><span class="id" title="constructor">BW_inf</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+plusR: (min latency, max bandwidth) componentwise 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="plusR" class="idref" href="#plusR"><span class="id" title="definition">plusR</span></a> (<a id="u:7" class="idref" href="#u:7"><span class="id" title="binder">u</span></a> <a id="v:8" class="idref" href="#v:8"><span class="id" title="binder">v</span></a> : <a class="idref" href="Examples.FiveGNetworkSlicing.html#R"><span class="id" title="inductive">R</span></a>) : <a class="idref" href="Examples.FiveGNetworkSlicing.html#R"><span class="id" title="inductive">R</span></a> :=<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="Examples.FiveGNetworkSlicing.html#u:7"><span class="id" title="variable">u</span></a>, <a class="idref" href="Examples.FiveGNetworkSlicing.html#v:8"><span class="id" title="variable">v</span></a> <span class="id" title="keyword">with</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;| <a class="idref" href="Examples.FiveGNetworkSlicing.html#Rpair"><span class="id" title="constructor">Rpair</span></a> <span class="id" title="var">l1</span> <span class="id" title="var">b1</span>, <a class="idref" href="Examples.FiveGNetworkSlicing.html#Rpair"><span class="id" title="constructor">Rpair</span></a> <span class="id" title="var">l2</span> <span class="id" title="var">b2</span> ⇒<br/>
@@ -66,6 +115,12 @@
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+mulR: (add latency, min bandwidth) componentwise 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="mulR" class="idref" href="#mulR"><span class="id" title="definition">mulR</span></a> (<a id="u:13" class="idref" href="#u:13"><span class="id" title="binder">u</span></a> <a id="v:14" class="idref" href="#v:14"><span class="id" title="binder">v</span></a> : <a class="idref" href="Examples.FiveGNetworkSlicing.html#R"><span class="id" title="inductive">R</span></a>) : <a class="idref" href="Examples.FiveGNetworkSlicing.html#R"><span class="id" title="inductive">R</span></a> :=<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="Examples.FiveGNetworkSlicing.html#u:13"><span class="id" title="variable">u</span></a>, <a class="idref" href="Examples.FiveGNetworkSlicing.html#v:14"><span class="id" title="variable">v</span></a> <span class="id" title="keyword">with</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;| <a class="idref" href="Examples.FiveGNetworkSlicing.html#Rpair"><span class="id" title="constructor">Rpair</span></a> <span class="id" title="var">l1</span> <span class="id" title="var">b1</span>, <a class="idref" href="Examples.FiveGNetworkSlicing.html#Rpair"><span class="id" title="constructor">Rpair</span></a> <span class="id" title="var">l2</span> <span class="id" title="var">b2</span> ⇒<br/>
@@ -85,6 +140,18 @@
 <span class="id" title="keyword">End</span> <a class="idref" href="Examples.FiveGNetworkSlicing.html#Comp"><span class="id" title="section">Comp</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab178"></a><h1 class="section">HB Instances: FinType Node, BoundedSemiring R</h1>
+
+
+<div class="paragraph"> </div>
+
+    R = Latency(nat) x Bandwidth(BW) is the product of two bounded
+    semirings: min-plus (latency) x max-min (bandwidth). 
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">Section</span> <a id="HBInstances" class="idref" href="#HBInstances"><span class="id" title="section">HBInstances</span></a>.<br/>
@@ -181,6 +248,12 @@
 &nbsp;&nbsp;<span class="id" title="keyword">Proof</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">intros</span> [<span class="id" title="var">l1</span> <span class="id" title="var">b1</span>|] [<span class="id" title="var">l2</span> <span class="id" title="var">b2</span>|] [<span class="id" title="var">l3</span> <span class="id" title="var">b3</span>|]; <span class="id" title="var">cbn</span>; <span class="id" title="tactic">try</span> <span class="id" title="tactic">reflexivity</span>;<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">f_equal</span>; <span class="id" title="tactic">try</span> <span class="id" title="var">nia</span>.<br/>
+</div>
+
+<div class="doc">
+bandwidth component: max-min distributivity 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">b1</span>, <span class="id" title="var">b2</span>, <span class="id" title="var">b3</span>; <span class="id" title="var">cbn</span>; <span class="id" title="tactic">try</span> <span class="id" title="tactic">reflexivity</span>; <span class="id" title="tactic">f_equal</span>; <span class="id" title="var">nia</span>.<br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 

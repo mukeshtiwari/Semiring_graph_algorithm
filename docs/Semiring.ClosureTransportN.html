@@ -28,6 +28,22 @@
 <span class="id" title="keyword">Local Infix</span> <a id="3ccab6e0e5cec5d8305913b11c2aa678" class="idref" href="#3ccab6e0e5cec5d8305913b11c2aa678"><span class="id" title="notation">&quot;</span></a>≤" := <a class="idref" href="Semiring.OrelN.html#Orel"><span class="id" title="definition">Orel</span></a> (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 70).<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab29"></a><h1 class="section">Transporting the list-indexed closure along a node map.</h1>
+
+
+<div class="paragraph"> </div>
+
+    Generic machinery, with nothing specific to clones or to Smith-IIA.
+    A path is carried from one election to another by renaming its
+    nodes and recomputing its link strengths in the target matrix,
+    which makes well-formedness hold by construction.  Two consumers:
+    CloneN and SmithiiaN, each comparing two elections whose
+    alternative sets differ. 
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">Section</span> <a id="ClosureTransportN" class="idref" href="#ClosureTransportN"><span class="id" title="section">ClosureTransportN</span></a>.<br/>
@@ -39,6 +55,23 @@
 &nbsp;&nbsp;<span class="id" title="keyword">Let</span> <a id="ClosureTransportN.Matrix" class="idref" href="#ClosureTransportN.Matrix"><span class="id" title="variable">Matrix</span></a> {<a id="R:2" class="idref" href="#R:2"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} := @<a class="idref" href="Semiring.OrelN.html#Matrix"><span class="id" title="definition">OrelN.Matrix</span></a> <a class="idref" href="Semiring.ClosureTransportN.html#ClosureTransportN.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="Semiring.ClosureTransportN.html#R:2"><span class="id" title="variable">R</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab30"></a><h1 class="section">Relabelling a path along a node map</h1>
+
+
+<div class="paragraph"> </div>
+
+      Both directions of the clone argument move a path from one election
+      to the other by renaming its nodes and recomputing its edge weights
+      in the target matrix.  Recomputing rather than transporting the
+      weights makes well-formedness hold by construction and turns the
+      measure comparison into a purely edgewise question, which is what
+      replaces Schulze's informal first-entry / last-exit surgery on the
+      strongest path. 
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="remap_path" class="idref" href="#remap_path"><span class="id" title="definition">remap_path</span></a> {<a id="R:3" class="idref" href="#R:3"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} (<a id="f:4" class="idref" href="#f:4"><span class="id" title="binder">f</span></a> : <a class="idref" href="Semiring.ClosureTransportN.html#ClosureTransportN.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Semiring.ClosureTransportN.html#ClosureTransportN.Node"><span class="id" title="variable">Node</span></a>)<br/>
@@ -159,6 +192,21 @@ An edgewise bound lifts to the measure, by monotonicity of <span class="inlineco
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab31"></a><h1 class="section">Transporting the closure along a node map</h1>
+
+
+<div class="paragraph"> </div>
+
+      This is the single workhorse of the clone argument.  Note that no
+      control is needed on the length of the transported path: the image
+      is shortened by <span class="inlinecode"><a class="idref" href="Semiring.PathN.html#reduce_path_into_simpl_path_gen"><span class="id" title="lemma">reduce_path_into_simpl_path_gen</span></a></span> at the target
+      candidate list, which is what removes the need to track loop
+      freeness through the surgery. 
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="path_star_transport" class="idref" href="#path_star_transport"><span class="id" title="lemma">path_star_transport</span></a> {<a id="R:55" class="idref" href="#R:55"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#BoundedSemiring.type"><span class="id" title="record">BoundedSemiring.type</span></a>}<br/>
@@ -218,6 +266,23 @@ An edgewise bound lifts to the measure, by monotonicity of <span class="inlineco
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab32"></a><h1 class="section">Restricting the closure to a sublist</h1>
+
+
+<div class="paragraph"> </div>
+
+      If everything outside <span class="inlinecode"><span class="id" title="var">ns</span></span> is dead, in the sense of having no edge
+      back into <span class="inlinecode"><span class="id" title="var">ns</span></span>, then the closure over any larger list agrees with
+      the closure over <span class="inlinecode"><span class="id" title="var">ns</span></span> on <span class="inlinecode"><span class="id" title="var">ns</span></span> itself.  A path that leaves <span class="inlinecode"><span class="id" title="var">ns</span></span> can
+      only return through a zero edge, so it contributes nothing.  This
+      is what lets the winner-existence witnesses of SocialchoiceN, which
+      live over the whole alternative set, be read as statements about a
+      chosen sublist. 
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="path_star_restrict" class="idref" href="#path_star_restrict"><span class="id" title="lemma">path_star_restrict</span></a> {<a id="R:70" class="idref" href="#R:70"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#BoundedSemiring.type"><span class="id" title="record">BoundedSemiring.type</span></a>} (<a id="ns:71" class="idref" href="#ns:71"><span class="id" title="binder">ns</span></a> <a id="ns':72" class="idref" href="#ns':72"><span class="id" title="binder">ns'</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.ClosureTransportN.html#ClosureTransportN.Node"><span class="id" title="variable">Node</span></a>)<br/>
@@ -270,6 +335,21 @@ An edgewise bound lifts to the measure, by monotonicity of <span class="inlineco
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab33"></a><h1 class="section">Forcing <span class="inlinecode">1</span> onto the diagonal</h1>
+
+
+<div class="paragraph"> </div>
+
+      The clone development assumes <span class="inlinecode">1</span> on the diagonal, because the path
+      enumeration hard-codes the terminal loop weight as <span class="inlinecode">1</span>.  The
+      witness matrices of SocialchoiceN do not carry that, so they are
+      used through <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#matrix_add"><span class="id" title="definition">matrix_add</span></a></span> <span class="inlinecode"><a class="idref" href="Examples.Profiles.html#M"><span class="id" title="abbreviation">M</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#I"><span class="id" title="definition">I</span></a></span>, which changes only the diagonal and
+      leaves the Kleene star alone. 
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="mat_star_add_I" class="idref" href="#mat_star_add_I"><span class="id" title="lemma">mat_star_add_I</span></a> {<a id="R:89" class="idref" href="#R:89"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#BoundedSemiring.type"><span class="id" title="record">BoundedSemiring.type</span></a>} (<a id="M:90" class="idref" href="#M:90"><span class="id" title="binder">M</span></a> : @<a class="idref" href="Semiring.ClosureTransportN.html#ClosureTransportN.Matrix"><span class="id" title="variable">Matrix</span></a> <a class="idref" href="Semiring.ClosureTransportN.html#R:89"><span class="id" title="variable">R</span></a>) (<a id="c:91" class="idref" href="#c:91"><span class="id" title="binder">c</span></a> <a id="d:92" class="idref" href="#d:92"><span class="id" title="binder">d</span></a> : <a class="idref" href="Semiring.ClosureTransportN.html#ClosureTransportN.Node"><span class="id" title="variable">Node</span></a>) :<br/>

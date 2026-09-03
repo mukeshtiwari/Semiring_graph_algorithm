@@ -32,6 +32,13 @@
 <span class="id" title="keyword">Local Infix</span> <a id=":::x_'&lt;'_x" class="idref" href="#:::x_'&lt;'_x"><span class="id" title="notation">&quot;</span></a>&lt;" := (<span class="id" title="keyword">fun</span> <a id="x:1" class="idref" href="#x:1"><span class="id" title="binder">x</span></a> <a id="y:2" class="idref" href="#y:2"><span class="id" title="binder">y</span></a> ⇒ <a class="idref" href="Semiring.ParetoN.html#x:1"><span class="id" title="variable">x</span></a> <a class="idref" href="Semiring.ParetoN.html#3ccab6e0e5cec5d8305913b11c2aa678"><span class="id" title="notation">≤</span></a> <a class="idref" href="Semiring.ParetoN.html#y:2"><span class="id" title="variable">y</span></a> <span class="id" title="notation">∧</span> <a class="idref" href="Semiring.ParetoN.html#x:1"><span class="id" title="variable">x</span></a> <span class="id" title="notation">≠</span> <a class="idref" href="Semiring.ParetoN.html#y:2"><span class="id" title="variable">y</span></a>) (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 70).<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Schulze over a semiring: the Pareto criteria (4.3)
+    Split out of the former monolithic SocialchoiceN.v. 
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">Section</span> <a id="ParetoN" class="idref" href="#ParetoN"><span class="id" title="section">ParetoN</span></a>.<br/>
@@ -136,10 +143,60 @@ For any path from <span class="inlinecode"><a class="idref" href="Semiring.Schul
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
 
-<br/>
+<div class="doc">
+<a id="lab116"></a><h2 class="section">Pareto criterion (Section 4.3)</h2>
 
-<br/>
+
+<div class="paragraph"> </div>
+
+      Two versions appear in the literature:
+        1. If a ≻ᵥ b for all v ∈ V, then a ≻ b.
+        2. If a ≿ᵥ b for all v ∈ V and a ≻ᵥ b for some v ∈ V,
+           then a ≻ b.
+
+<div class="paragraph"> </div>
+
+      The Schulze method satisfies both.  We formalise the second
+      (stronger) version as <span class="inlinecode"><a class="idref" href="Semiring.ParetoN.html#pareto_stronger"><span class="id" title="lemma">pareto_stronger</span></a></span> below.  The first
+      (weaker) version is <span class="inlinecode"><span class="id" title="var">pareto</span></span>. 
+<div class="paragraph"> </div>
+
+<a id="lab117"></a><h2 class="section">Version 1 — pareto_weaker (weaker form):  a ≽ᵥ b ∀v  →  a ≽ b</h2>
+
+
+<div class="paragraph"> </div>
+
+      If A dominates B head to head and in every third-party comparison,
+      then A is at least as strong as B in the Schulze ranking:
+      mat_star M B A ≤ mat_star M A B.  This is Schulze (4.3.2.10),
+      which gives (4.3.2.2) <span class="inlinecode"><span class="id" title="var">ba</span></span> <span class="inlinecode">∉</span> <span class="inlinecode"><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#O"><span class="id" title="constructor">O</span></a></span>.
+
+<div class="paragraph"> </div>
+
+      The stronger form (strict &lt;) is <span class="inlinecode"><a class="idref" href="Semiring.ParetoN.html#pareto_stronger"><span class="id" title="lemma">pareto_stronger</span></a></span> below; it needs
+      two extra hypotheses, see the comment there.
+
+<div class="paragraph"> </div>
+
+      Hypotheses:
+        A ≠ B            — distinct candidates
+        M B A ≤ M A B    — A is at least as strong as B head to head.
+                            Schulze's (4.3.2.1) — no voter strictly
+                            prefers B to A — gives the stronger
+                            M B A = 0, which implies this; the proof
+                            only needs the inequality, and it cannot be
+                            dropped altogether: the two hypotheses below
+                            both exclude X ∈ {A, B}, so nothing else
+                            constrains the link B → A.
+        M B X ≤ M A X    — ballot transitivity: voters who have B≻X
+                            also have A≻X (since A≽B)
+        M X A ≤ M X B    — ballot transitivity: voters who have X≻A
+                            also have X≻B (since A≽B)
+        M i i = 1         — diagonal is the multiplicative identity 
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Theorem</span> <a id="pareto_weaker" class="idref" href="#pareto_weaker"><span class="id" title="lemma">pareto_weaker</span></a> {<a id="R:27" class="idref" href="#R:27"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#BoundedSemiring.type"><span class="id" title="record">BoundedSemiring.type</span></a>}<br/>
@@ -156,12 +213,21 @@ For any path from <span class="inlinecode"><a class="idref" href="Semiring.Schul
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
-
-<br/>
 </div>
 
 <div class="doc">
-(4.3.2.11): <span class="inlinecode"><span class="id" title="var">P_D</span>[<a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a>,<a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.f"><span class="id" title="variable">f</span></a>]</span> <span class="inlinecode">≽</span> <span class="inlinecode"><span class="id" title="var">P_D</span>[<a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.b"><span class="id" title="variable">b</span></a>,<a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.f"><span class="id" title="variable">f</span></a>]</span>.  Every walk out of <span class="inlinecode"><a class="idref" href="Examples.WidestShortestPath.html#B"><span class="id" title="constructor">B</span></a></span> is dominated
+<a id="lab118"></a><h2 class="section">The remaining Pareto <span class="inlinecode">#2</span> conclusions (4.3.2.3 / .4 / .5)</h2>
+
+
+<div class="paragraph"> </div>
+
+      All three rest on the paper's two path-rewriting steps: (4.3.2.11)
+      swaps the SOURCE of a path out of <span class="inlinecode"><a class="idref" href="Examples.WidestShortestPath.html#B"><span class="id" title="constructor">B</span></a></span> to <span class="inlinecode"><a class="idref" href="Examples.WidestShortestPath.html#A"><span class="id" title="constructor">A</span></a></span>, and (4.3.2.12) swaps
+      its TARGET from <span class="inlinecode"><a class="idref" href="Examples.WidestShortestPath.html#A"><span class="id" title="constructor">A</span></a></span> to <span class="inlinecode"><a class="idref" href="Examples.WidestShortestPath.html#B"><span class="id" title="constructor">B</span></a></span>.  Schulze performs both by editing the
+      strongest path; here they are inductions on the closure. 
+<div class="paragraph"> </div>
+
+ (4.3.2.11): <span class="inlinecode"><span class="id" title="var">P_D</span>[<a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a>,<a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.f"><span class="id" title="variable">f</span></a>]</span> <span class="inlinecode">≽</span> <span class="inlinecode"><span class="id" title="var">P_D</span>[<a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.b"><span class="id" title="variable">b</span></a>,<a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.f"><span class="id" title="variable">f</span></a>]</span>.  Every walk out of <span class="inlinecode"><a class="idref" href="Examples.WidestShortestPath.html#B"><span class="id" title="constructor">B</span></a></span> is dominated
       by one out of <span class="inlinecode"><a class="idref" href="Examples.WidestShortestPath.html#A"><span class="id" title="constructor">A</span></a></span>: its first edge improves by <span class="inlinecode"><span class="id" title="var">Hrow</span></span>, and once the walk
       has left <span class="inlinecode">{<a class="idref" href="Examples.WidestShortestPath.html#A"><span class="id" title="constructor">A</span></a>,</span> <span class="inlinecode"><a class="idref" href="Examples.WidestShortestPath.html#B"><span class="id" title="constructor">B</span></a>}</span> the rest is bounded by the closure. 
 </div>
@@ -347,6 +413,12 @@ Key lemma.  Every path into <span class="inlinecode"><a class="idref" href="Exam
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">split</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ <span class="id" title="tactic">exact</span> (<a class="idref" href="Semiring.OrelN.html#orel_trans"><span class="id" title="lemma">orel_trans</span></a> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> (<a class="idref" href="Semiring.SchulzeOrderN.html#bounded_mul_lower_left"><span class="id" title="lemma">bounded_mul_lower_left</span></a> <span class="id" title="var">_</span> <span class="id" title="var">_</span>) <span class="id" title="var">Hxz_le</span>). }<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ <span class="id" title="tactic">intro</span> <span class="id" title="var">Heq</span>.<br/>
+</div>
+
+<div class="doc">
+the product attains the top, so both factors do 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">Hxz_top</span> : <span class="id" title="var">M</span> <span class="id" title="var">x</span> <span class="id" title="var">z</span> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <span class="id" title="var">M</span> <span class="id" title="var">A</span> <span class="id" title="var">B</span>).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ <span class="id" title="tactic">apply</span> <a class="idref" href="Semiring.OrelN.html#orel_antisym"><span class="id" title="lemma">orel_antisym</span></a>;<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[<span class="id" title="tactic">exact</span> <span class="id" title="var">Hxz_le</span> | <span class="id" title="tactic">rewrite</span> &lt;- <span class="id" title="var">Heq</span>; <span class="id" title="tactic">apply</span> <a class="idref" href="Semiring.SchulzeOrderN.html#bounded_mul_lower_left"><span class="id" title="lemma">bounded_mul_lower_left</span></a>]. }<br/>
@@ -448,9 +520,20 @@ Pareto (4.3.1.2): the unanimously preferred alternative beats the
 &nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <a class="idref" href="Semiring.ParetoN.html#M:168"><span class="id" title="variable">M</span></a> <a class="idref" href="Semiring.ParetoN.html#B:170"><span class="id" title="variable">B</span></a> <a class="idref" href="Semiring.ParetoN.html#A:169"><span class="id" title="variable">A</span></a> <a class="idref" href="Semiring.ParetoN.html#:::x_'&lt;'_x"><span class="id" title="notation">&lt;</span></a> <a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <a class="idref" href="Semiring.ParetoN.html#M:168"><span class="id" title="variable">M</span></a> <a class="idref" href="Semiring.ParetoN.html#A:169"><span class="id" title="variable">A</span></a> <a class="idref" href="Semiring.ParetoN.html#B:170"><span class="id" title="variable">B</span></a>.<br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Proof</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">Hneq</span> <span class="id" title="var">Hzero</span> <span class="id" title="var">Hpos</span> <span class="id" title="var">Hmax</span> <span class="id" title="var">Hdiag_one</span>.<br/>
+</div>
+
+<div class="doc">
+unanimity makes the reverse link <span class="inlinecode"><a class="idref" href="Examples.WidestShortestPath.html#B"><span class="id" title="constructor">B</span></a></span> <span class="inlinecode">→</span> <span class="inlinecode"><a class="idref" href="Examples.WidestShortestPath.html#A"><span class="id" title="constructor">A</span></a></span> non-maximal 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">Hne_top</span> : <span class="id" title="var">M</span> <span class="id" title="var">B</span> <span class="id" title="var">A</span> <span class="id" title="notation">≠</span> <span class="id" title="var">M</span> <span class="id" title="var">A</span> <span class="id" title="var">B</span>).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;{ <span class="id" title="tactic">rewrite</span> <span class="id" title="var">Hzero</span>. <span class="id" title="tactic">exact</span> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#proj2"><span class="id" title="lemma">proj2</span></a> <span class="id" title="var">Hpos</span>). }<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;</div>
+
+<div class="doc">
+the reverse closure is strictly below the link, so (2.2.4) applies 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <a class="idref" href="Semiring.SchulzeBasicsN.html#link_beats"><span class="id" title="lemma">link_beats</span></a>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">exact</span> (<a class="idref" href="Semiring.ParetoN.html#mat_star_BA_lt_link"><span class="id" title="lemma">mat_star_BA_lt_link</span></a> <span class="id" title="var">M</span> <span class="id" title="var">A</span> <span class="id" title="var">B</span> <span class="id" title="var">Htotal</span> <span class="id" title="var">Htop_trans</span> <span class="id" title="var">Hmax</span> <span class="id" title="var">Hdiag_one</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">Hneq</span> <span class="id" title="var">Hne_top</span> <span class="id" title="var">Hpos</span>).<br/>
@@ -479,12 +562,25 @@ Pareto (4.3.1.3): the unanimously dominated alternative is not a winner.
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
-
-<br/>
 </div>
 
 <div class="doc">
-A path between two distinct nodes is bounded by the strongest link: it
+<a id="lab119"></a><h2 class="section">The converse</h2>
+
+
+<div class="paragraph"> </div>
+
+      Unanimity itself is not recoverable from the conclusion: the
+      Schulze order ranks candidates strictly in profiles that contain no
+      unanimous pair at all (the paper's own Example 1, formalised in
+      examples/Schulze.v, has d ≻ a with every pairwise count non-zero).
+      What does reverse is the property the proof actually turns on:
+      under the standing hypotheses, <span class="inlinecode"><a class="idref" href="Examples.WidestShortestPath.html#A"><span class="id" title="constructor">A</span></a></span> beats <span class="inlinecode"><a class="idref" href="Examples.WidestShortestPath.html#B"><span class="id" title="constructor">B</span></a></span> in the closure exactly
+      when the reverse link <span class="inlinecode"><a class="idref" href="Examples.WidestShortestPath.html#B"><span class="id" title="constructor">B</span></a></span> <span class="inlinecode">→</span> <span class="inlinecode"><a class="idref" href="Examples.WidestShortestPath.html#A"><span class="id" title="constructor">A</span></a></span> is not itself of maximal strength.
+      <span class="inlinecode"><a class="idref" href="Semiring.ParetoN.html#pareto_stronger"><span class="id" title="lemma">pareto_stronger</span></a></span> is the instance <span class="inlinecode"><a class="idref" href="Examples.Profiles.html#M"><span class="id" title="abbreviation">M</span></a></span> <span class="inlinecode"><a class="idref" href="Examples.WidestShortestPath.html#B"><span class="id" title="constructor">B</span></a></span> <span class="inlinecode"><a class="idref" href="Examples.WidestShortestPath.html#A"><span class="id" title="constructor">A</span></a></span> <span class="inlinecode">=</span> <span class="inlinecode">0</span>. 
+<div class="paragraph"> </div>
+
+ A path between two distinct nodes is bounded by the strongest link: it
       must contain a non-loop edge, and a product lies below each factor. 
 </div>
 <div class="code">

@@ -31,6 +31,13 @@
 <span class="id" title="keyword">Local Infix</span> <a id=":::x_'&lt;'_x" class="idref" href="#:::x_'&lt;'_x"><span class="id" title="notation">&quot;</span></a>&lt;" := (<span class="id" title="keyword">fun</span> <a id="x:1" class="idref" href="#x:1"><span class="id" title="binder">x</span></a> <a id="y:2" class="idref" href="#y:2"><span class="id" title="binder">y</span></a> ⇒ <a class="idref" href="Semiring.ResolvabilityN.html#x:1"><span class="id" title="variable">x</span></a> <a class="idref" href="Semiring.ResolvabilityN.html#3ccab6e0e5cec5d8305913b11c2aa678"><span class="id" title="notation">≤</span></a> <a class="idref" href="Semiring.ResolvabilityN.html#y:2"><span class="id" title="variable">y</span></a> <span class="id" title="notation">∧</span> <a class="idref" href="Semiring.ResolvabilityN.html#x:1"><span class="id" title="variable">x</span></a> <span class="id" title="notation">≠</span> <a class="idref" href="Semiring.ResolvabilityN.html#y:2"><span class="id" title="variable">y</span></a>) (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 70).<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Schulze over a semiring: resolvability, the resolution step (Schulze 4.2)
+    Split out of the former monolithic SocialchoiceN.v. 
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">Section</span> <a id="ResolvabilityN" class="idref" href="#ResolvabilityN"><span class="id" title="section">ResolvabilityN</span></a>.<br/>
@@ -39,14 +46,57 @@
 &nbsp;&nbsp;<span class="id" title="keyword">Context</span> {<a id="ResolvabilityN.Node" class="idref" href="#ResolvabilityN.Node"><span class="id" title="variable">Node</span></a> : <a class="idref" href="Semiring.Structures.html#FinType.type"><span class="id" title="record">FinType.type</span></a>}.<br/>
 
 <br/>
-
-<br/>
-
-<br/>
 </div>
 
 <div class="doc">
-A winner that is nowhere tied in the closure beats everyone. 
+<a id="lab140"></a><h1 class="section">Both formulations of the paper's resolvability criterion (Sect. 4.2)</h1>
+
+
+<div class="paragraph"> </div>
+
+      Schulze states two versions of resolvability.  Formulation <span class="inlinecode">#1</span>
+      (4.2.1) says the proportion of profiles without a unique winner
+      tends to zero as the number of voters grows, which is proved by
+      reducing to the combinatorial claim below: profiles where two links
+      happen to have equivalent strength become vanishingly rare as the
+      electorate grows.
+
+<div class="paragraph"> </div>
+
+      Formulation <span class="inlinecode">#2</span> (4.2.2) is the ballot-adding version: for every
+      alternative <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a></span> among several winners, one can add a single new
+      ballot so that <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a></span> becomes the unique winner.  This file develops
+      only the combinatorial core underlying Formulation <span class="inlinecode">#1</span>; the box below
+      states precisely how much of it is proved here.  The rest lives in
+      two later files: CriticalLinkN.v proves the combinatorial core of
+      Formulation <span class="inlinecode">#1</span> (pairwise distinct link strengths force a unique
+      winner), and ResolvabilityBallotN.v proves Formulation <span class="inlinecode">#2</span> from the
+      ballots of BallotN.v. 
+<div class="paragraph"> </div>
+
+<a id="lab141"></a><h1 class="section">Resolvability (Section 4.2) — the resolution step only</h1>
+
+
+<div class="paragraph"> </div>
+
+      Schulze's 4.2.1 argues that two distinct winners <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a></span> and <span class="inlinecode"><a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.b"><span class="id" title="variable">b</span></a></span> force
+      a tie <span class="inlinecode"><span class="id" title="var">P_D</span>[<a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a>,<a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.b"><span class="id" title="variable">b</span></a>]</span> <span class="inlinecode">≈</span> <span class="inlinecode"><span class="id" title="var">P_D</span>[<a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.b"><span class="id" title="variable">b</span></a>,<a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a>]</span> (4.2.1.3), and then rules that out when
+      no two links have equivalent strength.  What follows is the
+      contrapositive of the first half: a winner that is never tied in the
+      closure beats everyone, hence is the unique winner.
+
+<div class="paragraph"> </div>
+
+      The second half — that distinct LINK strengths force an untied
+      closure — is <span class="inlinecode"><a class="idref" href="Semiring.CriticalLinkN.html#distinct_links_unique_winner"><span class="id" title="lemma">distinct_links_unique_winner</span></a></span> in CriticalLinkN.v.  The
+      paper proves it by locating the weakest link of the strongest path
+      and splitting both paths there; that file replaces the path surgery
+      by threshold and cut arguments on the closure.  What remains
+      unformalised is the criterion as literally stated: 4.2.1 is a limit
+      over profiles as the electorate grows, and has no counterpart here. 
+<div class="paragraph"> </div>
+
+ A winner that is nowhere tied in the closure beats everyone. 
 </div>
 <div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Theorem</span> <a id="untied_winner_is_strict" class="idref" href="#untied_winner_is_strict"><span class="id" title="lemma">untied_winner_is_strict</span></a> {<a id="R:4" class="idref" href="#R:4"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#BoundedSemiring.type"><span class="id" title="record">BoundedSemiring.type</span></a>}<br/>

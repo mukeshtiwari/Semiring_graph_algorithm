@@ -31,6 +31,13 @@
 <span class="id" title="keyword">Local Infix</span> <a id=":::x_'&lt;'_x" class="idref" href="#:::x_'&lt;'_x"><span class="id" title="notation">&quot;</span></a>&lt;" := (<span class="id" title="keyword">fun</span> <a id="x:1" class="idref" href="#x:1"><span class="id" title="binder">x</span></a> <a id="y:2" class="idref" href="#y:2"><span class="id" title="binder">y</span></a> ⇒ <a class="idref" href="Semiring.ReversalsymmetryN.html#x:1"><span class="id" title="variable">x</span></a> <a class="idref" href="Semiring.ReversalsymmetryN.html#3ccab6e0e5cec5d8305913b11c2aa678"><span class="id" title="notation">≤</span></a> <a class="idref" href="Semiring.ReversalsymmetryN.html#y:2"><span class="id" title="variable">y</span></a> <span class="id" title="notation">∧</span> <a class="idref" href="Semiring.ReversalsymmetryN.html#x:1"><span class="id" title="variable">x</span></a> <span class="id" title="notation">≠</span> <a class="idref" href="Semiring.ReversalsymmetryN.html#y:2"><span class="id" title="variable">y</span></a>) (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 70).<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Schulze over a semiring: reversal symmetry (4.4)
+    Split out of the former monolithic SocialchoiceN.v. 
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">Section</span> <a id="ReversalsymmetryN" class="idref" href="#ReversalsymmetryN"><span class="id" title="section">ReversalsymmetryN</span></a>.<br/>
@@ -39,12 +46,14 @@
 &nbsp;&nbsp;<span class="id" title="keyword">Context</span> {<a id="ReversalsymmetryN.Node" class="idref" href="#ReversalsymmetryN.Node"><span class="id" title="variable">Node</span></a> : <a class="idref" href="Semiring.Structures.html#FinType.type"><span class="id" title="record">FinType.type</span></a>}.<br/>
 
 <br/>
-
-<br/>
 </div>
 
 <div class="doc">
-Reversal symmetry (4.4.2): reversing every ballot reverses the whole
+<a id="lab142"></a><h1 class="section">Reversal symmetry (Section 4.4)</h1>
+
+<div class="paragraph"> </div>
+
+ Reversal symmetry (4.4.2): reversing every ballot reverses the whole
       relation O.  This is the paper's statement, and it is immediate from
       <span class="inlinecode"><a class="idref" href="Semiring.SchulzeClosureN.html#mat_star_transpose"><span class="id" title="lemma">mat_star_transpose</span></a></span>. 
 </div>
@@ -93,6 +102,13 @@ The winner-level consequence: a strict winner cannot stay one when the
 &nbsp;&nbsp;<span class="id" title="keyword">Proof</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">M</span> <span class="id" title="var">A</span> <span class="id" title="var">H_win</span> <span class="id" title="var">H_win_rev</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> (<a class="idref" href="Semiring.SchulzeBasicsN.html#exists_other"><span class="id" title="lemma">exists_other</span></a> <span class="id" title="var">A</span>) <span class="id" title="keyword">as</span> [<span class="id" title="var">B</span> <span class="id" title="var">H_BA</span>].<br/>
+</div>
+
+<div class="doc">
+<span class="inlinecode"><a class="idref" href="Examples.WidestShortestPath.html#A"><span class="id" title="constructor">A</span></a></span> beats <span class="inlinecode"><a class="idref" href="Examples.WidestShortestPath.html#B"><span class="id" title="constructor">B</span></a></span> originally, and beating <span class="inlinecode"><a class="idref" href="Examples.WidestShortestPath.html#B"><span class="id" title="constructor">B</span></a></span> in the reversed profile is
+        exactly being beaten by <span class="inlinecode"><a class="idref" href="Examples.WidestShortestPath.html#B"><span class="id" title="constructor">B</span></a></span> in the original one 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">exact</span> (<a class="idref" href="Semiring.SchulzeBasicsN.html#schulze_beats_asym"><span class="id" title="lemma">schulze_beats_asym</span></a> <span class="id" title="var">M</span> <span class="id" title="var">A</span> <span class="id" title="var">B</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">H_win</span> <span class="id" title="var">B</span> <span class="id" title="var">H_BA</span>)<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#proj2"><span class="id" title="lemma">proj2</span></a> (<a class="idref" href="Semiring.ReversalsymmetryN.html#reversal_symmetry_O"><span class="id" title="lemma">reversal_symmetry_O</span></a> <span class="id" title="var">M</span> <span class="id" title="var">B</span> <span class="id" title="var">A</span>) (<span class="id" title="var">H_win_rev</span> <span class="id" title="var">B</span> <span class="id" title="var">H_BA</span>))).<br/>

@@ -33,6 +33,13 @@
 <span class="id" title="keyword">Local Infix</span> <a id=":::x_'&lt;'_x" class="idref" href="#:::x_'&lt;'_x"><span class="id" title="notation">&quot;</span></a>&lt;" := (<span class="id" title="keyword">fun</span> <a id="x:1" class="idref" href="#x:1"><span class="id" title="binder">x</span></a> <a id="y:2" class="idref" href="#y:2"><span class="id" title="binder">y</span></a> ⇒ <a class="idref" href="Semiring.MinMaxN.html#x:1"><span class="id" title="variable">x</span></a> <a class="idref" href="Semiring.MinMaxN.html#3ccab6e0e5cec5d8305913b11c2aa678"><span class="id" title="notation">≤</span></a> <a class="idref" href="Semiring.MinMaxN.html#y:2"><span class="id" title="variable">y</span></a> <span class="id" title="notation">∧</span> <a class="idref" href="Semiring.MinMaxN.html#x:1"><span class="id" title="variable">x</span></a> <span class="id" title="notation">≠</span> <a class="idref" href="Semiring.MinMaxN.html#y:2"><span class="id" title="variable">y</span></a>) (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 70).<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Schulze over a semiring: the MinMax set (4.8)
+    Split out of the former monolithic SocialchoiceN.v. 
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">Section</span> <a id="MinMaxN" class="idref" href="#MinMaxN"><span class="id" title="section">MinMaxN</span></a>.<br/>
@@ -41,6 +48,26 @@
 &nbsp;&nbsp;<span class="id" title="keyword">Context</span> {<a id="MinMaxN.Node" class="idref" href="#MinMaxN.Node"><span class="id" title="variable">Node</span></a> : <a class="idref" href="Semiring.Structures.html#FinType.type"><span class="id" title="record">FinType.type</span></a>}.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab89"></a><h1 class="section">MinMax set (Section 4.8)</h1>
+
+
+<div class="paragraph"> </div>
+
+      Γ<i>D(B) — <span class="inlinecode"><a class="idref" href="Semiring.MinMaxN.html#cut_in"><span class="id" title="definition">cut_in</span></a></span> <span class="inlinecode"><a class="idref" href="Examples.Profiles.html#M"><span class="id" title="abbreviation">M</span></a></span> <span class="inlinecode"><a class="idref" href="Examples.WidestShortestPath.html#B"><span class="id" title="constructor">B</span></a></span> — is the strength of the strongest link
+      entering the set <span class="inlinecode"><a class="idref" href="Examples.WidestShortestPath.html#B"><span class="id" title="constructor">B</span></a></span> from outside, β<i>D its minimum over the proper
+      non-empty sets, and 𝔅<i>D the union of the minimising sets.  We take
+      subsets as boolean predicates and keep β<i>D as a parameter <span class="inlinecode"><span class="id" title="keyword">beta</span></span>
+      constrained by hypotheses, rather than as a minimum computed over
+      the powerset: the semiring has joins but no meets, so a minimum
+      over subsets is not an operation of the algebra.  <span class="inlinecode"><span class="id" title="var">Hmin</span></span> says beta
+      is a lower bound for every cut (β<i>D is the minimum), <span class="inlinecode"><span class="id" title="var">Ba</span></span> with
+      <span class="inlinecode"><a class="idref" href="Semiring.MinMaxN.html#cut_in"><span class="id" title="definition">cut_in</span></a></span> <span class="inlinecode"><a class="idref" href="Examples.Profiles.html#M"><span class="id" title="abbreviation">M</span></a></span> <span class="inlinecode"><span class="id" title="var">Ba</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="keyword">beta</span></span> witnesses <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a></span> <span class="inlinecode">∈</span> <span class="inlinecode">𝔅<span class="id" title="var">_D</span></span>, and <span class="inlinecode"><span class="id" title="var">Hb_out</span></span> says no cut
+      around <span class="inlinecode"><a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.b"><span class="id" title="variable">b</span></a></span> attains beta, i.e. <span class="inlinecode"><a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.b"><span class="id" title="variable">b</span></a></span> <span class="inlinecode">∉</span> <span class="inlinecode">𝔅<span class="id" title="var">_D</span></span>. 
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="proper_nonempty" class="idref" href="#proper_nonempty"><span class="id" title="definition">proper_nonempty</span></a> (<a id="B:4" class="idref" href="#B:4"><span class="id" title="binder">B</span></a> : <a class="idref" href="Semiring.MinMaxN.html#MinMaxN.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#bool"><span class="id" title="inductive">bool</span></a>) : <span class="id" title="keyword">Prop</span> :=<br/>
@@ -79,7 +106,7 @@ Every link entering <span class="inlinecode"><a class="idref" href="Examples.Wid
 </div>
 
 <div class="doc">
-Claim 1 (4.8.7).  A path that starts outside [B] and ends inside it
+Claim <span class="inlinecode">#1</span> (4.8.7).  A path that starts outside <span class="inlinecode"><a class="idref" href="Examples.WidestShortestPath.html#B"><span class="id" title="constructor">B</span></a></span> and ends inside it
       must cross the boundary, and its measure is below the crossing link. 
 </div>
 <div class="code">
@@ -149,9 +176,9 @@ Decidable search for a link satisfying a boolean test.
 </div>
 
 <div class="doc">
-Claim 2 (4.8.11).  The closure out of [a] reaches [b] with strength
+Claim <span class="inlinecode">#2</span> (4.8.11).  The closure out of <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a></span> reaches <span class="inlinecode"><a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.b"><span class="id" title="variable">b</span></a></span> with strength
       above beta.  The paper grows a set greedily; equivalently, take the set
-      of nodes that [a] does *not* reach above beta — if [b] were in it, that
+      of nodes that <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a></span> does *not* reach above beta — if <span class="inlinecode"><a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.b"><span class="id" title="variable">b</span></a></span> were in it, that
       set would be a proper non-empty cut whose strongest entering link is
       itself above beta, and following that link would reach a node of the
       set above beta, a contradiction. 
@@ -251,6 +278,12 @@ MinMax (4.8.1): every member of the MinMax set beats every non-member.
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Semiring.MinMaxN.html#proper_nonempty"><span class="id" title="definition">proper_nonempty</span></a> <a class="idref" href="Semiring.MinMaxN.html#B:98"><span class="id" title="variable">B</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Semiring.MinMaxN.html#B:98"><span class="id" title="variable">B</span></a> <a class="idref" href="Semiring.MinMaxN.html#b:81"><span class="id" title="variable">b</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#true"><span class="id" title="constructor">true</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Semiring.MinMaxN.html#cut_in"><span class="id" title="definition">cut_in</span></a> <a class="idref" href="Semiring.MinMaxN.html#M:79"><span class="id" title="variable">M</span></a> <a class="idref" href="Semiring.MinMaxN.html#B:98"><span class="id" title="variable">B</span></a> <span class="id" title="notation">≠</span> <a class="idref" href="Semiring.MinMaxN.html#beta:82"><span class="id" title="variable">beta</span></a>) :<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Semiring.SchulzeDefsN.html#schulze_beats"><span class="id" title="definition">schulze_beats</span></a> <a class="idref" href="Semiring.MinMaxN.html#M:79"><span class="id" title="variable">M</span></a> <a class="idref" href="Semiring.MinMaxN.html#a:80"><span class="id" title="variable">a</span></a> <a class="idref" href="Semiring.MinMaxN.html#b:81"><span class="id" title="variable">b</span></a>.<br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Proof</span>.<br/>
+</div>
+
+<div class="doc">
+<span class="inlinecode"><a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.b"><span class="id" title="variable">b</span></a></span> cannot lie in a minimising set 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">Hb</span> : <span class="id" title="var">Ba</span> <span class="id" title="var">b</span> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#false"><span class="id" title="constructor">false</span></a>).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;{ <span class="id" title="tactic">destruct</span> (<span class="id" title="var">Ba</span> <span class="id" title="var">b</span>) <span class="id" title="var">eqn</span>:<span class="id" title="var">Hbb</span>; [<span class="id" title="var">exfalso</span> | <span class="id" title="tactic">reflexivity</span>].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">exact</span> (<span class="id" title="var">Hb_out</span> <span class="id" title="var">Ba</span> <span class="id" title="var">Hpn_a</span> <span class="id" title="var">Hbb</span> <span class="id" title="var">Hcut_a</span>). }<br/>

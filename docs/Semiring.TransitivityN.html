@@ -31,6 +31,13 @@
 <span class="id" title="keyword">Local Infix</span> <a id=":::x_'&lt;'_x" class="idref" href="#:::x_'&lt;'_x"><span class="id" title="notation">&quot;</span></a>&lt;" := (<span class="id" title="keyword">fun</span> <a id="x:1" class="idref" href="#x:1"><span class="id" title="binder">x</span></a> <a id="y:2" class="idref" href="#y:2"><span class="id" title="binder">y</span></a> ⇒ <a class="idref" href="Semiring.TransitivityN.html#x:1"><span class="id" title="variable">x</span></a> <a class="idref" href="Semiring.TransitivityN.html#3ccab6e0e5cec5d8305913b11c2aa678"><span class="id" title="notation">≤</span></a> <a class="idref" href="Semiring.TransitivityN.html#y:2"><span class="id" title="variable">y</span></a> <span class="id" title="notation">∧</span> <a class="idref" href="Semiring.TransitivityN.html#x:1"><span class="id" title="variable">x</span></a> <span class="id" title="notation">≠</span> <a class="idref" href="Semiring.TransitivityN.html#y:2"><span class="id" title="variable">y</span></a>) (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 70).<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Schulze over a semiring: transitivity of the beat relation, and its characterisation (4.1)
+    Split out of the former monolithic SocialchoiceN.v. 
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">Section</span> <a id="TransitivityN" class="idref" href="#TransitivityN"><span class="id" title="section">TransitivityN</span></a>.<br/>
@@ -42,7 +49,7 @@
 </div>
 
 <div class="doc">
-<a id="lab23"></a><h1 class="section">4.1 Transitivity of Schulze beats — meet-semiring proof</h1>
+<a id="lab172"></a><h1 class="section">4.1 Transitivity of Schulze beats — meet-semiring proof</h1>
 
 
 <div class="paragraph"> </div>
@@ -78,18 +85,47 @@
 &nbsp;&nbsp;<span class="id" title="keyword">Proof</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">M</span> <span class="id" title="var">a</span> <span class="id" title="var">b</span> <span class="id" title="var">c</span> <span class="id" title="var">H_ab</span> <span class="id" title="var">H_bc</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">unfold</span> <a class="idref" href="Semiring.SchulzeDefsN.html#schulze_beats"><span class="id" title="definition">schulze_beats</span></a>, <a class="idref" href="Semiring.SchulzeDefsN.html#beats"><span class="id" title="definition">beats</span></a> <span class="id" title="tactic">in</span> ×.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">H_ab</span> <span class="id" title="keyword">as</span> [<span class="id" title="var">H_ab_le</span> <span class="id" title="var">H_ab_ne</span>]. &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">H_bc</span> <span class="id" title="keyword">as</span> [<span class="id" title="var">H_bc_le</span> <span class="id" title="var">H_bc_ne</span>]. &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">pose</span> <span class="id" title="var">proof</span> (<a class="idref" href="Semiring.SchulzeClosureN.html#star_path_compose"><span class="id" title="lemma">star_path_compose</span></a> <span class="id" title="var">M</span> <span class="id" title="var">a</span> <span class="id" title="var">b</span> <span class="id" title="var">c</span>) <span class="id" title="keyword">as</span> <span class="id" title="var">Hm_Sac</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">H_ab</span> <span class="id" title="keyword">as</span> [<span class="id" title="var">H_ab_le</span> <span class="id" title="var">H_ab_ne</span>]. &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">H_bc</span> <span class="id" title="keyword">as</span> [<span class="id" title="var">H_bc_le</span> <span class="id" title="var">H_bc_ne</span>]. </div>
+
+<div class="doc">
+m := S a b * S b c
+        m ≤ S a c by star_path_compose 
+</div>
+<div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">pose</span> <span class="id" title="var">proof</span> (<a class="idref" href="Semiring.SchulzeClosureN.html#star_path_compose"><span class="id" title="lemma">star_path_compose</span></a> <span class="id" title="var">M</span> <span class="id" title="var">a</span> <span class="id" title="var">b</span> <span class="id" title="var">c</span>) <span class="id" title="keyword">as</span> <span class="id" title="var">Hm_Sac</span>.<br/>
+</div>
+
+<div class="doc">
+H_total_order gives total preorder on Orel 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">H_total_orel</span> : <span class="id" title="keyword">∀</span> <a id="x:16" class="idref" href="#x:16"><span class="id" title="binder"><span id="x:18" class="id">x</span></span></a> <a id="y:17" class="idref" href="#y:17"><span class="id" title="binder"><span id="y:19" class="id">y</span></span></a> : <span class="id" title="var">R</span>, <a class="idref" href="Semiring.TransitivityN.html#x:16"><span class="id" title="variable">x</span></a> <a class="idref" href="Semiring.TransitivityN.html#3ccab6e0e5cec5d8305913b11c2aa678"><span class="id" title="notation">≤</span></a> <a class="idref" href="Semiring.TransitivityN.html#y:17"><span class="id" title="variable">y</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#f031fe1957c4a4a8e217aa46af2b4e25"><span class="id" title="notation">∨</span></a> <a class="idref" href="Semiring.TransitivityN.html#y:17"><span class="id" title="variable">y</span></a> <a class="idref" href="Semiring.TransitivityN.html#3ccab6e0e5cec5d8305913b11c2aa678"><span class="id" title="notation">≤</span></a> <a class="idref" href="Semiring.TransitivityN.html#x:16"><span class="id" title="variable">x</span></a>).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;{ <span class="id" title="tactic">intros</span> <span class="id" title="var">x</span> <span class="id" title="var">y</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> (<span class="id" title="var">H_total_order</span> <span class="id" title="var">x</span> <span class="id" title="var">y</span>) <span class="id" title="keyword">as</span> [<span class="id" title="var">Hcase</span> | <span class="id" title="var">Hcase</span>].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- <span class="id" title="tactic">right</span>. <span class="id" title="tactic">unfold</span> <a class="idref" href="Semiring.OrelN.html#Orel"><span class="id" title="definition">Orel</span></a>. <span class="id" title="tactic">rewrite</span> <a class="idref" href="Semiring.Structures.html#addC"><span class="id" title="definition">addC</span></a>. <span class="id" title="tactic">exact</span> <span class="id" title="var">Hcase</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- <span class="id" title="tactic">left</span>. <span class="id" title="tactic">unfold</span> <a class="idref" href="Semiring.OrelN.html#Orel"><span class="id" title="definition">Orel</span></a>. <span class="id" title="tactic">exact</span> <span class="id" title="var">Hcase</span>. }<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;</div>
+
+<div class="doc">
+Lemma: mat_star M a c ≤ mat_star M c a is impossible 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">H_not_ac_le_ca</span> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#63a68285c81db8f9bc456233bb9ed181"><span class="id" title="notation">¬</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#63a68285c81db8f9bc456233bb9ed181"><span class="id" title="notation">(</span></a><a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <span class="id" title="var">M</span> <span class="id" title="var">a</span> <span class="id" title="var">c</span> <a class="idref" href="Semiring.TransitivityN.html#3ccab6e0e5cec5d8305913b11c2aa678"><span class="id" title="notation">≤</span></a> <a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <span class="id" title="var">M</span> <span class="id" title="var">c</span> <span class="id" title="var">a</span><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#63a68285c81db8f9bc456233bb9ed181"><span class="id" title="notation">)</span></a>).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;{ <span class="id" title="tactic">intro</span> <span class="id" title="var">H_ac_le_ca</span>.<br/>
+</div>
+
+<div class="doc">
+Then m ≤ S c a via Hm_Sac and H_ac_le_ca 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">Hm_Sca</span> : <a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <span class="id" title="var">M</span> <span class="id" title="var">a</span> <span class="id" title="var">b</span> <a class="idref" href="Semiring.Structures.html#df06337ab011822b2792d206fc407479"><span class="id" title="notation">×</span></a> <a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <span class="id" title="var">M</span> <span class="id" title="var">b</span> <span class="id" title="var">c</span> <a class="idref" href="Semiring.TransitivityN.html#3ccab6e0e5cec5d8305913b11c2aa678"><span class="id" title="notation">≤</span></a> <a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <span class="id" title="var">M</span> <span class="id" title="var">c</span> <span class="id" title="var">a</span>).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ <span class="id" title="tactic">eapply</span> <a class="idref" href="Semiring.OrelN.html#orel_trans"><span class="id" title="lemma">orel_trans</span></a>; [<span class="id" title="tactic">exact</span> <span class="id" title="var">Hm_Sac</span> | <span class="id" title="tactic">exact</span> <span class="id" title="var">H_ac_le_ca</span>]. }<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+
+<div class="doc">
+Case split on S a b vs S b c 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> (<span class="id" title="var">H_total_orel</span> (<a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <span class="id" title="var">M</span> <span class="id" title="var">a</span> <span class="id" title="var">b</span>) (<a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <span class="id" title="var">M</span> <span class="id" title="var">b</span> <span class="id" title="var">c</span>))<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">as</span> [<span class="id" title="var">Hab_le_Hbc</span> | <span class="id" title="var">Hbc_le_Hab</span>].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- <br/>
@@ -99,18 +135,39 @@
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- <span class="id" title="tactic">apply</span> <span class="id" title="var">H_meet_lower_bound</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" title="tactic">apply</span> (@<a class="idref" href="Semiring.SchulzeOrderN.html#bounded_orel_refl"><span class="id" title="lemma">bounded_orel_refl</span></a> <span class="id" title="var">R</span> (<a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <span class="id" title="var">M</span> <span class="id" title="var">a</span> <span class="id" title="var">b</span>)).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" title="tactic">exact</span> <span class="id" title="var">Hab_le_Hbc</span>. }<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> <span class="id" title="var">Hm_eq_Sab</span> <span class="id" title="tactic">in</span> <span class="id" title="var">Hm_Sca</span>. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">H_Sbc_ge_m</span> : <a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <span class="id" title="var">M</span> <span class="id" title="var">a</span> <span class="id" title="var">b</span> <a class="idref" href="Semiring.TransitivityN.html#3ccab6e0e5cec5d8305913b11c2aa678"><span class="id" title="notation">≤</span></a> <a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <span class="id" title="var">M</span> <span class="id" title="var">b</span> <span class="id" title="var">c</span>).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> <span class="id" title="var">Hm_eq_Sab</span> <span class="id" title="tactic">in</span> <span class="id" title="var">Hm_Sca</span>. </div>
+
+<div class="doc">
+S b c ≥ S a b = m 
+</div>
+<div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">H_Sbc_ge_m</span> : <a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <span class="id" title="var">M</span> <span class="id" title="var">a</span> <span class="id" title="var">b</span> <a class="idref" href="Semiring.TransitivityN.html#3ccab6e0e5cec5d8305913b11c2aa678"><span class="id" title="notation">≤</span></a> <a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <span class="id" title="var">M</span> <span class="id" title="var">b</span> <span class="id" title="var">c</span>).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ <span class="id" title="tactic">rewrite</span> &lt;- <span class="id" title="var">Hm_eq_Sab</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> (@<a class="idref" href="Semiring.SchulzeOrderN.html#bounded_mul_lower_right"><span class="id" title="lemma">bounded_mul_lower_right</span></a> <span class="id" title="var">R</span> (<a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <span class="id" title="var">M</span> <span class="id" title="var">a</span> <span class="id" title="var">b</span>) (<a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <span class="id" title="var">M</span> <span class="id" title="var">b</span> <span class="id" title="var">c</span>)). }<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+
+<div class="doc">
+H_meet_lower_bound: m ≤ S b c and m ≤ S c a → m ≤ S b c * S c a 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">Hm_Sbc_Sca</span> : <a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <span class="id" title="var">M</span> <span class="id" title="var">a</span> <span class="id" title="var">b</span> <a class="idref" href="Semiring.TransitivityN.html#3ccab6e0e5cec5d8305913b11c2aa678"><span class="id" title="notation">≤</span></a><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <span class="id" title="var">M</span> <span class="id" title="var">b</span> <span class="id" title="var">c</span> <a class="idref" href="Semiring.Structures.html#df06337ab011822b2792d206fc407479"><span class="id" title="notation">×</span></a> <a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <span class="id" title="var">M</span> <span class="id" title="var">c</span> <span class="id" title="var">a</span>).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ <span class="id" title="tactic">apply</span> <span class="id" title="var">H_meet_lower_bound</span>; [<span class="id" title="tactic">exact</span> <span class="id" title="var">H_Sbc_ge_m</span> | <span class="id" title="tactic">exact</span> <span class="id" title="var">Hm_Sca</span>]. }<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+
+<div class="doc">
+star_path_compose: S b c * S c a ≤ S b a 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">pose</span> <span class="id" title="var">proof</span> (<a class="idref" href="Semiring.SchulzeClosureN.html#star_path_compose"><span class="id" title="lemma">star_path_compose</span></a> <span class="id" title="var">M</span> <span class="id" title="var">b</span> <span class="id" title="var">c</span> <span class="id" title="var">a</span>) <span class="id" title="keyword">as</span> <span class="id" title="var">H_comp</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">Hm_Sba</span> : <a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <span class="id" title="var">M</span> <span class="id" title="var">a</span> <span class="id" title="var">b</span> <a class="idref" href="Semiring.TransitivityN.html#3ccab6e0e5cec5d8305913b11c2aa678"><span class="id" title="notation">≤</span></a> <a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <span class="id" title="var">M</span> <span class="id" title="var">b</span> <span class="id" title="var">a</span>).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ <span class="id" title="tactic">eapply</span> <a class="idref" href="Semiring.OrelN.html#orel_trans"><span class="id" title="lemma">orel_trans</span></a>; [<span class="id" title="tactic">exact</span> <span class="id" title="var">Hm_Sbc_Sca</span> | <span class="id" title="tactic">exact</span> <span class="id" title="var">H_comp</span>]. }<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+
+<div class="doc">
+Antisymmetry with S b a ≤ S a b from beats a b 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">Heq</span> : <a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <span class="id" title="var">M</span> <span class="id" title="var">b</span> <span class="id" title="var">a</span> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <span class="id" title="var">M</span> <span class="id" title="var">a</span> <span class="id" title="var">b</span>).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ <span class="id" title="tactic">apply</span> <a class="idref" href="Semiring.OrelN.html#orel_antisym"><span class="id" title="lemma">orel_antisym</span></a>; [<span class="id" title="tactic">exact</span> <span class="id" title="var">H_ab_le</span> | <span class="id" title="tactic">exact</span> <span class="id" title="var">Hm_Sba</span>]. }<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">exact</span> (<span class="id" title="var">H_ab_ne</span> <span class="id" title="var">Heq</span>).<br/>
@@ -121,10 +178,21 @@
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- <span class="id" title="tactic">apply</span> <span class="id" title="var">H_meet_lower_bound</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" title="tactic">exact</span> <span class="id" title="var">Hbc_le_Hab</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" title="tactic">apply</span> (@<a class="idref" href="Semiring.SchulzeOrderN.html#bounded_orel_refl"><span class="id" title="lemma">bounded_orel_refl</span></a> <span class="id" title="var">R</span> (<a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <span class="id" title="var">M</span> <span class="id" title="var">b</span> <span class="id" title="var">c</span>)). }<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> <span class="id" title="var">Hm_eq_Sbc</span> <span class="id" title="tactic">in</span> <span class="id" title="var">Hm_Sca</span>. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">H_Sab_ge_m</span> : <a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <span class="id" title="var">M</span> <span class="id" title="var">b</span> <span class="id" title="var">c</span> <a class="idref" href="Semiring.TransitivityN.html#3ccab6e0e5cec5d8305913b11c2aa678"><span class="id" title="notation">≤</span></a> <a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <span class="id" title="var">M</span> <span class="id" title="var">a</span> <span class="id" title="var">b</span>).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> <span class="id" title="var">Hm_eq_Sbc</span> <span class="id" title="tactic">in</span> <span class="id" title="var">Hm_Sca</span>. </div>
+
+<div class="doc">
+S a b ≥ S b c = m 
+</div>
+<div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">H_Sab_ge_m</span> : <a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <span class="id" title="var">M</span> <span class="id" title="var">b</span> <span class="id" title="var">c</span> <a class="idref" href="Semiring.TransitivityN.html#3ccab6e0e5cec5d8305913b11c2aa678"><span class="id" title="notation">≤</span></a> <a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <span class="id" title="var">M</span> <span class="id" title="var">a</span> <span class="id" title="var">b</span>).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ <span class="id" title="tactic">rewrite</span> &lt;- <span class="id" title="var">Hm_eq_Sbc</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> (@<a class="idref" href="Semiring.SchulzeOrderN.html#bounded_mul_lower_left"><span class="id" title="lemma">bounded_mul_lower_left</span></a> <span class="id" title="var">R</span> (<a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <span class="id" title="var">M</span> <span class="id" title="var">a</span> <span class="id" title="var">b</span>) (<a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <span class="id" title="var">M</span> <span class="id" title="var">b</span> <span class="id" title="var">c</span>)). }<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+
+<div class="doc">
+H_meet_lower_bound: m ≤ S c a and m ≤ S a b → m ≤ S c a * S a b 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">Hm_Sca_Sab</span> : <a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <span class="id" title="var">M</span> <span class="id" title="var">b</span> <span class="id" title="var">c</span> <a class="idref" href="Semiring.TransitivityN.html#3ccab6e0e5cec5d8305913b11c2aa678"><span class="id" title="notation">≤</span></a><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <span class="id" title="var">M</span> <span class="id" title="var">c</span> <span class="id" title="var">a</span> <a class="idref" href="Semiring.Structures.html#df06337ab011822b2792d206fc407479"><span class="id" title="notation">×</span></a> <a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <span class="id" title="var">M</span> <span class="id" title="var">a</span> <span class="id" title="var">b</span>).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ <span class="id" title="tactic">apply</span> <span class="id" title="var">H_meet_lower_bound</span>; [<span class="id" title="tactic">exact</span> <span class="id" title="var">Hm_Sca</span> | <span class="id" title="tactic">exact</span> <span class="id" title="var">H_Sab_ge_m</span>]. }<br/>
@@ -134,7 +202,12 @@
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">Heq</span> : <a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <span class="id" title="var">M</span> <span class="id" title="var">c</span> <span class="id" title="var">b</span> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <span class="id" title="var">M</span> <span class="id" title="var">b</span> <span class="id" title="var">c</span>).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ <span class="id" title="tactic">apply</span> <a class="idref" href="Semiring.OrelN.html#orel_antisym"><span class="id" title="lemma">orel_antisym</span></a>; [<span class="id" title="tactic">exact</span> <span class="id" title="var">H_bc_le</span> | <span class="id" title="tactic">exact</span> <span class="id" title="var">Hm_Scb</span>]. }<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">exact</span> (<span class="id" title="var">H_bc_ne</span> <span class="id" title="var">Heq</span>). }<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;</div>
+
+<div class="doc">
+Now: S a c ≤ S c a is impossible, so by total order, S c a ≤ S a c 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> (<span class="id" title="var">H_total_orel</span> (<a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <span class="id" title="var">M</span> <span class="id" title="var">a</span> <span class="id" title="var">c</span>) (<a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <span class="id" title="var">M</span> <span class="id" title="var">c</span> <span class="id" title="var">a</span>))<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">as</span> [<span class="id" title="var">Hac_le_Sca</span> | <span class="id" title="var">Hca_le_Sac</span>].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;- <span class="id" title="var">exfalso</span>. <span class="id" title="tactic">exact</span> (<span class="id" title="var">H_not_ac_le_ca</span> <span class="id" title="var">Hac_le_Sca</span>).<br/>
@@ -231,6 +304,22 @@
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.Hdec"><span class="id" title="variable">Hdec</span></a></span> is needed only for the left-to-right direction: both conclusions
+      are decidable statements, and deriving them from a refutation argument
+      requires deciding them.  It is the same hypothesis <span class="inlinecode"><span class="id" title="var">winner_exists_weaker</span></span>
+      already carries, and holds in every concrete instance.
+
+<div class="paragraph"> </div>
+
+      Note that no commutativity of <span class="inlinecode">×</span> is assumed: it is a CONSEQUENCE.  The
+      right-hand side says <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a></span> <span class="inlinecode">×</span> <span class="inlinecode"><a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.b"><span class="id" title="variable">b</span></a></span> is the greatest lower bound of <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a></span> and <span class="inlinecode"><a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.b"><span class="id" title="variable">b</span></a></span>
+      (it is always a lower bound, by <span class="inlinecode"><a class="idref" href="Semiring.SchulzeOrderN.html#bounded_mul_lower_left"><span class="id" title="lemma">bounded_mul_lower_left</span></a>/<span class="id" title="tactic">right</span></span>), and a
+      greatest lower bound is unique, so <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a></span> <span class="inlinecode">×</span> <span class="inlinecode"><a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.b"><span class="id" title="variable">b</span></a></span> <span class="inlinecode">=</span> <span class="inlinecode"><a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.b"><span class="id" title="variable">b</span></a></span> <span class="inlinecode">×</span> <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a></span>.                    
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Theorem</span> <a id="transitivity_characterisation" class="idref" href="#transitivity_characterisation"><span class="id" title="lemma">transitivity_characterisation</span></a> {<a id="R:32" class="idref" href="#R:32"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#BoundedSemiring.type"><span class="id" title="record">BoundedSemiring.type</span></a>} :<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;(3 <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Peano.html#cb53cf0ee22c036a03b4a9281c68b5a3"><span class="id" title="notation">≤</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#length"><span class="id" title="definition">length</span></a> (@<a class="idref" href="Semiring.Structures.html#elements"><span class="id" title="definition">elements</span></a> <a class="idref" href="Semiring.TransitivityN.html#TransitivityN.Node"><span class="id" title="variable">Node</span></a>))%<span class="id" title="var">nat</span> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">(</span></a><span class="id" title="keyword">∀</span> <a id="x:33" class="idref" href="#x:33"><span class="id" title="binder">x</span></a> <a id="y:34" class="idref" href="#y:34"><span class="id" title="binder">y</span></a> : <a class="idref" href="Semiring.TransitivityN.html#R:32"><span class="id" title="variable">R</span></a>, <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Specif.html#87727981cdc1579fef00b9d9c1d3b9da"><span class="id" title="notation">{</span></a><a class="idref" href="Semiring.TransitivityN.html#x:33"><span class="id" title="variable">x</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="Semiring.TransitivityN.html#y:34"><span class="id" title="variable">y</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Specif.html#87727981cdc1579fef00b9d9c1d3b9da"><span class="id" title="notation">}</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Specif.html#87727981cdc1579fef00b9d9c1d3b9da"><span class="id" title="notation">+</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Specif.html#87727981cdc1579fef00b9d9c1d3b9da"><span class="id" title="notation">{</span></a><a class="idref" href="Semiring.TransitivityN.html#x:33"><span class="id" title="variable">x</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'&lt;&gt;'_x"><span class="id" title="notation">≠</span></a> <a class="idref" href="Semiring.TransitivityN.html#y:34"><span class="id" title="variable">y</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Specif.html#87727981cdc1579fef00b9d9c1d3b9da"><span class="id" title="notation">}</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">)</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a><br/>

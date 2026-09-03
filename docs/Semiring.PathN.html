@@ -32,6 +32,12 @@
 &nbsp;&nbsp;&nbsp;&nbsp;{<a id="Generic.hdec" class="idref" href="#Generic.hdec"><span class="id" title="variable">hdec</span></a> : <span class="id" title="notation">∀</span> <span class="id" title="notation">(</span><a id="x:2" class="idref" href="#x:2"><span class="id" title="binder">x</span></a> <a id="y:3" class="idref" href="#y:3"><span class="id" title="binder">y</span></a> : <a class="idref" href="Semiring.PathN.html#A:1"><span class="id" title="variable">A</span></a><span class="id" title="notation">),</span> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Specif.html#87727981cdc1579fef00b9d9c1d3b9da"><span class="id" title="notation">{</span></a><a class="idref" href="Semiring.PathN.html#x:2"><span class="id" title="variable">x</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="Semiring.PathN.html#y:3"><span class="id" title="variable">y</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Specif.html#87727981cdc1579fef00b9d9c1d3b9da"><span class="id" title="notation">}</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Specif.html#87727981cdc1579fef00b9d9c1d3b9da"><span class="id" title="notation">+</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Specif.html#87727981cdc1579fef00b9d9c1d3b9da"><span class="id" title="notation">{</span></a><a class="idref" href="Semiring.PathN.html#x:2"><span class="id" title="variable">x</span></a> <span class="id" title="notation">≠</span> <a class="idref" href="Semiring.PathN.html#y:3"><span class="id" title="variable">y</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Specif.html#87727981cdc1579fef00b9d9c1d3b9da"><span class="id" title="notation">}</span></a>}.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+c covers l, i.e., every element of l appears in c 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="covers" class="idref" href="#covers"><span class="id" title="definition">covers</span></a> {<a id="A:5" class="idref" href="#A:5"><span class="id" title="binder">A</span></a> : <span class="id" title="keyword">Type</span>} (<a id="l:6" class="idref" href="#l:6"><span class="id" title="binder">l</span></a> <a id="c:7" class="idref" href="#c:7"><span class="id" title="binder">c</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.PathN.html#A:5"><span class="id" title="variable">A</span></a>) : <span class="id" title="keyword">Prop</span> :=<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">∀</span> (<a id="x:8" class="idref" href="#x:8"><span class="id" title="binder">x</span></a> : <a class="idref" href="Semiring.PathN.html#A:5"><span class="id" title="variable">A</span></a>), <span class="id" title="definition">In</span> <a class="idref" href="Semiring.PathN.html#x:8"><span class="id" title="variable">x</span></a> <a class="idref" href="Semiring.PathN.html#l:6"><span class="id" title="variable">l</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <span class="id" title="definition">In</span> <a class="idref" href="Semiring.PathN.html#x:8"><span class="id" title="variable">x</span></a> <a class="idref" href="Semiring.PathN.html#c:7"><span class="id" title="variable">c</span></a>.<br/>
 
@@ -103,7 +109,12 @@ Pigeonhole principle: if every element of <span class="inlinecode"><span class="
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- <span class="id" title="tactic">apply</span> <span class="id" title="lemma">in_or_app</span>. <span class="id" title="tactic">left</span>. <span class="id" title="tactic">exact</span> <span class="id" title="var">Hx_c</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- <span class="id" title="tactic">subst</span> <span class="id" title="var">x</span>. <span class="id" title="var">exfalso</span>. <span class="id" title="tactic">apply</span> <span class="id" title="var">Hnotin</span>. <span class="id" title="tactic">exact</span> <span class="id" title="var">Hx</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- <span class="id" title="tactic">apply</span> <span class="id" title="lemma">in_or_app</span>. <span class="id" title="tactic">right</span>. <span class="id" title="tactic">exact</span> <span class="id" title="var">Hx_c</span>. }<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+
+<div class="doc">
+Length inequality 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">Hlen'</span> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#length"><span class="id" title="definition">length</span></a> (<span class="id" title="var">c₁</span> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#bc347c51eaf667706ae54503b26d52c6"><span class="id" title="notation">++</span></a> <span class="id" title="var">c₂</span>) <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Peano.html#::nat_scope:x_'&lt;'_x"><span class="id" title="notation">&lt;</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#length"><span class="id" title="definition">length</span></a> <span class="id" title="var">l'</span>).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ <span class="id" title="tactic">rewrite</span> <span class="id" title="var">Hc</span> <span class="id" title="tactic">in</span> <span class="id" title="var">Hlen</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> !<span class="id" title="lemma">length_app</span> <span class="id" title="tactic">in</span> <span class="id" title="var">Hlen</span>. <span class="id" title="var">cbn</span> <span class="id" title="tactic">in</span> <span class="id" title="var">Hlen</span>.<br/>
@@ -133,6 +144,12 @@ A matrix over semiring <span class="inlinecode"><a class="idref" href="Examples.
 </div>
 <div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Let</span> <a id="Path.Matrix" class="idref" href="#Path.Matrix"><span class="id" title="variable">Matrix</span></a> {<a id="R:27" class="idref" href="#R:27"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} := @<a class="idref" href="Semiring.OrelN.html#Matrix"><span class="id" title="definition">OrelN.Matrix</span></a> <a class="idref" href="Semiring.PathN.html#Path.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="Semiring.PathN.html#R:27"><span class="id" title="variable">R</span></a>.<br/>
+</div>
+
+<div class="doc">
+a path is a triple 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="Path" class="idref" href="#Path"><span class="id" title="definition">Path</span></a> {<a id="R:28" class="idref" href="#R:28"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} : <span class="id" title="keyword">Type</span> := <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Semiring.PathN.html#Path.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="Semiring.PathN.html#Path.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> (<a class="idref" href="Semiring.PathN.html#Path.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="Semiring.PathN.html#Path.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="Semiring.PathN.html#R:28"><span class="id" title="variable">R</span></a>).<br/>
 
@@ -163,6 +180,12 @@ A matrix over semiring <span class="inlinecode"><a class="idref" href="Examples.
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+path strength between c and d 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Fixpoint</span> <a id="measure_of_path" class="idref" href="#measure_of_path"><span class="id" title="definition">measure_of_path</span></a> {<a id="R:39" class="idref" href="#R:39"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;(<a id="l:40" class="idref" href="#l:40"><span class="id" title="binder">l</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> (<a class="idref" href="Semiring.PathN.html#Path.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="Semiring.PathN.html#Path.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="Semiring.PathN.html#R:39"><span class="id" title="variable">R</span></a>)) : <a class="idref" href="Semiring.PathN.html#R:39"><span class="id" title="variable">R</span></a> :=<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="Semiring.PathN.html#l:40"><span class="id" title="variable">l</span></a> <span class="id" title="keyword">with</span> <br/>
@@ -189,6 +212,12 @@ A matrix over semiring <span class="inlinecode"><a class="idref" href="Examples.
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+stick a node 'c' in all the paths, represented by l 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Fixpoint</span> <a id="append_node_in_paths" class="idref" href="#append_node_in_paths"><span class="id" title="definition">append_node_in_paths</span></a> {<a id="R:52" class="idref" href="#R:52"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;(<a id="m:53" class="idref" href="#m:53"><span class="id" title="binder">m</span></a> : @<a class="idref" href="Semiring.PathN.html#Path.Matrix"><span class="id" title="variable">Matrix</span></a> <a class="idref" href="Semiring.PathN.html#R:52"><span class="id" title="variable">R</span></a>) (<a id="c:54" class="idref" href="#c:54"><span class="id" title="binder">c</span></a> : <a class="idref" href="Semiring.PathN.html#Path.Node"><span class="id" title="variable">Node</span></a>) (<a id="l:55" class="idref" href="#l:55"><span class="id" title="binder">l</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> (<a class="idref" href="Semiring.PathN.html#Path.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="Semiring.PathN.html#Path.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="Semiring.PathN.html#R:52"><span class="id" title="variable">R</span></a>))) : <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> (<a class="idref" href="Semiring.PathN.html#Path.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="Semiring.PathN.html#Path.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="Semiring.PathN.html#R:52"><span class="id" title="variable">R</span></a>)) := <br/>
@@ -202,6 +231,13 @@ A matrix over semiring <span class="inlinecode"><a class="idref" href="Examples.
 &nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+list of all paths of lenghth k from c to d. 
+     xs is list of all candidates 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Fixpoint</span> <a id="all_paths_klength" class="idref" href="#all_paths_klength"><span class="id" title="definition">all_paths_klength</span></a> {<a id="R:59" class="idref" href="#R:59"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} (<a id="xs:60" class="idref" href="#xs:60"><span class="id" title="binder">xs</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.PathN.html#Path.Node"><span class="id" title="variable">Node</span></a>) <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;(<a id="m:61" class="idref" href="#m:61"><span class="id" title="binder">m</span></a> : @<a class="idref" href="Semiring.PathN.html#Path.Matrix"><span class="id" title="variable">Matrix</span></a> <a class="idref" href="Semiring.PathN.html#R:59"><span class="id" title="variable">R</span></a>) (<a id="k:62" class="idref" href="#k:62"><span class="id" title="binder">k</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>) <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;(<a id="c:63" class="idref" href="#c:63"><span class="id" title="binder">c</span></a> <a id="d:64" class="idref" href="#d:64"><span class="id" title="binder">d</span></a> : <a class="idref" href="Semiring.PathN.html#Path.Node"><span class="id" title="variable">Node</span></a>) : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> (<a class="idref" href="Semiring.PathN.html#Path.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="Semiring.PathN.html#Path.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="Semiring.PathN.html#R:59"><span class="id" title="variable">R</span></a>)) :=<br/>
@@ -221,6 +257,12 @@ A matrix over semiring <span class="inlinecode"><a class="idref" href="Examples.
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="abbreviation">List.map</span> (<span class="id" title="keyword">fun</span> <a id="l:76" class="idref" href="#l:76"><span class="id" title="binder">l</span></a> ⇒ <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">(</span></a><a class="idref" href="Semiring.PathN.html#c:73"><span class="id" title="variable">c</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">,</span></a> <a class="idref" href="Semiring.PathN.html#d:74"><span class="id" title="variable">d</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">,</span></a> <a class="idref" href="Semiring.PathN.html#l:76"><span class="id" title="variable">l</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">)</span></a>) <a class="idref" href="Semiring.PathN.html#lp:75"><span class="id" title="variable">lp</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+get all the R values from path 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="get_all_rvalues" class="idref" href="#get_all_rvalues"><span class="id" title="definition">get_all_rvalues</span></a> {<a id="R:77" class="idref" href="#R:77"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;(<a id="pl:78" class="idref" href="#pl:78"><span class="id" title="binder">pl</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.PathN.html#Path"><span class="id" title="definition">Path</span></a>) : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.PathN.html#R:77"><span class="id" title="variable">R</span></a> :=<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="abbreviation">List.map</span> (<span class="id" title="keyword">fun</span> '<a id="pat:80" class="idref" href="#pat:80"><span class="id" title="binder">(</span></a><a id="pat:80" class="idref" href="#pat:80"><span class="id" title="binder">_</span></a><a id="pat:80" class="idref" href="#pat:80"><span class="id" title="binder">,</span></a> <a id="pat:80" class="idref" href="#pat:80"><span class="id" title="binder">_</span></a><a id="pat:80" class="idref" href="#pat:80"><span class="id" title="binder">,</span></a> <a id="l:79" class="idref" href="#l:79"><span class="id" title="binder"><span id="pat:80" class="id">l</span></span></a><a id="pat:80" class="idref" href="#pat:80"><span class="id" title="binder">)</span></a> ⇒ <a class="idref" href="Semiring.PathN.html#measure_of_path"><span class="id" title="definition">measure_of_path</span></a> <a class="idref" href="Semiring.PathN.html#l:79"><span class="id" title="variable">l</span></a>) <a class="idref" href="Semiring.PathN.html#pl:78"><span class="id" title="variable">pl</span></a>.<br/>
@@ -236,6 +278,12 @@ A matrix over semiring <span class="inlinecode"><a class="idref" href="Examples.
 &nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Semiring.PathN.html#target"><span class="id" title="definition">target</span></a> <a class="idref" href="Semiring.PathN.html#c:86"><span class="id" title="variable">c</span></a> <a class="idref" href="Semiring.PathN.html#l:87"><span class="id" title="variable">l</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#true"><span class="id" title="constructor">true</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+assume that path is well_founded 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Fixpoint</span> <a id="collect_nodes_from_a_path" class="idref" href="#collect_nodes_from_a_path"><span class="id" title="definition">collect_nodes_from_a_path</span></a> {<a id="R:88" class="idref" href="#R:88"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>}<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;(<a id="l:89" class="idref" href="#l:89"><span class="id" title="binder">l</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> (<a class="idref" href="Semiring.PathN.html#Path.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="Semiring.PathN.html#Path.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="Semiring.PathN.html#R:88"><span class="id" title="variable">R</span></a>)) : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.PathN.html#Path.Node"><span class="id" title="variable">Node</span></a> :=<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="Semiring.PathN.html#l:89"><span class="id" title="variable">l</span></a> <span class="id" title="keyword">with</span><br/>
@@ -247,6 +295,12 @@ A matrix over semiring <span class="inlinecode"><a class="idref" href="Examples.
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Checks if au is second element of path or not 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Fixpoint</span> <a id="elem_path_triple_tail" class="idref" href="#elem_path_triple_tail"><span class="id" title="definition">elem_path_triple_tail</span></a> {<a id="R:93" class="idref" href="#R:93"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;(<a id="au:94" class="idref" href="#au:94"><span class="id" title="binder">au</span></a> : <a class="idref" href="Semiring.PathN.html#Path.Node"><span class="id" title="variable">Node</span></a>) (<a id="l:95" class="idref" href="#l:95"><span class="id" title="binder">l</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> (<a class="idref" href="Semiring.PathN.html#Path.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="Semiring.PathN.html#Path.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="Semiring.PathN.html#R:93"><span class="id" title="variable">R</span></a>)) : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#bool"><span class="id" title="inductive">bool</span></a> :=<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="Semiring.PathN.html#l:95"><span class="id" title="variable">l</span></a> <span class="id" title="keyword">with</span><br/>
@@ -273,6 +327,12 @@ A matrix over semiring <span class="inlinecode"><a class="idref" href="Examples.
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+computes the loop in a path 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Fixpoint</span> <a id="elem_path_triple_compute_loop" class="idref" href="#elem_path_triple_compute_loop"><span class="id" title="definition">elem_path_triple_compute_loop</span></a> {<a id="R:108" class="idref" href="#R:108"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} (<a id="l:109" class="idref" href="#l:109"><span class="id" title="binder">l</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> (<a class="idref" href="Semiring.PathN.html#Path.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="Semiring.PathN.html#Path.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="Semiring.PathN.html#R:108"><span class="id" title="variable">R</span></a>)) := <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="Semiring.PathN.html#l:109"><span class="id" title="variable">l</span></a> <span class="id" title="keyword">with</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="notation">[]</span> ⇒ <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#None"><span class="id" title="constructor">None</span></a><br/>
@@ -283,6 +343,13 @@ A matrix over semiring <span class="inlinecode"><a class="idref" href="Examples.
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+This function is very similar to the above one, except it returns the 
+     left over from the front ++ loop ++ rest of the list 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Fixpoint</span> <a id="elem_path_triple_compute_loop_triple" class="idref" href="#elem_path_triple_compute_loop_triple"><span class="id" title="definition">elem_path_triple_compute_loop_triple</span></a> {<a id="R:112" class="idref" href="#R:112"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;(<a id="l:113" class="idref" href="#l:113"><span class="id" title="binder">l</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> (<a class="idref" href="Semiring.PathN.html#Path.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="Semiring.PathN.html#Path.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="Semiring.PathN.html#R:112"><span class="id" title="variable">R</span></a>)) := <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="Semiring.PathN.html#l:113"><span class="id" title="variable">l</span></a> <span class="id" title="keyword">with</span><br/>
@@ -297,6 +364,12 @@ A matrix over semiring <span class="inlinecode"><a class="idref" href="Examples.
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+elem_path_triple l = true means l does not have any cycle 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Fixpoint</span> <a id="elem_path_triple" class="idref" href="#elem_path_triple"><span class="id" title="definition">elem_path_triple</span></a> {<a id="R:116" class="idref" href="#R:116"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} (<a id="l:117" class="idref" href="#l:117"><span class="id" title="binder">l</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> (<a class="idref" href="Semiring.PathN.html#Path.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="Semiring.PathN.html#Path.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="Semiring.PathN.html#R:116"><span class="id" title="variable">R</span></a>)) : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#bool"><span class="id" title="inductive">bool</span></a> := <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="Semiring.PathN.html#l:117"><span class="id" title="variable">l</span></a> <span class="id" title="keyword">with</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="notation">[]</span> ⇒ <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#true"><span class="id" title="constructor">true</span></a> <br/>
@@ -316,6 +389,12 @@ A matrix over semiring <span class="inlinecode"><a class="idref" href="Examples.
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Get all the paths in one big list 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Fixpoint</span> <a id="enum_all_paths_flat" class="idref" href="#enum_all_paths_flat"><span class="id" title="definition">enum_all_paths_flat</span></a> {<a id="R:128" class="idref" href="#R:128"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} (<a id="l:129" class="idref" href="#l:129"><span class="id" title="binder">l</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.PathN.html#Path.Node"><span class="id" title="variable">Node</span></a>) <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;(<a id="m:130" class="idref" href="#m:130"><span class="id" title="binder">m</span></a> : @<a class="idref" href="Semiring.PathN.html#Path.Matrix"><span class="id" title="variable">Matrix</span></a> <a class="idref" href="Semiring.PathN.html#R:128"><span class="id" title="variable">R</span></a>) (<a id="n:131" class="idref" href="#n:131"><span class="id" title="binder">n</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>) (<a id="c:132" class="idref" href="#c:132"><span class="id" title="binder">c</span></a> <a id="d:133" class="idref" href="#d:133"><span class="id" title="binder">d</span></a> : <a class="idref" href="Semiring.PathN.html#Path.Node"><span class="id" title="variable">Node</span></a>) : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.PathN.html#Path"><span class="id" title="definition">Path</span></a> :=<br/>
 &nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="Semiring.PathN.html#n:131"><span class="id" title="variable">n</span></a> <span class="id" title="keyword">with</span><br/>
@@ -334,12 +413,13 @@ A matrix over semiring <span class="inlinecode"><a class="idref" href="Examples.
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
 
 <br/>
-
-<br/>
 </div>
 
 <div class="doc">
-If <span class="inlinecode"><span class="id" title="var">xs</span></span> is produced by <span class="inlinecode"><a class="idref" href="Semiring.PathN.html#append_node_in_paths"><span class="id" title="definition">append_node_in_paths</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.m"><span class="id" title="variable">m</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.SmithiiaN.html#SmithIIA.RemovalStrong.c"><span class="id" title="variable">c</span></a></span> <span class="inlinecode"><span class="id" title="var">l</span></span>, then <span class="inlinecode"><span class="id" title="var">xs</span></span>
+Proofs start from here 
+<div class="paragraph"> </div>
+
+ If <span class="inlinecode"><span class="id" title="var">xs</span></span> is produced by <span class="inlinecode"><a class="idref" href="Semiring.PathN.html#append_node_in_paths"><span class="id" title="definition">append_node_in_paths</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.m"><span class="id" title="variable">m</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.SmithiiaN.html#SmithIIA.RemovalStrong.c"><span class="id" title="variable">c</span></a></span> <span class="inlinecode"><span class="id" title="var">l</span></span>, then <span class="inlinecode"><span class="id" title="var">xs</span></span>
       begins with the edge <span class="inlinecode">(<a class="idref" href="Semiring.SmithiiaN.html#SmithIIA.RemovalStrong.c"><span class="id" title="variable">c</span></a>,</span> <span class="inlinecode"><a class="idref" href="Semiring.SchulzeWitnessN.html#SchulzeWitnessN.Square.y"><span class="id" title="variable">y</span></a>,</span> <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.m"><span class="id" title="variable">m</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.SmithiiaN.html#SmithIIA.RemovalStrong.c"><span class="id" title="variable">c</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.SchulzeWitnessN.html#SchulzeWitnessN.Square.y"><span class="id" title="variable">y</span></a>)</span> for some <span class="inlinecode"><a class="idref" href="Semiring.SchulzeWitnessN.html#SchulzeWitnessN.Square.y"><span class="id" title="variable">y</span></a></span>, its tail <span class="inlinecode"><span class="id" title="var">ys</span></span>
       is non-empty, and both <span class="inlinecode"><a class="idref" href="Semiring.PathN.html#source"><span class="id" title="definition">source</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.SmithiiaN.html#SmithIIA.RemovalStrong.c"><span class="id" title="variable">c</span></a></span> <span class="inlinecode"><span class="id" title="var">xs</span></span> and <span class="inlinecode"><a class="idref" href="Semiring.PathN.html#source"><span class="id" title="definition">source</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.SchulzeWitnessN.html#SchulzeWitnessN.Square.y"><span class="id" title="variable">y</span></a></span> <span class="inlinecode"><span class="id" title="var">ys</span></span> hold. 
 </div>
@@ -500,18 +580,54 @@ Every path returned by <span class="inlinecode"><a class="idref" href="Semiring.
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" title="tactic">inversion</span> <span class="id" title="var">Hin</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;- <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">simpl</span> <span class="id" title="tactic">in</span> <span class="id" title="var">Hin</span>.<br/>
+</div>
+
+<div class="doc">
+Keep a copy of Hin for the membership lemma 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">Hin_copy</span> := <span class="id" title="var">Hin</span>).<br/>
+</div>
+
+<div class="doc">
+Extract structural properties 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> (<a class="idref" href="Semiring.PathN.html#append_node_in_paths_shape"><span class="id" title="lemma">append_node_in_paths_shape</span></a><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="definition">List.flat_map</span> (<span class="id" title="keyword">fun</span> <a id="x:174" class="idref" href="#x:174"><span class="id" title="binder"><span id="x:175" class="id">x</span></span></a> ⇒ <a class="idref" href="Semiring.PathN.html#all_paths_klength"><span class="id" title="definition">all_paths_klength</span></a> <a class="idref" href="Semiring.Structures.html#elements"><span class="id" title="definition">elements</span></a> <span class="id" title="var">m</span> <span class="id" title="var">n'</span> <a class="idref" href="Semiring.PathN.html#x:174"><span class="id" title="variable">x</span></a> <span class="id" title="var">d</span>) <a class="idref" href="Semiring.Structures.html#elements"><span class="id" title="definition">elements</span></a>)<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">m</span> <span class="id" title="var">c</span> <span class="id" title="var">xs</span>) <span class="id" title="tactic">in</span> <span class="id" title="var">Hin</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">Hin</span> <span class="id" title="keyword">as</span> (<span class="id" title="var">y</span> &amp; <span class="id" title="var">ys</span> &amp; <span class="id" title="var">Heq</span> &amp; <span class="id" title="var">Hsrc_xs</span> &amp; <span class="id" title="var">Hsrc_ys</span> &amp; <span class="id" title="var">Hys_ne</span>).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">subst</span> <span class="id" title="var">xs</span>.<br/>
+</div>
+
+<div class="doc">
+Extract membership: ys is from the flat_map 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <a class="idref" href="Semiring.PathN.html#append_node_in_paths_In"><span class="id" title="lemma">append_node_in_paths_In</span></a> <span class="id" title="tactic">in</span> <span class="id" title="var">Hin_copy</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">Hin_copy</span> <span class="id" title="keyword">as</span> (<span class="id" title="var">y2</span> &amp; <span class="id" title="var">ys2</span> &amp; <span class="id" title="var">Heq2</span> &amp; <span class="id" title="var">Hin_flat</span>).<br/>
+</div>
+
+<div class="doc">
+Heq2: (c,y,m c y)::ys = (c,y2,m c y2)::ys2 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">inversion</span> <span class="id" title="var">Heq2</span>. <span class="id" title="tactic">subst</span> <span class="id" title="var">y2</span> <span class="id" title="var">ys2</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="lemma">in_flat_map</span> <span class="id" title="tactic">in</span> <span class="id" title="var">Hin_flat</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">Hin_flat</span> <span class="id" title="keyword">as</span> (<span class="id" title="var">x</span> &amp; <span class="id" title="var">Hin_el</span> &amp; <span class="id" title="var">Hin_ys</span>).<br/>
+</div>
+
+<div class="doc">
+Get well-formedness of the tail via IH 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> (<span class="id" title="var">IH</span> <span class="id" title="var">m</span> <span class="id" title="var">x</span> <span class="id" title="var">d</span> <span class="id" title="var">ys</span> <span class="id" title="var">Hdiag</span>) <span class="id" title="tactic">in</span> <span class="id" title="var">Hin_ys</span>.<br/>
+</div>
+
+<div class="doc">
+Assemble using the extension lemma 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> (<a class="idref" href="Semiring.PathN.html#well_formed_by_extending"><span class="id" title="lemma">well_formed_by_extending</span></a> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">(</span></a><span class="id" title="var">c</span><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">,</span></a> <span class="id" title="var">y</span><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">,</span></a> <span class="id" title="var">m</span> <span class="id" title="var">c</span> <span class="id" title="var">y</span><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">)</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#::list_scope:x_'::'_x"><span class="id" title="notation">::</span></a> <span class="id" title="var">ys</span>) <span class="id" title="var">ys</span> <span class="id" title="var">c</span> <span class="id" title="var">y</span> <span class="id" title="var">m</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">Hys_ne</span> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#eq_refl"><span class="id" title="constructor">eq_refl</span></a> <span class="id" title="var">Hsrc_ys</span> <span class="id" title="var">Hin_ys</span>).<br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
@@ -660,19 +776,50 @@ If a well-formed path <span class="inlinecode"><span class="id" title="var">xs</
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="definition">List.In</span> <a class="idref" href="Semiring.PathN.html#xs:208"><span class="id" title="variable">xs</span></a> (<a class="idref" href="Semiring.PathN.html#append_node_in_paths"><span class="id" title="definition">append_node_in_paths</span></a> <a class="idref" href="Semiring.PathN.html#m:206"><span class="id" title="variable">m</span></a> <a class="idref" href="Semiring.PathN.html#c:207"><span class="id" title="variable">c</span></a> <a class="idref" href="Semiring.PathN.html#l:205"><span class="id" title="variable">l</span></a>).<br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Proof</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">l</span> <span class="id" title="var">m</span> <span class="id" title="var">c</span> <span class="id" title="var">xs</span> <span class="id" title="var">Hsrc</span> <span class="id" title="var">Htl_ne</span> <span class="id" title="var">Hwf</span> <span class="id" title="var">Hin_tl</span>.<br/>
+</div>
+
+<div class="doc">
+Extract the structure of xs from the hypotheses 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">unfold</span> <a class="idref" href="Semiring.PathN.html#source"><span class="id" title="definition">source</span></a> <span class="id" title="tactic">in</span> <span class="id" title="var">Hsrc</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">xs</span> <span class="id" title="keyword">as</span> [|<span class="id" title="var">h</span> <span class="id" title="var">rest</span>]; [<span class="id" title="tactic">discriminate</span> <span class="id" title="var">Hsrc</span> | ].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">h</span> <span class="id" title="keyword">as</span> [[<span class="id" title="var">c'</span> <span class="id" title="var">x</span>] <span class="id" title="var">v</span>].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">simpl</span> <span class="id" title="tactic">in</span> <span class="id" title="var">Hsrc</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> (<a class="idref" href="Semiring.Structures.html#fin_eq_dec"><span class="id" title="definition">fin_eq_dec</span></a> <span class="id" title="var">c</span> <span class="id" title="var">c'</span>) <span class="id" title="keyword">as</span> [<span class="id" title="var">Heq</span> | <span class="id" title="var">Hneq</span>]; [| <span class="id" title="tactic">discriminate</span> <span class="id" title="var">Hsrc</span>].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">subst</span> <span class="id" title="var">c'</span>.<br/>
+</div>
+
+<div class="doc">
+xs = (c, x, v) :: rest 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">cbn</span> [<span class="id" title="definition">List.tl</span>] <span class="id" title="tactic">in</span> <span class="id" title="var">Htl_ne</span>, <span class="id" title="var">Hin_tl</span>.<br/>
+</div>
+
+<div class="doc">
+Htl_ne : rest ≠ <font size=-2>&#9744;</font>,  Hin_tl : In rest l 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">unfold</span> <a class="idref" href="Semiring.PathN.html#well_formed_path_aux"><span class="id" title="definition">well_formed_path_aux</span></a> <span class="id" title="tactic">in</span> <span class="id" title="var">Hwf</span>. <span class="id" title="var">cbn</span> <span class="id" title="tactic">in</span> <span class="id" title="var">Hwf</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">Hwf</span> <span class="id" title="keyword">as</span> [<span class="id" title="var">Hmv</span> <span class="id" title="var">Hrest</span>].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">rest</span> <span class="id" title="keyword">as</span> [|<span class="id" title="var">h2</span> <span class="id" title="var">rest'</span>]; [<span class="id" title="var">exfalso</span>; <span class="id" title="tactic">apply</span> <span class="id" title="var">Htl_ne</span>; <span class="id" title="tactic">reflexivity</span> | ].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">h2</span> <span class="id" title="keyword">as</span> [[<span class="id" title="var">au</span> <span class="id" title="var">av</span>] <span class="id" title="var">aw</span>].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">Hrest</span> <span class="id" title="keyword">as</span> [<span class="id" title="var">Heq_x</span> <span class="id" title="var">Hwf_rest</span>].<br/>
+</div>
+
+<div class="doc">
+Hmv: m c x = v,  Heq_x: x = au 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">subst</span> <span class="id" title="var">x</span>. <span class="id" title="tactic">subst</span> <span class="id" title="var">v</span>.<br/>
+</div>
+
+<div class="doc">
+xs = (c, au, m c au) :: (au, av, aw) :: rest'  Goal: In ((c, au, m c au) :: (au, av, aw) :: rest')
+              (append_node_in_paths m c l) 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">induction</span> <span class="id" title="var">l</span> <span class="id" title="keyword">as</span> [|<span class="id" title="var">h</span> <span class="id" title="var">t</span> <span class="id" title="var">IH</span>].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;- <span class="id" title="tactic">inversion</span> <span class="id" title="var">Hin_tl</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;- <span class="id" title="tactic">simpl</span>.<br/>
@@ -721,11 +868,23 @@ Completeness: if a path ending with <span class="inlinecode">(<a class="idref" h
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">simpl</span> <span class="id" title="tactic">in</span> <span class="id" title="var">Hsrc</span>. <span class="id" title="tactic">unfold</span> <a class="idref" href="Semiring.PathN.html#source"><span class="id" title="definition">source</span></a> <span class="id" title="tactic">in</span> <span class="id" title="var">Hsrc</span>. <span class="id" title="tactic">simpl</span> <span class="id" title="tactic">in</span> <span class="id" title="var">Hsrc</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> (<a class="idref" href="Semiring.Structures.html#fin_eq_dec"><span class="id" title="definition">fin_eq_dec</span></a> <span class="id" title="var">c</span> <span class="id" title="var">c'</span>) <span class="id" title="keyword">as</span> [<span class="id" title="var">Heq</span> | <span class="id" title="var">Hneq</span>]; [| <span class="id" title="tactic">discriminate</span> <span class="id" title="var">Hsrc</span>].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">subst</span> <span class="id" title="var">c'</span>.<br/>
+</div>
+
+<div class="doc">
+path = (c, x, v) :: (ys ++ <span class="inlinecode">(<a class="idref" href="Semiring.SmithiiaN.html#SmithIIA.RemovalStrong.d"><span class="id" title="variable">d</span></a>,</span> <span class="inlinecode"><a class="idref" href="Semiring.SmithiiaN.html#SmithIIA.RemovalStrong.d"><span class="id" title="variable">d</span></a>,</span> <span class="inlinecode">1)</span>), use definitional equality 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">set</span> (<span class="id" title="var">tail</span> := <span class="id" title="var">ys</span> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#bc347c51eaf667706ae54503b26d52c6"><span class="id" title="notation">++</span></a> <span class="id" title="notation">[</span><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">(</span></a><span class="id" title="var">d</span><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">,</span></a> <span class="id" title="var">d</span><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">,</span></a> 1<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">)</span></a><span class="id" title="notation">]</span>).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">Htail_eq</span> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#bc347c51eaf667706ae54503b26d52c6"><span class="id" title="notation">(</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">(</span></a><span class="id" title="var">c</span><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">,</span></a> <span class="id" title="var">x</span><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">,</span></a> <span class="id" title="var">v</span><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">)</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#::list_scope:x_'::'_x"><span class="id" title="notation">::</span></a> <span class="id" title="var">ys</span><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#bc347c51eaf667706ae54503b26d52c6"><span class="id" title="notation">)</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#bc347c51eaf667706ae54503b26d52c6"><span class="id" title="notation">++</span></a> <span class="id" title="notation">[</span><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">(</span></a><span class="id" title="var">d</span><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">,</span></a> <span class="id" title="var">d</span><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">,</span></a> 1<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">)</span></a><span class="id" title="notation">]</span> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">(</span></a><span class="id" title="var">c</span><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">,</span></a> <span class="id" title="var">x</span><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">,</span></a> <span class="id" title="var">v</span><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">)</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#::list_scope:x_'::'_x"><span class="id" title="notation">::</span></a> <span class="id" title="var">tail</span>).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ <span class="id" title="var">cbn</span>. <span class="id" title="tactic">reflexivity</span>. }<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> <span class="id" title="var">Htail_eq</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">simpl</span>.<br/>
+</div>
+
+<div class="doc">
+Match the S (length ys) case: append_node_in_paths m c (flat_map ...) 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> (<a class="idref" href="Semiring.PathN.html#In_append_node_in_paths_rev"><span class="id" title="lemma">In_append_node_in_paths_rev</span></a><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="definition">List.flat_map</span> (<span class="id" title="keyword">fun</span> <a id="z:214" class="idref" href="#z:214"><span class="id" title="binder"><span id="z:215" class="id">z</span></span></a> ⇒ <a class="idref" href="Semiring.PathN.html#all_paths_klength"><span class="id" title="definition">all_paths_klength</span></a> <a class="idref" href="Semiring.Structures.html#elements"><span class="id" title="definition">elements</span></a> <span class="id" title="var">m</span> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#length"><span class="id" title="definition">length</span></a> <span class="id" title="var">ys</span>) <a class="idref" href="Semiring.PathN.html#z:214"><span class="id" title="variable">z</span></a> <span class="id" title="var">d</span>) <a class="idref" href="Semiring.Structures.html#elements"><span class="id" title="definition">elements</span></a>)<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">m</span> <span class="id" title="var">c</span> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">(</span></a><span class="id" title="var">c</span><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">,</span></a> <span class="id" title="var">x</span><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">,</span></a> <span class="id" title="var">v</span><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">)</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#::list_scope:x_'::'_x"><span class="id" title="notation">::</span></a> <span class="id" title="var">tail</span>)).<br/>
@@ -817,9 +976,21 @@ When every path in <span class="inlinecode"><span class="id" title="var">l</span
 &nbsp;&nbsp;&nbsp;&nbsp;- <span class="id" title="tactic">pose</span> <span class="id" title="var">proof</span> (<span class="id" title="var">Hprop</span> <span class="id" title="var">h</span> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#or_introl"><span class="id" title="constructor">or_introl</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#eq_refl"><span class="id" title="constructor">eq_refl</span></a>)) <span class="id" title="keyword">as</span> (<span class="id" title="var">Hh_ne</span> &amp; <span class="id" title="var">Hh_src</span>).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">h</span> <span class="id" title="keyword">as</span> [|<span class="id" title="var">h0</span> <span class="id" title="var">ht</span>]; [<span class="id" title="var">exfalso</span>; <span class="id" title="tactic">apply</span> <span class="id" title="var">Hh_ne</span>; <span class="id" title="tactic">reflexivity</span> | ].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">h0</span> <span class="id" title="keyword">as</span> [[<span class="id" title="var">x</span> <span class="id" title="var">y</span>] <span class="id" title="var">r</span>].<br/>
+</div>
+
+<div class="doc">
+From source a h = true, we get x = a 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">unfold</span> <a class="idref" href="Semiring.PathN.html#source"><span class="id" title="definition">source</span></a> <span class="id" title="tactic">in</span> <span class="id" title="var">Hh_src</span>. <span class="id" title="tactic">simpl</span> <span class="id" title="tactic">in</span> <span class="id" title="var">Hh_src</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> (<a class="idref" href="Semiring.Structures.html#fin_eq_dec"><span class="id" title="definition">fin_eq_dec</span></a> <span class="id" title="var">a</span> <span class="id" title="var">x</span>) <span class="id" title="keyword">as</span> [<span class="id" title="var">Heq_ax</span> | <span class="id" title="var">Hneq</span>]; [| <span class="id" title="tactic">discriminate</span> <span class="id" title="var">Hh_src</span>].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">subst</span> <span class="id" title="var">x</span>.<br/>
+</div>
+
+<div class="doc">
+Now h = (a, y, r) :: ht 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">cbn</span> [<a class="idref" href="Semiring.PathN.html#append_node_in_paths"><span class="id" title="definition">append_node_in_paths</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Lists.ListDef.html#map"><span class="id" title="definition">map</span></a> <a class="idref" href="Semiring.PathN.html#measure_of_path"><span class="id" title="definition">measure_of_path</span></a>].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">f_equal</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="var">IH</span>. <span class="id" title="tactic">intros</span> <span class="id" title="var">xs</span> <span class="id" title="var">Hin</span>. <span class="id" title="tactic">apply</span> <span class="id" title="var">Hprop</span>. <span class="id" title="tactic">right</span>. <span class="id" title="tactic">exact</span> <span class="id" title="var">Hin</span>.<br/>
@@ -915,8 +1086,23 @@ If a concatenated path <span class="inlinecode"><span class="id" title="var">ll<
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">cbn</span> <span class="id" title="tactic">in</span> <span class="id" title="var">Hwf</span>. <span class="id" title="tactic">split</span>; [<span class="id" title="tactic">exact</span> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#I"><span class="id" title="constructor">I</span></a> | <span class="id" title="tactic">exact</span> <span class="id" title="var">Hwf</span>].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;- <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">cbn</span> [<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#app"><span class="id" title="definition">app</span></a>] <span class="id" title="tactic">in</span> <span class="id" title="var">Hwf</span>.<br/>
+</div>
+
+<div class="doc">
+Hwf : well_formed_path_aux m ((c, x, v) :: ll' ++ lr) 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">cbn</span> [<a class="idref" href="Semiring.PathN.html#well_formed_path_aux"><span class="id" title="definition">well_formed_path_aux</span></a>] <span class="id" title="tactic">in</span> <span class="id" title="var">Hwf</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">Hwf</span> <span class="id" title="keyword">as</span> [<span class="id" title="var">Hmv</span> <span class="id" title="var">Hconn</span>].<br/>
+</div>
+
+<div class="doc">
+Hmv : m c x = v  Hconn : match (ll' ++ lr) with
+                  | <font size=-2>&#9744;</font> =&gt; True
+                  | (y, _, _) :: _ =&gt; (x = y) ∧ well_formed_path_aux m (ll' ++ lr)
+                  end 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> (<span class="id" title="var">ll'</span> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#bc347c51eaf667706ae54503b26d52c6"><span class="id" title="notation">++</span></a> <span class="id" title="var">lr</span>) <span class="id" title="keyword">as</span> [|<span class="id" title="var">h</span> <span class="id" title="var">t</span>] <span class="id" title="var">eqn</span>:<span class="id" title="var">Happ</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="lemma">app_eq_nil</span> <span class="id" title="tactic">in</span> <span class="id" title="var">Happ</span>. <span class="id" title="tactic">destruct</span> <span class="id" title="var">Happ</span> <span class="id" title="keyword">as</span> [<span class="id" title="var">Hll'</span> <span class="id" title="var">Hlr</span>].<br/>
@@ -926,10 +1112,23 @@ If a concatenated path <span class="inlinecode"><span class="id" title="var">ll<
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">h</span> <span class="id" title="keyword">as</span> [[<span class="id" title="var">y</span> <span class="id" title="var">z</span>] <span class="id" title="var">w</span>].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">Hconn</span> <span class="id" title="keyword">as</span> [<span class="id" title="var">Heq</span> <span class="id" title="var">Hwf_tail</span>].<br/>
+</div>
+
+<div class="doc">
+Heq : x = y,  Hwf_tail : well_formed_path_aux m ((y, z, w) :: t)
+            Rewrite using Happ to get the form the IH expects 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> &lt;- <span class="id" title="var">Happ</span> <span class="id" title="tactic">in</span> <span class="id" title="var">Hwf_tail</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="var">IH</span> <span class="id" title="tactic">in</span> <span class="id" title="var">Hwf_tail</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">Hwf_tail</span> <span class="id" title="keyword">as</span> [<span class="id" title="var">Hwf_ll'</span> <span class="id" title="var">Hwf_lr</span>].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">split</span>; [| <span class="id" title="tactic">exact</span> <span class="id" title="var">Hwf_lr</span>].<br/>
+</div>
+
+<div class="doc">
+prove well_formed_path_aux m ((c, x, v) :: ll') 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">cbn</span> [<a class="idref" href="Semiring.PathN.html#well_formed_path_aux"><span class="id" title="definition">well_formed_path_aux</span></a>]. <span class="id" title="tactic">split</span>; [<span class="id" title="tactic">exact</span> <span class="id" title="var">Hmv</span> |].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">ll'</span> <span class="id" title="keyword">as</span> [|<span class="id" title="var">h2</span> <span class="id" title="var">ll''</span>].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;× <br/>
@@ -1290,6 +1489,13 @@ A duplicate in the collected nodes forces a cycle witness.
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;× <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">cbn</span> <span class="id" title="tactic">in</span> <span class="id" title="var">Hnotnodup</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">Hrest</span> <span class="id" title="keyword">as</span> [<span class="id" title="var">Heq_av_cu</span> <span class="id" title="var">Hwf_t</span>]. <span class="id" title="tactic">subst</span> <span class="id" title="var">cu</span>.<br/>
+</div>
+
+<div class="doc">
+t = (av, cv, cw) :: t'
+              Decision: is au in the tail's collected nodes? 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> (<span class="id" title="lemma">in_dec</span> <a class="idref" href="Semiring.Structures.html#fin_eq_dec"><span class="id" title="definition">fin_eq_dec</span></a> <span class="id" title="var">au</span> (<a class="idref" href="Semiring.PathN.html#collect_nodes_from_a_path"><span class="id" title="definition">collect_nodes_from_a_path</span></a> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">(</span></a><span class="id" title="var">av</span><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">,</span></a> <span class="id" title="var">cv</span><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">,</span></a> <span class="id" title="var">cw</span><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">)</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#::list_scope:x_'::'_x"><span class="id" title="notation">::</span></a> <span class="id" title="var">t'</span>))) <span class="id" title="keyword">as</span> [<span class="id" title="var">Hin</span> | <span class="id" title="var">Hnin</span>].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-- <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">pose</span> <span class="id" title="var">proof</span> (<a class="idref" href="Semiring.PathN.html#In_collect_nodes_implies_head_or_tail"><span class="id" title="lemma">In_collect_nodes_implies_head_or_tail</span></a> <span class="id" title="var">t'</span> <span class="id" title="var">m</span> <span class="id" title="var">au</span> <span class="id" title="var">av</span> <span class="id" title="var">cv</span> <span class="id" title="var">cw</span> <span class="id" title="var">Hwf_t</span> <span class="id" title="var">Hin</span>)<br/>
@@ -1407,6 +1613,12 @@ A cyclic path splits into a prefix, one loop, and a suffix.
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+if you give me path of length &gt;= finN then there is loop 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="all_paths_in_klength_paths_cycle_finN_stronger" class="idref" href="#all_paths_in_klength_paths_cycle_finN_stronger"><span class="id" title="lemma">all_paths_in_klength_paths_cycle_finN_stronger</span></a> <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;{<a id="R:324" class="idref" href="#R:324"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} : <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">∀</span> (<a id="l:325" class="idref" href="#l:325"><span class="id" title="binder">l</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> (<a class="idref" href="Semiring.PathN.html#Path.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="Semiring.PathN.html#Path.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="Semiring.PathN.html#R:324"><span class="id" title="variable">R</span></a>)) (<a id="m:326" class="idref" href="#m:326"><span class="id" title="binder">m</span></a> : @<a class="idref" href="Semiring.PathN.html#Path.Matrix"><span class="id" title="variable">Matrix</span></a> <a class="idref" href="Semiring.PathN.html#R:324"><span class="id" title="variable">R</span></a>),<br/>
@@ -1418,6 +1630,12 @@ A cyclic path splits into a prefix, one loop, and a suffix.
 &nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Semiring.PathN.html#cyclic_path"><span class="id" title="definition">cyclic_path</span></a> <a class="idref" href="Semiring.PathN.html#au:328"><span class="id" title="variable">au</span></a> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">(</span></a><a class="idref" href="Semiring.PathN.html#au:328"><span class="id" title="variable">au</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">,</span></a> <a class="idref" href="Semiring.PathN.html#av:329"><span class="id" title="variable">av</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">,</span></a> <a class="idref" href="Semiring.PathN.html#aw:330"><span class="id" title="variable">aw</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">)</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#::list_scope:x_'::'_x"><span class="id" title="notation">::</span></a> <a class="idref" href="Semiring.PathN.html#lm:331"><span class="id" title="variable">lm</span></a>) <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#ba2b0e492d2b4675a0acf3ea92aabadd"><span class="id" title="notation">∧</span></a>  <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Semiring.PathN.html#elem_path_triple"><span class="id" title="definition">elem_path_triple</span></a>  <a class="idref" href="Semiring.PathN.html#ll:327"><span class="id" title="variable">ll</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#true"><span class="id" title="constructor">true</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#ba2b0e492d2b4675a0acf3ea92aabadd"><span class="id" title="notation">∧</span></a> <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Semiring.PathN.html#l:325"><span class="id" title="variable">l</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">(</span></a><a class="idref" href="Semiring.PathN.html#ll:327"><span class="id" title="variable">ll</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#bc347c51eaf667706ae54503b26d52c6"><span class="id" title="notation">++</span></a>  <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#bc347c51eaf667706ae54503b26d52c6"><span class="id" title="notation">(</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">(</span></a><a class="idref" href="Semiring.PathN.html#au:328"><span class="id" title="variable">au</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">,</span></a> <a class="idref" href="Semiring.PathN.html#av:329"><span class="id" title="variable">av</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">,</span></a> <a class="idref" href="Semiring.PathN.html#aw:330"><span class="id" title="variable">aw</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">)</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#::list_scope:x_'::'_x"><span class="id" title="notation">::</span></a> <a class="idref" href="Semiring.PathN.html#lm:331"><span class="id" title="variable">lm</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#bc347c51eaf667706ae54503b26d52c6"><span class="id" title="notation">)</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#bc347c51eaf667706ae54503b26d52c6"><span class="id" title="notation">++</span></a> <a class="idref" href="Semiring.PathN.html#lr:332"><span class="id" title="variable">lr</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">)</span></a>.<br/>
+</div>
+
+<div class="doc">
+lr is the rest of path 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Proof</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">intros</span> ? ? <span class="id" title="var">Hfin</span> <span class="id" title="var">Hw</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span>(<span class="id" title="var">ha</span> : @<a class="idref" href="Semiring.Structures.html#elements"><span class="id" title="definition">elements</span></a> <a class="idref" href="Semiring.PathN.html#Path.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'&lt;&gt;'_x"><span class="id" title="notation">≠</span></a> <span class="id" title="notation">[]</span>).<br/>
@@ -1454,6 +1672,12 @@ The length-based order on paths is well-founded.
 &nbsp;&nbsp;<span class="id" title="keyword">Defined</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+easy proof List.length finN &lt;= List.length l -&gt; loop 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="elem_path_length" class="idref" href="#elem_path_length"><span class="id" title="lemma">elem_path_length</span></a> {<a id="R:339" class="idref" href="#R:339"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} : <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">∀</span> (<a id="l:340" class="idref" href="#l:340"><span class="id" title="binder">l</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> (<a class="idref" href="Semiring.PathN.html#Path.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="Semiring.PathN.html#Path.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="Semiring.PathN.html#R:339"><span class="id" title="variable">R</span></a>)) <a id="m:341" class="idref" href="#m:341"><span class="id" title="binder">m</span></a>, <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Semiring.PathN.html#elem_path_triple"><span class="id" title="definition">elem_path_triple</span></a> <a class="idref" href="Semiring.PathN.html#l:340"><span class="id" title="variable">l</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#true"><span class="id" title="constructor">true</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a><br/>
@@ -1511,6 +1735,14 @@ Every well-formed path can be reduced to an acyclic well-formed path.
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+Every well formed path can be reduced into 
+       an well formed elementry path, i.e., path 
+       without loop and it's length &lt; finN 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="reduce_path_into_elem_path_gen" class="idref" href="#reduce_path_into_elem_path_gen"><span class="id" title="lemma">reduce_path_into_elem_path_gen</span></a> {<a id="R:346" class="idref" href="#R:346"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} : <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">∀</span> (<a id="l:347" class="idref" href="#l:347"><span class="id" title="binder">l</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> (<a class="idref" href="Semiring.PathN.html#Path.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="Semiring.PathN.html#Path.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="Semiring.PathN.html#R:346"><span class="id" title="variable">R</span></a>)) <a id="m:348" class="idref" href="#m:348"><span class="id" title="binder">m</span></a>,<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Semiring.PathN.html#well_formed_path_aux"><span class="id" title="definition">well_formed_path_aux</span></a> <a class="idref" href="Semiring.PathN.html#m:348"><span class="id" title="variable">m</span></a> <a class="idref" href="Semiring.PathN.html#l:347"><span class="id" title="variable">l</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a><br/>
@@ -1544,6 +1776,12 @@ Removing a loop preserves the next-node boundary relation.
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">lm</span> <span class="id" title="var">aut</span> <span class="id" title="var">avt</span> <span class="id" title="var">awt</span> <span class="id" title="var">au</span> <span class="id" title="var">av</span> <span class="id" title="var">aw</span> <span class="id" title="tactic">cut</span> <span class="id" title="var">cvt</span> <span class="id" title="var">cwt</span> <span class="id" title="var">lr</span> <span class="id" title="var">m</span> <span class="id" title="var">Hwf</span> <span class="id" title="var">Hcyc</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">unfold</span> <a class="idref" href="Semiring.PathN.html#cyclic_path"><span class="id" title="definition">cyclic_path</span></a> <span class="id" title="tactic">in</span> <span class="id" title="var">Hcyc</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">Hcyc</span> <span class="id" title="keyword">as</span> [<span class="id" title="var">Hne</span> [<span class="id" title="var">Hsrc</span> <span class="id" title="var">Htgt</span>]].<br/>
+</div>
+
+<div class="doc">
+Decompose the well-formedness to get avt = au 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">cbn</span> [<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#app"><span class="id" title="definition">app</span></a>] <span class="id" title="tactic">in</span> <span class="id" title="var">Hwf</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">cbn</span> [<a class="idref" href="Semiring.PathN.html#well_formed_path_aux"><span class="id" title="definition">well_formed_path_aux</span></a>] <span class="id" title="tactic">in</span> <span class="id" title="var">Hwf</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">Hwf</span> <span class="id" title="keyword">as</span> [<span class="id" title="var">Hmv1</span> <span class="id" title="var">Hconn1</span>].<br/>
@@ -1552,7 +1790,20 @@ Removing a loop preserves the next-node boundary relation.
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">h</span> <span class="id" title="keyword">as</span> [[<span class="id" title="var">y</span> <span class="id" title="var">z</span>] <span class="id" title="var">w</span>].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">Hconn1</span> <span class="id" title="keyword">as</span> [<span class="id" title="var">Heq_avt_y</span> <span class="id" title="var">Hwf_tail</span>].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">inversion</span> <span class="id" title="var">Heq_rest</span>. <span class="id" title="tactic">subst</span> <span class="id" title="var">y</span> <span class="id" title="var">z</span> <span class="id" title="var">w</span> <span class="id" title="var">t</span>. <span class="id" title="tactic">clear</span> <span class="id" title="var">Heq_rest</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">subst</span> <span class="id" title="var">avt</span>. &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">pose</span> (<span class="id" title="var">P</span> := <span class="id" title="keyword">fun</span> (<a id="lm':363" class="idref" href="#lm':363"><span class="id" title="binder"><span id="lm':368" class="id">lm'</span></span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> (<a class="idref" href="Semiring.PathN.html#Path.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="Semiring.PathN.html#Path.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <span class="id" title="var">R</span>)) ⇒<br/>
+</div>
+
+<div class="doc">
+Heq_avt_y: avt = au,  Hwf_tail: well_formed ((au, av, aw) :: lm ++ (cut, cvt, cwt) :: lr) 
+</div>
+<div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">subst</span> <span class="id" title="var">avt</span>. </div>
+
+<div class="doc">
+Inner induction: for any target d and head (x,y,w), if the path is well-formed
+        and target d finds d at the end, then d must equal cut (the next node). 
+</div>
+<div class="code">
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">pose</span> (<span class="id" title="var">P</span> := <span class="id" title="keyword">fun</span> (<a id="lm':363" class="idref" href="#lm':363"><span class="id" title="binder"><span id="lm':368" class="id">lm'</span></span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> (<a class="idref" href="Semiring.PathN.html#Path.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="Semiring.PathN.html#Path.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <span class="id" title="var">R</span>)) ⇒<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">∀</span> (<a id="d:364" class="idref" href="#d:364"><span class="id" title="binder"><span id="d:369" class="id">d</span></span></a> <a id="x:365" class="idref" href="#x:365"><span class="id" title="binder"><span id="x:370" class="id">x</span></span></a> <a id="y:366" class="idref" href="#y:366"><span class="id" title="binder"><span id="y:371" class="id">y</span></span></a> : <a class="idref" href="Semiring.PathN.html#Path.Node"><span class="id" title="variable">Node</span></a>) (<a id="w:367" class="idref" href="#w:367"><span class="id" title="binder"><span id="w:372" class="id">w</span></span></a> : <span class="id" title="var">R</span>),<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Semiring.PathN.html#well_formed_path_aux"><span class="id" title="definition">well_formed_path_aux</span></a> <span class="id" title="var">m</span> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">(</span></a><a class="idref" href="Semiring.PathN.html#x:365"><span class="id" title="variable">x</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">,</span></a> <a class="idref" href="Semiring.PathN.html#y:366"><span class="id" title="variable">y</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">,</span></a> <a class="idref" href="Semiring.PathN.html#w:367"><span class="id" title="variable">w</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">)</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#::list_scope:x_'::'_x"><span class="id" title="notation">::</span></a> <a class="idref" href="Semiring.PathN.html#lm':363"><span class="id" title="variable">lm'</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#bc347c51eaf667706ae54503b26d52c6"><span class="id" title="notation">++</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">(</span></a><span class="id" title="tactic">cut</span><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">,</span></a> <span class="id" title="var">cvt</span><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">,</span></a> <span class="id" title="var">cwt</span><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">)</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#::list_scope:x_'::'_x"><span class="id" title="notation">::</span></a> <span class="id" title="var">lr</span>) <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Semiring.PathN.html#target"><span class="id" title="definition">target</span></a> <a class="idref" href="Semiring.PathN.html#d:364"><span class="id" title="variable">d</span></a> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">(</span></a><a class="idref" href="Semiring.PathN.html#x:365"><span class="id" title="variable">x</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">,</span></a> <a class="idref" href="Semiring.PathN.html#y:366"><span class="id" title="variable">y</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">,</span></a> <a class="idref" href="Semiring.PathN.html#w:367"><span class="id" title="variable">w</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">)</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#::list_scope:x_'::'_x"><span class="id" title="notation">::</span></a> <a class="idref" href="Semiring.PathN.html#lm':363"><span class="id" title="variable">lm'</span></a>) <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#true"><span class="id" title="constructor">true</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a><br/>
@@ -1569,6 +1820,12 @@ Removing a loop preserves the next-node boundary relation.
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">h2</span> <span class="id" title="keyword">as</span> [[<span class="id" title="var">y2</span> <span class="id" title="var">z2</span>] <span class="id" title="var">w2</span>].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">Hconn2</span> <span class="id" title="keyword">as</span> [<span class="id" title="var">Heq_y_y2</span> <span class="id" title="var">_</span>].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">inversion</span> <span class="id" title="var">Heq2</span>. <span class="id" title="tactic">subst</span> <span class="id" title="var">y2</span> <span class="id" title="var">z2</span> <span class="id" title="var">w2</span> <span class="id" title="var">t2</span>.<br/>
+</div>
+
+<div class="doc">
+Heq_y_y2: y = cut 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">cbn</span> [<a class="idref" href="Semiring.PathN.html#target"><span class="id" title="definition">target</span></a>] <span class="id" title="tactic">in</span> <span class="id" title="var">Htgt'</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> (<a class="idref" href="Semiring.Structures.html#fin_eq_dec"><span class="id" title="definition">fin_eq_dec</span></a> <span class="id" title="var">d</span> <span class="id" title="var">y</span>) <span class="id" title="keyword">as</span> [<span class="id" title="var">Heq_dy</span> | <span class="id" title="var">Hneq</span>].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" title="tactic">subst</span> <span class="id" title="var">d</span>. <span class="id" title="tactic">subst</span> <span class="id" title="var">y</span>. <span class="id" title="tactic">reflexivity</span>.<br/>
@@ -1584,6 +1841,12 @@ Removing a loop preserves the next-node boundary relation.
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">Hconn2</span> <span class="id" title="keyword">as</span> [<span class="id" title="var">_</span> <span class="id" title="var">Hwf_lm_rest</span>].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">inversion</span> <span class="id" title="var">Heq2</span>. <span class="id" title="tactic">subst</span> <span class="id" title="var">y2</span> <span class="id" title="var">z2</span> <span class="id" title="var">w2</span> <span class="id" title="var">t2</span>. <span class="id" title="tactic">clear</span> <span class="id" title="var">Heq2</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">cbn</span> [<a class="idref" href="Semiring.PathN.html#target"><span class="id" title="definition">target</span></a>] <span class="id" title="tactic">in</span> <span class="id" title="var">Htgt'</span>.<br/>
+</div>
+
+<div class="doc">
+Htgt': target d ((xu, xv, xw) :: lm'') = true 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">exact</span> (<span class="id" title="var">IH</span> <span class="id" title="var">d</span> <span class="id" title="var">xu</span> <span class="id" title="var">xv</span> <span class="id" title="var">xw</span> <span class="id" title="var">Hwf_lm_rest</span> <span class="id" title="var">Htgt'</span>). }<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> (<span class="id" title="var">Hind</span> <span class="id" title="var">lm</span> <span class="id" title="var">au</span> <span class="id" title="var">au</span> <span class="id" title="var">av</span> <span class="id" title="var">aw</span> <span class="id" title="var">Hwf_tail</span> <span class="id" title="var">Htgt</span>).<br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
@@ -1618,8 +1881,21 @@ Removing a cyclic middle segment preserves well-formedness.
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">pose</span> <span class="id" title="var">proof</span> (<a class="idref" href="Semiring.PathN.html#well_founded_rev"><span class="id" title="lemma">well_founded_rev</span></a> <span class="id" title="var">lm</span> <span class="id" title="var">aut</span> <span class="id" title="var">avt</span> <span class="id" title="var">awt</span> <span class="id" title="var">au</span> <span class="id" title="var">av</span> <span class="id" title="var">aw</span> <span class="id" title="tactic">cut</span> <span class="id" title="var">cvt</span> <span class="id" title="var">cwt</span> <span class="id" title="var">lr'</span> <span class="id" title="var">m</span> <span class="id" title="var">Hwf</span> <span class="id" title="var">Hcyc</span>) <span class="id" title="keyword">as</span> <span class="id" title="var">Heq_avt_cut</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <a class="idref" href="Semiring.PathN.html#well_formed_path_snoc"><span class="id" title="lemma">well_formed_path_snoc</span></a> <span class="id" title="tactic">in</span> <span class="id" title="var">Hwf</span> <span class="id" title="keyword">as</span> [<span class="id" title="var">Hwf_head</span> <span class="id" title="var">Hwf_rest</span>].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <a class="idref" href="Semiring.PathN.html#well_formed_path_snoc"><span class="id" title="lemma">well_formed_path_snoc</span></a> <span class="id" title="tactic">in</span> <span class="id" title="var">Hwf_rest</span> <span class="id" title="keyword">as</span> [<span class="id" title="var">Hwf_cycle</span> <span class="id" title="var">Hwf_lr'</span>].<br/>
+</div>
+
+<div class="doc">
+Hwf_head: well_formed <span class="inlinecode">(<span class="id" title="var">aut</span>,</span> <span class="inlinecode"><span class="id" title="var">avt</span>,</span> <span class="inlinecode"><span class="id" title="var">awt</span>)</span> 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">simpl</span> <span class="id" title="tactic">in</span> <span class="id" title="var">Hwf_head</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">Hwf_head</span> <span class="id" title="keyword">as</span> [<span class="id" title="var">Hmv</span> <span class="id" title="var">_</span>].<br/>
+</div>
+
+<div class="doc">
+Hwf_lr': well_formed ((cut, cvt, cwt) :: lr')
+              Build well_formed ((aut,avt,awt) :: (cut,cvt,cwt) :: lr') 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">simpl</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">split</span>; [<span class="id" title="tactic">exact</span> <span class="id" title="var">Hmv</span> | ].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">simpl</span>.<br/>
@@ -1627,7 +1903,19 @@ Removing a cyclic middle segment preserves well-formedness.
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">simpl</span> <span class="id" title="tactic">in</span> <span class="id" title="var">Hwf</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">Hwf</span> <span class="id" title="keyword">as</span> [<span class="id" title="var">Hmv</span> [<span class="id" title="var">Heq_avt_but</span> <span class="id" title="var">Hwf_tail</span>]].<br/>
+</div>
+
+<div class="doc">
+Hwf_tail: well_formed ((but,bvt,bwt) :: ll'' ++ ((au,av,aw)::lm) ++ lr) 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">pose</span> <span class="id" title="var">proof</span> (<span class="id" title="var">IH</span> <span class="id" title="var">lr</span> <span class="id" title="var">lm</span> <span class="id" title="var">au</span> <span class="id" title="var">av</span> <span class="id" title="var">aw</span> <span class="id" title="var">m</span> <span class="id" title="var">Hwf_tail</span> <span class="id" title="var">Hcyc</span>) <span class="id" title="keyword">as</span> <span class="id" title="var">Hwf_ll''_lr</span>.<br/>
+</div>
+
+<div class="doc">
+Hwf_ll''_lr: well_formed ((but,bvt,bwt) :: ll'' ++ lr) 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">simpl</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">split</span>; [<span class="id" title="tactic">exact</span> <span class="id" title="var">Hmv</span> | ].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">simpl</span>.<br/>
@@ -1663,7 +1951,19 @@ Removing a loop also preserves the source predicate at the front.
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">discriminate</span> <span class="id" title="var">Hnil</span>. }<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">h</span> <span class="id" title="keyword">as</span> [[<span class="id" title="var">y2</span> <span class="id" title="var">z2</span>] <span class="id" title="var">w2</span>].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">simpl</span>.<br/>
+</div>
+
+<div class="doc">
+Need: fin_eq_dec au y2 = true, i.e., au = y2 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">unfold</span> <a class="idref" href="Semiring.PathN.html#cyclic_path"><span class="id" title="definition">cyclic_path</span></a> <span class="id" title="tactic">in</span> <span class="id" title="var">Hcyc</span>. <span class="id" title="tactic">destruct</span> <span class="id" title="var">Hcyc</span> <span class="id" title="keyword">as</span> [<span class="id" title="var">_</span> [<span class="id" title="var">_</span> <span class="id" title="var">Htgt</span>]].<br/>
+</div>
+
+<div class="doc">
+Inner induction as in well_founded_rev 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">pose</span> (<span class="id" title="var">P</span> := <span class="id" title="keyword">fun</span> (<a id="lm':393" class="idref" href="#lm':393"><span class="id" title="binder"><span id="lm':398" class="id">lm'</span></span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> (<a class="idref" href="Semiring.PathN.html#Path.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <a class="idref" href="Semiring.PathN.html#Path.Node"><span class="id" title="variable">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">×</span></a> <span class="id" title="var">R</span>)) ⇒<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">∀</span> (<a id="d:394" class="idref" href="#d:394"><span class="id" title="binder"><span id="d:399" class="id">d</span></span></a> <a id="x:395" class="idref" href="#x:395"><span class="id" title="binder"><span id="x:400" class="id">x</span></span></a> <a id="y:396" class="idref" href="#y:396"><span class="id" title="binder"><span id="y:401" class="id">y</span></span></a> : <a class="idref" href="Semiring.PathN.html#Path.Node"><span class="id" title="variable">Node</span></a>) (<a id="w:397" class="idref" href="#w:397"><span class="id" title="binder"><span id="w:402" class="id">w</span></span></a> : <span class="id" title="var">R</span>),<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Semiring.PathN.html#well_formed_path_aux"><span class="id" title="definition">well_formed_path_aux</span></a> <span class="id" title="var">m</span> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">(</span></a><a class="idref" href="Semiring.PathN.html#x:395"><span class="id" title="variable">x</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">,</span></a> <a class="idref" href="Semiring.PathN.html#y:396"><span class="id" title="variable">y</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">,</span></a> <a class="idref" href="Semiring.PathN.html#w:397"><span class="id" title="variable">w</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">)</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#::list_scope:x_'::'_x"><span class="id" title="notation">::</span></a> <a class="idref" href="Semiring.PathN.html#lm':393"><span class="id" title="variable">lm'</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#bc347c51eaf667706ae54503b26d52c6"><span class="id" title="notation">++</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">(</span></a><span class="id" title="var">y2</span><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">,</span></a> <span class="id" title="var">z2</span><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">,</span></a> <span class="id" title="var">w2</span><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#e6756e10c36f149b18b4a8741ed83079"><span class="id" title="notation">)</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#::list_scope:x_'::'_x"><span class="id" title="notation">::</span></a> <span class="id" title="var">t</span>) <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a><br/>
@@ -2121,7 +2421,7 @@ The partial sum is stable after the finite-node bound is reached.
 </div>
 
 <div class="doc">
-<a id="lab20"></a><h2 class="section">1.  Path bottleneck bound</h2>
+<a id="lab120"></a><h2 class="section">1.  Path bottleneck bound</h2>
 
 
 <div class="paragraph"> </div>
@@ -2175,7 +2475,7 @@ The partial sum is stable after the finite-node bound is reached.
 </div>
 
 <div class="doc">
-<a id="lab21"></a><h2 class="section">2.  Path concatenation bound</h2>
+<a id="lab121"></a><h2 class="section">2.  Path concatenation bound</h2>
 
 
 <div class="paragraph"> </div>
@@ -2200,7 +2500,7 @@ The partial sum is stable after the finite-node bound is reached.
 </div>
 
 <div class="doc">
-<a id="lab22"></a><h2 class="section">3.  Weakest-edge realisation</h2>
+<a id="lab122"></a><h2 class="section">3.  Weakest-edge realisation</h2>
 
 
 <div class="paragraph"> </div>
@@ -2249,12 +2549,24 @@ The partial sum is stable after the finite-node bound is reached.
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
-
-<br/>
 </div>
 
 <div class="doc">
-The source of the first edge is one of the nodes a path visits. 
+<a id="lab123"></a><h1 class="section">Path enumeration over an arbitrary candidate list</h1>
+
+
+<div class="paragraph"> </div>
+
+      <span class="inlinecode"><a class="idref" href="Semiring.PathN.html#all_paths_klength"><span class="id" title="definition">all_paths_klength</span></a></span> is already parameterised by a node list, but the
+      lemmas above are all stated at <span class="inlinecode"><a class="idref" href="Semiring.Structures.html#elements"><span class="id" title="definition">elements</span></a></span>.  The generalisations below
+      replace <span class="inlinecode"><a class="idref" href="Semiring.Structures.html#elements"><span class="id" title="definition">elements</span></a></span> by an arbitrary list <span class="inlinecode"><span class="id" title="var">l</span></span>, which is what lets two
+      elections over different candidate sets be compared at a single
+      ambient <span class="inlinecode"><a class="idref" href="Examples.WinningVotes.html#WinningVotesSchulze.Node"><span class="id" title="variable">Node</span></a></span> type.  Each original lemma is the <span class="inlinecode"><span class="id" title="var">l</span></span> <span class="inlinecode">:=</span> <span class="inlinecode"><a class="idref" href="Semiring.Structures.html#elements"><span class="id" title="definition">elements</span></a></span>
+      instance of its <span class="inlinecode"><span class="id" title="var">_gen</span></span> counterpart, with the side condition on <span class="inlinecode"><span class="id" title="var">l</span></span>
+      discharged by <span class="inlinecode"><a class="idref" href="Semiring.PathN.html#covers_list_elem"><span class="id" title="lemma">covers_list_elem</span></a></span> <span class="inlinecode">...</span> <span class="inlinecode"><a class="idref" href="Semiring.Structures.html#elements_complete"><span class="id" title="definition">elements_complete</span></a></span>. 
+<div class="paragraph"> </div>
+
+ The source of the first edge is one of the nodes a path visits. 
 </div>
 <div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="collect_nodes_head" class="idref" href="#collect_nodes_head"><span class="id" title="lemma">collect_nodes_head</span></a> {<a id="R:502" class="idref" href="#R:502"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} (<a id="a:503" class="idref" href="#a:503"><span class="id" title="binder">a</span></a> <a id="b:504" class="idref" href="#b:504"><span class="id" title="binder">b</span></a> : <a class="idref" href="Semiring.PathN.html#Path.Node"><span class="id" title="variable">Node</span></a>) (<a id="w:505" class="idref" href="#w:505"><span class="id" title="binder">w</span></a> : <a class="idref" href="Semiring.PathN.html#R:502"><span class="id" title="variable">R</span></a>)<br/>
@@ -2539,6 +2851,22 @@ Completeness at an arbitrary candidate list.  This is the one place
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab124"></a><h1 class="section">Confining a path to a candidate list</h1>
+
+
+<div class="paragraph"> </div>
+
+      <span class="inlinecode"><a class="idref" href="Semiring.PathN.html#covers"><span class="id" title="definition">covers</span></a></span> <span class="inlinecode">(<a class="idref" href="Semiring.PathN.html#collect_nodes_from_a_path"><span class="id" title="definition">collect_nodes_from_a_path</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.SchulzeWitnessN.html#SchulzeWitnessN.TriangleClosures.p"><span class="id" title="variable">p</span></a>)</span> <span class="inlinecode"><span class="id" title="var">ns</span></span> is the natural way to say
+      that <span class="inlinecode"><a class="idref" href="Semiring.SchulzeWitnessN.html#SchulzeWitnessN.TriangleClosures.p"><span class="id" title="variable">p</span></a></span> stays inside <span class="inlinecode"><span class="id" title="var">ns</span></span>, but it is awkward under loop removal,
+      because the collected-node list of a sublist is not syntactically a
+      sublist of the collected-node list of the whole.  The edge-endpoint
+      formulation below says the same thing and is inherited by sublists
+      immediately, so it is the form the reduction lemmas carry. 
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="path_nodes_in" class="idref" href="#path_nodes_in"><span class="id" title="definition">path_nodes_in</span></a> {<a id="R:563" class="idref" href="#R:563"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} (<a id="ns:564" class="idref" href="#ns:564"><span class="id" title="binder">ns</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.PathN.html#Path.Node"><span class="id" title="variable">Node</span></a>)<br/>
@@ -2615,12 +2943,21 @@ Every node a path visits is an endpoint of one of its edges.
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
-
-<br/>
 </div>
 
 <div class="doc">
-<span class="inlinecode"><a class="idref" href="Semiring.PathN.html#all_paths_in_klength_paths_cycle_finN_stronger"><span class="id" title="lemma">all_paths_in_klength_paths_cycle_finN_stronger</span></a></span> at an arbitrary list. 
+<a id="lab125"></a><h1 class="section">Cycle elimination against an arbitrary candidate list</h1>
+
+
+<div class="paragraph"> </div>
+
+      The pigeonhole step below counts against <span class="inlinecode"><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#length"><span class="id" title="definition">length</span></a></span> <span class="inlinecode"><span class="id" title="var">ns</span></span> rather than
+      <span class="inlinecode"><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#length"><span class="id" title="definition">length</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.Structures.html#elements"><span class="id" title="definition">elements</span></a></span>.  <span class="inlinecode"><a class="idref" href="Semiring.PathN.html#all_paths_in_klength_paths_cycle"><span class="id" title="lemma">all_paths_in_klength_paths_cycle</span></a></span> and
+      <span class="inlinecode"><a class="idref" href="Semiring.PathN.html#length_collect_node_gen"><span class="id" title="lemma">length_collect_node_gen</span></a></span> were already stated at an arbitrary list,
+      so only the two wrappers that fixed it to <span class="inlinecode"><a class="idref" href="Semiring.Structures.html#elements"><span class="id" title="definition">elements</span></a></span> need redoing. 
+<div class="paragraph"> </div>
+
+ <span class="inlinecode"><a class="idref" href="Semiring.PathN.html#all_paths_in_klength_paths_cycle_finN_stronger"><span class="id" title="lemma">all_paths_in_klength_paths_cycle_finN_stronger</span></a></span> at an arbitrary list. 
 </div>
 <div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="all_paths_in_klength_paths_cycle_finN_stronger_gen" class="idref" href="#all_paths_in_klength_paths_cycle_finN_stronger_gen"><span class="id" title="lemma">all_paths_in_klength_paths_cycle_finN_stronger_gen</span></a> {<a id="R:591" class="idref" href="#R:591"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>} :<br/>
@@ -2798,12 +3135,24 @@ Every path confined to <span class="inlinecode"><span class="id" title="var">ns<
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
-
-<br/>
 </div>
 
 <div class="doc">
-In a bounded semiring <span class="inlinecode"><a class="idref" href="Semiring.OrelN.html#Orel"><span class="id" title="definition">Orel</span></a></span> has the least-upper-bound shape on <span class="inlinecode">+</span>,
+<a id="lab126"></a><h1 class="section">The closure over a candidate list</h1>
+
+
+<div class="paragraph"> </div>
+
+      <span class="inlinecode"><a class="idref" href="Semiring.PathN.html#path_star"><span class="id" title="definition">path_star</span></a></span> <span class="inlinecode"><span class="id" title="var">ns</span></span> <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.m"><span class="id" title="variable">m</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.SmithiiaN.html#SmithIIA.RemovalStrong.c"><span class="id" title="variable">c</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.SmithiiaN.html#SmithIIA.RemovalStrong.d"><span class="id" title="variable">d</span></a></span> sums the measures of every path from <span class="inlinecode"><a class="idref" href="Semiring.SmithiiaN.html#SmithIIA.RemovalStrong.c"><span class="id" title="variable">c</span></a></span> to <span class="inlinecode"><a class="idref" href="Semiring.SmithiiaN.html#SmithIIA.RemovalStrong.d"><span class="id" title="variable">d</span></a></span>
+      of length at most <span class="inlinecode"><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#length"><span class="id" title="definition">length</span></a></span> <span class="inlinecode"><span class="id" title="var">ns</span></span> <span class="inlinecode">-</span> <span class="inlinecode">1</span> whose intermediate nodes are drawn
+      from <span class="inlinecode"><span class="id" title="var">ns</span></span>.  At <span class="inlinecode"><span class="id" title="var">ns</span></span> <span class="inlinecode">:=</span> <span class="inlinecode"><a class="idref" href="Semiring.Structures.html#elements"><span class="id" title="definition">elements</span></a></span> it agrees with <span class="inlinecode"><a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a></span> by
+      <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#connect_partial_sum_mat_paths"><span class="id" title="lemma">connect_partial_sum_mat_paths</span></a></span>, so this is the same closure viewed
+      through its path characterisation rather than through matrix
+      multiplication, and unlike <span class="inlinecode"><a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a></span> it can speak about two
+      different sets of alternatives at one ambient <span class="inlinecode"><a class="idref" href="Examples.WinningVotes.html#WinningVotesSchulze.Node"><span class="id" title="variable">Node</span></a></span> type. 
+<div class="paragraph"> </div>
+
+ In a bounded semiring <span class="inlinecode"><a class="idref" href="Semiring.OrelN.html#Orel"><span class="id" title="definition">Orel</span></a></span> has the least-upper-bound shape on <span class="inlinecode">+</span>,
       which is what makes <span class="inlinecode"><a class="idref" href="Semiring.PathN.html#path_star"><span class="id" title="definition">path_star</span></a></span> behave like a supremum over paths.
       <span class="inlinecode"><span class="id" title="library">OrelN</span></span> proves these for <span class="inlinecode"><a class="idref" href="Semiring.Structures.html#IdempotentSemiring"><span class="id" title="abbreviation">IdempotentSemiring</span></a></span>, which <span class="inlinecode"><a class="idref" href="Semiring.Structures.html#BoundedSemiring"><span class="id" title="abbreviation">BoundedSemiring</span></a></span>
       does not coerce into, so they are rederived here from
@@ -3060,12 +3409,25 @@ The form the lower bound is actually used in: exhibit a concrete
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
-
-<br/>
 </div>
 
 <div class="doc">
-The measure of a path is unchanged by its terminal unit loop. 
+<a id="lab127"></a><h1 class="section">Composing closures over a candidate list</h1>
+
+
+<div class="paragraph"> </div>
+
+      <span class="inlinecode"><a class="idref" href="Semiring.PathN.html#path_star_compose"><span class="id" title="lemma">path_star_compose</span></a></span> is the list-indexed analogue of
+      <span class="inlinecode"><a class="idref" href="Semiring.SchulzeClosureN.html#star_path_compose"><span class="id" title="lemma">star_path_compose</span></a></span> in SocialchoiceN.  The matrix proof there goes
+      through <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#pow"><span class="id" title="definition">pow</span></a></span> <span class="inlinecode">(<a class="idref" href="Examples.Profiles.html#M"><span class="id" title="abbreviation">M</span></a></span> <span class="inlinecode">+</span> <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#I"><span class="id" title="definition">I</span></a>)</span> and its stabilization; that route is not
+      available at an arbitrary candidate list, so the proof here is the
+      direct path-level one: concatenate a path from <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a></span> to <span class="inlinecode"><a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.b"><span class="id" title="variable">b</span></a></span> with a
+      path from <span class="inlinecode"><a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.b"><span class="id" title="variable">b</span></a></span> to <span class="inlinecode"><a class="idref" href="Semiring.SmithiiaN.html#SmithIIA.RemovalStrong.c"><span class="id" title="variable">c</span></a></span> and reduce the result.  Bounding a product of
+      two path sums needs distributivity, which is what the three
+      <span class="inlinecode"><span class="id" title="var">_mul_bound</span></span> lemmas supply. 
+<div class="paragraph"> </div>
+
+ The measure of a path is unchanged by its terminal unit loop. 
 </div>
 <div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="measure_snoc_unit" class="idref" href="#measure_snoc_unit"><span class="id" title="lemma">measure_snoc_unit</span></a> {<a id="R:712" class="idref" href="#R:712"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>}<br/>
@@ -3341,12 +3703,23 @@ Concatenating a strongest path from <span class="inlinecode"><a class="idref" hr
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
-
-<br/>
 </div>
 
 <div class="doc">
-A zero edge zeroes the whole path. 
+<a id="lab128"></a><h1 class="section">Dead nodes</h1>
+
+
+<div class="paragraph"> </div>
+
+      A node with no outgoing edges of its own cannot lie on the interior
+      of any path of positive measure.  This is what lets a closure over
+      the whole alternative set be identified with a closure over a
+      sublist, provided everything outside the sublist is dead, and it is
+      the mechanism behind the witness matrices of SocialchoiceN, whose
+      unnamed nodes are exactly of this kind. 
+<div class="paragraph"> </div>
+
+ A zero edge zeroes the whole path. 
 </div>
 <div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="measure_zero_edge" class="idref" href="#measure_zero_edge"><span class="id" title="lemma">measure_zero_edge</span></a> {<a id="R:781" class="idref" href="#R:781"><span class="id" title="binder">R</span></a> : <a class="idref" href="Semiring.Structures.html#Semiring.type"><span class="id" title="record">Semiring.type</span></a>}<br/>

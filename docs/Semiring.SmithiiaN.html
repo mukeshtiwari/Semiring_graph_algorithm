@@ -29,6 +29,31 @@
 <span class="id" title="keyword">Local Infix</span> <a id=":::x_'&lt;'_x" class="idref" href="#:::x_'&lt;'_x"><span class="id" title="notation">&quot;</span></a>&lt;" := (<span class="id" title="keyword">fun</span> <a id="x:1" class="idref" href="#x:1"><span class="id" title="binder">x</span></a> <a id="y:2" class="idref" href="#y:2"><span class="id" title="binder">y</span></a> ⇒ <a class="idref" href="Semiring.SmithiiaN.html#x:1"><span class="id" title="variable">x</span></a> <a class="idref" href="Semiring.SmithiiaN.html#3ccab6e0e5cec5d8305913b11c2aa678"><span class="id" title="notation">≤</span></a> <a class="idref" href="Semiring.SmithiiaN.html#y:2"><span class="id" title="variable">y</span></a> <span class="id" title="notation">∧</span> <a class="idref" href="Semiring.SmithiiaN.html#x:1"><span class="id" title="variable">x</span></a> <span class="id" title="notation">≠</span> <a class="idref" href="Semiring.SmithiiaN.html#y:2"><span class="id" title="variable">y</span></a>) (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 70).<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab160"></a><h1 class="section">Smith-IIA in its genuine removal form (Schulze 4.7.5a)</h1>
+
+
+<div class="paragraph"> </div>
+
+    SocialchoiceN proves the isolation surrogate: zeroing out a weak
+    alternative's row and column leaves the beat relation on the strong
+    set unchanged.  The criterion Schulze states is about REMOVING the
+    alternative, which changes the size of the alternative set and so
+    needs the list-indexed closure of PathN.
+
+<div class="paragraph"> </div>
+
+    The two forms turn out to be the same object.  <span class="inlinecode"><a class="idref" href="Semiring.IsolateN.html#isolate"><span class="id" title="definition">isolate</span></a></span> <span class="inlinecode"><a class="idref" href="Examples.Profiles.html#M"><span class="id" title="abbreviation">M</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.SmithiiaN.html#SmithIIA.RemovalStrong.d"><span class="id" title="variable">d</span></a></span> gives
+    <span class="inlinecode"><a class="idref" href="Semiring.SmithiiaN.html#SmithIIA.RemovalStrong.d"><span class="id" title="variable">d</span></a></span> no links at all, which is exactly the hypothesis under which
+    <span class="inlinecode"><a class="idref" href="Semiring.ClosureTransportN.html#path_star_restrict"><span class="id" title="lemma">path_star_restrict</span></a></span> identifies a closure over a sublist with the
+    closure over everything.  So the removal form is the isolation form
+    composed with a bridge, and the mathematical content, that no walk
+    out of the weak block reaches the threshold, is already carried by
+    <span class="inlinecode"><a class="idref" href="Semiring.SmithN.html#pow_from_B2_lt"><span class="id" title="lemma">pow_from_B2_lt</span></a></span>. 
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">Section</span> <a id="SmithIIA" class="idref" href="#SmithIIA"><span class="id" title="section">SmithIIA</span></a>.<br/>
@@ -98,6 +123,23 @@ The alternative set with <span class="inlinecode"><a class="idref" href="Semirin
 &nbsp;&nbsp;<span class="id" title="keyword">Proof</span>. <span class="id" title="tactic">intros</span> <span class="id" title="var">_</span>. <span class="id" title="tactic">apply</span> <a class="idref" href="Semiring.Structures.html#elements_complete"><span class="id" title="definition">elements_complete</span></a>. <span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab161"></a><h1 class="section">The removal theorem</h1>
+
+
+<div class="paragraph"> </div>
+
+      The hypotheses are those of <span class="inlinecode"><a class="idref" href="Semiring.IsolateN.html#smith_iia_isolate"><span class="id" title="lemma">smith_iia_isolate</span></a></span> in SocialchoiceN,
+      with one addition: <span class="inlinecode"><a class="idref" href="Examples.Profiles.html#M"><span class="id" title="abbreviation">M</span></a></span> must carry <span class="inlinecode">1</span> on its diagonal.  The
+      isolation form does not need this, because <span class="inlinecode"><a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a></span> supplies the
+      identity separately, whereas the list-indexed closure enumerates
+      paths that may take a self-loop and so reads the diagonal.  It
+      costs nothing in substance, since <span class="inlinecode"><a class="idref" href="Examples.Profiles.html#M"><span class="id" title="abbreviation">M</span></a></span> and <span class="inlinecode"><a class="idref" href="Examples.Profiles.html#M"><span class="id" title="abbreviation">M</span></a></span> <span class="inlinecode">+</span> <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#I"><span class="id" title="definition">I</span></a></span> have the same
+      star, but it is a genuine difference between the two statements. 
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Section</span> <a id="SmithIIA.Removal" class="idref" href="#SmithIIA.Removal"><span class="id" title="section">Removal</span></a>.<br/>
@@ -342,6 +384,21 @@ The winner set itself is unchanged — Schulze (4.7.5)(b), <span class="inlineco
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab162"></a><h2 class="section">Deleting the whole weak block</h2>
+
+
+<div class="paragraph"> </div>
+
+      Above, one weak alternative is deleted and the rest of <span class="inlinecode"><a class="idref" href="Semiring.SmithiiaN.html#SmithIIA.RemovalStrong.B2"><span class="id" title="variable">B2</span></a></span> stays
+      on the ballot.  Deleting all of them is the same argument with
+      <span class="inlinecode"><a class="idref" href="Semiring.IsolateN.html#isolate"><span class="id" title="definition">isolate</span></a></span> <span class="inlinecode"><a class="idref" href="Examples.Profiles.html#M"><span class="id" title="abbreviation">M</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.SmithiiaN.html#SmithIIA.RemovalStrong.d"><span class="id" title="variable">d</span></a></span> replaced by <span class="inlinecode"><a class="idref" href="Semiring.IsolateN.html#isolate_out"><span class="id" title="definition">isolate_out</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.SmithiiaN.html#SmithIIA.RemovalStrong.B1"><span class="id" title="variable">B1</span></a></span> <span class="inlinecode"><a class="idref" href="Examples.Profiles.html#M"><span class="id" title="abbreviation">M</span></a></span>, and it is in fact
+      simpler: once only <span class="inlinecode"><a class="idref" href="Semiring.SmithiiaN.html#SmithIIA.RemovalStrong.B1"><span class="id" title="variable">B1</span></a></span> survives, every potential beater is a
+      strong alternative, so the case for a surviving weak one disappears. 
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Hypothesis</span> <a id="SmithIIA.Removal.HB1" class="idref" href="#SmithIIA.Removal.HB1"><span class="id" title="variable">HB1</span></a> : <a class="idref" href="Semiring.SmithiiaN.html#SmithIIA.Removal.B1"><span class="id" title="variable">B1</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'&lt;&gt;'_x"><span class="id" title="notation">≠</span></a> <span class="id" title="notation">[]</span>.<br/>
@@ -462,6 +519,24 @@ The winner set of the reduced election is the winner set of the full
 &nbsp;&nbsp;<span class="id" title="keyword">End</span> <a class="idref" href="Semiring.SmithiiaN.html#SmithIIA.Removal"><span class="id" title="section">Removal</span></a>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab163"></a><h1 class="section">Removing a strong alternative (Schulze 4.7.6)</h1>
+
+
+<div class="paragraph"> </div>
+
+      The other half of the Smith-IIA definition: deleting <span class="inlinecode"><a class="idref" href="Semiring.SmithiiaN.html#SmithIIA.RemovalStrong.d"><span class="id" title="variable">d</span></a></span> <span class="inlinecode">∈</span> <span class="inlinecode"><a class="idref" href="Semiring.SmithiiaN.html#SmithIIA.RemovalStrong.B1"><span class="id" title="variable">B1</span></a></span>
+      leaves the beat relation on the WEAK block unchanged.  The paper
+      proves it as "analogous" to (4.7.5)(a), and the formal mirror is
+      exact: the bridge <span class="inlinecode"><a class="idref" href="Semiring.SmithiiaN.html#path_star_drop_is_isolate"><span class="id" title="lemma">path_star_drop_is_isolate</span></a></span> needs only
+      <span class="inlinecode"><a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.e"><span class="id" title="variable">e</span></a>,</span> <span class="inlinecode"><a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.f"><span class="id" title="variable">f</span></a></span> <span class="inlinecode">≠</span> <span class="inlinecode"><a class="idref" href="Semiring.SmithiiaN.html#SmithIIA.RemovalStrong.d"><span class="id" title="variable">d</span></a></span>, and the isolation content is <span class="inlinecode"><a class="idref" href="Semiring.IsolateN.html#smith_iia_isolate_strong"><span class="id" title="lemma">smith_iia_isolate_strong</span></a></span>
+      in IsolateN.  Note the paper claims no winner-set statement here
+      — removing a strong alternative can of course change <span class="inlinecode"><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#S"><span class="id" title="constructor">S</span></a></span> — so
+      unlike (4.7.5) there is no analogue of <span class="inlinecode"><a class="idref" href="Semiring.SmithiiaN.html#smith_iia_winner_set"><span class="id" title="lemma">smith_iia_winner_set</span></a></span>. 
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Section</span> <a id="SmithIIA.RemovalStrong" class="idref" href="#SmithIIA.RemovalStrong"><span class="id" title="section">RemovalStrong</span></a>.<br/>

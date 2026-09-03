@@ -19,6 +19,64 @@
 <h1 class="libtitle">Semiring.ResolvabilityBallotN</h1>
 
 <div class="code">
+</div>
+
+<div class="doc">
+<a id="lab130"></a><h1 class="section">Resolvability from the ballots (Schulze 4.2.1 and 4.2.2)</h1>
+
+
+<div class="paragraph"> </div>
+
+    Both formulations of resolvability are statements about profiles, so
+    they need the ballot layer of BallotN.v.  Two results:
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> 4.2.1, combinatorial core: if no two distinct links of the profile
+        have the same strength, there is at most one winner.  This is the
+        matrix theorem of CriticalLinkN.v applied to <span class="inlinecode"><a class="idref" href="Semiring.BallotN.html#matrix_of"><span class="id" title="definition">matrix_of</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.m"><span class="id" title="variable">m</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.P"><span class="id" title="variable">P</span></a></span>.
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> 4.2.2: for every winner <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a></span> there is a single ballot <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#w"><span class="id" title="definition">w</span></a></span> whose
+        addition makes <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a></span> the unique winner.  Schulze's <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#w"><span class="id" title="definition">w</span></a></span> ranks <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a></span> first
+        and orders the other alternatives by their closure strength into <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a></span>,
+        breaking ties along the predecessor tree of the strongest paths.  The
+        ballot used here ranks <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a></span> first and orders the others by <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.P"><span class="id" title="variable">P</span></a>[.,<a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a>]</span>
+        descending, leaving ties as ties; the tree is not needed, because the
+        claim it serves (the strongest paths out of <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a></span> are not weakened) is
+        proved by a threshold argument instead:
+
+<div class="paragraph"> </div>
+
+          a link <span class="inlinecode"><span class="id" title="var">xe</span></span> with <span class="inlinecode"><a class="idref" href="Examples.Profiles.html#M"><span class="id" title="abbreviation">M</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.SchulzeWitnessN.html#SchulzeWitnessN.Square.x"><span class="id" title="variable">x</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.e"><span class="id" title="variable">e</span></a></span> <span class="inlinecode">≥</span> <span class="inlinecode"><a class="idref" href="Semiring.NeutralityN.html#NeutralityN.Neutrality.t"><span class="id" title="variable">t</span></a></span> that <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#w"><span class="id" title="definition">w</span></a></span> weakens has <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.P"><span class="id" title="variable">P</span></a>[<a class="idref" href="Semiring.SchulzeWitnessN.html#SchulzeWitnessN.Square.x"><span class="id" title="variable">x</span></a>,<a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a>]</span> <span class="inlinecode">&lt;</span> <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.P"><span class="id" title="variable">P</span></a>[<a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.e"><span class="id" title="variable">e</span></a>,<a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a>]</span>
+          and therefore <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.P"><span class="id" title="variable">P</span></a>[<a class="idref" href="Semiring.SchulzeWitnessN.html#SchulzeWitnessN.Square.x"><span class="id" title="variable">x</span></a>,<a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a>]</span> <span class="inlinecode">≥</span> <span class="inlinecode"><a class="idref" href="Semiring.NeutralityN.html#NeutralityN.Neutrality.t"><span class="id" title="variable">t</span></a></span> and <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.P"><span class="id" title="variable">P</span></a>[<a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a>,<a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.e"><span class="id" title="variable">e</span></a>]</span> <span class="inlinecode">&gt;</span> <span class="inlinecode"><a class="idref" href="Semiring.NeutralityN.html#NeutralityN.Neutrality.t"><span class="id" title="variable">t</span></a></span>; so the walk can be
+          rerouted to <span class="inlinecode"><a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.e"><span class="id" title="variable">e</span></a></span> through the closure at the strictly higher level
+          <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.P"><span class="id" title="variable">P</span></a>[<a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a>,<a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.e"><span class="id" title="variable">e</span></a>]</span>, and an induction on the number of levels above <span class="inlinecode"><a class="idref" href="Semiring.NeutralityN.html#NeutralityN.Neutrality.t"><span class="id" title="variable">t</span></a></span>
+          closes the argument (<span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#reach_level"><span class="id" title="lemma">reach_level</span></a></span>).
+
+<div class="paragraph"> </div>
+
+        Claim 3 of the paper (the closure into <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a></span> drops strictly) is the
+        cut lemma of CriticalLinkN.v applied to Schulze's set <span class="inlinecode"><a class="idref" href="Semiring.Structures.html#IsFinType.IsFinType.T"><span class="id" title="variable">T</span></a>(<span class="id" title="var">g</span>)</span>.
+
+</li>
+</ul>
+
+<div class="paragraph"> </div>
+
+    A note on the proofs.  The generic closure lemmas are stated over an
+    arbitrary bounded semiring, and applying them to goals over the concrete
+    carrier <span class="inlinecode"><a class="idref" href="Semiring.MeasureN.html#Strength"><span class="id" title="definition">Strength</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.m"><span class="id" title="variable">m</span></a></span> leaves Hierarchy Builder unable to infer the
+    structure path.  The block of one-line wrappers below restates the
+    lemmas needed at the concrete carrier, so that <span class="inlinecode"><span class="id" title="tactic">apply</span></span> and <span class="inlinecode"><span class="id" title="tactic">rewrite</span></span> work
+    syntactically.  Where a hypothesis and a goal still meet along different
+    paths, the proof transports with <span class="inlinecode"><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#eq_ind"><span class="id" title="definition">eq_ind</span></a></span> instead of rewriting. 
+</div>
+<div class="code">
 
 <br/>
 <span class="id" title="keyword">From</span> <span class="id" title="var">Stdlib</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <span class="id" title="library">Utf8</span> <span class="id" title="library">List</span> <span class="id" title="library">Arith</span> <span class="id" title="library">Lia</span> <span class="id" title="library">Bool</span> <span class="id" title="library">Wf_nat</span>.<br/>
@@ -35,11 +93,24 @@
 &nbsp;&nbsp;<span class="id" title="keyword">Context</span> {<a id="ResolvabilityBallotN.Node" class="idref" href="#ResolvabilityBallotN.Node"><span class="id" title="variable">Node</span></a> : <a class="idref" href="Semiring.Structures.html#FinType.type"><span class="id" title="record">FinType.type</span></a>} (<a id="ResolvabilityBallotN.m" class="idref" href="#ResolvabilityBallotN.m"><span class="id" title="variable">m</span></a> : <a class="idref" href="Semiring.MeasureN.html#Measure"><span class="id" title="record">Measure</span></a>).<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+The standing hypotheses of the selective results hold on any <span class="inlinecode"><a class="idref" href="Semiring.MeasureN.html#Strength"><span class="id" title="definition">Strength</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.m"><span class="id" title="variable">m</span></a></span>. 
+</div>
+<div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Let</span> <a id="ResolvabilityBallotN.Htot" class="idref" href="#ResolvabilityBallotN.Htot"><span class="id" title="variable">Htot</span></a> := <a class="idref" href="Semiring.NormalizedOrder.html#NT_selective"><span class="id" title="lemma">NT_selective</span></a> (<a class="idref" href="Semiring.MeasureN.html#spec"><span class="id" title="definition">spec</span></a> <a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.m"><span class="id" title="variable">m</span></a>).<br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Let</span> <a id="ResolvabilityBallotN.Hmeet" class="idref" href="#ResolvabilityBallotN.Hmeet"><span class="id" title="variable">Hmeet</span></a> := <a class="idref" href="Semiring.NormalizedOrder.html#NT_meet_lower_bound"><span class="id" title="lemma">NT_meet_lower_bound</span></a> (<a class="idref" href="Semiring.MeasureN.html#spec"><span class="id" title="definition">spec</span></a> <a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.m"><span class="id" title="variable">m</span></a>).<br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Let</span> <a id="ResolvabilityBallotN.Hdec" class="idref" href="#ResolvabilityBallotN.Hdec"><span class="id" title="variable">Hdec</span></a> := <a class="idref" href="Semiring.NormalizedOrder.html#NT_eq_dec"><span class="id" title="lemma">NT_eq_dec</span></a> (<a class="idref" href="Semiring.MeasureN.html#spec"><span class="id" title="definition">spec</span></a> <a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.m"><span class="id" title="variable">m</span></a>).<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab131"></a><h2 class="section">4.2.1: pairwise distinct link strengths give a unique winner</h2>
+
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Theorem</span> <a id="distinct_links_unique_winner_from_profile" class="idref" href="#distinct_links_unique_winner_from_profile"><span class="id" title="lemma">distinct_links_unique_winner_from_profile</span></a> (<a id="P:3" class="idref" href="#P:3"><span class="id" title="binder">P</span></a> : @<a class="idref" href="Semiring.BallotN.html#Profile"><span class="id" title="definition">Profile</span></a> <a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.Node"><span class="id" title="variable">Node</span></a>) :<br/>
@@ -53,12 +124,14 @@
 &nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
-
-<br/>
 </div>
 
 <div class="doc">
-<span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#sgt"><span class="id" title="definition">sgt</span></a></span> <span class="inlinecode"><span class="id" title="var">u</span></span> <span class="inlinecode"><span class="id" title="var">v</span></span>: <span class="inlinecode"><span class="id" title="var">u</span></span> is strictly above <span class="inlinecode"><span class="id" title="var">v</span></span>. 
+<a id="lab132"></a><h2 class="section">Boolean comparison on strengths, and adding one ballot</h2>
+
+<div class="paragraph"> </div>
+
+ <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#sgt"><span class="id" title="definition">sgt</span></a></span> <span class="inlinecode"><span class="id" title="var">u</span></span> <span class="inlinecode"><span class="id" title="var">v</span></span>: <span class="inlinecode"><span class="id" title="var">u</span></span> is strictly above <span class="inlinecode"><span class="id" title="var">v</span></span>. 
 </div>
 <div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="sgt" class="idref" href="#sgt"><span class="id" title="definition">sgt</span></a> (<a id="u:10" class="idref" href="#u:10"><span class="id" title="binder">u</span></a> <a id="v:11" class="idref" href="#v:11"><span class="id" title="binder">v</span></a> : <a class="idref" href="Semiring.MeasureN.html#Strength"><span class="id" title="definition">Strength</span></a> <a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.m"><span class="id" title="variable">m</span></a>) : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#bool"><span class="id" title="inductive">bool</span></a> := <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#negb"><span class="id" title="definition">negb</span></a> (<a class="idref" href="Semiring.NormalizedOrder.html#leN"><span class="id" title="definition">leN</span></a> (<a class="idref" href="Semiring.MeasureN.html#spec"><span class="id" title="definition">spec</span></a> <a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.m"><span class="id" title="variable">m</span></a>) <a class="idref" href="Semiring.ResolvabilityBallotN.html#u:10"><span class="id" title="variable">u</span></a> <a class="idref" href="Semiring.ResolvabilityBallotN.html#v:11"><span class="id" title="variable">v</span></a>).<br/>
@@ -90,6 +163,13 @@
 &nbsp;&nbsp;<span class="id" title="keyword">Proof</span>. <span class="id" title="tactic">intros</span> <span class="id" title="var">w</span> <span class="id" title="var">P</span> <span class="id" title="var">i</span> <span class="id" title="var">j</span>. <span class="id" title="tactic">unfold</span> <a class="idref" href="Semiring.BallotN.html#count"><span class="id" title="definition">count</span></a>. <span class="id" title="var">cbn</span> [<span class="id" title="definition">filter</span>]. <span class="id" title="tactic">destruct</span> (<a class="idref" href="Semiring.BallotN.html#prefers"><span class="id" title="definition">prefers</span></a> <span class="id" title="var">w</span> <span class="id" title="var">i</span> <span class="id" title="var">j</span>); <span class="id" title="tactic">reflexivity</span>. <span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab133"></a><h2 class="section">The closure lemmas at the concrete carrier</h2>
+
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Lemma</span> <a id="orefl" class="idref" href="#orefl"><span class="id" title="lemma">orefl</span></a> (<a id="u:20" class="idref" href="#u:20"><span class="id" title="binder">u</span></a> : <a class="idref" href="Semiring.MeasureN.html#Strength"><span class="id" title="definition">Strength</span></a> <a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.m"><span class="id" title="variable">m</span></a>) : <a class="idref" href="Semiring.OrelN.html#Orel"><span class="id" title="definition">Orel</span></a> <a class="idref" href="Semiring.ResolvabilityBallotN.html#u:20"><span class="id" title="variable">u</span></a> <a class="idref" href="Semiring.ResolvabilityBallotN.html#u:20"><span class="id" title="variable">u</span></a>.<br/>
@@ -141,6 +221,13 @@
 &nbsp;&nbsp;<span class="id" title="keyword">Proof</span>. <span class="id" title="tactic">exact</span> (<a class="idref" href="Semiring.CriticalLinkN.html#mat_star_lt_of_cut"><span class="id" title="lemma">mat_star_lt_of_cut</span></a> <a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.Htot"><span class="id" title="variable">Htot</span></a> <span class="id" title="var">N</span> <span class="id" title="var">Bp</span> <span class="id" title="var">c</span>). <span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab134"></a><h1 class="section">4.2.2: one added ballot makes a winner the unique winner</h1>
+
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;<span class="id" title="keyword">Section</span> <a id="ResolvabilityBallotN.AddBallot" class="idref" href="#ResolvabilityBallotN.AddBallot"><span class="id" title="section">AddBallot</span></a>.<br/>
@@ -154,12 +241,14 @@
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">Notation</span> <a id="M" class="idref" href="#M"><span class="id" title="abbreviation">M</span></a> := (<a class="idref" href="Semiring.BallotN.html#matrix_of"><span class="id" title="definition">matrix_of</span></a> <a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.m"><span class="id" title="variable">m</span></a> <a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.P"><span class="id" title="variable">P</span></a>).<br/>
 
 <br/>
-
-<br/>
 </div>
 
 <div class="doc">
-The alternatives whose closure strength into <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a></span> exceeds that of <span class="inlinecode"><a class="idref" href="Semiring.SchulzeWitnessN.html#SchulzeWitnessN.Square.x"><span class="id" title="variable">x</span></a></span>. 
+<a id="lab135"></a><h2 class="section">The ballot: <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a></span> first, then by closure strength into <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a></span></h2>
+
+<div class="paragraph"> </div>
+
+ The alternatives whose closure strength into <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a></span> exceeds that of <span class="inlinecode"><a class="idref" href="Semiring.SchulzeWitnessN.html#SchulzeWitnessN.Square.x"><span class="id" title="variable">x</span></a></span>. 
 </div>
 <div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="above" class="idref" href="#above"><span class="id" title="definition">above</span></a> (<a id="x:80" class="idref" href="#x:80"><span class="id" title="binder">x</span></a> : <a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.Node"><span class="id" title="variable">Node</span></a>) : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.Node"><span class="id" title="variable">Node</span></a> :=<br/>
@@ -242,6 +331,13 @@ Rank 0 for <span class="inlinecode"><a class="idref" href="Semiring.Resolvabilit
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
+</div>
+
+<div class="doc">
+<a id="lab136"></a><h2 class="section">How the links move</h2>
+
+</div>
+<div class="code">
 
 <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">Notation</span> <a id="M'" class="idref" href="#M'"><span class="id" title="abbreviation">M'</span></a> := (<a class="idref" href="Semiring.BallotN.html#matrix_of"><span class="id" title="definition">matrix_of</span></a> <a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.m"><span class="id" title="variable">m</span></a> (<a class="idref" href="Semiring.ResolvabilityBallotN.html#w"><span class="id" title="definition">w</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#::list_scope:x_'::'_x"><span class="id" title="notation">::</span></a> <a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.P"><span class="id" title="variable">P</span></a>)).<br/>
@@ -292,12 +388,14 @@ Closure strengths out of <span class="inlinecode"><a class="idref" href="Semirin
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
-
-<br/>
 </div>
 
 <div class="doc">
-Schulze's <span class="inlinecode"><a class="idref" href="Semiring.Structures.html#IsFinType.IsFinType.T"><span class="id" title="variable">T</span></a>(<span class="id" title="var">g</span>)</span>: <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a></span> together with everything strictly stronger into
+<a id="lab137"></a><h2 class="section">Claim 3: the closure into <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a></span> drops strictly</h2>
+
+<div class="paragraph"> </div>
+
+ Schulze's <span class="inlinecode"><a class="idref" href="Semiring.Structures.html#IsFinType.IsFinType.T"><span class="id" title="variable">T</span></a>(<span class="id" title="var">g</span>)</span>: <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a></span> together with everything strictly stronger into
         <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a></span> than <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a></span> is into <span class="inlinecode"><span class="id" title="var">g</span></span>. 
 </div>
 <div class="code">
@@ -332,6 +430,12 @@ Schulze's <span class="inlinecode"><a class="idref" href="Semiring.Structures.ht
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">Hij</span> : <span class="id" title="var">i</span> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'&lt;&gt;'_x"><span class="id" title="notation">≠</span></a> <span class="id" title="var">j</span>). { <span class="id" title="tactic">intro</span> <span class="id" title="var">E</span>. <span class="id" title="tactic">subst</span>. <span class="id" title="tactic">congruence</span>. }<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">Hia</span> : <span class="id" title="var">i</span> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'&lt;&gt;'_x"><span class="id" title="notation">≠</span></a> <a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a>). { <span class="id" title="tactic">intro</span> <span class="id" title="var">E</span>. <span class="id" title="tactic">rewrite</span> <span class="id" title="var">E</span>, <a class="idref" href="Semiring.ResolvabilityBallotN.html#Tg_a"><span class="id" title="lemma">Tg_a</span></a> <span class="id" title="tactic">in</span> <span class="id" title="var">Hi</span>. <span class="id" title="tactic">discriminate</span>. }<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> (<a class="idref" href="Semiring.ResolvabilityBallotN.html#Tg_other"><span class="id" title="lemma">Tg_other</span></a> <span class="id" title="var">g</span> <span class="id" title="var">i</span> <span class="id" title="var">Hia</span>) <span class="id" title="tactic">in</span> <span class="id" title="var">Hi</span>. <span class="id" title="tactic">apply</span> <a class="idref" href="Semiring.ResolvabilityBallotN.html#sgt_false"><span class="id" title="lemma">sgt_false</span></a> <span class="id" title="tactic">in</span> <span class="id" title="var">Hi</span>.<br/>
+</div>
+
+<div class="doc">
+(4.2.2.14): the old link is at most P<span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a>,<span class="id" title="var">g</span></span> 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">Hle</span> : <a class="idref" href="Semiring.OrelN.html#Orel"><span class="id" title="definition">Orel</span></a> (<a class="idref" href="Semiring.ResolvabilityBallotN.html#M"><span class="id" title="abbreviation">M</span></a> <span class="id" title="var">i</span> <span class="id" title="var">j</span>) (<a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <a class="idref" href="Semiring.ResolvabilityBallotN.html#M"><span class="id" title="abbreviation">M</span></a> <a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a> <span class="id" title="var">g</span>)).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ <span class="id" title="tactic">destruct</span> (<a class="idref" href="Semiring.Structures.html#fin_eq_dec"><span class="id" title="definition">fin_eq_dec</span></a> <span class="id" title="var">j</span> <a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a>) <span class="id" title="keyword">as</span> [-&gt; | <span class="id" title="var">Hja</span>].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- <span class="id" title="tactic">exact</span> (<a class="idref" href="Semiring.OrelN.html#orel_trans"><span class="id" title="lemma">orel_trans</span></a> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> (<a class="idref" href="Semiring.ResolvabilityBallotN.html#mstar_link"><span class="id" title="lemma">mstar_link</span></a> <a class="idref" href="Semiring.ResolvabilityBallotN.html#M"><span class="id" title="abbreviation">M</span></a> <span class="id" title="var">i</span> <a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a>) <span class="id" title="var">Hi</span>).<br/>
@@ -343,12 +447,22 @@ Schulze's <span class="inlinecode"><a class="idref" href="Semiring.Structures.ht
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<a class="idref" href="Semiring.ResolvabilityBallotN.html#mstar_compose"><span class="id" title="lemma">mstar_compose</span></a> <a class="idref" href="Semiring.ResolvabilityBallotN.html#M"><span class="id" title="abbreviation">M</span></a> <span class="id" title="var">i</span> <span class="id" title="var">j</span> <a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a>)) <span class="id" title="keyword">as</span> <span class="id" title="var">Hchain</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> (<a class="idref" href="Semiring.SchulzeOrderN.html#orel_lt_le_trans"><span class="id" title="lemma">orel_lt_le_trans</span></a> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">Hprod</span> <span class="id" title="var">Hchain</span>) <span class="id" title="keyword">as</span> [<span class="id" title="var">Hle'</span> <span class="id" title="var">Hne</span>].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="var">Hne</span>. <span class="id" title="tactic">apply</span> <a class="idref" href="Semiring.OrelN.html#orel_antisym"><span class="id" title="lemma">orel_antisym</span></a>; [<span class="id" title="tactic">exact</span> <span class="id" title="var">Hle'</span> | <span class="id" title="tactic">exact</span> <span class="id" title="var">Hi</span>]. }<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+
+<div class="doc">
+(4.2.2.15): w ranks the target above the source 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">Hw</span> : <a class="idref" href="Semiring.BallotN.html#prefers"><span class="id" title="definition">prefers</span></a> <a class="idref" href="Semiring.ResolvabilityBallotN.html#w"><span class="id" title="definition">w</span></a> <span class="id" title="var">j</span> <span class="id" title="var">i</span> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#true"><span class="id" title="constructor">true</span></a>).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ <span class="id" title="tactic">destruct</span> (<a class="idref" href="Semiring.Structures.html#fin_eq_dec"><span class="id" title="definition">fin_eq_dec</span></a> <span class="id" title="var">j</span> <a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a>) <span class="id" title="keyword">as</span> [-&gt; | <span class="id" title="var">Hja</span>]; [<span class="id" title="tactic">exact</span> (<a class="idref" href="Semiring.ResolvabilityBallotN.html#prefers_w_a"><span class="id" title="lemma">prefers_w_a</span></a> <span class="id" title="var">i</span> <span class="id" title="var">Hia</span>) |].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> (<a class="idref" href="Semiring.ResolvabilityBallotN.html#Tg_other"><span class="id" title="lemma">Tg_other</span></a> <span class="id" title="var">g</span> <span class="id" title="var">j</span> <span class="id" title="var">Hja</span>) <span class="id" title="tactic">in</span> <span class="id" title="var">Hj</span>. <span class="id" title="tactic">apply</span> <a class="idref" href="Semiring.ResolvabilityBallotN.html#sgt_true"><span class="id" title="lemma">sgt_true</span></a> <span class="id" title="tactic">in</span> <span class="id" title="var">Hj</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> (<a class="idref" href="Semiring.ResolvabilityBallotN.html#prefers_w_order"><span class="id" title="lemma">prefers_w_order</span></a> <span class="id" title="var">j</span> <span class="id" title="var">i</span> <span class="id" title="var">Hja</span> <span class="id" title="var">Hia</span>). <span class="id" title="tactic">exact</span> (<a class="idref" href="Semiring.CriticalLinkN.html#orel_le_lt_trans'"><span class="id" title="lemma">orel_le_lt_trans'</span></a> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">Hi</span> <span class="id" title="var">Hj</span>). }<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+
+<div class="doc">
+(4.2.2.17): so the new link is strictly below P<span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a>,<span class="id" title="var">g</span></span> 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">exact</span> (<a class="idref" href="Semiring.SchulzeOrderN.html#orel_lt_le_trans"><span class="id" title="lemma">orel_lt_le_trans</span></a> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> (<a class="idref" href="Semiring.ResolvabilityBallotN.html#link_down"><span class="id" title="lemma">link_down</span></a> <span class="id" title="var">i</span> <span class="id" title="var">j</span> <span class="id" title="var">Hij</span> <span class="id" title="var">Hw</span>) <span class="id" title="var">Hle</span>).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- <br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> (<a class="idref" href="Semiring.ResolvabilityBallotN.html#Tg_other"><span class="id" title="lemma">Tg_other</span></a> <span class="id" title="var">g</span> <span class="id" title="var">g</span> <span class="id" title="var">Hg</span>). <span class="id" title="tactic">apply</span> <a class="idref" href="Semiring.ResolvabilityBallotN.html#sgt_false"><span class="id" title="lemma">sgt_false</span></a>. <span class="id" title="tactic">apply</span> (<a class="idref" href="Semiring.CriticalLinkN.html#not_lt_le"><span class="id" title="lemma">not_lt_le</span></a> <a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.Htot"><span class="id" title="variable">Htot</span></a> <a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.Hdec"><span class="id" title="variable">Hdec</span></a>). <span class="id" title="tactic">exact</span> (<a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.Hwin"><span class="id" title="variable">Hwin</span></a> <span class="id" title="var">g</span> <span class="id" title="var">Hg</span>).<br/>
@@ -356,12 +470,14 @@ Schulze's <span class="inlinecode"><a class="idref" href="Semiring.Structures.ht
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
-
-<br/>
 </div>
 
 <div class="doc">
-The links at least <span class="inlinecode"><a class="idref" href="Semiring.NeutralityN.html#NeutralityN.Neutrality.t"><span class="id" title="variable">t</span></a></span> strong that <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#w"><span class="id" title="definition">w</span></a></span> does not weaken. 
+<a id="lab138"></a><h2 class="section">Claim 2: the closure out of <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a></span> does not drop</h2>
+
+<div class="paragraph"> </div>
+
+ The links at least <span class="inlinecode"><a class="idref" href="Semiring.NeutralityN.html#NeutralityN.Neutrality.t"><span class="id" title="variable">t</span></a></span> strong that <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#w"><span class="id" title="definition">w</span></a></span> does not weaken. 
 </div>
 <div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="keep" class="idref" href="#keep"><span class="id" title="definition">keep</span></a> (<a id="t:108" class="idref" href="#t:108"><span class="id" title="binder">t</span></a> : <a class="idref" href="Semiring.MeasureN.html#Strength"><span class="id" title="definition">Strength</span></a> <a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.m"><span class="id" title="variable">m</span></a>) (<a id="i:109" class="idref" href="#i:109"><span class="id" title="binder">i</span></a> <a id="j:110" class="idref" href="#j:110"><span class="id" title="binder">j</span></a> : <a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.Node"><span class="id" title="variable">Node</span></a>) : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#bool"><span class="id" title="inductive">bool</span></a> :=<br/>
@@ -468,6 +584,12 @@ The heart of claim 2.  If <span class="inlinecode"><a class="idref" href="Semiri
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">Hxa</span> : <span class="id" title="var">x</span> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'&lt;&gt;'_x"><span class="id" title="notation">≠</span></a> <a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a>).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ <span class="id" title="tactic">intro</span> <span class="id" title="var">E</span>. <span class="id" title="tactic">subst</span> <span class="id" title="var">x</span>. <span class="id" title="tactic">rewrite</span> <a class="idref" href="Semiring.ResolvabilityBallotN.html#prefers_w_into_a"><span class="id" title="lemma">prefers_w_into_a</span></a> <span class="id" title="tactic">in</span> <span class="id" title="var">Hw</span>. <span class="id" title="tactic">discriminate</span>. }<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> (<a class="idref" href="Semiring.ResolvabilityBallotN.html#prefers_w_order"><span class="id" title="lemma">prefers_w_order</span></a> <span class="id" title="var">e</span> <span class="id" title="var">x</span> <span class="id" title="var">Hea</span> <span class="id" title="var">Hxa</span>) <span class="id" title="tactic">in</span> <span class="id" title="var">Hw</span>.<br/>
+</div>
+
+<div class="doc">
+P<span class="inlinecode"><a class="idref" href="Semiring.SchulzeWitnessN.html#SchulzeWitnessN.Square.x"><span class="id" title="variable">x</span></a>,<a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a></span> ≥ min(M x e, P<span class="inlinecode"><a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.e"><span class="id" title="variable">e</span></a>,<a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a></span>) and P<span class="inlinecode"><a class="idref" href="Semiring.SchulzeWitnessN.html#SchulzeWitnessN.Square.x"><span class="id" title="variable">x</span></a>,<a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a></span> &lt; P<span class="inlinecode"><a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.e"><span class="id" title="variable">e</span></a>,<a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a></span>, so P<span class="inlinecode"><a class="idref" href="Semiring.SchulzeWitnessN.html#SchulzeWitnessN.Square.x"><span class="id" title="variable">x</span></a>,<a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a></span> ≥ t 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">pose</span> <span class="id" title="var">proof</span> (<a class="idref" href="Semiring.OrelN.html#orel_trans"><span class="id" title="lemma">orel_trans</span></a> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> (<a class="idref" href="Semiring.ResolvabilityBallotN.html#mul_compat_l"><span class="id" title="lemma">mul_compat_l</span></a> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> (<a class="idref" href="Semiring.ResolvabilityBallotN.html#mstar_link"><span class="id" title="lemma">mstar_link</span></a> <a class="idref" href="Semiring.ResolvabilityBallotN.html#M"><span class="id" title="abbreviation">M</span></a> <span class="id" title="var">x</span> <span class="id" title="var">e</span>))<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<a class="idref" href="Semiring.ResolvabilityBallotN.html#mstar_compose"><span class="id" title="lemma">mstar_compose</span></a> <a class="idref" href="Semiring.ResolvabilityBallotN.html#M"><span class="id" title="abbreviation">M</span></a> <span class="id" title="var">x</span> <span class="id" title="var">e</span> <a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a>)) <span class="id" title="keyword">as</span> <span class="id" title="var">Hchain</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">Htxa</span> : <a class="idref" href="Semiring.OrelN.html#Orel"><span class="id" title="definition">Orel</span></a> <span class="id" title="var">t</span> (<a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <a class="idref" href="Semiring.ResolvabilityBallotN.html#M"><span class="id" title="abbreviation">M</span></a> <span class="id" title="var">x</span> <a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a>)).<br/>
@@ -475,12 +597,22 @@ The heart of claim 2.  If <span class="inlinecode"><a class="idref" href="Semiri
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- <span class="id" title="tactic">exact</span> (<a class="idref" href="Semiring.OrelN.html#orel_trans"><span class="id" title="lemma">orel_trans</span></a> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">Hxe</span> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#eq_ind"><span class="id" title="definition">eq_ind</span></a> <span class="id" title="var">_</span> (<span class="id" title="keyword">fun</span> <a id="z:138" class="idref" href="#z:138"><span class="id" title="binder"><span id="z:139" class="id">z</span></span></a> ⇒ <a class="idref" href="Semiring.OrelN.html#Orel"><span class="id" title="definition">Orel</span></a> <a class="idref" href="Semiring.ResolvabilityBallotN.html#z:138"><span class="id" title="variable">z</span></a> (<a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <a class="idref" href="Semiring.ResolvabilityBallotN.html#M"><span class="id" title="abbreviation">M</span></a> <span class="id" title="var">x</span> <a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a>)) <span class="id" title="var">Hchain</span> <span class="id" title="var">_</span> <span class="id" title="var">E</span>)).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- <span class="id" title="var">exfalso</span>. <span class="id" title="tactic">destruct</span> <span class="id" title="var">Hw</span> <span class="id" title="keyword">as</span> [<span class="id" title="var">Hle</span> <span class="id" title="var">Hne</span>]. <span class="id" title="tactic">apply</span> <span class="id" title="var">Hne</span>. <span class="id" title="tactic">apply</span> <a class="idref" href="Semiring.OrelN.html#orel_antisym"><span class="id" title="lemma">orel_antisym</span></a>; [<span class="id" title="tactic">exact</span> <span class="id" title="var">Hle</span> |].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">exact</span> (<a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#eq_ind"><span class="id" title="definition">eq_ind</span></a> <span class="id" title="var">_</span> (<span class="id" title="keyword">fun</span> <a id="z:140" class="idref" href="#z:140"><span class="id" title="binder"><span id="z:141" class="id">z</span></span></a> ⇒ <a class="idref" href="Semiring.OrelN.html#Orel"><span class="id" title="definition">Orel</span></a> <a class="idref" href="Semiring.ResolvabilityBallotN.html#z:140"><span class="id" title="variable">z</span></a> (<a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <a class="idref" href="Semiring.ResolvabilityBallotN.html#M"><span class="id" title="abbreviation">M</span></a> <span class="id" title="var">x</span> <a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a>)) <span class="id" title="var">Hchain</span> <span class="id" title="var">_</span> <span class="id" title="var">E</span>). }<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+
+<div class="doc">
+a is a winner, so P<span class="inlinecode"><a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.e"><span class="id" title="variable">e</span></a>,<a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a></span> ≤ P<span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a>,<a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.e"><span class="id" title="variable">e</span></a></span>; hence t &lt; P<span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a>,<a class="idref" href="Semiring.CriticalLinkN.html#CriticalLinkN.DistinctLinks.TwoWinners.e"><span class="id" title="variable">e</span></a></span> 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">Hea_le</span> : <a class="idref" href="Semiring.OrelN.html#Orel"><span class="id" title="definition">Orel</span></a> (<a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <a class="idref" href="Semiring.ResolvabilityBallotN.html#M"><span class="id" title="abbreviation">M</span></a> <span class="id" title="var">e</span> <a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a>) (<a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <a class="idref" href="Semiring.ResolvabilityBallotN.html#M"><span class="id" title="abbreviation">M</span></a> <a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a> <span class="id" title="var">e</span>)).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ <span class="id" title="tactic">apply</span> (<a class="idref" href="Semiring.CriticalLinkN.html#not_lt_le"><span class="id" title="lemma">not_lt_le</span></a> <a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.Htot"><span class="id" title="variable">Htot</span></a> <a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.Hdec"><span class="id" title="variable">Hdec</span></a>). <span class="id" title="tactic">exact</span> (<a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.Hwin"><span class="id" title="variable">Hwin</span></a> <span class="id" title="var">e</span> <span class="id" title="var">Hea</span>). }<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">Hlt</span> : <a class="idref" href="Semiring.OrelN.html#Orel"><span class="id" title="definition">Orel</span></a> <span class="id" title="var">t</span> (<a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <a class="idref" href="Semiring.ResolvabilityBallotN.html#M"><span class="id" title="abbreviation">M</span></a> <a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a> <span class="id" title="var">e</span>) <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#ba2b0e492d2b4675a0acf3ea92aabadd"><span class="id" title="notation">∧</span></a> <span class="id" title="var">t</span> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'&lt;&gt;'_x"><span class="id" title="notation">≠</span></a> <a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <a class="idref" href="Semiring.ResolvabilityBallotN.html#M"><span class="id" title="abbreviation">M</span></a> <a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a> <span class="id" title="var">e</span>).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ <span class="id" title="tactic">exact</span> (<a class="idref" href="Semiring.SchulzeOrderN.html#orel_lt_le_trans"><span class="id" title="lemma">orel_lt_le_trans</span></a> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> (<a class="idref" href="Semiring.CriticalLinkN.html#orel_le_lt_trans'"><span class="id" title="lemma">orel_le_lt_trans'</span></a> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">Htxa</span> <span class="id" title="var">Hw</span>) <span class="id" title="var">Hea_le</span>). }<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+
+<div class="doc">
+fewer alternatives lie above the higher level 
+</div>
+<div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">Hmu'</span> : <a class="idref" href="Semiring.ResolvabilityBallotN.html#mu"><span class="id" title="definition">mu</span></a> (<a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a> <a class="idref" href="Semiring.ResolvabilityBallotN.html#M"><span class="id" title="abbreviation">M</span></a> <a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a> <span class="id" title="var">e</span>) <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Peano.html#::nat_scope:x_'&lt;'_x"><span class="id" title="notation">&lt;</span></a> <span class="id" title="var">n</span>).<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ <span class="id" title="tactic">rewrite</span> &lt;- <span class="id" title="var">Hmu</span>. <span class="id" title="tactic">unfold</span> <a class="idref" href="Semiring.ResolvabilityBallotN.html#mu"><span class="id" title="definition">mu</span></a>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> (<a class="idref" href="Semiring.CriticalLinkN.html#filter_length_lt_of_strict"><span class="id" title="lemma">filter_length_lt_of_strict</span></a> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <a class="idref" href="Semiring.Structures.html#elements"><span class="id" title="definition">elements</span></a> <span class="id" title="var">e</span>).<br/>
@@ -531,12 +663,14 @@ The heart of claim 2.  If <span class="inlinecode"><a class="idref" href="Semiri
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 
 <br/>
-
-<br/>
 </div>
 
 <div class="doc">
-With the ballot added, <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a></span> beats everyone. 
+<a id="lab139"></a><h2 class="section">Conclusion</h2>
+
+<div class="paragraph"> </div>
+
+ With the ballot added, <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a></span> beats everyone. 
 </div>
 <div class="code">
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">Theorem</span> <a id="add_ballot_strict_winner" class="idref" href="#add_ballot_strict_winner"><span class="id" title="lemma">add_ballot_strict_winner</span></a> : <a class="idref" href="Semiring.SchulzeDefsN.html#strict_winner"><span class="id" title="definition">strict_winner</span></a> <a class="idref" href="Semiring.ResolvabilityBallotN.html#M'"><span class="id" title="abbreviation">M'</span></a> <a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.AddBallot.a"><span class="id" title="variable">a</span></a>.<br/>
