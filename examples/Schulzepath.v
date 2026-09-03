@@ -1,29 +1,27 @@
-(* ===================================================================== *)
-(*  Schulzepath.v — the language (trace) semiring for the Schulze method *)
-(*                                                                       *)
-(*  Unlike the value+witness pair (which is NOT a semiring), the pure    *)
-(*  LANGUAGE semiring below IS a genuine semiring: every axiom of the    *)
-(*  HB [Semiring] is proved, exactly as [Schulze.v] proves its max-min   *)
-(*  semiring.                                                            *)
-(*                                                                       *)
-(*  Carrier :  Lang := Edge -> bool                                      *)
-(*             a predicate on edge-paths (the "set" of paths)            *)
-(*  add     :  pointwise boolean OR (set union)                          *)
-(*  mul     :  concatenation product: L⊗M is the set of all p1++p2 with  *)
-(*             L p1 and M p2 (pairwise concatenation)                    *)
-(*  0       :  the empty language (constant false)                       *)
-(*  1       :  the singleton {[]} (the empty path)                       *)
-(*                                                                       *)
-(*  Union and pairwise concatenation distribute EXACTLY (no witness is   *)
-(*  ever discarded), so distributivity holds — the property that failed  *)
-(*  for the single-witness and value+set constructions.  The only price  *)
-(*  is that [add] equality needs functional extensionality (functions    *)
-(*  are compared pointwise).                                             *)
-(*                                                                       *)
-(*  The Schulze fixed point [geom_sum (lift M) K i j] then denotes the   *)
-(*  set of all paths from i to j of length ≤ K, from which the value     *)
-(*  M*[i,j] = max measure is recovered.                                  *)
-(* ===================================================================== *)
+(** * Schulzepath.v — the language (trace) semiring for the Schulze method
+
+    Unlike the value+witness pair (which is NOT a semiring), the pure
+    LANGUAGE semiring below IS a genuine semiring: every axiom of the
+    HB [Semiring] is proved, exactly as [Schulze.v] proves its max-min
+    semiring.
+
+    Carrier :  Lang := Edge -> bool
+               a predicate on edge-paths (the "set" of paths)
+    add     :  pointwise boolean OR (set union)
+    mul     :  concatenation product: L⊗M is the set of all p1++p2 with
+               L p1 and M p2 (pairwise concatenation)
+    0       :  the empty language (constant false)
+    1       :  the singleton {[]} (the empty path)
+
+    Union and pairwise concatenation distribute EXACTLY (no witness is
+    ever discarded), so distributivity holds — the property that failed
+    for the single-witness and value+set constructions.  The only price
+    is that [add] equality needs functional extensionality (functions
+    are compared pointwise).
+
+    The Schulze fixed point [geom_sum (lift M) K i j] then denotes the
+    set of all paths from i to j of length ≤ K, from which the value
+    M*[i,j] = max measure is recovered. *)
 
 From Stdlib Require Import List Utf8 Bool PeanoNat Lia BinNatDef
   Logic.FunctionalExtensionality.
@@ -32,9 +30,7 @@ From Semiring Require Import PathN MatN OrelN SemimoduleN Structures.
 From Examples Require Import Schulze.
 Import ListNotations SemiringNotations.
 
-(* ===================================================================== *)
-(*  The language semiring over the max-min semiring R (from Schulze.v)   *)
-(* ===================================================================== *)
+(** * The language semiring over the max-min semiring R (from Schulze.v) *)
 
 Section LanguageSemiring.
 
@@ -118,9 +114,7 @@ Section LanguageSemiring.
     - split; intro H; [discriminate | inversion H].
   Qed.
 
-  (* ------------------------------------------------------------------ *)
-  (*  Pointwise algebraic laws                                            *)
-  (* ------------------------------------------------------------------ *)
+  (** ** Pointwise algebraic laws *)
 
   Lemma lang_mul_one_l_point (L : Lang) (p : Edge) : lang_mul lang_one L p = L p.
   Proof.
@@ -265,24 +259,21 @@ Section LanguageSemiring.
 
 End LanguageSemiring.
 
-(* ===================================================================== *)
-(*  Bridging [Lang] back to the numeric Schulze fixed point              *)
-(*                                                                        *)
-(*  [lift m i j] is the singleton language of exactly the one direct     *)
-(*  edge (i,j,m i j).  Kleene-closing [lift m] therefore denotes, at     *)
-(*  [i,j], the set of every walk of a given length from i to j (every    *)
-(*  witness kept -- see the header comment on why the value+witness      *)
-(*  pairing could not do this).  [pow_lift_sound]/[pow_lift_complete]    *)
-(*  show the numeric [pow m n i j] is exactly the max measure over that  *)
-(*  set: no counted walk exceeds it, and whenever the value is not the   *)
-(*  bottom [0] (i.e. some walk really exists), some counted walk attains *)
-(*  it exactly.                                                          *)
-(* ===================================================================== *)
-(* ===================================================================== *)
+(** * Bridging [Lang] back to the numeric Schulze fixed point
+
+    [lift m i j] is the singleton language of exactly the one direct
+    edge (i,j,m i j).  Kleene-closing [lift m] therefore denotes, at
+    [i,j], the set of every walk of a given length from i to j (every
+    witness kept -- see the header comment on why the value+witness
+    pairing could not do this).  [pow_lift_sound]/[pow_lift_complete]
+    show the numeric [pow m n i j] is exactly the max measure over that
+    set: no counted walk exceeds it, and whenever the value is not the
+    bottom [0] (i.e. some walk really exists), some counted walk attains
+    it exactly. *)
 
 Section LangInstances.
 
-  (* ---- additive commutative monoid (union) ---- *)
+  (** ---- additive commutative monoid (union) ---- *)
 
   Lemma addA_proof : forall x y z : Lang, lang_add (lang_add x y) z = lang_add x (lang_add y z).
   Proof. intros x y z. apply functional_extensionality. intro p. unfold lang_add. symmetry. exact (orb_assoc (x p) (y p) (z p)). Qed.
@@ -299,7 +290,7 @@ Section LangInstances.
   HB.instance Definition _ := IsCommutativeMonoid.Build Lang
     lang_zero lang_add addA_proof addC_proof add0r_proof addr0_proof.
 
-  (* ---- multiplicative semiring (concatenation product) ---- *)
+  (** ---- multiplicative semiring (concatenation product) ---- *)
 
   Lemma mulA_proof : forall a b c : Lang, lang_mul (lang_mul a b) c = lang_mul a (lang_mul b c).
   Proof. intros a b c. apply functional_extensionality. intro p. apply lang_mul_assoc_point. Qed.
@@ -564,13 +555,11 @@ Section LiftBridge.
       + left. unfold sum. exact Hz.
   Qed.
 
-  (* ===================================================================== *)
-  (*  Computable extraction: an actual witness path, not just a [Prop]-  *)
-  (*  level existence proof.  [pow_lift_complete]'s proof term is erased  *)
-  (*  by extraction, so [pow_witness] below is a genuine [Fixpoint]       *)
-  (*  mirroring the same induction with a real decision procedure         *)
-  (*  ([R_leb]) standing in for [R_total_order]'s bare disjunction.       *)
-  (* ===================================================================== *)
+  (** Computable extraction: an actual witness path, not just a [Prop]-
+      level existence proof.  [pow_lift_complete]'s proof term is erased
+      by extraction, so [pow_witness] below is a genuine [Fixpoint]
+      mirroring the same induction with a real decision procedure
+      ([R_leb]) standing in for [R_total_order]'s bare disjunction. *)
 
   Fixpoint nat_leb (n k : nat) : bool :=
     match n, k with
@@ -708,15 +697,13 @@ Section LiftBridge.
 End LiftBridge.
 
 
-(* ===================================================================== *)
-(*  Schulze beatpath strengths via the Kleene closure                    *)
-(*                                                                        *)
-(*  The single power [m³] counts only exact length-3 paths; the Schulze  *)
-(*  strongest-path strengths are the geometric closure                   *)
-(*      (m + I)³ = I + m + m² + m³                                       *)
-(*  (paths of up to three hops — with |Node| = 4 candidates, every       *)
-(*  simple path has at most 3 edges, so this is the fixed point).        *)
-(* ===================================================================== *)
+(** * Schulze beatpath strengths via the Kleene closure
+
+    The single power [m³] counts only exact length-3 paths; the Schulze
+    strongest-path strengths are the geometric closure
+        (m + I)³ = I + m + m² + m³
+    (paths of up to three hops — with |Node| = 4 candidates, every
+    simple path has at most 3 edges, so this is the fixed point). *)
 
 (** Kleene-closure matrix: [(m + I)³] — the strongest-path strengths
     between all candidate pairs (the Schulze beatpath matrix). *)
@@ -731,13 +718,11 @@ Definition mva_star_eff_fun (m : Node -> Node -> R) (v : Node -> R) : Node -> R 
 Definition mva_star_func (m : Node -> Node -> R) (v : Node -> R) : Node -> R :=
   SemimoduleN.matrix_vector_action (schulze_star m) v.
 
-(* ===================================================================== *)
-(*  A real, computable witness path -- not just the strength value.      *)
-(*  [pow_witness_spec] guarantees [schulze_witness_value m i j] equals   *)
-(*  [pow (matrix_add m I) 3 i j], which -- since a beatpath closure of    *)
-(*  up to 3 hops over 4 candidates has already stabilised -- coincides   *)
-(*  with [schulze_star m i j] above.                                     *)
-(* ===================================================================== *)
+(** A real, computable witness path -- not just the strength value.
+    [pow_witness_spec] guarantees [schulze_witness_value m i j] equals
+    [pow (matrix_add m I) 3 i j], which -- since a beatpath closure of
+    up to 3 hops over 4 candidates has already stabilised -- coincides
+    with [schulze_star m i j] above. *)
 
 (** An actual strongest beatpath from [i] to [j] (up to 3 hops), or
     [None] if [i] cannot reach [j] within that bound. *)

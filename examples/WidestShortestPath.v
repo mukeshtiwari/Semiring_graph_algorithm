@@ -6,28 +6,28 @@ From Semiring Require Import MatN
 Import ListNotations SemiringNotations.
 
 
-  (* Widest-shortest path: minimise the path length, and among equal       *)
-  (* lengths maximise the bottleneck (minimal) width.                       *)
-  (*                                                                        *)
-  (* A naive direct encoding as an R x R pair (min-plus length, max-min    *)
-  (* width) is NOT a semiring: the distributive laws fail when mulf        *)
-  (* saturates the length to Infinity and the tiebreaker then compares the *)
-  (* widths of two "no path" pairs, e.g. a = (Infinity, 5), b = (1, 3),    *)
-  (* c = (2, 10) gives a*(b+c) = (Infinity, 3) but a*b + a*c = (Infinity, 5).*)
-  (*                                                                        *)
-  (* The CORRECT encoding below makes "no path" a single canonical element *)
-  (* (NoneW) rather than a length-Infinity pair, so multiplying by a       *)
-  (* no-path value yields NoneW regardless of widths and the distributive  *)
-  (* laws hold: the tiebreaker only fires when the two lengths are equal,  *)
-  (* and component-wise multiplication preserves that.                     *)
+  (** Widest-shortest path: minimise the path length, and among equal
+      lengths maximise the bottleneck (minimal) width.
+
+      A naive direct encoding as an R x R pair (min-plus length, max-min
+      width) is NOT a semiring: the distributive laws fail when mulf
+      saturates the length to Infinity and the tiebreaker then compares the
+      widths of two "no path" pairs, e.g. a = (Infinity, 5), b = (1, 3),
+      c = (2, 10) gives a*(b+c) = (Infinity, 3) but a*b + a*c = (Infinity, 5).
+
+      The CORRECT encoding below makes "no path" a single canonical element
+      (NoneW) rather than a length-Infinity pair, so multiplying by a
+      no-path value yields NoneW regardless of widths and the distributive
+      laws hold: the tiebreaker only fires when the two lengths are equal,
+      and component-wise multiplication preserves that. *)
 
 Section Comp.
 
-  (* Define Candidates *)
+  (** Define Candidates *)
   Inductive Node := A | B | C. 
   
 
-   (* Nat extended with Infinity *)
+   (** Nat extended with Infinity *)
   Inductive R := 
   | Left : nat -> R 
   | Infinity : R.
@@ -41,7 +41,7 @@ Section Comp.
 
   Section max_min.
 
-    (* + = max, * = min, zero = 0, one = Infinity *)
+    (** + = max, * = min, zero = 0, one = Infinity *)
     Definition zeros : R := Left 0.
     Definition ones : R := Infinity.
 
@@ -65,8 +65,8 @@ Section Comp.
   End max_min.
 
 
-  (* This definition does appear to be correct in 
-  the paper. *)
+  (** This definition does appear to be correct in 
+   the paper. *)
   Definition ltR (u v : R) : bool :=
   match u, v with 
   | Left x, Left y => Nat.ltb x y 
@@ -75,14 +75,14 @@ Section Comp.
   | _, _ => false
   end.
 
-  (* Widest-shortest value: [NoneW] = no path; [SomeW l w] = a path of   *)
-  (* length [l] (nat, minimise) and bottleneck width [w] (max-min, max.). *)
+  (** Widest-shortest value: [NoneW] = no path; [SomeW l w] = a path of
+      length [l] (nat, minimise) and bottleneck width [w] (max-min, max.). *)
   Inductive WS := NoneW : WS | SomeW : nat -> R -> WS.
   Definition zeroWS : WS := NoneW.
   Definition oneWS : WS := SomeW 0 Infinity.
 
-  (* [ws_le u v] : [u] is no better than [v].  Lexicographic: smaller    *)
-  (* length is better; equal lengths are broken by larger width.          *)
+  (** [ws_le u v] : [u] is no better than [v].  Lexicographic: smaller
+      length is better; equal lengths are broken by larger width. *)
   Definition ws_le (u v : WS) : bool :=
     match u, v with
     | NoneW, _ => true
@@ -93,10 +93,10 @@ Section Comp.
         else negb (ltR w2 w1)
     end.
 
-  (* Lexicographic maximum: pick the better of the two, [NoneW] is worst. *)
+  (** Lexicographic maximum: pick the better of the two, [NoneW] is worst. *)
   Definition plusWS (u v : WS) : WS := if ws_le v u then u else v.
 
-  (* Component-wise product; [NoneW] is the multiplicative annihilator.   *)
+  (** Component-wise product; [NoneW] is the multiplicative annihilator. *)
   Definition mulWS (u v : WS) : WS :=
     match u, v with
     | NoneW, _ => NoneW
@@ -110,17 +110,15 @@ Section Comp.
 End Comp.
 
 
-(* =================================================================== *)
-(*  HB Instances: FinType Node, BoundedSemiring WS                       *)
-(*                                                                       *)
-(*  WS = NoneW | SomeW nat R — the widest-shortest semiring.             *)
-(*  NoneW is "no path" (additive identity and multiplicative             *)
-(*  annihilator).  SomeW l w is a path of length l (nat, minimise) and   *)
-(*  width w (max-min, maximise).  plusWS is the lexicographic maximum    *)
-(*  (shorter length first, then wider), mulWS is component-wise.         *)
-(*  Making "no path" canonical (NoneW) is what makes the distributive    *)
-(*  laws hold — they fail for the naive R × R encoding (see top).        *)
-(* =================================================================== *)
+(** * HB Instances: FinType Node, BoundedSemiring WS
+
+    WS = NoneW | SomeW nat R — the widest-shortest semiring.
+    NoneW is "no path" (additive identity and multiplicative
+    annihilator).  SomeW l w is a path of length l (nat, minimise) and
+    width w (max-min, maximise).  plusWS is the lexicographic maximum
+    (shorter length first, then wider), mulWS is component-wise.
+    Making "no path" canonical (NoneW) is what makes the distributive
+    laws hold — they fail for the naive R × R encoding (see top). *)
 
 Section HBInstances.
 
@@ -148,10 +146,8 @@ Section HBInstances.
     elements_list elements_nodup_proof elements_complete_proof
     elements_two_or_more_proof fin_eq_dec.
 
-  (* ==================================================================== *)
-  (*  Order theory for the width component R (Left nat | Infinity).        *)
-  (*  [ltR] is a strict total order, [r_le a b] is "a <= b".              *)
-  (* ==================================================================== *)
+  (** Order theory for the width component R (Left nat | Infinity).
+      [ltR] is a strict total order, [r_le a b] is "a <= b". *)
 
   Lemma ltR_irrefl : forall w, ltR w w = false.
   Proof. intros [n|]; cbn; [apply PeanoNat.Nat.ltb_irrefl | reflexivity]. Qed.
@@ -244,10 +240,8 @@ Section HBInstances.
     - apply eqR_eq in Hab. exact Hab.
   Qed.
 
-  (* ==================================================================== *)
-  (*  Order theory for WS.  [ws_le u v] is a total order (with [NoneW]    *)
-  (*  the least element), and [plusWS] is its maximum.                    *)
-  (* ==================================================================== *)
+  (** Order theory for WS.  [ws_le u v] is a total order (with [NoneW]
+      the least element), and [plusWS] is its maximum. *)
 
   Lemma ws_le_unfold (l1 l2 : nat) (w1 w2 : R) :
     ws_le (SomeW l1 w1) (SomeW l2 w2) =
@@ -363,9 +357,9 @@ Section HBInstances.
           apply r_le_trans with (w2 := w2); assumption.
   Qed.
 
-  (* [plusWS] is literally [add_max ws_le], so the additive commutative     *)
-  (* monoid comes from OrderSemiring: nothing about WS is involved beyond   *)
-  (* [ws_le] being a total order.                                           *)
+  (** [plusWS] is literally [add_max ws_le], so the additive commutative
+      monoid comes from OrderSemiring: nothing about WS is involved beyond
+      [ws_le] being a total order. *)
 
   Lemma addA_proof : forall x y z : WS, plusWS (plusWS x y) z = plusWS x (plusWS y z).
   Proof. exact (add_max_assoc ws_le ws_le_trans ws_le_antisym ws_le_total). Qed.
@@ -524,9 +518,9 @@ Section HBInstances.
   Proof. intros a. unfold zeroWS. destruct a; cbn; reflexivity. Qed.
 
   (** [plusWS X Y] is the maximum of [X] and [Y] under [ws_le]. *) 
-  (* Both distributive laws follow from monotonicity of [mulWS] alone.  This *)
-  (* is the one obligation OrderSemiring leaves: the naive R×R encoding      *)
-  (* rejected at the top of this file is exactly a failure of monotonicity.  *)
+  (** Both distributive laws follow from monotonicity of [mulWS] alone.  This
+      is the one obligation OrderSemiring leaves: the naive R×R encoding
+      rejected at the top of this file is exactly a failure of monotonicity. *)
 
   Lemma mulDl_proof : forall a b c : WS, mulWS a (plusWS b c) = plusWS (mulWS a b) (mulWS a c).
   Proof.
@@ -574,61 +568,59 @@ Definition mva_eff_fun (m : Node -> Node -> WS) (v : Node -> WS) : Node -> WS :=
 Definition mva_func (m : Node -> Node -> WS) (v : Node -> WS) : Node -> WS :=
   SemimoduleN.matrix_vector_action m v.
 
-(* ========================================================================= *)
-(*  WIDEST-SHORTEST PATH SEMIRING (this file)                                *)
-(*                                                                           *)
-(*  This file defines the widest-shortest-path semiring DIRECTLY in Rocq,    *)
-(*  as the layered CAS construction collapsed into one concrete type:        *)
-(*                                                                           *)
-(*      WS  :=  NoneW | SomeW l w        (l : nat, w : R)                    *)
-(*      R   :=  Left n | Infinity        (max-min widths + inner ∞)          *)
-(*                                                                           *)
-(*  The mapping to the CAS layered construction (the OCaml functors          *)
-(*  sketched in the NOTE at the top of the file) is:                         *)
-(*                                                                           *)
-(*    NoneW  = outer ∞ (mcas_bs_add_zero ... infinity): the additive         *)
-(*             identity AND multiplicative annihilator — "no path exists".   *)
-(*    SomeW l w = the pair (l, w) of mcas_bs_llex_product:                   *)
-(*             l : nat is the min-plus path length (mcas_min_plus),          *)
-(*             w : R   is the wrapped max-min bottleneck width               *)
-(*                     (mcas_bs_add_one mcas_max_min infinity).              *)
-(*                                                                           *)
-(*  Operations:                                                              *)
-(*    zeroWS = NoneW ;  oneWS = SomeW 0 Infinity                             *)
-(*    ws_le u v : lexicographic order — a smaller length wins; equal         *)
-(*      lengths are broken by the LARGER width.  The width tiebreaker only   *)
-(*      ever compares paths of the SAME length.                              *)
-(*    plusWS u v : the maximum of u and v under ws_le (selective join).      *)
-(*    mulWS (SomeW l1 w1) (SomeW l2 w2) = SomeW (l1 + l2) (muls w1 w2),      *)
-(*      component-wise (lengths add under min-plus; widths meet via          *)
-(*      muls = min under max-min); NoneW absorbs on either side.             *)
-(*                                                                           *)
-(*  WHY THE DISTRIBUTIVE LAWS HOLD:                                          *)
-(*    The tiebreaker only fires when the two lengths are EQUAL, and          *)
-(*    multiplication is component-wise: lengths add and widths are combined  *)
-(*    with muls, so multiplying by a fixed path maps equal-length pairs to   *)
-(*    equal-length pairs.  Hence the lexicographic comparison commutes with  *)
-(*    multiplication and both distributive laws hold.  This is exactly the   *)
-(*    CAS insight for bs_llex_product.  The canonical NoneW removes the      *)
-(*    failure mode of the naive R×R pair described in the NOTE at the top:   *)
-(*    there, the tiebreaker compared the widths of two length-Infinity       *)
-(*    "no path" pairs and distributivity broke.                              *)
-(*                                                                           *)
-(*  PROOFS (no admitted goals):                                              *)
-(*    Commutative monoid: addA_proof addC_proof add0r_proof addr0_proof      *)
-(*    Semiring:           mulA_proof mul1r_proof mulr1_proof                 *)
-(*                        mulDr_proof mulDl_proof mul0r_proof mulr0_proof    *)
-(*    Bounded:            add_bound_proof   (oneWS + a = oneWS)              *)
-(*    Semimodule:         IsSemimodule instance of WS acting on itself.      *)
-(*                                                                           *)
-(*    [plusWS] is [add_max ws_le], so associativity, commutativity, both     *)
-(*    distributive laws and boundedness are discharged by the generic        *)
-(*    results in algorithm/OrderSemiring.v.  What remains specific to WS is  *)
-(*    the backbone those results consume: ws_le is a total order             *)
-(*    (ws_le_total, ws_le_antisym, ws_le_trans, ws_le_top), multiplication   *)
-(*    is monotone in it (mulWS_mono_r, mulWS_mono_l), and the scalar facts   *)
-(*    muls_le_r, muls_le_l over the max-min width semiring R.  Monotonicity  *)
-(*    is the whole content: it is exactly what the naive R×R encoding lacks. *)
-(* ========================================================================= *)
+(** * WIDEST-SHORTEST PATH SEMIRING (this file)
+
+    This file defines the widest-shortest-path semiring DIRECTLY in Rocq,
+    as the layered CAS construction collapsed into one concrete type:
+
+        WS  :=  NoneW | SomeW l w        (l : nat, w : R)
+        R   :=  Left n | Infinity        (max-min widths + inner ∞)
+
+    The mapping to the CAS layered construction (the OCaml functors
+    sketched in the NOTE at the top of the file) is:
+
+      NoneW  = outer ∞ (mcas_bs_add_zero ... infinity): the additive
+               identity AND multiplicative annihilator — "no path exists".
+      SomeW l w = the pair (l, w) of mcas_bs_llex_product:
+               l : nat is the min-plus path length (mcas_min_plus),
+               w : R   is the wrapped max-min bottleneck width
+                       (mcas_bs_add_one mcas_max_min infinity).
+
+    Operations:
+      zeroWS = NoneW ;  oneWS = SomeW 0 Infinity
+      ws_le u v : lexicographic order — a smaller length wins; equal
+        lengths are broken by the LARGER width.  The width tiebreaker only
+        ever compares paths of the SAME length.
+      plusWS u v : the maximum of u and v under ws_le (selective join).
+      mulWS (SomeW l1 w1) (SomeW l2 w2) = SomeW (l1 + l2) (muls w1 w2),
+        component-wise (lengths add under min-plus; widths meet via
+        muls = min under max-min); NoneW absorbs on either side.
+
+    WHY THE DISTRIBUTIVE LAWS HOLD:
+      The tiebreaker only fires when the two lengths are EQUAL, and
+      multiplication is component-wise: lengths add and widths are combined
+      with muls, so multiplying by a fixed path maps equal-length pairs to
+      equal-length pairs.  Hence the lexicographic comparison commutes with
+      multiplication and both distributive laws hold.  This is exactly the
+      CAS insight for bs_llex_product.  The canonical NoneW removes the
+      failure mode of the naive R×R pair described in the NOTE at the top:
+      there, the tiebreaker compared the widths of two length-Infinity
+      "no path" pairs and distributivity broke.
+
+    PROOFS (no admitted goals):
+      Commutative monoid: addA_proof addC_proof add0r_proof addr0_proof
+      Semiring:           mulA_proof mul1r_proof mulr1_proof
+                          mulDr_proof mulDl_proof mul0r_proof mulr0_proof
+      Bounded:            add_bound_proof   (oneWS + a = oneWS)
+      Semimodule:         IsSemimodule instance of WS acting on itself.
+
+      [plusWS] is [add_max ws_le], so associativity, commutativity, both
+      distributive laws and boundedness are discharged by the generic
+      results in algorithm/OrderSemiring.v.  What remains specific to WS is
+      the backbone those results consume: ws_le is a total order
+      (ws_le_total, ws_le_antisym, ws_le_trans, ws_le_top), multiplication
+      is monotone in it (mulWS_mono_r, mulWS_mono_l), and the scalar facts
+      muls_le_r, muls_le_l over the max-min width semiring R.  Monotonicity
+      is the whole content: it is exactly what the naive R×R encoding lacks. *)
   
 

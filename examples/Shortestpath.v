@@ -6,14 +6,14 @@ From Semiring Require Import MatN
 Import ListNotations SemiringNotations.
 
 
-(* min_+ alegebra *)
+(** min_+ alegebra *)
 Section Comp. 
 
-  (* Define Candidates *)
+  (** Define Candidates *)
   Inductive Node := A | B | C. 
   
 
-   (* Nat extended with Infinity *)
+   (** Nat extended with Infinity *)
   Inductive R := 
   | Left : nat -> R 
   | Infinity : R.
@@ -33,25 +33,21 @@ Section Comp.
   | _, _ => Infinity 
   end.
 
-  (* zeroR *)
+  (** zeroR *)
   Definition zeroR : R := Infinity.
 
-  (* oneR *)
+  (** oneR *)
   Definition oneR : R := Left 0.  
 
   Definition finN : list Node := [A; B; C].
 
 End Comp.
 
-(* =================================================================== *)
-(*  HB Instances: FinType Node, BoundedSemiring R (min-plus/tropical)    *)
-(* =================================================================== *)
+(** * HB Instances: FinType Node, BoundedSemiring R (min-plus/tropical) *)
 
 Section HBInstances.
 
-  (* ================================================================ *)
-  (*  Node as a Finite Type  (A | B | C)                               *)
-  (* ================================================================ *)
+  (** * Node as a Finite Type  (A | B | C) *)
 
   Definition fin_eq_dec (x y : Node) : {x = y} + {x <> y}.
   Proof. decide equality. Defined.
@@ -90,9 +86,7 @@ Section HBInstances.
     elements_two_or_more_proof
     fin_eq_dec.
 
-  (* ================================================================ *)
-  (*  R as a Commutative Monoid  (min–semilattice with Infinity)       *)
-  (* ================================================================ *)
+  (** * R as a Commutative Monoid  (min–semilattice with Infinity) *)
 
   Lemma addA_proof : forall x y z : R, plusR (plusR x y) z = plusR x (plusR y z).
   Proof.
@@ -119,9 +113,7 @@ Section HBInstances.
   HB.instance Definition _ := IsCommutativeMonoid.Build R
     zeroR plusR addA_proof addC_proof add0r_proof addr0_proof.
 
-  (* ================================================================ *)
-  (*  R as a Semiring  (addition distributes over min)                 *)
-  (* ================================================================ *)
+  (** * R as a Semiring  (addition distributes over min) *)
 
   Lemma mulA_proof : forall a b c : R, mulR (mulR a b) c = mulR a (mulR b c).
   Proof.
@@ -166,9 +158,7 @@ Section HBInstances.
     oneR mulR mulA_proof mul1r_proof mulr1_proof
     mulDr_proof mulDl_proof mul0r_proof mulr0_proof.
 
-  (* ================================================================ *)
-  (*  R as a Bounded Semiring  (0 is the minimum, absorbing in min)    *)
-  (* ================================================================ *)
+  (** * R as a Bounded Semiring  (0 is the minimum, absorbing in min) *)
 
   Lemma add_bound_proof : forall a : R, plusR oneR a = oneR.
   Proof.
@@ -177,9 +167,7 @@ Section HBInstances.
 
   HB.instance Definition _ := IsBoundedSemiring.Build R add_bound_proof.
 
-  (* ================================================================ *)
-  (*  R as a Semimodule over itself  (scale := mulR = addition)        *)
-  (* ================================================================ *)
+  (** * R as a Semimodule over itself  (scale := mulR = addition) *)
 
   HB.instance Definition _ := IsSemimodule.Build R R
     mulR

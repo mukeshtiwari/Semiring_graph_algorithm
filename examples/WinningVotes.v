@@ -1,34 +1,30 @@
-(* ========================================================================= *)
-(*  Schulze's WINNING VOTES measure                                          *)
-(*                                                                           *)
-(*  Schulze §2.1, Example 3.  The strength of a link is measured primarily   *)
-(*  by its support N[e,f].  Unpacking his six clauses, the order is:          *)
-(*                                                                           *)
-(*    - every pairwise victory beats every tie, every tie beats every         *)
-(*      defeat  (clauses 1-2, which is condition (2.1.2));                    *)
-(*    - within the victories and within the defeats, more support is          *)
-(*      stronger, and among equal support less opposition is stronger         *)
-(*      (clauses 3-4 and 5-6 respectively);                                   *)
-(*    - all ties are equivalent, no clause separating two of them.            *)
-(*                                                                           *)
-(*  So the only non-trivial equivalence class is the ties — which is exactly  *)
-(*  what [wnorm] collapses, and what makes Leibniz antisymmetry fail before   *)
-(*  normalisation.                                                            *)
-(*                                                                           *)
-(*  The order is defined by nested comparisons and then characterised once,   *)
-(*  in [wle_spec], as a purely arithmetic condition.  Every preorder law is   *)
-(*  then a consequence of that characterisation, so the case analysis is      *)
-(*  paid for once rather than in each proof.                                  *)
-(* ========================================================================= *)
+(** * Schulze's WINNING VOTES measure
+
+    Schulze §2.1, Example 3.  The strength of a link is measured primarily
+    by its support N[e,f].  Unpacking his six clauses, the order is:
+
+      - every pairwise victory beats every tie, every tie beats every
+        defeat  (clauses 1-2, which is condition (2.1.2));
+      - within the victories and within the defeats, more support is
+        stronger, and among equal support less opposition is stronger
+        (clauses 3-4 and 5-6 respectively);
+      - all ties are equivalent, no clause separating two of them.
+
+    So the only non-trivial equivalence class is the ties — which is exactly
+    what [wnorm] collapses, and what makes Leibniz antisymmetry fail before
+    normalisation.
+
+    The order is defined by nested comparisons and then characterised once,
+    in [wle_spec], as a purely arithmetic condition.  Every preorder law is
+    then a consequence of that characterisation, so the case analysis is
+    paid for once rather than in each proof. *)
 
 From Stdlib Require Import Utf8 Arith Lia.
 From HB Require Import structures.
 From Semiring Require Import Structures OrelN MatN SemimoduleN OrderSemiring
   NormalizedOrder ExtendOrder SocialchoiceN SchulzeOnNT.
 
-(* ------------------------------------------------------------------ *)
-(*  Victory / tie / defeat                                             *)
-(* ------------------------------------------------------------------ *)
+(** ** Victory / tie / defeat *)
 
 (** [0] = defeat, [1] = tie, [2] = victory. *)
 Definition vclass (p : nat * nat) : nat :=
@@ -50,9 +46,7 @@ Proof.
     + apply Nat.eqb_neq in E2. right; right. split; [reflexivity | lia].
 Qed.
 
-(* ------------------------------------------------------------------ *)
-(*  The order                                                          *)
-(* ------------------------------------------------------------------ *)
+(** ** The order *)
 
 Definition wle (p q : nat * nat) : bool :=
   if Nat.ltb (vclass p) (vclass q) then true
@@ -129,9 +123,7 @@ Proof.
   - right. apply wle_spec. left. exact H.
 Qed.
 
-(* ------------------------------------------------------------------ *)
-(*  Normalisation: only the ties collapse                              *)
-(* ------------------------------------------------------------------ *)
+(** ** Normalisation: only the ties collapse *)
 
 Definition wnorm (p : nat * nat) : nat * nat :=
   if Nat.eqb (fst p) (snd p) then (0, 0) else p.
@@ -201,9 +193,7 @@ Proof.
     rewrite Hx, Hy. reflexivity.
 Qed.
 
-(* ------------------------------------------------------------------ *)
-(*  …packaged                                                          *)
-(* ------------------------------------------------------------------ *)
+(** ** …packaged *)
 
 Definition wv_eq_dec (p q : nat * nat) : {p = q} + {p <> q}.
 Proof. decide equality; apply Nat.eq_dec. Defined.
@@ -241,23 +231,21 @@ Section WinningVotesSchulze.
 
 End WinningVotesSchulze.
 
-(* ------------------------------------------------------------------ *)
-(*  Sanity checks against Schulze's clauses                            *)
-(* ------------------------------------------------------------------ *)
+(** ** Sanity checks against Schulze's clauses *)
 
-(* Clause 1: a victory beats a tie, and a tie beats a defeat. *)
+(** Clause 1: a victory beats a tie, and a tie beats a defeat. *)
 Example wv_victory_beats_tie : wle (3, 5) (5, 5) = true /\ wle (5, 5) (7, 5) = true.
 Proof. split; reflexivity. Qed.
 
-(* Clause 3: among victories, more support wins. *)
+(** Clause 3: among victories, more support wins. *)
 Example wv_more_support : wle (7, 2) (9, 2) = true /\ wle (9, 2) (7, 2) = false.
 Proof. split; reflexivity. Qed.
 
-(* Clause 4: with equal support, less opposition wins. *)
+(** Clause 4: with equal support, less opposition wins. *)
 Example wv_less_opposition : wle (9, 4) (9, 2) = true /\ wle (9, 2) (9, 4) = false.
 Proof. split; reflexivity. Qed.
 
-(* All ties are equivalent, and share a normal form. *)
+(** All ties are equivalent, and share a normal form. *)
 Example wv_ties_equivalent : wle (4, 4) (9, 9) = true /\ wle (9, 9) (4, 4) = true.
 Proof. split; reflexivity. Qed.
 

@@ -1,24 +1,22 @@
-(* ===================================================================== *)
-(*  Independence of clones over the diamond at FOUR alternatives.         *)
-(*                                                                        *)
-(*  [clone_characterisation] states the equivalence between the clone     *)
-(*  criterion and the two bottleneck axioms at five or more alternatives. *)
-(*  This file shows that five is optimal: over the diamond lattice D4,    *)
-(*  which is bounded, has the meet property, and is NOT selective, the    *)
-(*  clone criterion holds at four ambient alternatives, so no             *)
-(*  four-alternative configuration can derive selectivity from it.        *)
-(*                                                                        *)
-(*  The reason is a triangle argument, not an exhaustive search.  The     *)
-(*  survivor clause and one direction of the clone clause hold over any   *)
-(*  bounded semiring (CloneN).  The remaining direction needs an          *)
-(*  unbeaten clone, and with four ambient alternatives the clone set has  *)
-(*  at most three distinct members, so the only obstruction would be a    *)
-(*  beat three-cycle among the clones.  A three-cycle forces a cyclic     *)
-(*  triple in the carrier (beats_on_cycle3_cyclic_triple), and the        *)
-(*  diamond has no cyclic triple (diamond_no_cyclic_triple): its width    *)
-(*  is two, and a cyclic triple needs three values that pairwise meet     *)
-(*  strictly below each of them.                                          *)
-(* ===================================================================== *)
+(** * Independence of clones over the diamond at FOUR alternatives.
+
+    [clone_characterisation] states the equivalence between the clone
+    criterion and the two bottleneck axioms at five or more alternatives.
+    This file shows that five is optimal: over the diamond lattice D4,
+    which is bounded, has the meet property, and is NOT selective, the
+    clone criterion holds at four ambient alternatives, so no
+    four-alternative configuration can derive selectivity from it.
+
+    The reason is a triangle argument, not an exhaustive search.  The
+    survivor clause and one direction of the clone clause hold over any
+    bounded semiring (CloneN).  The remaining direction needs an
+    unbeaten clone, and with four ambient alternatives the clone set has
+    at most three distinct members, so the only obstruction would be a
+    beat three-cycle among the clones.  A three-cycle forces a cyclic
+    triple in the carrier (beats_on_cycle3_cyclic_triple), and the
+    diamond has no cyclic triple (diamond_no_cyclic_triple): its width
+    is two, and a cyclic triple needs three values that pairwise meet
+    strictly below each of them. *)
 
 From Stdlib Require Import List Utf8 Lia.
 From HB Require Import structures.
@@ -60,12 +58,12 @@ Section CloneFour.
       + (* d wins the old election: an unbeaten clone wins the new one *)
         intro Hwin_d.
         destruct (node4_rest d) as (a & b & c & Hrest).
-        (* the clones avoid [d], so they draw on at most three values *)
+        (** the clones avoid [d], so they draw on at most three values *)
         assert (Hsmall : forall u, List.In u K -> u = a \/ u = b \/ u = c).
         { intros u Hu. apply Hrest. intro Heq. subst u.
           exact (Hfresh d Hu Hd). }
-        (* no beat three-cycle among the clones: a cycle would force a
-           cyclic triple, and the diamond has none *)
+        (** no beat three-cycle among the clones: a cycle would force a
+            cyclic triple, and the diamond has none *)
         assert (Hnc : forall u v w,
                   List.In u K -> List.In v K -> List.In w K ->
                   beats_on (A_new A_old K d) M_new u v ->

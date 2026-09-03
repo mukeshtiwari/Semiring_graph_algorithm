@@ -1,16 +1,14 @@
-(* ========================================================================= *)
-(*  Schulze's three concrete strength measures as [Measure]s                 *)
-(*                                                                           *)
-(*  MeasureN.v asks a strength measure for Schulze's two conditions (2.1.1)  *)
-(*  and (2.1.2), and BallotN.v discharges the ballot-level hypotheses of the  *)
-(*  criterion theorems for any measure that has them.  This file supplies the *)
-(*  conditions for margin, winning votes, and losing votes, each proved once  *)
-(*  from the order characterisation its own file already provides, and then   *)
-(*  instantiates the profile-level theorems at margin and at winning votes.   *)
-(*                                                                           *)
-(*  Ratio is not treated: it is not among the measures formalised in this     *)
-(*  directory.                                                               *)
-(* ========================================================================= *)
+(** * Schulze's three concrete strength measures as [Measure]s
+
+    MeasureN.v asks a strength measure for Schulze's two conditions (2.1.1)
+    and (2.1.2), and BallotN.v discharges the ballot-level hypotheses of the
+    criterion theorems for any measure that has them.  This file supplies the
+    conditions for margin, winning votes, and losing votes, each proved once
+    from the order characterisation its own file already provides, and then
+    instantiates the profile-level theorems at margin and at winning votes.
+
+    Ratio is not treated: it is not among the measures formalised in this
+    directory. *)
 
 From Stdlib Require Import Utf8 List Arith Lia.
 From HB Require Import structures.
@@ -20,12 +18,10 @@ From Semiring Require Import Structures OrelN MatN SemimoduleN OrderSemiring
 From Examples Require Import MarginMeasure WinningVotes LosingVotes.
 Import ListNotations.
 
-(* ------------------------------------------------------------------ *)
-(*  Margin                                                             *)
-(*                                                                     *)
-(*  [mle (x1,x2) (y1,y2)] is [x1 + y2 <= y1 + x2].  Both conditions    *)
-(*  say that the left margin is strictly larger, which is arithmetic.  *)
-(* ------------------------------------------------------------------ *)
+(** ** Margin
+
+    [mle (x1,x2) (y1,y2)] is [x1 + y2 <= y1 + x2].  Both conditions
+    say that the left margin is strictly larger, which is arithmetic. *)
 
 Lemma margin_211 : forall x1 x2 y1 y2 : nat,
   (y1 < x1 /\ x2 <= y2) \/ (y1 <= x1 /\ x2 < y2) -> mle (x1, x2) (y1, y2) = false.
@@ -38,18 +34,16 @@ Proof. intros x1 x2 y1 y2 H. unfold mle. cbn [fst snd]. apply Nat.leb_nle. lia. 
 Definition margin_measure : Measure :=
   {| m_pre := margin_pre; m_211 := margin_211; m_212 := margin_212 |}.
 
-(* The carrier is the one MarginMeasure.v already built, definitionally. *)
+(** The carrier is the one MarginMeasure.v already built, definitionally. *)
 Check (eq_refl : Strength margin_measure = Margin).
 Check (eq_refl : spec margin_measure = margin_spec).
 
-(* ------------------------------------------------------------------ *)
-(*  Winning votes and losing votes                                     *)
-(*                                                                     *)
-(*  Both orders are characterised arithmetically ([wle_spec],          *)
-(*  [lle_spec]) in terms of the victory/tie/defeat class [vclass].      *)
-(*  Each condition is then a case analysis on the two classes and the  *)
-(*  clauses of the characterisation, closed by [lia].                  *)
-(* ------------------------------------------------------------------ *)
+(** ** Winning votes and losing votes
+
+    Both orders are characterised arithmetically ([wle_spec],
+    [lle_spec]) in terms of the victory/tie/defeat class [vclass].
+    Each condition is then a case analysis on the two classes and the
+    clauses of the characterisation, closed by [lia]. *)
 
 Lemma wv_211 : forall x1 x2 y1 y2 : nat,
   (y1 < x1 /\ x2 <= y2) \/ (y1 <= x1 /\ x2 < y2) -> wle (x1, x2) (y1, y2) = false.
@@ -113,13 +107,11 @@ Definition lv_measure : Measure :=
 
 Check (eq_refl : Strength lv_measure = LosingVotes).
 
-(* ------------------------------------------------------------------ *)
-(*  Margin-strength Schulze, from the ballots                          *)
-(*                                                                     *)
-(*  Every hypothesis below is about the profile.  Everything the       *)
-(*  algebra needed is discharged: selectivity and the meet property by *)
-(*  the carrier, the matrix conditions by BallotN.                     *)
-(* ------------------------------------------------------------------ *)
+(** ** Margin-strength Schulze, from the ballots
+
+    Every hypothesis below is about the profile.  Everything the
+    algebra needed is discharged: selectivity and the meet property by
+    the carrier, the matrix conditions by BallotN. *)
 
 Section MarginProfiles.
 
@@ -199,9 +191,7 @@ Section MarginProfiles.
 
 End MarginProfiles.
 
-(* ------------------------------------------------------------------ *)
-(*  …and the same for winning votes, to show nothing was margin-specific *)
-(* ------------------------------------------------------------------ *)
+(** ** …and the same for winning votes, to show nothing was margin-specific *)
 
 Section WinningVotesProfiles.
 

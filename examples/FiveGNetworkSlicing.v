@@ -6,36 +6,34 @@ From Semiring Require Import MatN
 Import ListNotations SemiringNotations.
 
 
-(* ========================================================================= *)
-(*  5G Network Slicing - Latency-Bandwidth Product Semiring                   *)
-(*                                                                            *)
-(*  This models resource allocation across virtual network slices in a 5G    *)
-(*  core network. Each link has two attributes:                               *)
-(*    * latency (ms)     - minimized (min-plus / tropical semiring)          *)
-(*    * bandwidth (Mbps) - maximized (max-min semiring)                       *)
-(*                                                                            *)
-(*  The semiring R = Latency x Bandwidth is the DIRECT PRODUCT of the two    *)
-(*  bounded semirings above. Since all axioms hold componentwise, the        *)
-(*  product is again a bounded semiring.                                      *)
-(*                                                                            *)
-(*  Topology:  4 nodes representing the 5G user plane data path:              *)
-(*    UE (user equipment) -> gNB (base station) -> UPF (user plane) -> DN    *)
-(*                                                                            *)
-(*  A* computes the optimal path weights between all node pairs.             *)
-(* ========================================================================= *)
+(** * 5G Network Slicing - Latency-Bandwidth Product Semiring
+
+    This models resource allocation across virtual network slices in a 5G
+    core network. Each link has two attributes:
+      * latency (ms)     - minimized (min-plus / tropical semiring)
+      * bandwidth (Mbps) - maximized (max-min semiring)
+
+    The semiring R = Latency x Bandwidth is the DIRECT PRODUCT of the two
+    bounded semirings above. Since all axioms hold componentwise, the
+    product is again a bounded semiring.
+
+    Topology:  4 nodes representing the 5G user plane data path:
+      UE (user equipment) -> gNB (base station) -> UPF (user plane) -> DN
+
+    A* computes the optimal path weights between all node pairs. *)
 
 
 Section Comp.
 
   Inductive Node := UE | gNB | UPF | DN.
 
-  (* Bandwidth: Nat with an Infinity marker *)
+  (** Bandwidth: Nat with an Infinity marker *)
   Inductive BW :=
     | BW_fin : nat -> BW
     | BW_inf : BW.
 
  
-  (* Product semiring: R = Latency(nat) x Bandwidth(BW) *)
+  (** Product semiring: R = Latency(nat) x Bandwidth(BW) *)
   Inductive R :=
     | Rpair : nat -> BW -> R
     | Unreachable : R.
@@ -43,7 +41,7 @@ Section Comp.
   Definition zeroR : R := Unreachable.
   Definition oneR : R := Rpair 0 BW_inf.
 
-  (* plusR: (min latency, max bandwidth) componentwise *)
+  (** plusR: (min latency, max bandwidth) componentwise *)
   Definition plusR (u v : R) : R :=
     match u, v with
     | Rpair l1 b1, Rpair l2 b2 =>
@@ -58,7 +56,7 @@ Section Comp.
     | Unreachable, Unreachable => Unreachable
     end.
 
-  (* mulR: (add latency, min bandwidth) componentwise *)
+  (** mulR: (add latency, min bandwidth) componentwise *)
   Definition mulR (u v : R) : R :=
     match u, v with
     | Rpair l1 b1, Rpair l2 b2 =>
@@ -76,12 +74,10 @@ Section Comp.
 End Comp.
 
 
-(* =================================================================== *)
-(*  HB Instances: FinType Node, BoundedSemiring R                       *)
-(*                                                                       *)
-(*  R = Latency(nat) x Bandwidth(BW) is the product of two bounded      *)
-(*  semirings: min-plus (latency) x max-min (bandwidth).                *)
-(* =================================================================== *)
+(** * HB Instances: FinType Node, BoundedSemiring R
+
+    R = Latency(nat) x Bandwidth(BW) is the product of two bounded
+    semirings: min-plus (latency) x max-min (bandwidth). *)
 
 Section HBInstances.
 
@@ -162,7 +158,7 @@ Section HBInstances.
   Proof.
     intros [l1 b1|] [l2 b2|] [l3 b3|]; cbn; try reflexivity;
       f_equal; try nia.
-    (* bandwidth component: max-min distributivity *)
+    (** bandwidth component: max-min distributivity *)
     destruct b1, b2, b3; cbn; try reflexivity; f_equal; nia.
   Qed.
 

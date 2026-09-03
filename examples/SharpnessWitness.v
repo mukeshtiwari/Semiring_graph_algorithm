@@ -1,42 +1,38 @@
-(* ===================================================================== *)
-(*  Machine-checked sharpness witnesses for the two characterisations.    *)
-(*                                                                        *)
-(*  Two carriers isolate the axioms of the transitivity and winner        *)
-(*  characterisations in SocialchoiceN.v:                                 *)
-(*                                                                        *)
-(*    - the TROPICAL semiring (min-plus, from Shortestpath.v) is bounded  *)
-(*      and selective but lacks the meet property, and admits a 3x3       *)
-(*      matrix whose beat relation is a 3-cycle with no winner at all;    *)
-(*                                                                        *)
-(*    - the DIAMOND lattice D4 = {bot, p, q, top} with join/meet has the  *)
-(*      meet property but is not selective, and yet EVERY matrix on       *)
-(*      three alternatives admits a winner — checked by enumerating all   *)
-(*      4^9 matrices — which is why the winner characterisation needs a   *)
-(*      fourth alternative and why four is optimal.                       *)
-(*                                                                        *)
-(*  The exhaustive facts are established by reflection: a boolean         *)
-(*  winner-checker is proved sound against schulze_winner, and a single   *)
-(*  vm_compute discharges the quantification over all tabulated matrices. *)
-(* ===================================================================== *)
+(** * Machine-checked sharpness witnesses for the two characterisations.
+
+    Two carriers isolate the axioms of the transitivity and winner
+    characterisations in SocialchoiceN.v:
+
+      - the TROPICAL semiring (min-plus, from Shortestpath.v) is bounded
+        and selective but lacks the meet property, and admits a 3x3
+        matrix whose beat relation is a 3-cycle with no winner at all;
+
+      - the DIAMOND lattice D4 = {bot, p, q, top} with join/meet has the
+        meet property but is not selective, and yet EVERY matrix on
+        three alternatives admits a winner — checked by enumerating all
+        4^9 matrices — which is why the winner characterisation needs a
+        fourth alternative and why four is optimal.
+
+    The exhaustive facts are established by reflection: a boolean
+    winner-checker is proved sound against schulze_winner, and a single
+    vm_compute discharges the quantification over all tabulated matrices. *)
 
 From Stdlib Require Import List Psatz Utf8.
 From HB Require Import structures.
 From Semiring Require Import Structures OrelN MatN SemimoduleN SocialchoiceN.
-(* Schulze is imported first so that Shortestpath's [Node], [R], and
-   constructor names shadow its homonyms; the max-min carrier of the worked
-   example below is referred to by its qualified name [Schulze.R]. *)
+(** Schulze is imported first so that Shortestpath's [Node], [R], and
+    constructor names shadow its homonyms; the max-min carrier of the worked
+    example below is referred to by its qualified name [Schulze.R]. *)
 From Examples Require Import Schulze Shortestpath.
 Import ListNotations SemiringNotations.
 
 Local Infix "≤" := Orel (at level 70).
 
-(* ===================================================================== *)
-(*  Part 1: the tropical semiring breaks winner existence at three.      *)
-(*                                                                        *)
-(*  Forward hops cost 1, backward hops cost 2.  Being closer is better    *)
-(*  (the natural order of min-plus is REVERSED numeric order), so every   *)
-(*  alternative beats its successor round the triangle.                   *)
-(* ===================================================================== *)
+(** * Part 1: the tropical semiring breaks winner existence at three.
+
+    Forward hops cost 1, backward hops cost 2.  Being closer is better
+    (the natural order of min-plus is REVERSED numeric order), so every
+    alternative beats its successor round the triangle. *)
 
 Section Tropical.
 
@@ -48,7 +44,7 @@ Section Tropical.
       | B, A => Left 2 | C, B => Left 2 | A, C => Left 2
       end.
 
-  (* The tropical semiring is selective... *)
+  (** The tropical semiring is selective... *)
   Lemma tropical_selective : forall x y : R, x + y = x \/ x + y = y.
   Proof.
     intros [x|] [y|]; cbn; auto.
@@ -56,8 +52,8 @@ Section Tropical.
       [left | right]; cbn; rewrite E; reflexivity.
   Qed.
 
-  (* ...but it does not have the meet property: 1 ≤ 1 twice over, yet
-     1 * 1 = 2 and 1 ≤ 2 fails in the reversed order. *)
+  (** ...but it does not have the meet property: 1 ≤ 1 twice over, yet
+      1 * 1 = 2 and 1 ≤ 2 fails in the reversed order. *)
   Lemma tropical_no_meet :
     ~ (forall m a b : R, m ≤ a -> m ≤ b -> m ≤ a * b).
   Proof.
@@ -90,9 +86,7 @@ Section Tropical.
 
 End Tropical.
 
-(* ===================================================================== *)
-(*  Part 2: the diamond lattice.                                          *)
-(* ===================================================================== *)
+(** * Part 2: the diamond lattice. *)
 
 Inductive D4 : Type := Dbot | Dp | Dq | Dtop.
 
@@ -203,9 +197,7 @@ Proof.
     intros [H1a H1b] [H2a H2b] [H3a H3b]; congruence.
 Qed.
 
-(* ===================================================================== *)
-(*  Reflection machinery: a sound boolean winner checker.                 *)
-(* ===================================================================== *)
+(** * Reflection machinery: a sound boolean winner checker. *)
 
 Section Reflection.
 
@@ -236,7 +228,7 @@ Section Reflection.
   Lemma nodes_complete : forall n : Node, In n nodes.
   Proof. intros [| |]; cbn; auto. Qed.
 
-  (* A matrix tabulated as nine nested pairs, row-major. *)
+  (** A matrix tabulated as nine nested pairs, row-major. *)
   Definition T9 : Type :=
     ((((((((D4 * D4) * D4) * D4) * D4) * D4) * D4) * D4) * D4).
 
@@ -273,7 +265,7 @@ Section Reflection.
     repeat apply in_prod; apply enumD_complete.
   Qed.
 
-  (* The closure of a tabulated matrix, computed once per table. *)
+  (** The closure of a tabulated matrix, computed once per table. *)
   Definition star9 (t : T9) : T9 :=
     let Mf := mtx t in
     ((((((((mat_star Mf A A, mat_star Mf A B), mat_star Mf A C),
@@ -292,7 +284,7 @@ Section Reflection.
     getS (star9 t) x y = mat_star (mtx t) x y.
   Proof. intros t [| |] [| |]; reflexivity. Qed.
 
-  (* [a] beats [b], read off a closure table. *)
+  (** [a] beats [b], read off a closure table. *)
   Definition beatsb (s : T9) (a b : Node) : bool :=
     andb (Deqb (getS s b a + getS s a b) (getS s a b))
          (negb (Deqb (getS s b a) (getS s a b))).
@@ -341,9 +333,9 @@ Section Reflection.
     exact (ex_intro _ w (winnerb_correct t w Hw)).
   Qed.
 
-  (* Pointwise congruence for the closure, to move between a matrix and
-     its tabulation.  [mat_star]'s body is built from [sum], so this is a
-     straightforward induction. *)
+  (** Pointwise congruence for the closure, to move between a matrix and
+      its tabulation.  [mat_star]'s body is built from [sum], so this is a
+      straightforward induction. *)
   Lemma pow_ext (M N : @Matrix Node D4)
     (Hpt : forall x y, M x y = N x y) :
     forall (k : nat) (x y : Node), pow M k x y = pow N k x y.
@@ -399,10 +391,8 @@ Section Reflection.
 
 End Reflection.
 
-(* ===================================================================== *)
-(*  The exhaustive check: one vm_compute over all 4^9 = 262144 matrices. *)
-(*  It is taking too much time though.                                   *)
-(* ===================================================================== *)
+(** The exhaustive check: one vm_compute over all 4^9 = 262144 matrices.
+    It is taking too much time though. *)
 
 Lemma diamond_all_tabs_have_winner :
   forallb has_winnerb all_tabs = true.
@@ -426,15 +416,13 @@ Proof.
            (fun x y => eq_sym (mtx_tableof M x y)) b w Hbeat).
 Qed.
 
-(* ===================================================================== *)
-(*  The order-3 counts over the diamond with diagonal top: exactly 36 of  *)
-(*  the 4096 matrices have an intransitive beat relation, and none has a  *)
-(*  cyclic one.                                                           *)
-(* ===================================================================== *)
+(** The order-3 counts over the diamond with diagonal top: exactly 36 of
+    the 4096 matrices have an intransitive beat relation, and none has a
+    cyclic one. *)
 
 Section Counts.
 
-  (* Six off-diagonal entries; diagonal fixed at top. *)
+  (** Six off-diagonal entries; diagonal fixed at top. *)
   Definition T6 : Type := (((((D4 * D4) * D4) * D4) * D4) * D4).
 
   Definition emb6 (t : T6) : T9 :=
@@ -469,19 +457,17 @@ Section Counts.
 
 End Counts.
 
-(* ===================================================================== *)
-(*  Part 3: the Level-1 rows of the classification are tight.             *)
-(*                                                                        *)
-(*  Over the diamond, the hypotheses of the Smith criterion, of Condorcet *)
-(*  consistency and of the resolution step can all hold while their       *)
-(*  conclusions fail.  Each failure is one concrete 3x3 matrix, and each  *)
-(*  works by the same mechanism: two incomparable path strengths join to  *)
-(*  a value that is no link strength, which selectivity would forbid.     *)
-(* ===================================================================== *)
+(** * Part 3: the Level-1 rows of the classification are tight.
+
+    Over the diamond, the hypotheses of the Smith criterion, of Condorcet
+    consistency and of the resolution step can all hold while their
+    conclusions fail.  Each failure is one concrete 3x3 matrix, and each
+    works by the same mechanism: two incomparable path strengths join to
+    a value that is no link strength, which selectivity would forbid. *)
 
 Section Level1Tight.
 
-  (* ---- Smith: the threshold hypotheses hold, a winner escapes B1. ---- *)
+  (** ---- Smith: the threshold hypotheses hold, a winner escapes B1. ---- *)
 
   Definition Msmith : Node -> Node -> D4 :=
     fun x y =>
@@ -514,8 +500,8 @@ Section Level1Tight.
     - cbn. intuition congruence.
   Qed.
 
-  (* ---- Condorcet: a Condorcet winner satisfying the cross-pair          *)
-  (*      condition that still fails to be a strict winner. ---- *)
+  (** ---- Condorcet: a Condorcet winner satisfying the cross-pair
+           condition that still fails to be a strict winner. ---- *)
 
   Definition Mcond : Node -> Node -> D4 :=
     fun x y =>
@@ -542,7 +528,7 @@ Section Level1Tight.
       apply Hne. vm_compute. reflexivity.
   Qed.
 
-  (* ---- Resolution step: an untied winner that is not unique. ---- *)
+  (** ---- Resolution step: an untied winner that is not unique. ---- *)
 
   Definition Muntied : Node -> Node -> D4 :=
     fun x y =>
@@ -566,11 +552,11 @@ Section Level1Tight.
     - discriminate.
   Qed.
 
-  (* ---- Smith-IIA (isolation form): every hypothesis of                 *)
-  (*      [smith_iia_isolate] holds, yet isolating the non-Smith           *)
-  (*      alternative changes the beat relation on B1: the beat B > C      *)
-  (*      travelled through the outside alternative A, its two routes      *)
-  (*      joining to top, and dies with it. ---- *)
+  (** ---- Smith-IIA (isolation form): every hypothesis of
+           [smith_iia_isolate] holds, yet isolating the non-Smith
+           alternative changes the beat relation on B1: the beat B > C
+           travelled through the outside alternative A, its two routes
+           joining to top, and dies with it. ---- *)
 
   Definition Miia : Node -> Node -> D4 :=
     fun x y =>
@@ -607,11 +593,11 @@ Section Level1Tight.
     - intros (Hle & _). vm_compute in Hle. discriminate.
   Qed.
 
-  (* ---- Smith-IIA, strong-removal form (Schulze 4.7.6): every            *)
-  (*      hypothesis of [smith_iia_isolate_strong] holds, yet isolating     *)
-  (*      the strong alternative A changes the beat relation on B2: the     *)
-  (*      tie between B and C rested on C's route to B through A, whose     *)
-  (*      strength q joined with the direct p to top, and dies with A. ---- *)
+  (** ---- Smith-IIA, strong-removal form (Schulze 4.7.6): every
+           hypothesis of [smith_iia_isolate_strong] holds, yet isolating
+           the strong alternative A changes the beat relation on B2: the
+           tie between B and C rested on C's route to B through A, whose
+           strength q joined with the direct p to top, and dies with A. ---- *)
 
   Definition Mstrong : Node -> Node -> D4 :=
     fun x y =>
@@ -647,19 +633,17 @@ Section Level1Tight.
 
 End Level1Tight.
 
-(* ===================================================================== *)
-(*  Part 4: the worked beatpath example, machine-checked.                 *)
-(*                                                                        *)
-(*  The introductory example of the semiring reading: over the max-min    *)
-(*  carrier (nat extended with infinity, from Schulze.v, whose zero       *)
-(*  [Left 0] plays the bottom), the profile with direct links             *)
-(*  A -> B at 8, B -> C at 6, and C -> A at 4 has closure                 *)
-(*                                                                        *)
-(*      star = [[top, 8, 6], [4, top, 6], [4, 4, top]],                   *)
-(*                                                                        *)
-(*  so the beat relation is the strict order A > B > C and A is the       *)
-(*  unique winner: the beatpaths break the direct cycle.                  *)
-(* ===================================================================== *)
+(** * Part 4: the worked beatpath example, machine-checked.
+
+    The introductory example of the semiring reading: over the max-min
+    carrier (nat extended with infinity, from Schulze.v, whose zero
+    [Left 0] plays the bottom), the profile with direct links
+    A -> B at 8, B -> C at 6, and C -> A at 4 has closure
+
+        star = [[top, 8, 6], [4, top, 6], [4, 4, top]],
+
+    so the beat relation is the strict order A > B > C and A is the
+    unique winner: the beatpaths break the direct cycle. *)
 
 Section WorkedExample.
 
@@ -709,17 +693,15 @@ Section WorkedExample.
 
 End WorkedExample.
 
-(* ===================================================================== *)
-(*  The four-alternative witness over the diamond.                        *)
-(*                                                                        *)
-(*  This is not a new construction.  It is the alternating square of the  *)
-(*  winner-existence characterisation, [sq_no_winner], instantiated at    *)
-(*  x := Dp and y := Dq.  The two facts that construction needs,          *)
-(*  x * y < y and y * x < x, hold over the diamond because Dp and Dq are  *)
-(*  incomparable and their meet is Dbot.  Together with                   *)
-(*  [diamond_every_profile_has_winner] this shows four alternatives are   *)
-(*  both sufficient and necessary to refute winner existence over D4.     *)
-(* ===================================================================== *)
+(** * The four-alternative witness over the diamond.
+
+    This is not a new construction.  It is the alternating square of the
+    winner-existence characterisation, [sq_no_winner], instantiated at
+    x := Dp and y := Dq.  The two facts that construction needs,
+    x * y < y and y * x < x, hold over the diamond because Dp and Dq are
+    incomparable and their meet is Dbot.  Together with
+    [diamond_every_profile_has_winner] this shows four alternatives are
+    both sufficient and necessary to refute winner existence over D4. *)
 
 Inductive Node4 := W1 | W2 | W3 | W4.
 

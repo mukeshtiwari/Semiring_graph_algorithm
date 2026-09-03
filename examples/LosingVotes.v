@@ -1,16 +1,14 @@
-(* ========================================================================= *)
-(*  Schulze's LOSING VOTES measure                                           *)
-(*                                                                           *)
-(*  Schulze §2.1, Example 4.  The mirror image of winning votes: strength is  *)
-(*  measured primarily by the OPPOSITION N[f,e], smaller being stronger, and  *)
-(*  among equal opposition more support is stronger.  The stratification into *)
-(*  victory / tie / defeat is unchanged, as are the collapsed ties.           *)
-(*                                                                           *)
-(*  The development follows WinningVotes.v exactly, with the roles of the two *)
-(*  components exchanged, so [vclass] is reused from there.  As before the    *)
-(*  order is characterised once in [lle_spec] and every law then follows by   *)
-(*  arithmetic.                                                              *)
-(* ========================================================================= *)
+(** * Schulze's LOSING VOTES measure
+
+    Schulze §2.1, Example 4.  The mirror image of winning votes: strength is
+    measured primarily by the OPPOSITION N[f,e], smaller being stronger, and
+    among equal opposition more support is stronger.  The stratification into
+    victory / tie / defeat is unchanged, as are the collapsed ties.
+
+    The development follows WinningVotes.v exactly, with the roles of the two
+    components exchanged, so [vclass] is reused from there.  As before the
+    order is characterised once in [lle_spec] and every law then follows by
+    arithmetic. *)
 
 From Stdlib Require Import Utf8 Arith Lia.
 From HB Require Import structures.
@@ -18,9 +16,7 @@ From Semiring Require Import Structures OrelN MatN SemimoduleN OrderSemiring
   NormalizedOrder ExtendOrder SocialchoiceN SchulzeOnNT.
 From Examples Require Import WinningVotes.
 
-(* ------------------------------------------------------------------ *)
-(*  The order: less opposition first, then more support                *)
-(* ------------------------------------------------------------------ *)
+(** ** The order: less opposition first, then more support *)
 
 Definition lle (p q : nat * nat) : bool :=
   if Nat.ltb (vclass p) (vclass q) then true
@@ -97,9 +93,7 @@ Proof.
   - right. apply lle_spec. left. exact H.
 Qed.
 
-(* ------------------------------------------------------------------ *)
-(*  Normalisation: only the ties collapse, exactly as before            *)
-(* ------------------------------------------------------------------ *)
+(** ** Normalisation: only the ties collapse, exactly as before *)
 
 Lemma lnorm_le : forall p, lle p (wnorm p) = true.
 Proof.
@@ -136,9 +130,7 @@ Proof.
     rewrite Hx, Hy. reflexivity.
 Qed.
 
-(* ------------------------------------------------------------------ *)
-(*  …packaged                                                          *)
-(* ------------------------------------------------------------------ *)
+(** ** …packaged *)
 
 Definition lv_pre : PreSpec (nat * nat) :=
   {| ps_eq_dec     := wv_eq_dec;
@@ -173,15 +165,13 @@ Section LosingVotesSchulze.
 
 End LosingVotesSchulze.
 
-(* ------------------------------------------------------------------ *)
-(*  Sanity checks, and the contrast with winning votes                 *)
-(* ------------------------------------------------------------------ *)
+(** ** Sanity checks, and the contrast with winning votes *)
 
-(* Clause 3: among victories, less opposition wins. *)
+(** Clause 3: among victories, less opposition wins. *)
 Example lv_less_opposition : lle (9, 4) (7, 2) = true /\ lle (7, 2) (9, 4) = false.
 Proof. split; reflexivity. Qed.
 
-(* Clause 4: with equal opposition, more support wins. *)
+(** Clause 4: with equal opposition, more support wins. *)
 Example lv_more_support : lle (7, 2) (9, 2) = true /\ lle (9, 2) (7, 2) = false.
 Proof. split; reflexivity. Qed.
 

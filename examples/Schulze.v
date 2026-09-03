@@ -5,40 +5,40 @@ From Semiring Require Import MatN
 SemimoduleN Structures.
 Import ListNotations SemiringNotations.
 
-(* Take from Schulze's paper https://link.springer.com/content/pdf/10.1007/s00355-010-0475-4.pdf *)
+(** Take from Schulze's paper https://link.springer.com/content/pdf/10.1007/s00355-010-0475-4.pdf *)
 Section Comp.
 
-  (* 
-  8 voters a ≻v c ≻v d ≻v b
-  2 voters b ≻v a ≻v d ≻v c
-  4 voters c ≻v d ≻v b ≻v a
-  4 voters d ≻v b ≻v a ≻v c
-  3 voters d ≻v c ≻v b ≻v a
-  
-  *)
-  (* Define Candidates *)
+  (** 
+   8 voters a ≻v c ≻v d ≻v b
+   2 voters b ≻v a ≻v d ≻v c
+   4 voters c ≻v d ≻v b ≻v a
+   4 voters d ≻v b ≻v a ≻v c
+   3 voters d ≻v c ≻v b ≻v a
+   
+   *)
+  (** Define Candidates *)
   Inductive Node := A | B | C | D.
   
 
-  (* Nat extended with Infinity *)
+  (** Nat extended with Infinity *)
   Inductive R := 
   | Left : nat -> R 
   | Infinity : R.
 
-  (* zeroR *)
+  (** zeroR *)
   Definition zeroR : R := Left 0.
 
-  (* oneR *)
+  (** oneR *)
   Definition oneR : R := Infinity. 
 
-  (* plusR *)
+  (** plusR *)
   Definition plusR (u v : R) : R :=
   match u, v with 
   | Left x, Left y => Left (Nat.max x y) 
   | _, _ => Infinity
   end.
 
-  (* mulR *)
+  (** mulR *)
   Definition mulR (u v : R) : R :=
   match u, v with 
   | Left x, Left y => Left (Nat.min x y)
@@ -53,21 +53,17 @@ Section Comp.
 End Comp.
 
 
-(* =================================================================== *)
-(*  HB Instances: FinType Node, BoundedSemiring R                       *)
-(*                                                                       *)
-(*  These instances let us use [powN_fun] from MatN and the full         *)
-(*  Kleene-star theory from SemimoduleN (kleene_fixed_point,             *)
-(*  geom_sum_idempotent_action, etc.) on the Schulze max-min semiring.   *)
-(* =================================================================== *)
+(** * HB Instances: FinType Node, BoundedSemiring R
+
+    These instances let us use [powN_fun] from MatN and the full
+    Kleene-star theory from SemimoduleN (kleene_fixed_point,
+    geom_sum_idempotent_action, etc.) on the Schulze max-min semiring. *)
 
 
 
 Section HBInstances.
 
-  (* ================================================================ *)
-  (*  Node as a Finite Type                                            *)
-  (* ================================================================ *)
+  (** * Node as a Finite Type *)
 
   Definition fin_eq_dec (x y : Node) : {x = y} + {x <> y}.
   Proof. decide equality. Defined.
@@ -78,25 +74,25 @@ Section HBInstances.
   Proof.
     unfold elements_list.
     apply NoDup_cons.
-    (* ~ In A [B;C;D] *)
+    (** ~ In A [B;C;D] *)
     intro H. simpl in H.
     destruct H as [Heq|H]; [inversion Heq|].
     simpl in H. destruct H as [Heq|H]; [inversion Heq|].
     simpl in H. destruct H as [Heq|H]; [inversion Heq|].
     simpl in H. destruct H.
     apply NoDup_cons.
-    (* ~ In B [C;D] *)
+    (** ~ In B [C;D] *)
     intro H. simpl in H.
     destruct H as [Heq|H]; [inversion Heq|].
     simpl in H. destruct H as [Heq|H]; [inversion Heq|].
     simpl in H. destruct H.
     apply NoDup_cons.
-    (* ~ In C [D] *)
+    (** ~ In C [D] *)
     intro H. simpl in H.
     destruct H as [Heq|H]; [inversion Heq|].
     simpl in H. destruct H.
     apply NoDup_cons.
-    (* ~ In D [] *)
+    (** ~ In D [] *)
     intro H. simpl in H. destruct H.
     apply NoDup_nil.
   Qed.
@@ -118,9 +114,7 @@ Section HBInstances.
     elements_two_or_more_proof
     fin_eq_dec.
 
-  (* ================================================================ *)
-  (*  R as a Commutative Monoid  (max–semilattice with zero)           *)
-  (* ================================================================ *)
+  (** * R as a Commutative Monoid  (max–semilattice with zero) *)
 
   Lemma addA_proof : forall x y z : R, plusR (plusR x y) z = plusR x (plusR y z).
   Proof.
@@ -151,9 +145,7 @@ Section HBInstances.
   HB.instance Definition _ := IsCommutativeMonoid.Build R
     zeroR plusR addA_proof addC_proof add0r_proof addr0_proof.
 
-  (* ================================================================ *)
-  (*  R as a Semiring  (min-multiplication distributes over max-add)   *)
-  (* ================================================================ *)
+  (** * R as a Semiring  (min-multiplication distributes over max-add) *)
 
   Lemma mulA_proof : forall a b c : R, mulR (mulR a b) c = mulR a (mulR b c).
   Proof.
@@ -198,9 +190,7 @@ Section HBInstances.
     oneR mulR mulA_proof mul1r_proof mulr1_proof
     mulDr_proof mulDl_proof mul0r_proof mulr0_proof.
 
-  (* ================================================================ *)
-  (*  R as a Bounded Semiring  (Infinity absorbs in addition)          *)
-  (* ================================================================ *)
+  (** * R as a Bounded Semiring  (Infinity absorbs in addition) *)
 
   Lemma add_bound_proof : forall a : R, plusR oneR a = oneR.
   Proof.
@@ -209,9 +199,7 @@ Section HBInstances.
 
   HB.instance Definition _ := IsBoundedSemiring.Build R add_bound_proof.
 
-  (* ================================================================ *)
-  (*  R as a Semimodule over itself  (scale := mulR)                   *)
-  (* ================================================================ *)
+  (** * R as a Semimodule over itself  (scale := mulR) *)
 
   HB.instance Definition _ := IsSemimodule.Build R R
     mulR

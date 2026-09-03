@@ -31,19 +31,19 @@ Section Comp.
     | UW
     | TM.
   
-  (*
-  https://en.wikipedia.org/wiki/Schulze_method
-    Number of voters 	Order of preference
-    5 	ACBED
-    5 	ADECB
-    8 	BEDAC
-    3 	CABED
-    7 	CAEBD
-    2 	CBADE
-    7 	DCEBA
-    8 	EBADC  
-
-  *)
+  (**
+   https://en.wikipedia.org/wiki/Schulze_method
+     Number of voters 	Order of preference
+     5 	ACBED
+     5 	ADECB
+     8 	BEDAC
+     3 	CABED
+     7 	CAEBD
+     2 	CBADE
+     7 	DCEBA
+     8 	EBADC  
+ 
+   *)
     (* 
     Definition eqN (x y : Node) : bool := 
       match x, y with 
@@ -95,9 +95,7 @@ Section Comp.
 End Comp.
 
 
-(* =================================================================== *)
-(*  HB Instances: FinType Node, BoundedSemiring R (max-min semiring)    *)
-(* =================================================================== *)
+(** * HB Instances: FinType Node, BoundedSemiring R (max-min semiring) *)
 
 Section HBInstances.
 
