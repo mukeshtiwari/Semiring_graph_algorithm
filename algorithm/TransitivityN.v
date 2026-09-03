@@ -8,10 +8,8 @@ Import ListNotations SemiringNotations.
 Local Infix "≤" := Orel (at level 70).
 Local Infix "<" := (fun x y => x ≤ y ∧ x ≠ y) (at level 70).
 
-(* ============================================================================================ *)
-(*  Schulze over a semiring: transitivity of the beat relation, and its characterisation (4.1) *)
-(*  Split out of the former monolithic SocialchoiceN.v.                                        *)
-(* ============================================================================================ *)
+(** Schulze over a semiring: transitivity of the beat relation, and its characterisation (4.1)
+    Split out of the former monolithic SocialchoiceN.v. *)
 
 Section TransitivityN.
 
@@ -45,22 +43,22 @@ Section TransitivityN.
     unfold schulze_beats, beats in *.
     destruct H_ab as [H_ab_le H_ab_ne].   (* S b a ≤ S a b ∧ S b a ≠ S a b *)
     destruct H_bc as [H_bc_le H_bc_ne].   (* S c b ≤ S b c ∧ S c b ≠ S b c *)
-    (* m := S a b * S b c *)
-    (* m ≤ S a c by star_path_compose *)
+    (** m := S a b * S b c
+        m ≤ S a c by star_path_compose *)
     pose proof (star_path_compose M a b c) as Hm_Sac.
-    (* H_total_order gives total preorder on Orel *)
+    (** H_total_order gives total preorder on Orel *)
     assert (H_total_orel : forall x y : R, x ≤ y \/ y ≤ x).
     { intros x y.
       destruct (H_total_order x y) as [Hcase | Hcase].
       - right. unfold Orel. rewrite addC. exact Hcase.
       - left. unfold Orel. exact Hcase. }
-    (* Lemma: mat_star M a c ≤ mat_star M c a is impossible *)
+    (** Lemma: mat_star M a c ≤ mat_star M c a is impossible *)
     assert (H_not_ac_le_ca : ~ (mat_star M a c ≤ mat_star M c a)).
     { intro H_ac_le_ca.
-      (* Then m ≤ S c a via Hm_Sac and H_ac_le_ca *)
+      (** Then m ≤ S c a via Hm_Sac and H_ac_le_ca *)
       assert (Hm_Sca : mat_star M a b * mat_star M b c ≤ mat_star M c a).
       { eapply orel_trans; [exact Hm_Sac | exact H_ac_le_ca]. }
-      (* Case split on S a b vs S b c *)
+      (** Case split on S a b vs S b c *)
       destruct (H_total_orel (mat_star M a b) (mat_star M b c))
         as [Hab_le_Hbc | Hbc_le_Hab].
       - (* Case A: S a b ≤ S b c.  Then m = S a b. *)
@@ -71,19 +69,19 @@ Section TransitivityN.
             + apply (@bounded_orel_refl R (mat_star M a b)).
             + exact Hab_le_Hbc. }
         rewrite Hm_eq_Sab in Hm_Sca.             (* S a b ≤ S c a *)
-        (* S b c ≥ S a b = m *)
+        (** S b c ≥ S a b = m *)
         assert (H_Sbc_ge_m : mat_star M a b ≤ mat_star M b c).
         { rewrite <- Hm_eq_Sab.
           apply (@bounded_mul_lower_right R (mat_star M a b) (mat_star M b c)). }
-        (* H_meet_lower_bound: m ≤ S b c and m ≤ S c a → m ≤ S b c * S c a *)
+        (** H_meet_lower_bound: m ≤ S b c and m ≤ S c a → m ≤ S b c * S c a *)
         assert (Hm_Sbc_Sca : mat_star M a b ≤
                              mat_star M b c * mat_star M c a).
         { apply H_meet_lower_bound; [exact H_Sbc_ge_m | exact Hm_Sca]. }
-        (* star_path_compose: S b c * S c a ≤ S b a *)
+        (** star_path_compose: S b c * S c a ≤ S b a *)
         pose proof (star_path_compose M b c a) as H_comp.
         assert (Hm_Sba : mat_star M a b ≤ mat_star M b a).
         { eapply orel_trans; [exact Hm_Sbc_Sca | exact H_comp]. }
-        (* Antisymmetry with S b a ≤ S a b from beats a b *)
+        (** Antisymmetry with S b a ≤ S a b from beats a b *)
         assert (Heq : mat_star M b a = mat_star M a b).
         { apply orel_antisym; [exact H_ab_le | exact Hm_Sba]. }
         exact (H_ab_ne Heq).
@@ -95,11 +93,11 @@ Section TransitivityN.
             + exact Hbc_le_Hab.
             + apply (@bounded_orel_refl R (mat_star M b c)). }
         rewrite Hm_eq_Sbc in Hm_Sca.             (* S b c ≤ S c a *)
-        (* S a b ≥ S b c = m *)
+        (** S a b ≥ S b c = m *)
         assert (H_Sab_ge_m : mat_star M b c ≤ mat_star M a b).
         { rewrite <- Hm_eq_Sbc.
           apply (@bounded_mul_lower_left R (mat_star M a b) (mat_star M b c)). }
-        (* H_meet_lower_bound: m ≤ S c a and m ≤ S a b → m ≤ S c a * S a b *)
+        (** H_meet_lower_bound: m ≤ S c a and m ≤ S a b → m ≤ S c a * S a b *)
         assert (Hm_Sca_Sab : mat_star M b c ≤
                              mat_star M c a * mat_star M a b).
         { apply H_meet_lower_bound; [exact Hm_Sca | exact H_Sab_ge_m]. }
@@ -109,7 +107,7 @@ Section TransitivityN.
         assert (Heq : mat_star M c b = mat_star M b c).
         { apply orel_antisym; [exact H_bc_le | exact Hm_Scb]. }
         exact (H_bc_ne Heq). }
-    (* Now: S a c ≤ S c a is impossible, so by total order, S c a ≤ S a c *)
+    (** Now: S a c ≤ S c a is impossible, so by total order, S c a ≤ S a c *)
     destruct (H_total_orel (mat_star M a c) (mat_star M c a))
       as [Hac_le_Sca | Hca_le_Sac].
     - exfalso. exact (H_not_ac_le_ca Hac_le_Sca).
@@ -212,15 +210,15 @@ Section TransitivityN.
   Qed.
 
 
-  (* [Hdec] is needed only for the left-to-right direction: both conclusions
-     are decidable statements, and deriving them from a refutation argument
-     requires deciding them.  It is the same hypothesis [winner_exists_weaker]
-     already carries, and holds in every concrete instance.
-
-     Note that no commutativity of [*] is assumed: it is a CONSEQUENCE.  The
-     right-hand side says [a * b] is the greatest lower bound of [a] and [b]
-     (it is always a lower bound, by [bounded_mul_lower_left/right]), and a
-     greatest lower bound is unique, so [a * b = b * a].                    *)
+  (** [Hdec] is needed only for the left-to-right direction: both conclusions
+      are decidable statements, and deriving them from a refutation argument
+      requires deciding them.  It is the same hypothesis [winner_exists_weaker]
+      already carries, and holds in every concrete instance.
+ 
+      Note that no commutativity of [*] is assumed: it is a CONSEQUENCE.  The
+      right-hand side says [a * b] is the greatest lower bound of [a] and [b]
+      (it is always a lower bound, by [bounded_mul_lower_left/right]), and a
+      greatest lower bound is unique, so [a * b = b * a].                    *)
   Theorem transitivity_characterisation {R : BoundedSemiring.type} :
     (3 <= length (@elements Node))%nat ->
     (forall x y : R, {x = y} + {x <> y}) ->

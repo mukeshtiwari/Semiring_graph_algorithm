@@ -5,16 +5,14 @@ Import ListNotations SemiringNotations.
 
 Local Infix "≤" := Orel (at level 70).
 
-(* ===================================================================== *)
-(*  Transporting the list-indexed closure along a node map.             *)
-(*                                                                      *)
-(*  Generic machinery, with nothing specific to clones or to Smith-IIA. *)
-(*  A path is carried from one election to another by renaming its      *)
-(*  nodes and recomputing its link strengths in the target matrix,      *)
-(*  which makes well-formedness hold by construction.  Two consumers:   *)
-(*  CloneN and SmithiiaN, each comparing two elections whose            *)
-(*  alternative sets differ.                                            *)
-(* ===================================================================== *)
+(** * Transporting the list-indexed closure along a node map.
+
+    Generic machinery, with nothing specific to clones or to Smith-IIA.
+    A path is carried from one election to another by renaming its
+    nodes and recomputing its link strengths in the target matrix,
+    which makes well-formedness hold by construction.  Two consumers:
+    CloneN and SmithiiaN, each comparing two elections whose
+    alternative sets differ. *)
 
 Section ClosureTransportN.
 
@@ -22,17 +20,15 @@ Section ClosureTransportN.
 
   Let Matrix {R : Semiring.type} := @OrelN.Matrix Node R.
 
-  (* =================================================================== *)
-  (*  Relabelling a path along a node map                                 *)
-  (*                                                                      *)
-  (*  Both directions of the clone argument move a path from one election *)
-  (*  to the other by renaming its nodes and recomputing its edge weights *)
-  (*  in the target matrix.  Recomputing rather than transporting the     *)
-  (*  weights makes well-formedness hold by construction and turns the    *)
-  (*  measure comparison into a purely edgewise question, which is what   *)
-  (*  replaces Schulze's informal first-entry / last-exit surgery on the  *)
-  (*  strongest path.                                                     *)
-  (* =================================================================== *)
+  (** * Relabelling a path along a node map
+
+      Both directions of the clone argument move a path from one election
+      to the other by renaming its nodes and recomputing its edge weights
+      in the target matrix.  Recomputing rather than transporting the
+      weights makes well-formedness hold by construction and turns the
+      measure comparison into a purely edgewise question, which is what
+      replaces Schulze's informal first-entry / last-exit surgery on the
+      strongest path. *)
 
   Definition remap_path {R : Semiring.type} (f : Node -> Node)
     (m : @Matrix R) (p : list (Node * Node * R)) : list (Node * Node * R) :=
@@ -133,15 +129,13 @@ Section ClosureTransportN.
     split; [exact (Hf a Ha) | exact (Hf b Hb)].
   Qed.
 
-  (* =================================================================== *)
-  (*  Transporting the closure along a node map                           *)
-  (*                                                                      *)
-  (*  This is the single workhorse of the clone argument.  Note that no   *)
-  (*  control is needed on the length of the transported path: the image  *)
-  (*  is shortened by [reduce_path_into_simpl_path_gen] at the target     *)
-  (*  candidate list, which is what removes the need to track loop        *)
-  (*  freeness through the surgery.                                       *)
-  (* =================================================================== *)
+  (** * Transporting the closure along a node map
+
+      This is the single workhorse of the clone argument.  Note that no
+      control is needed on the length of the transported path: the image
+      is shortened by [reduce_path_into_simpl_path_gen] at the target
+      candidate list, which is what removes the need to track loop
+      freeness through the surgery. *)
 
   Lemma path_star_transport {R : BoundedSemiring.type}
     (f : Node -> Node) (m1 m2 : @Matrix R) (ns1 ns2 : list Node) (c d : Node) :
@@ -199,17 +193,15 @@ Section ClosureTransportN.
     eapply orel_trans; [exact Horel_ys | exact Hlow].
   Qed.
 
-  (* =================================================================== *)
-  (*  Restricting the closure to a sublist                                *)
-  (*                                                                      *)
-  (*  If everything outside [ns] is dead, in the sense of having no edge  *)
-  (*  back into [ns], then the closure over any larger list agrees with   *)
-  (*  the closure over [ns] on [ns] itself.  A path that leaves [ns] can  *)
-  (*  only return through a zero edge, so it contributes nothing.  This   *)
-  (*  is what lets the winner-existence witnesses of SocialchoiceN, which *)
-  (*  live over the whole alternative set, be read as statements about a  *)
-  (*  chosen sublist.                                                     *)
-  (* =================================================================== *)
+  (** * Restricting the closure to a sublist
+
+      If everything outside [ns] is dead, in the sense of having no edge
+      back into [ns], then the closure over any larger list agrees with
+      the closure over [ns] on [ns] itself.  A path that leaves [ns] can
+      only return through a zero edge, so it contributes nothing.  This
+      is what lets the winner-existence witnesses of SocialchoiceN, which
+      live over the whole alternative set, be read as statements about a
+      chosen sublist. *)
 
   Lemma path_star_restrict {R : BoundedSemiring.type} (ns ns' : list Node)
     (m : @Matrix R) :
@@ -260,15 +252,13 @@ Section ClosureTransportN.
                Hin_ns' Hedge).
   Qed.
 
-  (* =================================================================== *)
-  (*  Forcing [1] onto the diagonal                                       *)
-  (*                                                                      *)
-  (*  The clone development assumes [1] on the diagonal, because the path *)
-  (*  enumeration hard-codes the terminal loop weight as [1].  The        *)
-  (*  witness matrices of SocialchoiceN do not carry that, so they are    *)
-  (*  used through [matrix_add M I], which changes only the diagonal and  *)
-  (*  leaves the Kleene star alone.                                       *)
-  (* =================================================================== *)
+  (** * Forcing [1] onto the diagonal
+
+      The clone development assumes [1] on the diagonal, because the path
+      enumeration hard-codes the terminal loop weight as [1].  The
+      witness matrices of SocialchoiceN do not carry that, so they are
+      used through [matrix_add M I], which changes only the diagonal and
+      leaves the Kleene star alone. *)
 
   Lemma mat_star_add_I {R : BoundedSemiring.type} (M : @Matrix R) (c d : Node) :
     mat_star (matrix_add M I) c d = mat_star M c d.

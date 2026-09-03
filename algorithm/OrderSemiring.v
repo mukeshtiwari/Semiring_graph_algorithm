@@ -1,27 +1,25 @@
-(* ========================================================================= *)
-(*  Building semirings from a totally ordered carrier                         *)
-(*                                                                           *)
-(*  A recurring pattern in this development: the carrier comes with a total  *)
-(*  order, addition is "pick the better of the two", and multiplication is   *)
-(*  some composition operation.  This file isolates exactly what has to be   *)
-(*  checked in that situation.                                              *)
-(*                                                                           *)
-(*  The single obligation is that multiplication is MONOTONE in the order;   *)
-(*  both distributive laws then follow, and the whole additive commutative   *)
-(*  monoid comes for free from the order axioms alone.                       *)
-(*                                                                           *)
-(*  This is the abstract form of an argument carried out by hand for the     *)
-(*  widest-shortest-path semiring in examples/WidestShortestPath.v.  The     *)
-(*  naive encoding rejected at the top of that file fails precisely because  *)
-(*  monotonicity fails: multiplying by a saturated "no path" value leaves    *)
-(*  the lexicographic tiebreaker live, so it can reorder the results.        *)
-(*                                                                           *)
-(*  Note which hypothesis does the work.  [le_antisym] is with respect to    *)
-(*  Leibniz equality, so an order that merely ranks elements up to an        *)
-(*  equivalence (Schulze's strict weak orders on vote-count pairs, where     *)
-(*  every pairwise tie is equivalent) does not qualify until the equivalence *)
-(*  classes have been collapsed to canonical representatives.                *)
-(* ========================================================================= *)
+(** * Building semirings from a totally ordered carrier
+
+    A recurring pattern in this development: the carrier comes with a total
+    order, addition is "pick the better of the two", and multiplication is
+    some composition operation.  This file isolates exactly what has to be
+    checked in that situation.
+
+    The single obligation is that multiplication is MONOTONE in the order;
+    both distributive laws then follow, and the whole additive commutative
+    monoid comes for free from the order axioms alone.
+
+    This is the abstract form of an argument carried out by hand for the
+    widest-shortest-path semiring in examples/WidestShortestPath.v.  The
+    naive encoding rejected at the top of that file fails precisely because
+    monotonicity fails: multiplying by a saturated "no path" value leaves
+    the lexicographic tiebreaker live, so it can reorder the results.
+
+    Note which hypothesis does the work.  [le_antisym] is with respect to
+    Leibniz equality, so an order that merely ranks elements up to an
+    equivalence (Schulze's strict weak orders on vote-count pairs, where
+    every pairwise tie is equivalent) does not qualify until the equivalence
+    classes have been collapsed to canonical representatives. *)
 
 From Stdlib Require Import Utf8.
 
@@ -37,9 +35,7 @@ Section OrderMax.
   Hypothesis le_antisym : forall a b, le a b = true -> le b a = true -> a = b.
   Hypothesis le_total   : forall a b, le a b = true \/ le b a = true.
 
-  (* ----------------------------------------------------------------- *)
-  (*  [add_max] computes the maximum                                    *)
-  (* ----------------------------------------------------------------- *)
+  (** ** [add_max] computes the maximum *)
 
   Lemma add_max_r : forall u v, le u v = true -> add_max u v = v.
   Proof.
@@ -51,9 +47,7 @@ Section OrderMax.
   Lemma add_max_l : forall u v, le v u = true -> add_max u v = u.
   Proof. intros u v Hvu. unfold add_max. rewrite Hvu. reflexivity. Qed.
 
-  (* ----------------------------------------------------------------- *)
-  (*  The additive commutative monoid, from the order axioms alone      *)
-  (* ----------------------------------------------------------------- *)
+  (** ** The additive commutative monoid, from the order axioms alone *)
 
   Lemma add_max_idem : forall u, add_max u u = u.
   Proof. intro u. unfold add_max. destruct (le u u); reflexivity. Qed.
@@ -97,9 +91,7 @@ Section OrderMax.
     forall a, add_max top a = top.
   Proof. intro a. exact (add_max_l top a (Htop a)). Qed.
 
-  (* ----------------------------------------------------------------- *)
-  (*  Distributivity, from monotonicity of multiplication               *)
-  (* ----------------------------------------------------------------- *)
+  (** ** Distributivity, from monotonicity of multiplication *)
 
   Section Distributivity.
 
@@ -134,16 +126,14 @@ Section OrderMax.
 
   End Distributivity.
 
-  (* ----------------------------------------------------------------- *)
-  (*  The meet is always monotone                                       *)
-  (*                                                                     *)
-  (*  So when multiplication is the minimum of the same order — the      *)
-  (*  "strength of a path is its weakest link" reading — distributivity  *)
-  (*  is automatic and nothing has to be checked.  This is the case for  *)
-  (*  every one of Schulze's link-strength measures, and it is what      *)
-  (*  separates them from the widest-shortest-path encoding, where       *)
-  (*  multiplication acts component-wise instead.                        *)
-  (* ----------------------------------------------------------------- *)
+  (** ** The meet is always monotone
+
+      So when multiplication is the minimum of the same order — the
+      "strength of a path is its weakest link" reading — distributivity
+      is automatic and nothing has to be checked.  This is the case for
+      every one of Schulze's link-strength measures, and it is what
+      separates them from the widest-shortest-path encoding, where
+      multiplication acts component-wise instead. *)
 
   Definition meet (u v : A) : A := if le u v then u else v.
 
@@ -178,13 +168,11 @@ Section OrderMax.
     meet (add_max a b) c = add_max (meet a c) (meet b c).
   Proof. exact (mul_add_max_distr_r meet meet_mono_l). Qed.
 
-  (* ----------------------------------------------------------------- *)
-  (*  [meet] as the multiplicative structure                            *)
-  (*                                                                     *)
-  (*  Dual to the [add_max] laws above, and together with the two        *)
-  (*  distributivity corollaries these are exactly the obligations of a  *)
-  (*  bounded commutative semiring with + = join and * = meet.           *)
-  (* ----------------------------------------------------------------- *)
+  (** ** [meet] as the multiplicative structure
+
+      Dual to the [add_max] laws above, and together with the two
+      distributivity corollaries these are exactly the obligations of a
+      bounded commutative semiring with + = join and * = meet. *)
 
   Lemma meet_l : forall u v, le u v = true -> meet u v = u.
   Proof. intros u v Huv. unfold meet. rewrite Huv. reflexivity. Qed.

@@ -10,33 +10,29 @@ Import ListNotations SemiringNotations.
 Local Infix "≤" := Orel (at level 70).
 Local Infix "<" := (fun x y => x ≤ y ∧ x ≠ y) (at level 70).
 
-(* ===================================================== *)
-(*  Schulze over a semiring: prudence (4.9)             *)
-(*  Split out of the former monolithic SocialchoiceN.v. *)
-(* ===================================================== *)
+(** Schulze over a semiring: prudence (4.9)
+    Split out of the former monolithic SocialchoiceN.v. *)
 
 Section PrudenceN.
 
   Context {Node : FinType.type}.
 
 
-  (* ==================================================================== *)
-  (*  Prudence (Section 4.9)                                              *)
-  (*                                                                      *)
-  (*  [λ_D] is the strength of the strongest directed cycle.  A cycle      *)
-  (*  through the link [a → b] (with [a ≠ b], since the paper's paths      *)
-  (*  never repeat a node consecutively) is that link followed by a path   *)
-  (*  back, so its strength is [M a b * mat_star M b a]; joining over all  *)
-  (*  ordered pairs of distinct nodes gives λ_D.  The [a ≠ b] guard is     *)
-  (*  essential: with [M i i = 1] a self-loop would be a cycle of maximal  *)
-  (*  strength and λ_D would collapse to the top.                          *)
-  (*                                                                      *)
-  (*  [Hmeet] — multiplication is the meet of the natural order — is the   *)
-  (*  algebraic content of the slogan that the strength of a path is the   *)
-  (*  strength of its weakest link.  It holds in the max-min semiring of   *)
-  (*  the Schulze instance.  Without it the statement fails: in max-times  *)
-  (*  a link can dominate every cycle while a two-step detour ties it.     *)
-  (* ==================================================================== *)
+  (** * Prudence (Section 4.9)
+
+      [λ_D] is the strength of the strongest directed cycle.  A cycle
+      through the link [a → b] (with [a ≠ b], since the paper's paths
+      never repeat a node consecutively) is that link followed by a path
+      back, so its strength is [M a b * mat_star M b a]; joining over all
+      ordered pairs of distinct nodes gives λ_D.  The [a ≠ b] guard is
+      essential: with [M i i = 1] a self-loop would be a cycle of maximal
+      strength and λ_D would collapse to the top.
+
+      [Hmeet] — multiplication is the meet of the natural order — is the
+      algebraic content of the slogan that the strength of a path is the
+      strength of its weakest link.  It holds in the max-min semiring of
+      the Schulze instance.  Without it the statement fails: in max-times
+      a link can dominate every cycle while a two-step detour ties it. *)
 
   (** [λ_D], the strength of the strongest directed cycle — Schulze (4.9.2). *)
   Definition cycle_strength {R : Semiring.type} (M : @Matrix Node R) : R :=
@@ -68,16 +64,16 @@ Section PrudenceN.
       takes [a ≠ b], which it needs for [cycle_strength_ge]. *)
   Theorem prudence_local {R : BoundedSemiring.type}
     (M : @Matrix Node R) (a b : Node)
-    (* Htotal and Hmeet are both satisfied by max-min semiring 
-    but not in general *)
+    (** Htotal and Hmeet are both satisfied by max-min semiring 
+     but not in general *)
     (Htotal : forall x y : R, x + y = x \/ x + y = y)
     (Hmeet : forall x y : R, x ≤ y -> x * y = x /\ y * x = x) :
     M a b * mat_star M b a < M a b -> schulze_beats M a b.
   Proof.
     intros Hlam.
-    (* the reverse closure cannot even reach the link's strength: if it did,
-       the link together with the return path would be a cycle as strong as
-       the link itself *)
+    (** the reverse closure cannot even reach the link's strength: if it did,
+        the link together with the return path would be a cycle as strong as
+        the link itself *)
     assert (Hstar_le : mat_star M b a ≤ M a b).
     { destruct (Htotal (mat_star M b a) (M a b)) as [Hcase|Hcase]; [| exact Hcase].
       exfalso.
@@ -92,7 +88,7 @@ Section PrudenceN.
       assert (Hself : M a b * mat_star M b a = M a b).
       { rewrite Heq. apply (Hmeet (M a b) (M a b) (bounded_orel_refl _)). }
       apply Hne. exact Hself. }
-    (* the reverse closure is strictly below the link, so (2.2.4) applies *)
+    (** the reverse closure is strictly below the link, so (2.2.4) applies *)
     apply link_beats.
     split; [exact Hstar_le | exact Hstar_ne].
   Qed.
@@ -104,8 +100,8 @@ Section PrudenceN.
       anywhere, which is itself strictly weaker than the link. *)
   Theorem prudence {R : BoundedSemiring.type}
     (M : @Matrix Node R) (a b : Node)
-    (* Htotal and Hmeet are both satisfied by max-min semiring 
-    but not in general *)
+    (** Htotal and Hmeet are both satisfied by max-min semiring 
+     but not in general *)
     (Htotal : forall x y : R, x + y = x \/ x + y = y)
     (Hmeet : forall x y : R, x ≤ y -> x * y = x /\ y * x = x) :
     a ≠ b -> cycle_strength M < M a b -> schulze_beats M a b.

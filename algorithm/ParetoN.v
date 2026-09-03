@@ -9,10 +9,8 @@ Import ListNotations SemiringNotations.
 Local Infix "≤" := Orel (at level 70).
 Local Infix "<" := (fun x y => x ≤ y ∧ x ≠ y) (at level 70).
 
-(* ===================================================== *)
-(*  Schulze over a semiring: the Pareto criteria (4.3)  *)
-(*  Split out of the former monolithic SocialchoiceN.v. *)
-(* ===================================================== *)
+(** Schulze over a semiring: the Pareto criteria (4.3)
+    Split out of the former monolithic SocialchoiceN.v. *)
 
 Section ParetoN.
 
@@ -105,50 +103,46 @@ Section ParetoN.
   Qed.
 
 
-  (* ------------------------------------------------------------------ *)
-  (*  Pareto criterion (Section 4.3)                                     *)
-  (*                                                                      *)
-  (*  Two versions appear in the literature:                              *)
-  (*    1. If a ≻ᵥ b for all v ∈ V, then a ≻ b.                          *)
-  (*    2. If a ≿ᵥ b for all v ∈ V and a ≻ᵥ b for some v ∈ V,           *)
-  (*       then a ≻ b.                                                    *)
-  (*                                                                      *)
-  (*  The Schulze method satisfies both.  We formalise the second         *)
-  (*  (stronger) version as [pareto_stronger] below.  The first           *)
-  (*  (weaker) version is [pareto].                                       *)
-  (* ------------------------------------------------------------------ *)
+  (** ** Pareto criterion (Section 4.3)
+
+      Two versions appear in the literature:
+        1. If a ≻ᵥ b for all v ∈ V, then a ≻ b.
+        2. If a ≿ᵥ b for all v ∈ V and a ≻ᵥ b for some v ∈ V,
+           then a ≻ b.
+
+      The Schulze method satisfies both.  We formalise the second
+      (stronger) version as [pareto_stronger] below.  The first
+      (weaker) version is [pareto]. *)
 
 
   
 
 
-  (* ------------------------------------------------------------------ *)
-  (*  Version 1 — pareto_weaker (weaker form):  a ≽ᵥ b ∀v  →  a ≽ b     *)
-  (*                                                                      *)
-  (*  If A dominates B head to head and in every third-party comparison,  *)
-  (*  then A is at least as strong as B in the Schulze ranking:           *)
-  (*  mat_star M B A ≤ mat_star M A B.  This is Schulze (4.3.2.10),       *)
-  (*  which gives (4.3.2.2) [ba ∉ O].                                     *)
-  (*                                                                      *)
-  (*  The stronger form (strict <) is [pareto_stronger] below; it needs   *)
-  (*  two extra hypotheses, see the comment there.                        *)
-  (*                                                                      *)
-  (*  Hypotheses:                                                          *)
-  (*    A ≠ B            — distinct candidates                            *)
-  (*    M B A ≤ M A B    — A is at least as strong as B head to head.     *)
-  (*                        Schulze's (4.3.2.1) — no voter strictly       *)
-  (*                        prefers B to A — gives the stronger           *)
-  (*                        M B A = 0, which implies this; the proof      *)
-  (*                        only needs the inequality, and it cannot be   *)
-  (*                        dropped altogether: the two hypotheses below  *)
-  (*                        both exclude X ∈ {A, B}, so nothing else      *)
-  (*                        constrains the link B → A.                    *)
-  (*    M B X ≤ M A X    — ballot transitivity: voters who have B≻X       *)
-  (*                        also have A≻X (since A≽B)                     *)
-  (*    M X A ≤ M X B    — ballot transitivity: voters who have X≻A       *)
-  (*                        also have X≻B (since A≽B)                     *)
-  (*    M i i = 1         — diagonal is the multiplicative identity       *)
-  (* ------------------------------------------------------------------   *)
+  (** ** Version 1 — pareto_weaker (weaker form):  a ≽ᵥ b ∀v  →  a ≽ b
+
+      If A dominates B head to head and in every third-party comparison,
+      then A is at least as strong as B in the Schulze ranking:
+      mat_star M B A ≤ mat_star M A B.  This is Schulze (4.3.2.10),
+      which gives (4.3.2.2) [ba ∉ O].
+
+      The stronger form (strict <) is [pareto_stronger] below; it needs
+      two extra hypotheses, see the comment there.
+
+      Hypotheses:
+        A ≠ B            — distinct candidates
+        M B A ≤ M A B    — A is at least as strong as B head to head.
+                            Schulze's (4.3.2.1) — no voter strictly
+                            prefers B to A — gives the stronger
+                            M B A = 0, which implies this; the proof
+                            only needs the inequality, and it cannot be
+                            dropped altogether: the two hypotheses below
+                            both exclude X ∈ {A, B}, so nothing else
+                            constrains the link B → A.
+        M B X ≤ M A X    — ballot transitivity: voters who have B≻X
+                            also have A≻X (since A≽B)
+        M X A ≤ M X B    — ballot transitivity: voters who have X≻A
+                            also have X≻B (since A≽B)
+        M i i = 1         — diagonal is the multiplicative identity *)
 
 
   Theorem pareto_weaker {R : BoundedSemiring.type}
@@ -164,14 +158,12 @@ Section ParetoN.
     exact (pow_BA_le_mat_star_AB M A B Hneq Hle Hrow Hcol Hdiag_one n).
   Qed.
 
-  (* ------------------------------------------------------------------ *)
-  (*  The remaining Pareto #2 conclusions (4.3.2.3 / .4 / .5)             *)
-  (*                                                                      *)
-  (*  All three rest on the paper's two path-rewriting steps: (4.3.2.11)  *)
-  (*  swaps the SOURCE of a path out of [B] to [A], and (4.3.2.12) swaps  *)
-  (*  its TARGET from [A] to [B].  Schulze performs both by editing the   *)
-  (*  strongest path; here they are inductions on the closure.            *)
-  (* ------------------------------------------------------------------ *)
+  (** ** The remaining Pareto [#2] conclusions (4.3.2.3 / .4 / .5)
+
+      All three rest on the paper's two path-rewriting steps: (4.3.2.11)
+      swaps the SOURCE of a path out of [B] to [A], and (4.3.2.12) swaps
+      its TARGET from [A] to [B].  Schulze performs both by editing the
+      strongest path; here they are inductions on the closure. *)
 
   (** (4.3.2.11): [P_D[a,f] ≽ P_D[b,f]].  Every walk out of [B] is dominated
       by one out of [A]: its first edge improves by [Hrow], and once the walk
@@ -325,7 +317,7 @@ Section ParetoN.
           split.
           { exact (orel_trans _ _ _ (bounded_mul_lower_left _ _) Hxz_le). }
           { intro Heq.
-            (* the product attains the top, so both factors do *)
+            (** the product attains the top, so both factors do *)
             assert (Hxz_top : M x z = M A B).
             { apply orel_antisym;
               [exact Hxz_le | rewrite <- Heq; apply bounded_mul_lower_left]. }
@@ -403,10 +395,10 @@ Section ParetoN.
     mat_star M B A < mat_star M A B.
   Proof.
     intros Hneq Hzero Hpos Hmax Hdiag_one.
-    (* unanimity makes the reverse link [B → A] non-maximal *)
+    (** unanimity makes the reverse link [B → A] non-maximal *)
     assert (Hne_top : M B A ≠ M A B).
     { rewrite Hzero. exact (proj2 Hpos). }
-    (* the reverse closure is strictly below the link, so (2.2.4) applies *)
+    (** the reverse closure is strictly below the link, so (2.2.4) applies *)
     apply link_beats.
     exact (mat_star_BA_lt_link M A B Htotal Htop_trans Hmax Hdiag_one
       Hneq Hne_top Hpos).
@@ -428,18 +420,16 @@ Section ParetoN.
       Hneq Hzero Hpos Hmax Hdiag_one)).
   Qed.
 
-  (* ------------------------------------------------------------------ *)
-  (*  The converse                                                        *)
-  (*                                                                      *)
-  (*  Unanimity itself is not recoverable from the conclusion: the        *)
-  (*  Schulze order ranks candidates strictly in profiles that contain no *)
-  (*  unanimous pair at all (the paper's own Example 1, formalised in     *)
-  (*  examples/Schulze.v, has d ≻ a with every pairwise count non-zero).  *)
-  (*  What does reverse is the property the proof actually turns on:      *)
-  (*  under the standing hypotheses, [A] beats [B] in the closure exactly *)
-  (*  when the reverse link [B → A] is not itself of maximal strength.    *)
-  (*  [pareto_stronger] is the instance [M B A = 0].                      *)
-  (* ------------------------------------------------------------------ *)
+  (** ** The converse
+
+      Unanimity itself is not recoverable from the conclusion: the
+      Schulze order ranks candidates strictly in profiles that contain no
+      unanimous pair at all (the paper's own Example 1, formalised in
+      examples/Schulze.v, has d ≻ a with every pairwise count non-zero).
+      What does reverse is the property the proof actually turns on:
+      under the standing hypotheses, [A] beats [B] in the closure exactly
+      when the reverse link [B → A] is not itself of maximal strength.
+      [pareto_stronger] is the instance [M B A = 0]. *)
 
   (** A path between two distinct nodes is bounded by the strongest link: it
       must contain a non-loop edge, and a product lies below each factor. *)

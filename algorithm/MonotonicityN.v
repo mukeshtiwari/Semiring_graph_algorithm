@@ -9,10 +9,8 @@ Import ListNotations SemiringNotations.
 Local Infix "≤" := Orel (at level 70).
 Local Infix "<" := (fun x y => x ≤ y ∧ x ≠ y) (at level 70).
 
-(* ===================================================== *)
-(*  Schulze over a semiring: monotonicity (4.5)         *)
-(*  Split out of the former monolithic SocialchoiceN.v. *)
-(* ===================================================== *)
+(** Schulze over a semiring: monotonicity (4.5)
+    Split out of the former monolithic SocialchoiceN.v. *)
 
 Section MonotonicityN.
 
@@ -31,18 +29,16 @@ Section MonotonicityN.
         [Hrow]:  M A Y  ≤ M' A Y   (A's outgoing edges increase)
         [Heq]:   M X Y  = M' X Y   for X≠A, Y≠A (everything else unchanged)
   *)
-  (* ===================================================================== *)
-  (*  Row / column irrelevance of the closure.                              *)
-  (*                                                                        *)
-  (*  In a bounded semiring the closure entry OUT of a node [A] does not    *)
-  (*  depend on the edges INTO [A], and the entry INTO [A] does not depend  *)
-  (*  on the edges OUT of [A]: a walk A -> .. -> A -> .. -> b is dominated  *)
-  (*  by its suffix from the last visit to [A], and a walk b -> .. -> A ->  *)
-  (*  .. -> A by its prefix to the first visit, because in a bounded        *)
-  (*  semiring a product is below each factor.  Algebraically each fact is  *)
-  (*  a single induction on the power, peeling the last (respectively the   *)
-  (*  first) edge.  Neither selectivity nor commutativity is involved.      *)
-  (* ===================================================================== *)
+  (** * Row / column irrelevance of the closure.
+
+      In a bounded semiring the closure entry OUT of a node [A] does not
+      depend on the edges INTO [A], and the entry INTO [A] does not depend
+      on the edges OUT of [A]: a walk A -> .. -> A -> .. -> b is dominated
+      by its suffix from the last visit to [A], and a walk b -> .. -> A ->
+      .. -> A by its prefix to the first visit, because in a bounded
+      semiring a product is below each factor.  Algebraically each fact is
+      a single induction on the power, peeling the last (respectively the
+      first) edge.  Neither selectivity nor commutativity is involved. *)
 
   Lemma one_le_mat_star_diag {R : BoundedSemiring.type}
     (N : @Matrix Node R) (a : Node) : (1 : R) ≤ mat_star N a a.

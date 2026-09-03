@@ -1,27 +1,23 @@
-(* ========================================================================= *)
-(*  Algebraic Structures via Hierarchy Builder                               *)
-(*                                                                           *)
-(*  Follows the Wikipedia definition of a semiring:                          *)
-(*    https://en.wikipedia.org/wiki/Semiring                                 *)
-(*                                                                           *)
-(*  Hierarchy:                                                               *)
-(*    - CommutativeMonoid   (additive, reused for both R and V)              *)
-(*    - Semiring            = CommutativeMonoid + multiplicative + distrib   *)
-(*    - IdempotentSemiring  = Semiring + idempotence                         *)
-(*    - BoundedSemiring     = Semiring + boundedness                         *)
-(*    - IsSemimodule        (two-sorted typeclass over the above)            *)
-(*                                                                           *)
-(*  Key design choice: IsSemiring extends CommutativeMonoid, so the additive *)
-(*  commutative monoid is defined once and shared by both the semiring (R)   *)
-(*  and the vector space (V).  Operations are disambiguated by type.         *)
-(* ========================================================================= *)
+(** * Algebraic Structures via Hierarchy Builder
+
+    Follows the Wikipedia definition of a semiring:
+      https://en.wikipedia.org/wiki/Semiring
+
+    Hierarchy:
+      - CommutativeMonoid   (additive, reused for both R and V)
+      - Semiring            = CommutativeMonoid + multiplicative + distrib
+      - IdempotentSemiring  = Semiring + idempotence
+      - BoundedSemiring     = Semiring + boundedness
+      - IsSemimodule        (two-sorted typeclass over the above)
+
+    Key design choice: IsSemiring extends CommutativeMonoid, so the additive
+    commutative monoid is defined once and shared by both the semiring (R)
+    and the vector space (V).  Operations are disambiguated by type. *)
 
 From HB Require Import structures.
 From Stdlib Require Import Utf8 List.
 
-(* ========================================================================= *)
-(*  1. Commutative Monoid — additive structure, shared by R and V            *)
-(* ========================================================================= *)
+(** * 1. Commutative Monoid — additive structure, shared by R and V *)
 
 HB.mixin Record IsCommutativeMonoid V := {
   zero : V;
@@ -40,9 +36,7 @@ Module CMonoidNotations.
   Notation "0V" := zero.
 End CMonoidNotations.
 
-(* ========================================================================= *)
-(*  2. Semiring = CommutativeMonoid (additive) + multiplicative + distrib    *)
-(* ========================================================================= *)
+(** * 2. Semiring = CommutativeMonoid (additive) + multiplicative + distrib *)
 
 HB.mixin Record IsSemiring R of CommutativeMonoid R := {
   one : R;
@@ -69,9 +63,7 @@ Module SemiringNotations.
   Notation "1" := one.
 End SemiringNotations.
 
-(* ========================================================================= *)
-(*  3. Commutative Semiring (extends Semiring)                               *)
-(* ========================================================================= *)
+(** * 3. Commutative Semiring (extends Semiring) *)
 
 HB.mixin Record IsCommutativeSemiring R of Semiring R := {
   mulC : forall a b : R, mul a b = mul b a;
@@ -80,9 +72,7 @@ HB.mixin Record IsCommutativeSemiring R of Semiring R := {
 HB.structure Definition CommutativeSemiring :=
   { R of IsCommutativeSemiring R & Semiring R }.
 
-(* ========================================================================= *)
-(*  4. Idempotent Semiring (extends Semiring)                                *)
-(* ========================================================================= *)
+(** * 4. Idempotent Semiring (extends Semiring) *)
 
 HB.mixin Record IsIdempotentSemiring R of Semiring R := {
   add_idem : forall a : R, add a a = a;
@@ -91,9 +81,7 @@ HB.mixin Record IsIdempotentSemiring R of Semiring R := {
 HB.structure Definition IdempotentSemiring :=
   { R of IsIdempotentSemiring R & Semiring R }.
 
-(* ========================================================================= *)
-(*  5. Bounded Semiring (extends Semiring)                                   *)
-(* ========================================================================= *)
+(** * 5. Bounded Semiring (extends Semiring) *)
 
 HB.mixin Record IsBoundedSemiring R of Semiring R := {
   add_bound : forall a : R, add one a = one;
@@ -102,19 +90,16 @@ HB.mixin Record IsBoundedSemiring R of Semiring R := {
 HB.structure Definition BoundedSemiring :=
   { R of IsBoundedSemiring R & Semiring R }.
 
-(* ========================================================================= *)
-(*  5b. Bounded Commutative Semiring                                          *)
-(*       Combines BoundedSemiring + CommutativeSemiring.                      *)
-(*       Since both share the Semiring ancestor, mulC and add_bound live     *)
-(*       in the same HB sort, so [rewrite mulC] works on bounded semiring    *)
-(*       terms directly.                                                      *)
-(* ========================================================================= *)
+(** 5b. Bounded Commutative Semiring
+         Combines BoundedSemiring + CommutativeSemiring.
+         Since both share the Semiring ancestor, mulC and add_bound live
+         in the same HB sort, so [rewrite mulC] works on bounded semiring
+         terms directly. *)
 
 HB.structure Definition BoundedCommutativeSemiring :=
   { R of IsBoundedSemiring R & IsCommutativeSemiring R & Semiring R }.
 
-(* ========================================================================= *)
-(*  6. Semimodule (two-sorted, parameterized HB structure)                   *)
+(** * 6. Semimodule (two-sorted, parameterized HB structure) *)
 
 HB.mixin Record IsSemimodule {R : Semiring.type} V
     of CommutativeMonoid V := {
@@ -144,10 +129,8 @@ Module SemimoduleNotations.
   Notation "a ⊙ v" := (scale a v) (at level 40).
 End SemimoduleNotations.
 
-(* ========================================================================= *)
-(*  7. Finite Type — a type with a decidable, complete, duplicate-free       *)
-(*     enumeration of all its elements.                                      *)
-(* ========================================================================= *)
+(** 7. Finite Type — a type with a decidable, complete, duplicate-free
+       enumeration of all its elements. *)
 
 HB.mixin Record IsFinType T := {
   elements : list T;

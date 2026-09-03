@@ -7,29 +7,25 @@ Import ListNotations SemiringNotations.
 Local Infix "≤" := Orel (at level 70).
 Local Infix "<" := (fun x y => x ≤ y ∧ x ≠ y) (at level 70).
 
-(* ================================================================================= *)
-(*  Schulze over a semiring: facts about the Kleene star, powers, and path measures *)
-(*  Split out of the former monolithic SocialchoiceN.v.                             *)
-(* ================================================================================= *)
+(** Schulze over a semiring: facts about the Kleene star, powers, and path measures
+    Split out of the former monolithic SocialchoiceN.v. *)
 
 Section SchulzeClosureN.
 
   Context {Node : FinType.type}.
 
 
-  (* =====================================================================  *)
-  (*  Lemma: transpose commutes with Kleene star                            *)
-  (*                                                                         *)
-  (*  (M^T)* = (M* )^T                                                       *)
-  (*  Requires commutative multiplication (mulC) for (M^T)^k = (M^k)^T.     *)
-  (* =====================================================================  *)
+  (** * Lemma: transpose commutes with Kleene star
 
-  (*  Commutativity is needed pointwise only, so we take it as a hypothesis *)
-  (*  rather than as a structure.  That matters downstream: on a carrier    *)
-  (*  with the meet property commutativity is free (mul_comm_of_meet), so   *)
-  (*  the reversal-symmetry results can be stated over a bounded semiring   *)
-  (*  with no commutativity assumption of their own.  The named lemmas at   *)
-  (*  the end of the block are the CommutativeSemiring instances, unchanged.*)
+      (M^T)* = (M* )^T
+      Requires commutative multiplication (mulC) for (M^T)^k = (M^k)^T. *)
+
+  (** Commutativity is needed pointwise only, so we take it as a hypothesis
+      rather than as a structure.  That matters downstream: on a carrier
+      with the meet property commutativity is free (mul_comm_of_meet), so
+      the reversal-symmetry results can be stated over a bounded semiring
+      with no commutativity assumption of their own.  The named lemmas at
+      the end of the block are the CommutativeSemiring instances, unchanged. *)
 
   Lemma pow_transpose_hyp {R : Semiring.type}
     (Hcomm : forall x y : R, x * y = y * x)
@@ -157,7 +153,7 @@ Section SchulzeClosureN.
     pow (matrix_add M (I : @Matrix Node R)) ((@kleene_exp Node) + n) a c =
     pow (matrix_add M (I : @Matrix Node R)) (@kleene_exp Node) a c.
   Proof.
-    (* (M+I)[i,i] = M[i,i] + 1 = 1 (bounded semiring: a+1=1) *)
+    (** (M+I)[i,i] = M[i,i] + 1 = 1 (bounded semiring: a+1=1) *)
     assert (Hdiag : forall (u v : Node), u = v -> (matrix_add M (I : @Matrix Node R)) u v = 1).
     { intros u v Heq. subst v.
       unfold matrix_add.
@@ -172,11 +168,11 @@ Section SchulzeClosureN.
     pose proof (elements_two_or_more (s := Node)) as Hlen.
     replace (length elements - 1 + n)%nat with 
       (n + length (@elements Node) - 1)%nat by lia.
-    (* Apply fixpoint lemma with m := M+I (diagonal = 1). *)
+    (** Apply fixpoint lemma with m := M+I (diagonal = 1). *)
     pose proof (@matrix_pow_fixpoint_after_node_bound Node R n
       (matrix_add M (I : @Matrix Node R)) a c
       (fun u v Heq => Hdiag u v Heq)) as Hfix.
-    (* Key: (M+I)+I = M+I pointwise (since I+I=I in bounded semiring). *)
+    (** Key: (M+I)+I = M+I pointwise (since I+I=I in bounded semiring). *)
     assert (Hidem : forall i j, (matrix_add (matrix_add M (I : @Matrix Node R)) (I : @Matrix Node R)) i j =
                                 (matrix_add M (I : @Matrix Node R)) i j).
     { intros i j. unfold matrix_add.
@@ -187,26 +183,24 @@ Section SchulzeClosureN.
         apply (f_equal (fun t => M i i + t)). apply (add_bound (s := R) 1).
       - unfold I. destruct (fin_eq_dec i j); [congruence|].
         rewrite !addr0. reflexivity. }
-    (* Use pow_pointwise to lift pointwise equality to pow equality *)
+    (** Use pow_pointwise to lift pointwise equality to pow equality *)
     pose proof (pow_pointwise _ _ (length (@elements Node) - 1) a c Hidem) as Heq1.
     pose proof (pow_pointwise _ _ (n + length (@elements Node) - 1) a c Hidem) as Heq2.
     rewrite Heq1, Heq2 in Hfix.
     exact Hfix.
   Qed.
     
-  (* =====================================================================  *)
-  (*  Lemma: path concatenation (Kleene star idempotence)                     *)
-  (*                                                                          *)
-  (*  M*_{ab} * M*_{bc} ≤ M*_{ac}                                             *)
-  (*                                                                          *)
-  (*  Algebraic proof:                                                        *)
-  (*  1. mat_star M = pow (M+I)^K (matrix_pow_idempotence_bounded)           *)
-  (*  2. pow B^K a b * pow B^K b c ≤ (pow B^K · pow B^K) a c                *)
-  (*     (b is one summand in the matrix multiplication)                      *)
-  (*  3. (pow B^K · pow B^K) = pow B^{2K} (pow_add)                          *)
-  (*  4. pow B^{2K} = pow B^K (stabilization lemma above)                    *)
-  (*  5. pow B^K = mat_star M (matrix_pow_idempotence_bounded)               *)
-  (* =====================================================================  *)
+  (** * Lemma: path concatenation (Kleene star idempotence)
+
+      M*_{ab} * M*_{bc} ≤ M*_{ac}
+
+      Algebraic proof:
+      1. mat_star M = pow (M+I)^K (matrix_pow_idempotence_bounded)
+      2. pow B^K a b * pow B^K b c ≤ (pow B^K · pow B^K) a c
+         (b is one summand in the matrix multiplication)
+      3. (pow B^K · pow B^K) = pow B^{2K} (pow_add)
+      4. pow B^{2K} = pow B^K (stabilization lemma above)
+      5. pow B^K = mat_star M (matrix_pow_idempotence_bounded) *)
 
   (** Schulze (2.2.5): ∀a,b,c ∈ A : min_D{P_D[a,b], P_D[b,c]} ≾_D P_D[a,c] —
       with the semiring product standing for the paper's min. *)
@@ -216,13 +210,13 @@ Section SchulzeClosureN.
   Proof.
     set (B := matrix_add M (I : @Matrix Node R)).
     set (K := (@kleene_exp Node)).
-    (* Step 1: rewrite mat_star M to pow B K pointwise *)
+    (** Step 1: rewrite mat_star M to pow B K pointwise *)
     assert (Hstar_pt : forall x y, mat_star M x y = pow B K x y).
     { intros x y. unfold mat_star, B, K.
       symmetry. apply (matrix_pow_idempotence_bounded K M x y). }
     rewrite !Hstar_pt.
-    (* Goal: pow B K a b * pow B K b c ≤ pow B K a c *)
-    (* Step 2: bound by matrix multiplication *)
+    (** Goal: pow B K a b * pow B K b c ≤ pow B K a c
+        Step 2: bound by matrix multiplication *)
     assert (Hmul : pow B K a b * pow B K b c ≤ matrix_mul (pow B K) (pow B K) a c).
     { unfold matrix_mul, sum.
       assert (Hin : In b (@elements Node)).
@@ -238,7 +232,7 @@ Section SchulzeClosureN.
           { apply orel_plus_upper_right. }
           unfold S in IH.
           eapply orel_trans; [exact IH | exact Htmp]. }
-    (* Step 3-4: matrix multiplication = pow B (2K) = pow B K *)
+    (** Step 3-4: matrix multiplication = pow B (2K) = pow B K *)
     assert (Hpow : matrix_mul (pow B K) (pow B K) a c = pow B K a c).
     { unfold K, B.
       rewrite <- (pow_add (matrix_add M (I : @Matrix Node R)) (@kleene_exp Node) (@kleene_exp Node) a c).
@@ -351,22 +345,18 @@ Section SchulzeClosureN.
   Proof. exact (@mul_comm_of_meet R). Qed.
   
 
-  (* =====================================================================  *)
-  (*  Theorem — WINNER EXISTENCE (Corollary of §4.1)                          *)
-  (*                                                                          *)
-  (*  On a finite set, a strict partial order (transitive + irreflexive)     *)
-  (*  always has a maximal element.  schulze_beats is transitive (Qed)       *)
-  (*  and irreflexive, so a winner exists.                                   *)
-  (* =====================================================================  *)
+  (** * Theorem — WINNER EXISTENCE (Corollary of §4.1)
 
-  (* ===================================================================== *)
-  (*  Generic closure bounds.                                               *)
-  (*                                                                        *)
-  (*  These say how far a value can travel out of a node whose whole row is  *)
-  (*  bounded, and are what make a sparse witness matrix computable: a path  *)
-  (*  leaving such a node is capped by the row bound, and a path through a   *)
-  (*  dead end contributes nothing at all.                                   *)
-  (* ===================================================================== *)
+      On a finite set, a strict partial order (transitive + irreflexive)
+      always has a maximal element.  schulze_beats is transitive (Qed)
+      and irreflexive, so a winner exists. *)
+
+  (** * Generic closure bounds.
+
+      These say how far a value can travel out of a node whose whole row is
+      bounded, and are what make a sparse witness matrix computable: a path
+      leaving such a node is capped by the row bound, and a path through a
+      dead end contributes nothing at all. *)
 
   (** If every out-edge of [x] is below [v], then so is every power entry
       out of [x], provided the target is not [x] itself. *)
@@ -542,31 +532,29 @@ Section SchulzeClosureN.
     apply Hgen.
   Qed.
 
-  (* ==================================================================== *)
-  (*  Smith-IIA (4.7.5a) — isolation rather than removal                   *)
-  (*                                                                       *)
-  (*  The paper compares the method before and after REMOVING a weak       *)
-  (*  alternative [d ∈ B2].  Removal is not expressible here: [sum] folds  *)
-  (*  over [elements], the whole [FinType] enumeration, so [matrix_mul],   *)
-  (*  [pow], [geom_sum], [mat_star] and [kleene_exp] are all tied to one   *)
-  (*  fixed alternative set, and there is no closure over a subset to      *)
-  (*  write [P_new] with.                                                  *)
-  (*                                                                       *)
-  (*  What is expressible is ISOLATION: cut every link into and out of     *)
-  (*  [d], leaving the node in place.  [smith_iia_isolate] then says the   *)
-  (*  relation O restricted to [B1] is unchanged — the content of          *)
-  (*  (4.7.5)(a).  Two caveats, both real:                                 *)
-  (*                                                                       *)
-  (*  - It needs [Hsep], which the paper gets from (2.1.2): between two    *)
-  (*    distinct alternatives the stronger direction is at least a tie,    *)
-  (*    hence clears the threshold.  The Smith hypotheses alone relate     *)
-  (*    only B1-to-B2 pairs, so this has to be assumed.                    *)
-  (*                                                                       *)
-  (*  - (4.7.5)(b) [S_old = S_new] does NOT transfer to isolation.  An     *)
-  (*    isolated [d] has every link at [0], so nobody beats it and it      *)
-  (*    becomes a spurious winner — an artefact of leaving the node in     *)
-  (*    place.  Only removal gets (b) right.                               *)
-  (* ==================================================================== *)
+  (** * Smith-IIA (4.7.5a) — isolation rather than removal
+
+      The paper compares the method before and after REMOVING a weak
+      alternative [d ∈ B2].  Removal is not expressible here: [sum] folds
+      over [elements], the whole [FinType] enumeration, so [matrix_mul],
+      [pow], [geom_sum], [mat_star] and [kleene_exp] are all tied to one
+      fixed alternative set, and there is no closure over a subset to
+      write [P_new] with.
+
+      What is expressible is ISOLATION: cut every link into and out of
+      [d], leaving the node in place.  [smith_iia_isolate] then says the
+      relation O restricted to [B1] is unchanged — the content of
+      (4.7.5)(a).  Two caveats, both real:
+
+      - It needs [Hsep], which the paper gets from (2.1.2): between two
+        distinct alternatives the stronger direction is at least a tie,
+        hence clears the threshold.  The Smith hypotheses alone relate
+        only B1-to-B2 pairs, so this has to be assumed.
+
+      - (4.7.5)(b) [S_old = S_new] does NOT transfer to isolation.  An
+        isolated [d] has every link at [0], so nobody beats it and it
+        becomes a spurious winner — an artefact of leaving the node in
+        place.  Only removal gets (b) right. *)
 
   (** With a selective join, a geometric sum is equal to one of its terms —
       the closure is attained at some particular walk length. *)

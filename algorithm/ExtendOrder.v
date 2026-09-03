@@ -1,24 +1,20 @@
-(* ========================================================================= *)
-(*  Adjoining extremal elements to a total preorder                          *)
-(*                                                                           *)
-(*  [NormalizedOrder.v] needs a least and a greatest element, but none of     *)
-(*  Schulze's link-strength measures has one natively: margins over           *)
-(*  unbounded vote counts run off in both directions.  This file adjoins      *)
-(*  them formally, so a measure only has to supply the ORDER part — the ten   *)
-(*  obligations of [PreSpec] — and gets a full [CanonSpec] back.              *)
-(*                                                                           *)
-(*  This is the same move as CAPP's AddZero / AddOne combinators, and it      *)
-(*  matters for the same reason it did in WidestShortestPath.v: the          *)
-(*  extremes have to be genuinely new elements rather than repurposed        *)
-(*  existing ones, or they collide with the values already in play.           *)
-(* ========================================================================= *)
+(** * Adjoining extremal elements to a total preorder
+
+    [NormalizedOrder.v] needs a least and a greatest element, but none of
+    Schulze's link-strength measures has one natively: margins over
+    unbounded vote counts run off in both directions.  This file adjoins
+    them formally, so a measure only has to supply the ORDER part — the ten
+    obligations of [PreSpec] — and gets a full [CanonSpec] back.
+
+    This is the same move as CAPP's AddZero / AddOne combinators, and it
+    matters for the same reason it did in WidestShortestPath.v: the
+    extremes have to be genuinely new elements rather than repurposed
+    existing ones, or they collide with the values already in play. *)
 
 From Stdlib Require Import Utf8 Bool.
 From Semiring Require Import Structures NormalizedOrder.
 
-(* ------------------------------------------------------------------ *)
-(*  The order obligations, without bounds                              *)
-(* ------------------------------------------------------------------ *)
+(** ** The order obligations, without bounds *)
 
 Record PreSpec (A : Type) := {
   ps_eq_dec : forall x y : A, {x = y} + {x <> y};
@@ -48,9 +44,7 @@ Arguments ps_norm_le {A}.
 Arguments ps_norm_ge {A}.
 Arguments ps_norm_compl {A}.
 
-(* ------------------------------------------------------------------ *)
-(*  The carrier with two new elements                                  *)
-(* ------------------------------------------------------------------ *)
+(** ** The carrier with two new elements *)
 
 Inductive Ext (A : Type) := EBot | EMid (a : A) | ETop.
 
@@ -86,7 +80,7 @@ Section Extend.
     - right. intro Habs. apply Hne. injection Habs. exact (fun h => h).
   Defined.
 
-  (* --- the order laws --- *)
+  (** --- the order laws --- *)
 
   Lemma ext_le_refl : forall x, ext_le x x = true.
   Proof. intros [|a|]; cbn; [reflexivity | apply (ps_refl ps) | reflexivity]. Qed.
@@ -105,7 +99,7 @@ Section Extend.
     apply (ps_total ps).
   Qed.
 
-  (* --- the normalisation laws --- *)
+  (** --- the normalisation laws --- *)
 
   Lemma ext_norm_idem : forall x, ext_norm (ext_norm x) = ext_norm x.
   Proof.
@@ -131,7 +125,7 @@ Section Extend.
     rewrite (ps_norm_compl ps a b H1 H2). reflexivity.
   Qed.
 
-  (* --- the bounds --- *)
+  (** --- the bounds --- *)
 
   Lemma ext_bot_canon : ext_norm EBot = EBot.
   Proof. reflexivity. Qed.
@@ -169,22 +163,20 @@ End Extend.
 Definition ext_spec {A : Type} (ps : PreSpec A) : CanonSpec (Ext A) :=
   ext_spec_def ps.
 
-(* ========================================================================= *)
-(*  Lexicographic product of two measures                                    *)
-(*                                                                           *)
-(*  Combining at the PreSpec level — BEFORE bounds are adjoined — is          *)
-(*  deliberate.  Adding the extremes first and taking the product second is  *)
-(*  precisely the "we have added a zero too soon" error that breaks          *)
-(*  distributivity for the naive widest-shortest-path encoding (CAPP §3.1,   *)
-(*  and the NOTE at the top of examples/WidestShortestPath.v).                *)
-(*                                                                           *)
-(*  Note also what does NOT need checking here.  Gurney and Griffin's        *)
-(*  side conditions on lexicographic products — cancellativity of the first  *)
-(*  component or constancy of the second — govern products whose             *)
-(*  multiplication acts COMPONENTWISE.  Here multiplication is the meet of   *)
-(*  the combined order, which OrderSemiring proves monotone unconditionally, *)
-(*  so a lexicographic combination of strength measures is always safe.       *)
-(* ========================================================================= *)
+(** * Lexicographic product of two measures
+
+    Combining at the PreSpec level — BEFORE bounds are adjoined — is
+    deliberate.  Adding the extremes first and taking the product second is
+    precisely the "we have added a zero too soon" error that breaks
+    distributivity for the naive widest-shortest-path encoding (CAPP §3.1,
+    and the NOTE at the top of examples/WidestShortestPath.v).
+
+    Note also what does NOT need checking here.  Gurney and Griffin's
+    side conditions on lexicographic products — cancellativity of the first
+    component or constancy of the second — govern products whose
+    multiplication acts COMPONENTWISE.  Here multiplication is the meet of
+    the combined order, which OrderSemiring proves monotone unconditionally,
+    so a lexicographic combination of strength measures is always safe. *)
 
 Section LexProduct.
 
@@ -219,7 +211,7 @@ Section LexProduct.
     intros [a1 b1] [a2 b2]. unfold lex_le. cbn.
     destruct (ps_le psA a2 a1) eqn:E21; destruct (ps_le psA a1 a2) eqn:E12;
       cbn; try (left; reflexivity); try (right; reflexivity).
-    (* only the case where the first components are equivalent survives *)
+    (** only the case where the first components are equivalent survives *)
     apply (ps_total psB).
   Qed.
 

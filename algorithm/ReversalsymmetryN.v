@@ -8,19 +8,15 @@ Import ListNotations SemiringNotations.
 Local Infix "≤" := Orel (at level 70).
 Local Infix "<" := (fun x y => x ≤ y ∧ x ≠ y) (at level 70).
 
-(* ===================================================== *)
-(*  Schulze over a semiring: reversal symmetry (4.4)    *)
-(*  Split out of the former monolithic SocialchoiceN.v. *)
-(* ===================================================== *)
+(** Schulze over a semiring: reversal symmetry (4.4)
+    Split out of the former monolithic SocialchoiceN.v. *)
 
 Section ReversalsymmetryN.
 
   Context {Node : FinType.type}.
 
 
-  (* ==================================================================== *)
-  (*  Reversal symmetry (Section 4.4)                                      *)
-  (* ==================================================================== *)
+  (** * Reversal symmetry (Section 4.4) *)
 
   (** Reversal symmetry (4.4.2): reversing every ballot reverses the whole
       relation O.  This is the paper's statement, and it is immediate from
@@ -57,8 +53,8 @@ Section ReversalsymmetryN.
   Proof.
     intros M A H_win H_win_rev.
     destruct (exists_other A) as [B H_BA].
-    (* [A] beats [B] originally, and beating [B] in the reversed profile is
-       exactly being beaten by [B] in the original one *)
+    (** [A] beats [B] originally, and beating [B] in the reversed profile is
+        exactly being beaten by [B] in the original one *)
     exact (schulze_beats_asym M A B
       (H_win B H_BA)
       (proj2 (reversal_symmetry_O M B A) (H_win_rev B H_BA))).

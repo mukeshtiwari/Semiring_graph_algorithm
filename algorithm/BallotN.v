@@ -1,34 +1,32 @@
-(* ========================================================================= *)
-(*  The ballot layer: from profiles to a strength matrix, generically         *)
-(*                                                                           *)
-(*  Everything else in this development starts from a matrix [M] of link      *)
-(*  strengths.  That is where the algebra lives, but it is not where several   *)
-(*  of Schulze's arguments live: Pareto appeals to the transitivity of each    *)
-(*  ballot, Smith and Condorcet to the fact that the two entries [M a b] and   *)
-(*  [M b a] come from ONE pair of counts, monotonicity and clone independence  *)
-(*  to how the counts move when ballots change.  A matrix has discarded all    *)
-(*  of that, so the criterion files carry it as hypotheses on [M].            *)
-(*                                                                           *)
-(*  This file supplies the missing layer and discharges those hypotheses.     *)
-(*  A ballot is a ranking function [Node -> nat], lower being better; every    *)
-(*  strict weak order on a finite set is representable this way, and           *)
-(*  transitivity comes for free.  A profile is a list of ballots, [count P i j] *)
-(*  is the number of voters who strictly prefer [i] to [j], and [matrix_of P]  *)
-(*  sends each off-diagonal pair of counts through a [Measure] (MeasureN.v),   *)
-(*  which is any of Schulze's strength measures satisfying (2.1.1) and (2.1.2).*)
-(*                                                                           *)
-(*  Neutrality and anonymity, the two symmetries Schulze notes in Sect. 2.1,  *)
-(*  the Condorcet loser, and Smith-IIA in its removal form are bridged here   *)
-(*  as well; the last needs a separator that no single tie strength supplies, *)
-(*  and takes it as the weakest pair maximum instead.                         *)
-(*                                                                           *)
-(*  Nothing here changes a matrix-level theorem.  Each section below states    *)
-(*  Schulze's ballot-level premise, derives the matrix hypotheses of the       *)
-(*  corresponding theorem from it, and applies that theorem to [matrix_of P]. *)
-(*  Changes to a profile (raising, cloning, reversing) are relations between   *)
-(*  profiles, stated as [Forall2] of a relation between ballots, so that       *)
-(*  "some voters do X" is expressed without choosing which voters.            *)
-(* ========================================================================= *)
+(** * The ballot layer: from profiles to a strength matrix, generically
+
+    Everything else in this development starts from a matrix [M] of link
+    strengths.  That is where the algebra lives, but it is not where several
+    of Schulze's arguments live: Pareto appeals to the transitivity of each
+    ballot, Smith and Condorcet to the fact that the two entries [M a b] and
+    [M b a] come from ONE pair of counts, monotonicity and clone independence
+    to how the counts move when ballots change.  A matrix has discarded all
+    of that, so the criterion files carry it as hypotheses on [M].
+
+    This file supplies the missing layer and discharges those hypotheses.
+    A ballot is a ranking function [Node -> nat], lower being better; every
+    strict weak order on a finite set is representable this way, and
+    transitivity comes for free.  A profile is a list of ballots, [count P i j]
+    is the number of voters who strictly prefer [i] to [j], and [matrix_of P]
+    sends each off-diagonal pair of counts through a [Measure] (MeasureN.v),
+    which is any of Schulze's strength measures satisfying (2.1.1) and (2.1.2).
+
+    Neutrality and anonymity, the two symmetries Schulze notes in Sect. 2.1,
+    the Condorcet loser, and Smith-IIA in its removal form are bridged here
+    as well; the last needs a separator that no single tie strength supplies,
+    and takes it as the weakest pair maximum instead.
+
+    Nothing here changes a matrix-level theorem.  Each section below states
+    Schulze's ballot-level premise, derives the matrix hypotheses of the
+    corresponding theorem from it, and applies that theorem to [matrix_of P].
+    Changes to a profile (raising, cloning, reversing) are relations between
+    profiles, stated as [Forall2] of a relation between ballots, so that
+    "some voters do X" is expressed without choosing which voters. *)
 
 From Stdlib Require Import Utf8 List Arith Lia Sorting.Permutation.
 From HB Require Import structures.
@@ -37,17 +35,15 @@ From Semiring Require Import Structures OrelN MatN SemimoduleN OrderSemiring
   ClosureTransportN BeatsOnN CloneN NeutralityN SmithiiaN.
 Import ListNotations.
 
-(* The weak order [≤] on strengths is the [Orel] notation from the imports.
-   The strict one is written out as a conjunction, so that [<] keeps its
-   meaning on vote counts. *)
+(** The weak order [≤] on strengths is the [Orel] notation from the imports.
+    The strict one is written out as a conjunction, so that [<] keeps its
+    meaning on vote counts. *)
 
 Section BallotN.
 
   Context {Node : FinType.type}.
 
-  (* ------------------------------------------------------------------ *)
-  (*  Ballots, profiles, pairwise counts                                 *)
-  (* ------------------------------------------------------------------ *)
+  (** ** Ballots, profiles, pairwise counts *)
 
   Definition Ballot := Node -> nat.
   Definition Profile := list Ballot.
@@ -101,14 +97,12 @@ Section BallotN.
     rewrite prefers_irrefl. exact IH.
   Qed.
 
-  (* ------------------------------------------------------------------ *)
-  (*  Comparing counts across profiles                                   *)
-  (*                                                                     *)
-  (*  Every bridge below is one of these four facts about filtered       *)
-  (*  lengths: a pointwise implication within a profile, a pointwise     *)
-  (*  implication or equivalence between two profiles related voter by   *)
-  (*  voter, and invariance under permutation.                           *)
-  (* ------------------------------------------------------------------ *)
+  (** ** Comparing counts across profiles
+
+      Every bridge below is one of these four facts about filtered
+      lengths: a pointwise implication within a profile, a pointwise
+      implication or equivalence between two profiles related voter by
+      voter, and invariance under permutation. *)
 
   Lemma filter_length_le_incl (f g : Ballot -> bool) (P : Profile) :
     (forall b, In b P -> f b = true -> g b = true) ->
@@ -158,9 +152,7 @@ Section BallotN.
     - lia.
   Qed.
 
-  (* ------------------------------------------------------------------ *)
-  (*  Unanimity                                                          *)
-  (* ------------------------------------------------------------------ *)
+  (** ** Unanimity *)
 
   Definition unanimous (P : Profile) (i j : Node) : Prop :=
     forall b, In b P -> prefers b i j = true.
@@ -205,14 +197,12 @@ Section BallotN.
     exact (prefers_trans b i j k (H1 b Hb) (H2 b Hb)).
   Qed.
 
-  (* ------------------------------------------------------------------ *)
-  (*  The closure depends on the matrix only pointwise                   *)
-  (*                                                                     *)
-  (*  Two profiles related voter by voter give two matrices that agree   *)
-  (*  entrywise but are not the same function.  These lemmas carry the   *)
-  (*  Schulze relations across such an agreement; they hold over any     *)
-  (*  bounded semiring.                                                  *)
-  (* ------------------------------------------------------------------ *)
+  (** ** The closure depends on the matrix only pointwise
+
+      Two profiles related voter by voter give two matrices that agree
+      entrywise but are not the same function.  These lemmas carry the
+      Schulze relations across such an agreement; they hold over any
+      bounded semiring. *)
 
   Lemma mat_star_ext {R : BoundedSemiring.type} (M N : @Matrix Node R) :
     (forall i j, M i j = N i j) -> forall a b, mat_star M a b = mat_star N a b.
@@ -270,12 +260,10 @@ Section BallotN.
         apply (orel_trans a c x); [exact Hac | exact (Hmin x Hx)].
   Qed.
 
-  (* ------------------------------------------------------------------ *)
-  (*  The induced strength matrix                                        *)
-  (*                                                                     *)
-  (*  The diagonal is the top by convention: Schulze's paths never       *)
-  (*  traverse it, and the criterion files expect [1] there.             *)
-  (* ------------------------------------------------------------------ *)
+  (** ** The induced strength matrix
+
+      The diagonal is the top by convention: Schulze's paths never
+      traverse it, and the criterion files expect [1] there. *)
 
   Context (m : Measure).
 
@@ -302,17 +290,15 @@ Section BallotN.
     intros P i j Hij. rewrite (matrix_of_off P i j Hij). apply strength_ne_one.
   Qed.
 
-  (* ================================================================== *)
-  (*  Pareto, strict form (Schulze 4.3.1)                                *)
-  (*                                                                     *)
-  (*  Premise: every voter strictly prefers [A] to [B], and somebody     *)
-  (*  voted.  The five matrix hypotheses of [pareto_stronger_iff] follow: *)
-  (*  [Hmax] and [Hpos] from (2.1.1), [Hdiag] by construction, and        *)
-  (*  [Htop_trans] because a link as strong as the unanimous one IS       *)
-  (*  unanimous (full_strength_inv), and unanimity composes because each  *)
-  (*  ballot is transitive.  This is the one bridge that needs the        *)
-  (*  individual ballots rather than the counts alone.                    *)
-  (* ================================================================== *)
+  (** * Pareto, strict form (Schulze 4.3.1)
+
+      Premise: every voter strictly prefers [A] to [B], and somebody
+      voted.  The five matrix hypotheses of [pareto_stronger_iff] follow:
+      [Hmax] and [Hpos] from (2.1.1), [Hdiag] by construction, and
+      [Htop_trans] because a link as strong as the unanimous one IS
+      unanimous (full_strength_inv), and unanimity composes because each
+      ballot is transitive.  This is the one bridge that needs the
+      individual ballots rather than the counts alone. *)
 
   Section Pareto.
 
@@ -362,14 +348,14 @@ Section BallotN.
       M X Y = M A B -> M Y Z = M A B -> M X Z = M A B.
     Proof.
       intros X Y Z HXY HYZ.
-      (* the diagonal is the top, which is not the strength of a real link *)
+      (** the diagonal is the top, which is not the strength of a real link *)
       assert (Hne : forall U V, M U V = M A B -> U <> V).
       { intros U V H Huv. rewrite (matrix_of_diag P U V Huv), link_AB in H.
         exact (strength_ne_one m (length P, 0) (eq_sym H)). }
       pose proof (Hne X Y HXY) as HXY'. pose proof (Hne Y Z HYZ) as HYZ'.
       pose proof (unanimous_trans P X Y Z (top_link_unanimous X Y HXY' HXY)
                     (top_link_unanimous Y Z HYZ' HYZ)) as HuXZ.
-      (* nobody prefers an alternative to itself, so [X ≠ Z] *)
+      (** nobody prefers an alternative to itself, so [X ≠ Z] *)
       assert (HXZ : X <> Z).
       { intro Habs. subst Z. destruct P as [|b0 P']; [cbn in Hvoters; lia |].
         pose proof (HuXZ b0 (or_introl eq_refl)) as Hb0.
@@ -408,14 +394,12 @@ Section BallotN.
 
   End Pareto.
 
-  (* ================================================================== *)
-  (*  Pareto, weak form (Schulze 4.3.2)                                  *)
-  (*                                                                     *)
-  (*  Premise: every voter ranks [A] at least as high as [B].  The row   *)
-  (*  and column inequalities of [pareto_weaker] are then inclusions of  *)
-  (*  filtered voter sets: a voter with [B ≻ X] also has [A ≻ X], and a   *)
-  (*  voter with [X ≻ A] also has [X ≻ B].                                *)
-  (* ================================================================== *)
+  (** * Pareto, weak form (Schulze 4.3.2)
+
+      Premise: every voter ranks [A] at least as high as [B].  The row
+      and column inequalities of [pareto_weaker] are then inclusions of
+      filtered voter sets: a voter with [B ≻ X] also has [A ≻ X], and a
+      voter with [X ≻ A] also has [X ≻ B]. *)
 
   Lemma count_zero_of_none : forall (P : Profile) i j,
     (forall b, In b P -> prefers b i j = false) -> count P i j = 0.
@@ -498,16 +482,14 @@ Section BallotN.
 
   End ParetoWeak.
 
-  (* ================================================================== *)
-  (*  Condorcet (the remark in Schulze 4.7)                              *)
-  (*                                                                     *)
-  (*  Premise: [A] wins every pairwise comparison.  The matrix           *)
-  (*  hypothesis [H_cross] of [condorcet_implies_strict_winner_weaker]   *)
-  (*  asks every link INTO [A] to lie strictly below every closure entry *)
-  (*  OUT of [A].  On an abstract matrix that is a genuine assumption;    *)
-  (*  here it is (2.1.2): a link into [A] is a defeat, so it sits below   *)
-  (*  the tie, and a link out of [A] is a victory, so it sits above it.   *)
-  (* ================================================================== *)
+  (** * Condorcet (the remark in Schulze 4.7)
+
+      Premise: [A] wins every pairwise comparison.  The matrix
+      hypothesis [H_cross] of [condorcet_implies_strict_winner_weaker]
+      asks every link INTO [A] to lie strictly below every closure entry
+      OUT of [A].  On an abstract matrix that is a genuine assumption;
+      here it is (2.1.2): a link into [A] is a defeat, so it sits below
+      the tie, and a link out of [A] is a victory, so it sits above it. *)
 
   Section Condorcet.
 
@@ -554,15 +536,13 @@ Section BallotN.
 
   End Condorcet.
 
-  (* ================================================================== *)
-  (*  Smith (Schulze 4.7.3 and 4.7.4)                                    *)
-  (*                                                                     *)
-  (*  Premise: every member of [B1] pairwise beats every member of [B2]. *)
-  (*  The separator [c] that [smith_criterion_weaker] asks for is the    *)
-  (*  tie strength, again by (2.1.2).  SchulzeOnNT.v notes that no       *)
-  (*  carrier construction can supply this hypothesis; the count layer   *)
-  (*  does, because [M b a] and [M a b] come from one pair of counts.    *)
-  (* ================================================================== *)
+  (** * Smith (Schulze 4.7.3 and 4.7.4)
+
+      Premise: every member of [B1] pairwise beats every member of [B2].
+      The separator [c] that [smith_criterion_weaker] asks for is the
+      tie strength, again by (2.1.2).  SchulzeOnNT.v notes that no
+      carrier construction can supply this hypothesis; the count layer
+      does, because [M b a] and [M a b] come from one pair of counts. *)
 
   Section Smith.
 
@@ -607,14 +587,12 @@ Section BallotN.
 
   End Smith.
 
-  (* ================================================================== *)
-  (*  Condorcet loser                                                    *)
-  (*                                                                     *)
-  (*  Premise: [B] loses every pairwise comparison.  This is the Smith   *)
-  (*  bridge with [B] alone as the weak block, so nothing new is needed  *)
-  (*  from the measure; the only extra hypothesis is that [B] has a      *)
-  (*  rival at all.                                                      *)
-  (* ================================================================== *)
+  (** * Condorcet loser
+
+      Premise: [B] loses every pairwise comparison.  This is the Smith
+      bridge with [B] alone as the weak block, so nothing new is needed
+      from the measure; the only extra hypothesis is that [B] has a
+      rival at all. *)
 
   Section CondorcetLoser.
 
@@ -644,20 +622,18 @@ Section BallotN.
 
   End CondorcetLoser.
 
-  (* ================================================================== *)
-  (*  Smith-IIA, removal form (Schulze 4.7.5a and 4.7.6)                *)
-  (*                                                                     *)
-  (*  Premise: the cut of the Smith bridge.  The removal theorems of     *)
-  (*  SmithiiaN ask for a separator [c] with three properties: every     *)
-  (*  link across the cut from weak to strong is strictly below [c],     *)
-  (*  [c] is not the bottom, and [c] is at most the larger link of       *)
-  (*  every pair.  The tie strength does not serve here, since (2.1.1)   *)
-  (*  and (2.1.2) say nothing about how two ties compare.  Instead [c]   *)
-  (*  is the weakest of the pair maxima: it lies at most every pair      *)
-  (*  maximum by construction, and it is itself the larger link of some  *)
-  (*  pair, hence not a defeat, hence strictly above every defeat by     *)
-  (*  (2.1.2).                                                           *)
-  (* ================================================================== *)
+  (** * Smith-IIA, removal form (Schulze 4.7.5a and 4.7.6)
+
+      Premise: the cut of the Smith bridge.  The removal theorems of
+      SmithiiaN ask for a separator [c] with three properties: every
+      link across the cut from weak to strong is strictly below [c],
+      [c] is not the bottom, and [c] is at most the larger link of
+      every pair.  The tie strength does not serve here, since (2.1.1)
+      and (2.1.2) say nothing about how two ties compare.  Instead [c]
+      is the weakest of the pair maxima: it lies at most every pair
+      maximum by construction, and it is itself the larger link of some
+      pair, hence not a defeat, hence strictly above every defeat by
+      (2.1.2). *)
 
   Section SmithIIA.
 
@@ -812,15 +788,13 @@ Section BallotN.
 
   End SmithIIA.
 
-  (* ================================================================== *)
-  (*  Monotonicity (Schulze 4.5)                                         *)
-  (*                                                                     *)
-  (*  Premise: Schulze's (4.5.1) to (4.5.3), voter by voter.  A voter    *)
-  (*  who preferred [A] to [f] still does, a voter who did not prefer    *)
-  (*  [f] to [A] still does not, and preferences not involving [A] are   *)
-  (*  unchanged.  The three matrix hypotheses of [winner_monotonicity]   *)
-  (*  are then count inequalities carried through (2.1.1).               *)
-  (* ================================================================== *)
+  (** * Monotonicity (Schulze 4.5)
+
+      Premise: Schulze's (4.5.1) to (4.5.3), voter by voter.  A voter
+      who preferred [A] to [f] still does, a voter who did not prefer
+      [f] to [A] still does not, and preferences not involving [A] are
+      unchanged.  The three matrix hypotheses of [winner_monotonicity]
+      are then count inequalities carried through (2.1.1). *)
 
   Lemma filter_length_ge_forall2 (Rel : Ballot -> Ballot -> Prop)
     (f g : Ballot -> bool) (P P' : Profile) :
@@ -910,15 +884,13 @@ Section BallotN.
 
   End Monotonicity.
 
-  (* ================================================================== *)
-  (*  Independence of clones (Schulze 4.6)                               *)
-  (*                                                                     *)
-  (*  Premise: Schulze's (4.6.1) to (4.6.3), voter by voter.  Every      *)
-  (*  clone takes [d]'s place against each surviving alternative, and    *)
-  (*  preferences among survivors are unchanged.  The three matrix       *)
-  (*  hypotheses (4.6.12) to (4.6.14) of CloneN are then count           *)
-  (*  equalities; nothing is assumed about how voters order the clones.  *)
-  (* ================================================================== *)
+  (** * Independence of clones (Schulze 4.6)
+
+      Premise: Schulze's (4.6.1) to (4.6.3), voter by voter.  Every
+      clone takes [d]'s place against each surviving alternative, and
+      preferences among survivors are unchanged.  The three matrix
+      hypotheses (4.6.12) to (4.6.14) of CloneN are then count
+      equalities; nothing is assumed about how voters order the clones. *)
 
   Section Clones.
 
@@ -1012,13 +984,11 @@ Section BallotN.
 
   End Clones.
 
-  (* ================================================================== *)
-  (*  Reversal symmetry (Schulze 4.4)                                    *)
-  (*                                                                     *)
-  (*  Premise: every ballot is reversed.  The counts swap, so the new    *)
-  (*  matrix agrees entrywise with the transpose that the reversal       *)
-  (*  theorems are stated for.                                           *)
-  (* ================================================================== *)
+  (** * Reversal symmetry (Schulze 4.4)
+
+      Premise: every ballot is reversed.  The counts swap, so the new
+      matrix agrees entrywise with the transpose that the reversal
+      theorems are stated for. *)
 
   Definition reversed (b b' : Ballot) : Prop :=
     forall x y, prefers b' x y = prefers b y x.
@@ -1091,13 +1061,11 @@ Section BallotN.
       exists i. split; [exact Hi | intro Hc; apply Hni; apply (E i); exact Hc].
   Qed.
 
-  (* ================================================================== *)
-  (*  Anonymity (Schulze 2.1)                                            *)
-  (*                                                                     *)
-  (*  Schulze observes that a method whose link strengths depend only on *)
-  (*  the counts is anonymous.  Here that is a permutation invariance of *)
-  (*  [count].                                                           *)
-  (* ================================================================== *)
+  (** * Anonymity (Schulze 2.1)
+
+      Schulze observes that a method whose link strengths depend only on
+      the counts is anonymous.  Here that is a permutation invariance of
+      [count]. *)
 
   Lemma count_perm : forall P P', Permutation P P' ->
     forall i j, count P i j = count P' i j.
@@ -1116,14 +1084,12 @@ Section BallotN.
     forall a, schulze_winner (matrix_of P) a <-> schulze_winner (matrix_of P') a.
   Proof. intros P P' HP. exact (schulze_winner_ext _ _ (matrix_of_perm P P' HP)). Qed.
 
-  (* ================================================================== *)
-  (*  Neutrality (Schulze 2.1)                                           *)
-  (*                                                                     *)
-  (*  The companion of anonymity: the method treats the alternatives    *)
-  (*  symmetrically.  Renaming the alternatives in every ballot gives a  *)
-  (*  matrix that agrees entrywise with the permuted matrix of           *)
-  (*  NeutralityN, and the winner set is renamed to match.               *)
-  (* ================================================================== *)
+  (** * Neutrality (Schulze 2.1)
+
+      The companion of anonymity: the method treats the alternatives
+      symmetrically.  Renaming the alternatives in every ballot gives a
+      matrix that agrees entrywise with the permuted matrix of
+      NeutralityN, and the winner set is renamed to match. *)
 
   Section Neutrality.
 

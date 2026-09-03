@@ -1,14 +1,12 @@
-(* ========================================================================= *)
-(*  Idempotent Semiring with Order                                           *)
-(*                                                                           *)
-(*  Typeclass-based version.  One `R : IdempotentSemiring.type` gives you    *)
-(*  the carrier, operations, axioms, and the derived partial order Orel.     *)
-(*  The order is the standard one: a ≤ b  :=  a + b = b.                     *)
-(*                                                                           *)
-(*  Unlike Orel.v (which uses boolean equality eqR), this file uses          *)
-(*  Leibniz equality (=), so [rewrite] works natively — no setoid bridge     *)
-(*  needed.                                                                  *)
-(* ========================================================================= *)
+(** * Idempotent Semiring with Order
+
+    Typeclass-based version.  One `R : IdempotentSemiring.type` gives you
+    the carrier, operations, axioms, and the derived partial order Orel.
+    The order is the standard one: a ≤ b  :=  a + b = b.
+
+    Unlike Orel.v (which uses boolean equality eqR), this file uses
+    Leibniz equality (=), so [rewrite] works natively — no setoid bridge
+    needed. *)
 
 From Stdlib Require Import Utf8 RelationClasses Morphisms Ring_theory.
 From HB Require Import structures.
@@ -16,9 +14,7 @@ From Semiring Require Import Structures.
 
 Import SemiringNotations.
 
-(* ========================================================================= *)
-(*  Properties                                                               *)
-(* ========================================================================= *)
+(** * Properties *)
 Section Matrixdef. 
 
   Definition Matrix {Node : FinType.type} 
@@ -35,9 +31,7 @@ Section OrelProps.
 
   Local Infix "≤" := Orel (at level 70).
 
-  (* ----------------------------------------------------------------------- *)
-  (*  Orel is a partial order                                                *)
-  (* ----------------------------------------------------------------------- *)
+  (** ** Orel is a partial order *)
 
   Lemma orel_refl {R : IdempotentSemiring.type} : ∀ (a : R), a ≤ a.
   Proof. intro a. unfold Orel. apply add_idem. Qed.
@@ -56,9 +50,7 @@ Section OrelProps.
     rewrite <- Hab. rewrite addC. rewrite Hba. reflexivity.
   Qed.
 
-  (* ----------------------------------------------------------------------- *)
-  (*  Typeclass instances — enables [rewrite] and [setoid_rewrite] with ≤   *)
-  (* ----------------------------------------------------------------------- *)
+  (** ** Typeclass instances — enables [rewrite] and [setoid_rewrite] with ≤ *)
 
   #[export] Instance Orel_preorder {R : IdempotentSemiring.type} : 
     @PreOrder R Orel.
@@ -70,19 +62,19 @@ Section OrelProps.
   Proof.
     unfold Proper, respectful, Orel.
     intros a a' Ha b b' Hb.
-    (* Goal: (a + b) + (a' + b') = a' + b' *)
+    (** Goal: (a + b) + (a' + b') = a' + b' *)
     rewrite <- (addA (a + b) a' b').
-    (* Goal: ((a + b) + a') + b' = a' + b' *)
+    (** Goal: ((a + b) + a') + b' = a' + b' *)
     rewrite (addC (a + b) a').
-    (* Goal: (a' + (a + b)) + b' = a' + b' *)
+    (** Goal: (a' + (a + b)) + b' = a' + b' *)
     rewrite <- (addA a' a b).
-    (* Goal: ((a' + a) + b) + b' = a' + b' *)
+    (** Goal: ((a' + a) + b) + b' = a' + b' *)
     rewrite (addC a' a), Ha.
-    (* Goal: (a' + b) + b' = a' + b' *)
+    (** Goal: (a' + b) + b' = a' + b' *)
     rewrite (addA a' b b').
-    (* Goal: a' + (b + b') = a' + b' *)
+    (** Goal: a' + (b + b') = a' + b' *)
     rewrite Hb.
-    (* Goal: a' + b' = a' + b' *)
+    (** Goal: a' + b' = a' + b' *)
     reflexivity.
   Qed.
 
@@ -91,7 +83,7 @@ Section OrelProps.
   Proof.
     unfold Proper, respectful, Orel.
     intros a a' Ha b b' Hb.
-    (* Goal: (a*b) + (a'*b') = a'*b' *)
+    (** Goal: (a*b) + (a'*b') = a'*b' *)
     transitivity ((a * b) + ((a + a') * b')).
     { apply (f_equal (fun x => a * b + x * b')). symmetry. exact Ha. }
     transitivity ((a * b) + (a * b' + a' * b')).
@@ -107,14 +99,12 @@ Section OrelProps.
     reflexivity.
   Qed.
 
-  (* ----------------------------------------------------------------------- *)
-  (*  Basic order-theoretic lemmas                                           *)
-  (* ----------------------------------------------------------------------- *)
+  (** ** Basic order-theoretic lemmas *)
 
   Lemma zero_is_bottom {R : CommutativeMonoid.type} : ∀ (a : R), 0 ≤ a.
   Proof. intro a. unfold Orel. apply add0r. Qed.
 
-  (* Every element is ≤ itself plus something (adding only increases).        *)
+  (** Every element is ≤ itself plus something (adding only increases). *)
   Lemma plus_upper_left {R : IdempotentSemiring.type} : ∀ (a b : R), a ≤ a + b.
   Proof.
     intros a b. unfold Orel.
@@ -131,9 +121,7 @@ Section OrelProps.
 
   
 
-  (* ----------------------------------------------------------------------- *)
-  (*  Compatibility lemmas (also derivable from Proper instances)             *)
-  (* ----------------------------------------------------------------------- *)
+  (** ** Compatibility lemmas (also derivable from Proper instances) *)
 
   Lemma plus_orel_compat {R : IdempotentSemiring.type} : 
     ∀ (a b c : R), a ≤ b → a + c ≤ b + c.
@@ -156,18 +144,16 @@ Section OrelProps.
     apply mul_proper; [apply orel_refl | exact H].
   Qed.
 
-  (* ----------------------------------------------------------------------- *)
-  (*  Absorption / boundedness                                               *)
-  (* ----------------------------------------------------------------------- *)
+  (** ** Absorption / boundedness *)
 
-  (* If the semiring is bounded (1 absorbs everything: 1 + b = 1), then      *)
-  (* multiplying by b can only decrease (or keep equal): a·b·c ≤ a·c.        *)
+  (** If the semiring is bounded (1 absorbs everything: 1 + b = 1), then
+      multiplying by b can only decrease (or keep equal): a·b·c ≤ a·c. *)
   Lemma path_weight_rel {R : BoundedSemiring.type} : 
     ∀ (a b c : R),
     a * b * c ≤ a * c.
   Proof.
     unfold Orel. intros a b c.
-    (* Goal: (a * b * c) + (a * c) = a * c *)
+    (** Goal: (a * b * c) + (a * c) = a * c *)
     transitivity ((a * (b * c)) + (a * c)).
     - apply (f_equal (fun x => x + (a * c)) (mulA a b c)).
     - transitivity (a * ((b * c) + c)).

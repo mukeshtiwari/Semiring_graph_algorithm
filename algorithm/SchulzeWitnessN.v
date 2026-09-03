@@ -7,23 +7,19 @@ Import ListNotations SemiringNotations.
 Local Infix "≤" := Orel (at level 70).
 Local Infix "<" := (fun x y => x ≤ y ∧ x ≠ y) (at level 70).
 
-(* ======================================================================= *)
-(*  Schulze over a semiring: the triangle and four-cycle witness matrices *)
-(*  Split out of the former monolithic SocialchoiceN.v.                   *)
-(* ======================================================================= *)
+(** Schulze over a semiring: the triangle and four-cycle witness matrices
+    Split out of the former monolithic SocialchoiceN.v. *)
 
 Section SchulzeWitnessN.
 
   Context {Node : FinType.type}.
 
 
-  (* ===================================================================== *)
-  (*  Converse of schulze_trans_weaker_necessary.                           *)
-  (*                                                                        *)
-  (*  Three distinct nodes exist as soon as [elements] has length >= 3,      *)
-  (*  because [elements] carries a NoDup proof.  They index the witness      *)
-  (*  triangle used throughout the refutation arguments below.               *)
-  (* ===================================================================== *)
+  (** * Converse of schulze_trans_weaker_necessary.
+
+      Three distinct nodes exist as soon as [elements] has length >= 3,
+      because [elements] carries a NoDup proof.  They index the witness
+      triangle used throughout the refutation arguments below. *)
 
   Lemma three_distinct_nodes :
     (3 <= List.length (@elements Node))%nat ->
@@ -41,19 +37,17 @@ Section SchulzeWitnessN.
   Qed.
 
 
-(* =====================================================================  *)
-  (*  The witness matrix                                                     *)
-  (*                                                                         *)
-  (*  A directed triangle [X → Y → Z → X] carrying [p], [q], [r].  [Y] and    *)
-  (*  [Z] have a single out-link each, so every path leaving them is forced.  *)
-  (*  [X] additionally links to every node OUTSIDE the triangle, also with    *)
-  (*  strength [p].  Those nodes are dead ends — their whole row is zero — so *)
-  (*  they lie on no path between triangle nodes and do not disturb any of    *)
-  (*  the closure bounds.  They must nevertheless be reachable: an isolated   *)
-  (*  node is beaten by nobody, hence a Schulze winner, which would make the  *)
-  (*  matrix useless for refuting winner existence on more than three         *)
-  (*  alternatives.                                                          *)
-  (* =====================================================================  *)
+(** * The witness matrix
+
+    A directed triangle [X → Y → Z → X] carrying [p], [q], [r].  [Y] and
+    [Z] have a single out-link each, so every path leaving them is forced.
+    [X] additionally links to every node OUTSIDE the triangle, also with
+    strength [p].  Those nodes are dead ends — their whole row is zero — so
+    they lie on no path between triangle nodes and do not disturb any of
+    the closure bounds.  They must nevertheless be reachable: an isolated
+    node is beaten by nobody, hence a Schulze winner, which would make the
+    matrix useless for refuting winner existence on more than three
+    alternatives. *)
 
   Definition tri_matrix {R : Semiring.type} (X Y Z : Node) (p q r : R)
     : @Matrix Node R :=
@@ -64,8 +58,8 @@ Section SchulzeWitnessN.
       else if fin_eq_dec i Z then (if fin_eq_dec j X then r else 0)
       else 0.
 
-  (* [tri_matrix]'s body is a lambda, so all reasoning goes through this
-     pointwise equation rather than [unfold]. *)
+  (** [tri_matrix]'s body is a lambda, so all reasoning goes through this
+      pointwise equation rather than [unfold]. *)
   Lemma tri_matrix_unfold {R : Semiring.type} (X Y Z : Node) (p q r : R)
     (i j : Node) :
     tri_matrix X Y Z p q r i j =
@@ -191,8 +185,8 @@ Section SchulzeWitnessN.
     Context {R : BoundedSemiring.type} (X Y Z : Node)
       (HXY : X <> Y) (HYZ : Y <> Z) (HXZ : X <> Z) (p q r : R).
 
-    (* Every lemma below is generalised over the whole context, so that all
-       of them take the same argument list once the section closes. *)
+    (** Every lemma below is generalised over the whole context, so that all
+        of them take the same argument list once the section closes. *)
     Set Default Proof Using "All".
 
     Let HYX : Y <> X := fun h => HXY (eq_sym h).
@@ -355,23 +349,21 @@ Section SchulzeWitnessN.
              (tri_beats_dead X Y Z HXY HYZ HXZ p q r w Hp HwX HwY HwZ)).
   Qed.
 
-  (* ===================================================================== *)
-  (*  A four-cycle witness, for the selectivity half of winner existence.   *)
-  (*                                                                        *)
-  (*  The three-cycle of [tri_matrix] cannot refute winner existence from    *)
-  (*  non-selectivity: with incomparable x, y the only natural choice of      *)
-  (*  third weight is x * y, and the third edge then compares x * y against  *)
-  (*  itself, a tie rather than a strict victory.  A four-cycle with          *)
-  (*  ALTERNATING weights avoids this.  On distinct A, B, C, D carry          *)
-  (*                                                                        *)
-  (*      A -> D = y,  D -> C = x,  C -> B = y,  B -> A = x,                 *)
-  (*                                                                        *)
-  (*  with C additionally linked to every node outside {A,B,C,D} at strength *)
-  (*  y (those are dead ends, so they carry no path and are beaten by C).     *)
-  (*  Each node of the cycle has a single out-edge into the cycle, so every   *)
-  (*  reverse closure is pinned by one two-step bound, and the alternation    *)
-  (*  makes all four bounds instances of just x * y < y and y * x < x.        *)
-  (* ===================================================================== *)
+  (** * A four-cycle witness, for the selectivity half of winner existence.
+
+      The three-cycle of [tri_matrix] cannot refute winner existence from
+      non-selectivity: with incomparable x, y the only natural choice of
+      third weight is x * y, and the third edge then compares x * y against
+      itself, a tie rather than a strict victory.  A four-cycle with
+      ALTERNATING weights avoids this.  On distinct A, B, C, D carry
+
+          A -> D = y,  D -> C = x,  C -> B = y,  B -> A = x,
+
+      with C additionally linked to every node outside {A,B,C,D} at strength
+      y (those are dead ends, so they carry no path and are beaten by C).
+      Each node of the cycle has a single out-edge into the cycle, so every
+      reverse closure is pinned by one two-step bound, and the alternation
+      makes all four bounds instances of just x * y < y and y * x < x. *)
 
   Definition sq_matrix {R : Semiring.type} (A B C D : Node) (x y : R)
     : @Matrix Node R :=
@@ -414,13 +406,13 @@ Section SchulzeWitnessN.
                   destruct (fin_eq_dec u v); try congruence
               end); try reflexivity.
 
-    (* the four carried cycle edges *)
+    (** the four carried cycle edges *)
     Lemma sq_AD : W A D = y.  Proof. sqcase. Qed.
     Lemma sq_BA : W B A = x.  Proof. sqcase. Qed.
     Lemma sq_CB : W C B = y.  Proof. sqcase. Qed.
     Lemma sq_DC : W D C = x.  Proof. sqcase. Qed.
 
-    (* rows: each node's out-edges are bounded by its single cycle weight *)
+    (** rows: each node's out-edges are bounded by its single cycle weight *)
     Lemma sq_row_A : forall w, W A w ≤ y.
     Proof. intro w. sqcase; [apply (@bounded_orel_refl R y) | apply zero_is_bottom]. Qed.
 
@@ -436,7 +428,7 @@ Section SchulzeWitnessN.
     Lemma sq_row_D : forall w, W D w ≤ x.
     Proof. intro w. sqcase; [apply (@bounded_orel_refl R x) | apply zero_is_bottom]. Qed.
 
-    (* A, B, D have a single out-edge; C also links to dead ends *)
+    (** A, B, D have a single out-edge; C also links to dead ends *)
     Lemma sq_A_only_D : forall w, w <> D -> W A w = 0.
     Proof. intros w Hw. sqcase. Qed.
 
@@ -450,7 +442,7 @@ Section SchulzeWitnessN.
       forall u, W w u = 0.
     Proof. intros w H1 H2 H3 H4 u. sqcase. Qed.
 
-    (* C's out-edges are B and the dead ends outside the square *)
+    (** C's out-edges are B and the dead ends outside the square *)
     Lemma sq_C_out : forall w, w <> B ->
       W C w = 0 \/ (w <> D /\ forall u, W w u = 0).
     Proof.
@@ -461,7 +453,7 @@ Section SchulzeWitnessN.
       right. split; [exact HwD | exact (sq_dead_row w HwA Hw HwC HwD)].
     Qed.
 
-    (* the four reverse closures *)
+    (** the four reverse closures *)
     Lemma sq_star_DA : mat_star W D A ≤ x * y.
     Proof.
       pose proof (mat_star_two_step W D C A y
@@ -490,7 +482,7 @@ Section SchulzeWitnessN.
       rewrite sq_AD in H. exact H.
     Qed.
 
-    (* forward links *)
+    (** forward links *)
     Lemma sq_link_AD : y ≤ mat_star W A D.
     Proof. pose proof (@link_le_mat_star Node R W A D) as H. rewrite sq_AD in H. exact H. Qed.
     Lemma sq_link_DC : x ≤ mat_star W D C.
@@ -500,7 +492,7 @@ Section SchulzeWitnessN.
     Lemma sq_link_BA : x ≤ mat_star W B A.
     Proof. pose proof (@link_le_mat_star Node R W B A) as H. rewrite sq_BA in H. exact H. Qed.
 
-    (* the four victories, from just  x*y < y  and  y*x < x *)
+    (** the four victories, from just  x*y < y  and  y*x < x *)
     Lemma sq_beats_AD : x * y ≤ y -> x * y <> y -> schulze_beats W A D.
     Proof. intros H H'. exact (beats_of_bounds W A D (x*y) y sq_star_DA sq_link_AD H H'). Qed.
     Lemma sq_beats_DC : y * x ≤ x -> y * x <> x -> schulze_beats W D C.
@@ -510,7 +502,7 @@ Section SchulzeWitnessN.
     Lemma sq_beats_BA : y * x ≤ x -> y * x <> x -> schulze_beats W B A.
     Proof. intros H H'. exact (beats_of_bounds W B A (y*x) x sq_star_AB sq_link_BA H H'). Qed.
 
-    (* C beats every node outside the square *)
+    (** C beats every node outside the square *)
     Lemma sq_beats_dead (w : Node) : y <> 0 ->
       w <> A -> w <> B -> w <> C -> w <> D -> schulze_beats W C w.
     Proof.

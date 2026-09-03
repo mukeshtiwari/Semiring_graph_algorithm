@@ -1,39 +1,37 @@
-(* ========================================================================= *)
-(*  Resolvability from the ballots (Schulze 4.2.1 and 4.2.2)                  *)
-(*                                                                           *)
-(*  Both formulations of resolvability are statements about profiles, so      *)
-(*  they need the ballot layer of BallotN.v.  Two results:                     *)
-(*                                                                           *)
-(*    - 4.2.1, combinatorial core: if no two distinct links of the profile    *)
-(*      have the same strength, there is at most one winner.  This is the     *)
-(*      matrix theorem of CriticalLinkN.v applied to [matrix_of m P].          *)
-(*                                                                           *)
-(*    - 4.2.2: for every winner [a] there is a single ballot [w] whose         *)
-(*      addition makes [a] the unique winner.  Schulze's [w] ranks [a] first   *)
-(*      and orders the other alternatives by their closure strength into [a], *)
-(*      breaking ties along the predecessor tree of the strongest paths.  The *)
-(*      ballot used here ranks [a] first and orders the others by [P[.,a]]     *)
-(*      descending, leaving ties as ties; the tree is not needed, because the  *)
-(*      claim it serves (the strongest paths out of [a] are not weakened) is   *)
-(*      proved by a threshold argument instead:                               *)
-(*                                                                           *)
-(*        a link [xe] with [M x e >= t] that [w] weakens has [P[x,a] < P[e,a]] *)
-(*        and therefore [P[x,a] >= t] and [P[a,e] > t]; so the walk can be     *)
-(*        rerouted to [e] through the closure at the strictly higher level    *)
-(*        [P[a,e]], and an induction on the number of levels above [t]        *)
-(*        closes the argument ([reach_level]).                                *)
-(*                                                                           *)
-(*      Claim 3 of the paper (the closure into [a] drops strictly) is the     *)
-(*      cut lemma of CriticalLinkN.v applied to Schulze's set [T(g)].          *)
-(*                                                                           *)
-(*  A note on the proofs.  The generic closure lemmas are stated over an       *)
-(*  arbitrary bounded semiring, and applying them to goals over the concrete   *)
-(*  carrier [Strength m] leaves Hierarchy Builder unable to infer the          *)
-(*  structure path.  The block of one-line wrappers below restates the        *)
-(*  lemmas needed at the concrete carrier, so that [apply] and [rewrite] work  *)
-(*  syntactically.  Where a hypothesis and a goal still meet along different  *)
-(*  paths, the proof transports with [eq_ind] instead of rewriting.           *)
-(* ========================================================================= *)
+(** * Resolvability from the ballots (Schulze 4.2.1 and 4.2.2)
+
+    Both formulations of resolvability are statements about profiles, so
+    they need the ballot layer of BallotN.v.  Two results:
+
+      - 4.2.1, combinatorial core: if no two distinct links of the profile
+        have the same strength, there is at most one winner.  This is the
+        matrix theorem of CriticalLinkN.v applied to [matrix_of m P].
+
+      - 4.2.2: for every winner [a] there is a single ballot [w] whose
+        addition makes [a] the unique winner.  Schulze's [w] ranks [a] first
+        and orders the other alternatives by their closure strength into [a],
+        breaking ties along the predecessor tree of the strongest paths.  The
+        ballot used here ranks [a] first and orders the others by [P[.,a]]
+        descending, leaving ties as ties; the tree is not needed, because the
+        claim it serves (the strongest paths out of [a] are not weakened) is
+        proved by a threshold argument instead:
+
+          a link [xe] with [M x e >= t] that [w] weakens has [P[x,a] < P[e,a]]
+          and therefore [P[x,a] >= t] and [P[a,e] > t]; so the walk can be
+          rerouted to [e] through the closure at the strictly higher level
+          [P[a,e]], and an induction on the number of levels above [t]
+          closes the argument ([reach_level]).
+
+        Claim 3 of the paper (the closure into [a] drops strictly) is the
+        cut lemma of CriticalLinkN.v applied to Schulze's set [T(g)].
+
+    A note on the proofs.  The generic closure lemmas are stated over an
+    arbitrary bounded semiring, and applying them to goals over the concrete
+    carrier [Strength m] leaves Hierarchy Builder unable to infer the
+    structure path.  The block of one-line wrappers below restates the
+    lemmas needed at the concrete carrier, so that [apply] and [rewrite] work
+    syntactically.  Where a hypothesis and a goal still meet along different
+    paths, the proof transports with [eq_ind] instead of rewriting. *)
 
 From Stdlib Require Import Utf8 List Arith Lia Bool Wf_nat.
 From HB Require Import structures.
@@ -46,14 +44,12 @@ Section ResolvabilityBallotN.
 
   Context {Node : FinType.type} (m : Measure).
 
-  (* The standing hypotheses of the selective results hold on any [Strength m]. *)
+  (** The standing hypotheses of the selective results hold on any [Strength m]. *)
   Let Htot := NT_selective (spec m).
   Let Hmeet := NT_meet_lower_bound (spec m).
   Let Hdec := NT_eq_dec (spec m).
 
-  (* ------------------------------------------------------------------ *)
-  (*  4.2.1: pairwise distinct link strengths give a unique winner        *)
-  (* ------------------------------------------------------------------ *)
+  (** ** 4.2.1: pairwise distinct link strengths give a unique winner *)
 
   Theorem distinct_links_unique_winner_from_profile (P : @Profile Node) :
     (forall e f g h, e <> f -> g <> h ->
@@ -65,9 +61,7 @@ Section ResolvabilityBallotN.
              (matrix_of_diag m P) (matrix_of_ne_one m P) Hd).
   Qed.
 
-  (* ------------------------------------------------------------------ *)
-  (*  Boolean comparison on strengths, and adding one ballot             *)
-  (* ------------------------------------------------------------------ *)
+  (** ** Boolean comparison on strengths, and adding one ballot *)
 
   (** [sgt u v]: [u] is strictly above [v]. *)
   Definition sgt (u v : Strength m) : bool := negb (leN (spec m) u v).
@@ -95,9 +89,7 @@ Section ResolvabilityBallotN.
     count (w :: P) i j = (if prefers w i j then S (count P i j) else count P i j).
   Proof. intros w P i j. unfold count. cbn [filter]. destruct (prefers w i j); reflexivity. Qed.
 
-  (* ------------------------------------------------------------------ *)
-  (*  The closure lemmas at the concrete carrier                         *)
-  (* ------------------------------------------------------------------ *)
+  (** ** The closure lemmas at the concrete carrier *)
 
   Lemma orefl (u : Strength m) : Orel u u.
   Proof. exact (bounded_orel_refl u). Qed.
@@ -147,9 +139,7 @@ Section ResolvabilityBallotN.
     forall y x, Bp y = false -> Bp x = true -> Orel (mat_star N y x) c /\ mat_star N y x <> c.
   Proof. exact (mat_star_lt_of_cut Htot N Bp c). Qed.
 
-  (* ================================================================== *)
-  (*  4.2.2: one added ballot makes a winner the unique winner            *)
-  (* ================================================================== *)
+  (** * 4.2.2: one added ballot makes a winner the unique winner *)
 
   Section AddBallot.
 
@@ -159,9 +149,7 @@ Section ResolvabilityBallotN.
 
     Notation M := (matrix_of m P).
 
-    (* ---------------------------------------------------------------- *)
-    (*  The ballot: [a] first, then by closure strength into [a]         *)
-    (* ---------------------------------------------------------------- *)
+    (** ** The ballot: [a] first, then by closure strength into [a] *)
 
     (** The alternatives whose closure strength into [a] exceeds that of [x]. *)
     Definition above (x : Node) : list Node :=
@@ -221,9 +209,7 @@ Section ResolvabilityBallotN.
         lia.
     Qed.
 
-    (* ---------------------------------------------------------------- *)
-    (*  How the links move                                               *)
-    (* ---------------------------------------------------------------- *)
+    (** ** How the links move *)
 
     Notation M' := (matrix_of m (w :: P)).
 
@@ -254,9 +240,7 @@ Section ResolvabilityBallotN.
                (eq_ind _ (fun z => Orel (mat_star M a g) z) (orefl _) _ (eq_sym H0))).
     Qed.
 
-    (* ---------------------------------------------------------------- *)
-    (*  Claim 3: the closure into [a] drops strictly                     *)
-    (* ---------------------------------------------------------------- *)
+    (** ** Claim 3: the closure into [a] drops strictly *)
 
     (** Schulze's [T(g)]: [a] together with everything strictly stronger into
         [a] than [a] is into [g]. *)
@@ -283,7 +267,7 @@ Section ResolvabilityBallotN.
         assert (Hij : i <> j). { intro E. subst. congruence. }
         assert (Hia : i <> a). { intro E. rewrite E, Tg_a in Hi. discriminate. }
         rewrite (Tg_other g i Hia) in Hi. apply sgt_false in Hi.
-        (* (4.2.2.14): the old link is at most P[a,g] *)
+        (** (4.2.2.14): the old link is at most P[a,g] *)
         assert (Hle : Orel (M i j) (mat_star M a g)).
         { destruct (fin_eq_dec j a) as [-> | Hja].
           - exact (orel_trans _ _ _ (mstar_link M i a) Hi).
@@ -295,21 +279,19 @@ Section ResolvabilityBallotN.
                           (mstar_compose M i j a)) as Hchain.
             destruct (orel_lt_le_trans _ _ _ Hprod Hchain) as [Hle' Hne].
             apply Hne. apply orel_antisym; [exact Hle' | exact Hi]. }
-        (* (4.2.2.15): w ranks the target above the source *)
+        (** (4.2.2.15): w ranks the target above the source *)
         assert (Hw : prefers w j i = true).
         { destruct (fin_eq_dec j a) as [-> | Hja]; [exact (prefers_w_a i Hia) |].
           rewrite (Tg_other g j Hja) in Hj. apply sgt_true in Hj.
           apply (prefers_w_order j i Hja Hia). exact (orel_le_lt_trans' _ _ _ Hi Hj). }
-        (* (4.2.2.17): so the new link is strictly below P[a,g] *)
+        (** (4.2.2.17): so the new link is strictly below P[a,g] *)
         exact (orel_lt_le_trans _ _ _ (link_down i j Hij Hw) Hle).
       - (* (4.2.2.13): g is outside T(g), because a is a winner *)
         rewrite (Tg_other g g Hg). apply sgt_false. apply (not_lt_le Htot Hdec). exact (Hwin g Hg).
       - apply Tg_a.
     Qed.
 
-    (* ---------------------------------------------------------------- *)
-    (*  Claim 2: the closure out of [a] does not drop                    *)
-    (* ---------------------------------------------------------------- *)
+    (** ** Claim 2: the closure out of [a] does not drop *)
 
     (** The links at least [t] strong that [w] does not weaken. *)
     Definition keep (t : Strength m) (i j : Node) : bool :=
@@ -384,7 +366,7 @@ Section ResolvabilityBallotN.
             assert (Hxa : x <> a).
             { intro E. subst x. rewrite prefers_w_into_a in Hw. discriminate. }
             apply (prefers_w_order e x Hea Hxa) in Hw.
-            (* P[x,a] ≥ min(M x e, P[e,a]) and P[x,a] < P[e,a], so P[x,a] ≥ t *)
+            (** P[x,a] ≥ min(M x e, P[e,a]) and P[x,a] < P[e,a], so P[x,a] ≥ t *)
             pose proof (orel_trans _ _ _ (mul_compat_l _ _ _ (mstar_link M x e))
                           (mstar_compose M x e a)) as Hchain.
             assert (Htxa : Orel t (mat_star M x a)).
@@ -392,12 +374,12 @@ Section ResolvabilityBallotN.
               - exact (orel_trans _ _ _ Hxe (eq_ind _ (fun z => Orel z (mat_star M x a)) Hchain _ E)).
               - exfalso. destruct Hw as [Hle Hne]. apply Hne. apply orel_antisym; [exact Hle |].
                 exact (eq_ind _ (fun z => Orel z (mat_star M x a)) Hchain _ E). }
-            (* a is a winner, so P[e,a] ≤ P[a,e]; hence t < P[a,e] *)
+            (** a is a winner, so P[e,a] ≤ P[a,e]; hence t < P[a,e] *)
             assert (Hea_le : Orel (mat_star M e a) (mat_star M a e)).
             { apply (not_lt_le Htot Hdec). exact (Hwin e Hea). }
             assert (Hlt : Orel t (mat_star M a e) /\ t <> mat_star M a e).
             { exact (orel_lt_le_trans _ _ _ (orel_le_lt_trans' _ _ _ Htxa Hw) Hea_le). }
-            (* fewer alternatives lie above the higher level *)
+            (** fewer alternatives lie above the higher level *)
             assert (Hmu' : mu (mat_star M a e) < n).
             { rewrite <- Hmu. unfold mu.
               apply (filter_length_lt_of_strict _ _ elements e).
@@ -441,9 +423,7 @@ Section ResolvabilityBallotN.
         + apply mstar_mono. apply keep_le_new.
     Qed.
 
-    (* ---------------------------------------------------------------- *)
-    (*  Conclusion                                                       *)
-    (* ---------------------------------------------------------------- *)
+    (** ** Conclusion *)
 
     (** With the ballot added, [a] beats everyone. *)
     Theorem add_ballot_strict_winner : strict_winner M' a.

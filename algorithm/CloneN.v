@@ -6,15 +6,13 @@ Import ListNotations SemiringNotations.
 
 Local Infix "≤" := Orel (at level 70).
 
-(* ====================================================================== *)
-(*  Independence of clones (Schulze, Section 4.6).                       *)
-(*                                                                       *)
-(*  One alternative [d] is replaced by a set of clones [K].  Both        *)
-(*  elections run over a single ambient [Node] type and differ only in   *)
-(*  which candidate list the closure folds over, which is what makes the *)
-(*  comparison statable at all.  Both matrices carry [1] on the          *)
-(*  diagonal, the standing hypothesis used throughout SemimoduleN.       *)
-(* ====================================================================== *)
+(** * Independence of clones (Schulze, Section 4.6).
+
+    One alternative [d] is replaced by a set of clones [K].  Both
+    elections run over a single ambient [Node] type and differ only in
+    which candidate list the closure folds over, which is what makes the
+    comparison statable at all.  Both matrices carry [1] on the
+    diagonal, the standing hypothesis used throughout SemimoduleN. *)
 
 Section CloneReplacement.
 
@@ -55,9 +53,7 @@ Section CloneReplacement.
   Definition collapse : Node -> Node :=
     fun x => if List.in_dec fin_eq_dec x K then d else x.
 
-  (* ------------------------------------------------------------------ *)
-  (*  Membership bookkeeping                                             *)
-  (* ------------------------------------------------------------------ *)
+  (** ** Membership bookkeeping *)
 
   Lemma A_new_nonempty : A_new <> [].
   Proof.
@@ -144,9 +140,7 @@ Section CloneReplacement.
     - exists x. left. reflexivity.
   Qed.
 
-  (* ------------------------------------------------------------------ *)
-  (*  The two transports                                                 *)
-  (* ------------------------------------------------------------------ *)
+  (** ** The two transports *)
 
   (** Expansion: replacing [d] by a chosen clone [g] carries the old closure
       below the new one.  Every edge of the image has exactly the weight the
@@ -223,9 +217,7 @@ Section CloneReplacement.
         apply le_one.
   Qed.
 
-  (* ------------------------------------------------------------------ *)
-  (*  Path strengths are preserved (Schulze 4.6.21 to 4.6.23)           *)
-  (* ------------------------------------------------------------------ *)
+  (** ** Path strengths are preserved (Schulze 4.6.21 to 4.6.23) *)
 
   (** (4.6.23) Strengths between surviving alternatives are unchanged. *)
   Theorem clone_strength_survivors (a b : Node) :

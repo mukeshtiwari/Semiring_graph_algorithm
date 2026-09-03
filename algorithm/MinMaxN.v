@@ -10,30 +10,26 @@ Import ListNotations SemiringNotations.
 Local Infix "≤" := Orel (at level 70).
 Local Infix "<" := (fun x y => x ≤ y ∧ x ≠ y) (at level 70).
 
-(* ===================================================== *)
-(*  Schulze over a semiring: the MinMax set (4.8)       *)
-(*  Split out of the former monolithic SocialchoiceN.v. *)
-(* ===================================================== *)
+(** Schulze over a semiring: the MinMax set (4.8)
+    Split out of the former monolithic SocialchoiceN.v. *)
 
 Section MinMaxN.
 
   Context {Node : FinType.type}.
 
 
-  (* ==================================================================== *)
-  (*  MinMax set (Section 4.8)                                            *)
-  (*                                                                      *)
-  (*  Γ_D(B) — [cut_in M B] — is the strength of the strongest link        *)
-  (*  entering the set [B] from outside, β_D its minimum over the proper   *)
-  (*  non-empty sets, and 𝔅_D the union of the minimising sets.  We take   *)
-  (*  subsets as boolean predicates and keep β_D as a parameter [beta]     *)
-  (*  constrained by hypotheses, rather than as a minimum computed over    *)
-  (*  the powerset: the semiring has joins but no meets, so a minimum      *)
-  (*  over subsets is not an operation of the algebra.  [Hmin] says beta   *)
-  (*  is a lower bound for every cut (β_D is the minimum), [Ba] with       *)
-  (*  [cut_in M Ba = beta] witnesses [a ∈ 𝔅_D], and [Hb_out] says no cut   *)
-  (*  around [b] attains beta, i.e. [b ∉ 𝔅_D].                            *)
-  (* ==================================================================== *)
+  (** * MinMax set (Section 4.8)
+
+      Γ_D(B) — [cut_in M B] — is the strength of the strongest link
+      entering the set [B] from outside, β_D its minimum over the proper
+      non-empty sets, and 𝔅_D the union of the minimising sets.  We take
+      subsets as boolean predicates and keep β_D as a parameter [beta]
+      constrained by hypotheses, rather than as a minimum computed over
+      the powerset: the semiring has joins but no meets, so a minimum
+      over subsets is not an operation of the algebra.  [Hmin] says beta
+      is a lower bound for every cut (β_D is the minimum), [Ba] with
+      [cut_in M Ba = beta] witnesses [a ∈ 𝔅_D], and [Hb_out] says no cut
+      around [b] attains beta, i.e. [b ∉ 𝔅_D]. *)
 
   Definition proper_nonempty (B : Node -> bool) : Prop :=
     (exists x, B x = true) /\ (exists y, B y = false).
@@ -55,7 +51,7 @@ Section MinMaxN.
     rewrite Hy, Hx. cbn. apply bounded_orel_refl.
   Qed.
 
-  (** Claim #1 (4.8.7).  A path that starts outside [B] and ends inside it
+  (** Claim [#1] (4.8.7).  A path that starts outside [B] and ends inside it
       must cross the boundary, and its measure is below the crossing link. *)
   Lemma path_into_B_le_cut {R : BoundedSemiring.type}
     (M : @Matrix Node R) (B : Node -> bool) :
@@ -111,7 +107,7 @@ Section MinMaxN.
       rewrite E in Htrue. discriminate.
   Qed.
 
-  (** Claim #2 (4.8.11).  The closure out of [a] reaches [b] with strength
+  (** Claim [#2] (4.8.11).  The closure out of [a] reaches [b] with strength
       above beta.  The paper grows a set greedily; equivalently, take the set
       of nodes that [a] does *not* reach above beta — if [b] were in it, that
       set would be a proper non-empty cut whose strongest entering link is
@@ -206,7 +202,7 @@ Section MinMaxN.
       proper_nonempty B -> B b = true -> cut_in M B ≠ beta) :
     schulze_beats M a b.
   Proof.
-    (* [b] cannot lie in a minimising set *)
+    (** [b] cannot lie in a minimising set *)
     assert (Hb : Ba b = false).
     { destruct (Ba b) eqn:Hbb; [exfalso | reflexivity].
       exact (Hb_out Ba Hpn_a Hbb Hcut_a). }

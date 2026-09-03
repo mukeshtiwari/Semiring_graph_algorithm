@@ -7,10 +7,8 @@ Import ListNotations SemiringNotations.
 Local Infix "≤" := Orel (at level 70).
 Local Infix "<" := (fun x y => x ≤ y ∧ x ≠ y) (at level 70).
 
-(* ===================================================================================== *)
-(*  Schulze over a semiring: order facts about the beat relation and the winner notions *)
-(*  Split out of the former monolithic SocialchoiceN.v.                                 *)
-(* ===================================================================================== *)
+(** Schulze over a semiring: order facts about the beat relation and the winner notions
+    Split out of the former monolithic SocialchoiceN.v. *)
 
 Section SchulzeBasicsN.
 
@@ -19,9 +17,7 @@ Section SchulzeBasicsN.
 
 
   
-  (* ==================================================================== *)
-  (*  Order-theoretic facts about O and the two notions of winner          *)
-  (* ==================================================================== *)
+  (** * Order-theoretic facts about O and the two notions of winner *)
 
   (** With at least two alternatives, every alternative has a rival. *)
   Lemma exists_other (x : Node) : exists y : Node, y ≠ x.
@@ -101,8 +97,8 @@ Section SchulzeBasicsN.
   Qed.
 
 
-  (* schulze_beats is decidable when R has decidable equality.               *)
-  (* This holds in concrete semirings like max-min (Nat) or min-plus.        *)
+  (** schulze_beats is decidable when R has decidable equality.
+      This holds in concrete semirings like max-min (Nat) or min-plus. *)
   Lemma schulze_beats_dec {R : Semiring.type}
     (M : @Matrix Node R) (a b : Node)
     (Hdec : forall x y : R, {x = y} + {x ≠ y}) :
@@ -162,21 +158,19 @@ Section SchulzeBasicsN.
   Qed.
 
 
-  (* ------------------------------------------------------------------ *)
-  (*  Version 2 — pareto_stronger (strict form):  a ≻ᵥ b ∀v  →  a ≻ b   *)
-  (*                                                                      *)
-  (*  The semiring alone does not decide this: with [M A B] the strongest *)
-  (*  link, a route B → C → A built from equally strong links can match   *)
-  (*  it, and in the max-min semiring of the Schulze example the two      *)
-  (*  closures then coincide.  Schulze rules such a route out in §4.3.1   *)
-  (*  by an argument outside the algebra: the links of maximal strength   *)
-  (*  are exactly the unanimous ones, and unanimous preference cannot     *)
-  (*  cycle because individual ballots are transitive.  That is the       *)
-  (*  content of [Htop_trans] below — maximal links compose — and it is   *)
-  (*  a constraint on the ballot matrix [M], not on the semiring, so the  *)
-  (*  max-min instance is still covered.  [Htotal] says the natural       *)
-  (*  order is total, as in [condorcet_implies_strict_winner].            *)
-  (* ------------------------------------------------------------------ *)
+  (** ** Version 2 — pareto_stronger (strict form):  a ≻ᵥ b ∀v  →  a ≻ b
+
+      The semiring alone does not decide this: with [M A B] the strongest
+      link, a route B → C → A built from equally strong links can match
+      it, and in the max-min semiring of the Schulze example the two
+      closures then coincide.  Schulze rules such a route out in §4.3.1
+      by an argument outside the algebra: the links of maximal strength
+      are exactly the unanimous ones, and unanimous preference cannot
+      cycle because individual ballots are transitive.  That is the
+      content of [Htop_trans] below — maximal links compose — and it is
+      a constraint on the ballot matrix [M], not on the semiring, so the
+      max-min instance is still covered.  [Htotal] says the natural
+      order is total, as in [condorcet_implies_strict_winner]. *)
 
   (** Schulze (2.2.4): a link stronger than the return closure is respected by
       the relation O.  As in the paper this is immediate from (2.2.1) and

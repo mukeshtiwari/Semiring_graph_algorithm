@@ -9,10 +9,8 @@ Import ListNotations SemiringNotations.
 Local Infix "≤" := Orel (at level 70).
 Local Infix "<" := (fun x y => x ≤ y ∧ x ≠ y) (at level 70).
 
-(* ===================================================== *)
-(*  Schulze over a semiring: Condorcet consistency      *)
-(*  Split out of the former monolithic SocialchoiceN.v. *)
-(* ===================================================== *)
+(** Schulze over a semiring: Condorcet consistency
+    Split out of the former monolithic SocialchoiceN.v. *)
 
 Section CondorcetN.
 
@@ -64,14 +62,14 @@ Section CondorcetN.
   Proof.
     intros Hcw X0 HX0.
     unfold schulze_beats, beats.
-    (* Every edge into [A] is strictly below the target [mat_star M A X0]:
-       off-diagonal by [H_cross], diagonal by the Condorcet hypothesis. *)
+    (** Every edge into [A] is strictly below the target [mat_star M A X0]:
+        off-diagonal by [H_cross], diagonal by the Condorcet hypothesis. *)
     assert (Hdom : forall w, w <> A -> M w A < mat_star M A X0).
     { intros w Hw. destruct (fin_eq_dec w X0) as [->|Hne].
       - eapply orel_lt_le_trans; [exact (Hcw X0 HX0) | apply link_le_mat_star].
       - exact (H_cross w X0 Hw HX0 Hne). }
-    (* Every walk of length n into A, from any w <> A, stays strictly below
-       that same target. *)
+    (** Every walk of length n into A, from any w <> A, stays strictly below
+        that same target. *)
     assert (H_pow_lt : forall n w, w <> A -> pow M n w A < mat_star M A X0).
     { induction n as [|n IH]; intros w Hw.
       - (* n = 0: pow M 0 w A = I w A = 0, since w <> A *)
@@ -99,7 +97,7 @@ Section CondorcetN.
                    (mat_star M A X0)).
           * apply bounded_mul_lower_right.
           * apply IH. exact Hneqz. }
-    (* The target is already the closure, so no final chaining step is needed. *)
+    (** The target is already the closure, so no final chaining step is needed. *)
     apply (mat_star_lt_bound H_total_order). intro n.
     apply H_pow_lt. exact HX0.
   Qed.

@@ -1,38 +1,34 @@
-(* ========================================================================= *)
-(*  Schulze's conditions on a link-strength measure (Sect. 2.1)              *)
-(*                                                                           *)
-(*  A strength measure turns the pair of vote counts (N[e,f], N[f,e]) of a    *)
-(*  link into an element of a totally preordered carrier.  ExtendOrder and    *)
-(*  NormalizedOrder already turn any such preorder, given as a [PreSpec] on   *)
-(*  [nat * nat], into a bounded commutative semiring.  What they do not       *)
-(*  record is how the order RESPONDS to the counts, and that is exactly what   *)
-(*  Schulze's ballot-level arguments use.  He asks for two things:            *)
-(*                                                                           *)
-(*    (2.1.1)  more support with no more opposition, or less opposition with  *)
-(*             no less support, makes a link strictly stronger;               *)
-(*    (2.1.2)  every pairwise victory is strictly stronger than every tie,    *)
-(*             and every tie strictly stronger than every defeat.             *)
-(*                                                                           *)
-(*  A [Measure] is a [PreSpec] together with these two conditions.  The       *)
-(*  lemmas below lift them from the boolean order on raw count pairs to the   *)
-(*  derived order [Orel] on the normalised carrier, which is the order the    *)
-(*  Schulze theorems reason with.  In particular the tie [(0,0)] separates    *)
-(*  every victory from every defeat, which is the separator that the Smith    *)
-(*  and Condorcet theorems take as a hypothesis on the matrix.               *)
-(*                                                                           *)
-(*  Both conditions are stated as "[x] is not below [y]": on a total preorder  *)
-(*  that is the same as "[x] is strictly above [y]", and it is the form that   *)
-(*  the concrete measures in examples/ discharge most directly.               *)
-(* ========================================================================= *)
+(** * Schulze's conditions on a link-strength measure (Sect. 2.1)
+
+    A strength measure turns the pair of vote counts (N[e,f], N[f,e]) of a
+    link into an element of a totally preordered carrier.  ExtendOrder and
+    NormalizedOrder already turn any such preorder, given as a [PreSpec] on
+    [nat * nat], into a bounded commutative semiring.  What they do not
+    record is how the order RESPONDS to the counts, and that is exactly what
+    Schulze's ballot-level arguments use.  He asks for two things:
+
+      (2.1.1)  more support with no more opposition, or less opposition with
+               no less support, makes a link strictly stronger;
+      (2.1.2)  every pairwise victory is strictly stronger than every tie,
+               and every tie strictly stronger than every defeat.
+
+    A [Measure] is a [PreSpec] together with these two conditions.  The
+    lemmas below lift them from the boolean order on raw count pairs to the
+    derived order [Orel] on the normalised carrier, which is the order the
+    Schulze theorems reason with.  In particular the tie [(0,0)] separates
+    every victory from every defeat, which is the separator that the Smith
+    and Condorcet theorems take as a hypothesis on the matrix.
+
+    Both conditions are stated as "[x] is not below [y]": on a total preorder
+    that is the same as "[x] is strictly above [y]", and it is the form that
+    the concrete measures in examples/ discharge most directly. *)
 
 From Stdlib Require Import Utf8 Arith Lia.
 From HB Require Import structures.
 From Semiring Require Import Structures OrelN OrderSemiring
   NormalizedOrder ExtendOrder.
 
-(* ------------------------------------------------------------------ *)
-(*  The record                                                         *)
-(* ------------------------------------------------------------------ *)
+(** ** The record *)
 
 Record Measure := {
   m_pre : PreSpec (nat * nat);
@@ -59,12 +55,10 @@ Definition Strength (m : Measure) : Type := NT (spec m).
 Definition strength (m : Measure) (p : nat * nat) : Strength m :=
   inj (spec m) (EMid p).
 
-(* Every Strength is a bounded commutative semiring, by NormalizedOrder. *)
+(** Every Strength is a bounded commutative semiring, by NormalizedOrder. *)
 Check (fun m => (Strength m : BoundedCommutativeSemiring.type)).
 
-(* ------------------------------------------------------------------ *)
-(*  From the boolean order on counts to [Orel] on the carrier          *)
-(* ------------------------------------------------------------------ *)
+(** ** From the boolean order on counts to [Orel] on the carrier *)
 
 Section MeasureFacts.
 
@@ -109,9 +103,7 @@ Section MeasureFacts.
     intro H. apply (f_equal (val (spec m))) in H. cbn in H. discriminate.
   Qed.
 
-  (* ---------------------------------------------------------------- *)
-  (*  (2.1.1) on the carrier                                           *)
-  (* ---------------------------------------------------------------- *)
+  (** ** (2.1.1) on the carrier *)
 
   (** Strict form. *)
   Lemma strength_211 (x1 x2 y1 y2 : nat) :
@@ -152,9 +144,7 @@ Section MeasureFacts.
     - exfalso. rewrite (m_211 m n 0 c1 c2) in Hback; [discriminate | lia].
   Qed.
 
-  (* ---------------------------------------------------------------- *)
-  (*  (2.1.2) on the carrier: the tie separates victories from defeats *)
-  (* ---------------------------------------------------------------- *)
+  (** ** (2.1.2) on the carrier: the tie separates victories from defeats *)
 
   Lemma tie_lt_victory (x1 x2 : nat) :
     x2 < x1 ->

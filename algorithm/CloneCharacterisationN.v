@@ -6,21 +6,19 @@ Import ListNotations SemiringNotations.
 
 Local Infix "≤" := Orel (at level 70).
 
-(* ====================================================================== *)
-(*  Independence of clones characterises the bottleneck semirings.       *)
-(*                                                                       *)
-(*  Selectivity and the meet property are not merely sufficient for the  *)
-(*  clone criterion but necessary, so it sits in the same class as       *)
-(*  transitivity and winner existence, and is in fact EQUIVALENT to      *)
-(*  winner existence rather than merely implied by the same conditions.  *)
-(*                                                                       *)
-(*  The leverage is that the clone hypotheses constrain nothing about    *)
-(*  the links among the clones, and go vacuous when the old alternative  *)
-(*  set is the singleton [[d]].  There the criterion says exactly that   *)
-(*  an arbitrary matrix on an arbitrary nonempty set of clones admits an *)
-(*  undefeated element, so the winner-existence witnesses apply with the *)
-(*  replaced alternative parked outside as a node no link leaves.        *)
-(* ====================================================================== *)
+(** * Independence of clones characterises the bottleneck semirings.
+
+    Selectivity and the meet property are not merely sufficient for the
+    clone criterion but necessary, so it sits in the same class as
+    transitivity and winner existence, and is in fact EQUIVALENT to
+    winner existence rather than merely implied by the same conditions.
+
+    The leverage is that the clone hypotheses constrain nothing about
+    the links among the clones, and go vacuous when the old alternative
+    set is the singleton [[d]].  There the criterion says exactly that
+    an arbitrary matrix on an arbitrary nonempty set of clones admits an
+    undefeated element, so the winner-existence witnesses apply with the
+    replaced alternative parked outside as a node no link leaves. *)
 
 Section CloneCharacterisation.
 

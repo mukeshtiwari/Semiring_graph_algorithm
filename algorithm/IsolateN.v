@@ -10,10 +10,8 @@ Import ListNotations SemiringNotations.
 Local Infix "≤" := Orel (at level 70).
 Local Infix "<" := (fun x y => x ≤ y ∧ x ≠ y) (at level 70).
 
-(* ========================================================================================= *)
-(*  Schulze over a semiring: Smith-IIA in isolation form (4.7.5a), and the isolate operator *)
-(*  Split out of the former monolithic SocialchoiceN.v.                                     *)
-(* ========================================================================================= *)
+(** Schulze over a semiring: Smith-IIA in isolation form (4.7.5a), and the isolate operator
+    Split out of the former monolithic SocialchoiceN.v. *)
 
 Section IsolateN.
 
@@ -138,7 +136,7 @@ Section IsolateN.
     { intro Heq. subst e. exact (proj1 (H_partition d) He Hd). }
     assert (Hfd : f <> d).
     { intro Heq. subst f. exact (proj1 (H_partition d) Hf Hd). }
-    (* a closure entry that dominates its converse already clears c *)
+    (** a closure entry that dominates its converse already clears c *)
     assert (Hclears : forall x y, x <> y ->
               mat_star M y x ≤ mat_star M x y -> c ≤ mat_star M x y).
     { intros x y Hxy Hdom.
@@ -172,8 +170,8 @@ Section IsolateN.
         by (eapply orel_trans; [exact Hc' | apply mat_star_isolate_le]).
       pose proof (mat_star_isolate_preserved M Htotal B1 B2 c d H_partition
                     H_lt H0 Hd e f He Hf Hc) as Hef.
-      (* were the converse also above c it would be preserved too, forcing a
-         tie in the isolated profile *)
+      (** were the converse also above c it would be preserved too, forcing a
+          tie in the isolated profile *)
       assert (Hno_converse : ~ (mat_star M e f ≤ mat_star M f e)).
       { intro Hbad.
         assert (Hcfe : c ≤ mat_star M f e)
@@ -191,16 +189,14 @@ Section IsolateN.
   Qed.
 
 
-  (* ------------------------------------------------------------------ *)
-  (*  Removing a strong alternative (Schulze 4.7.6)                      *)
-  (*                                                                     *)
-  (*  The mirror of the block above: [d] now lies in [B1], and the       *)
-  (*  relation left untouched is the one on [B2].  The dichotomy is      *)
-  (*  simpler than for a weak [d]: a walk out of [B2] that enters [B1]   *)
-  (*  at all is already below [c] at its first crossing link, so the     *)
-  (*  crossing is detected at the head edge and no analogue of           *)
-  (*  [pow_from_B2_lt] is needed.                                        *)
-  (* ------------------------------------------------------------------ *)
+  (** ** Removing a strong alternative (Schulze 4.7.6)
+
+      The mirror of the block above: [d] now lies in [B1], and the
+      relation left untouched is the one on [B2].  The dichotomy is
+      simpler than for a weak [d]: a walk out of [B2] that enters [B1]
+      at all is already below [c] at its first crossing link, so the
+      crossing is detected at the head edge and no analogue of
+      [pow_from_B2_lt] is needed. *)
 
   (** Every walk out of [B2] is either matched by an isolated walk, or is
       too weak to matter — entering [B1] costs a crossing link below [c]. *)
@@ -295,7 +291,7 @@ Section IsolateN.
     { intro Heq. subst e. exact (proj1 (H_partition d) Hd He). }
     assert (Hfd : f <> d).
     { intro Heq. subst f. exact (proj1 (H_partition d) Hd Hf). }
-    (* a closure entry that dominates its converse already clears c *)
+    (** a closure entry that dominates its converse already clears c *)
     assert (Hclears : forall x y, x <> y ->
               mat_star M y x ≤ mat_star M x y -> c ≤ mat_star M x y).
     { intros x y Hxy Hdom.
@@ -329,8 +325,8 @@ Section IsolateN.
         by (eapply orel_trans; [exact Hc' | apply mat_star_isolate_le]).
       pose proof (mat_star_isolate_strong_preserved M Htotal B1 B2 c d
                     H_partition H_lt Hd e f He Hc) as Hef.
-      (* were the converse also above c it would be preserved too, forcing a
-         tie in the isolated profile *)
+      (** were the converse also above c it would be preserved too, forcing a
+          tie in the isolated profile *)
       assert (Hno_converse : ~ (mat_star M e f ≤ mat_star M f e)).
       { intro Hbad.
         assert (Hcfe : c ≤ mat_star M f e)
@@ -347,16 +343,14 @@ Section IsolateN.
         rewrite Heq0. apply bounded_orel_refl.
   Qed.
 
-  (* ------------------------------------------------------------------ *)
-  (*  Removing the whole weak block at once                              *)
-  (*                                                                     *)
-  (*  [isolate M d] neutralises one weak alternative.  [isolate_out B1 M] *)
-  (*  keeps only the links inside [B1], which is the same operation for   *)
-  (*  the whole of [B2] at once.  Every lemma below is the corresponding  *)
-  (*  single-node lemma with the test "is this [d]?" replaced by "is this *)
-  (*  outside [B1]?", and the argument is unchanged: a walk that leaves   *)
-  (*  [B1] has to cross back, and every crossing link is below [c].       *)
-  (* ------------------------------------------------------------------ *)
+  (** ** Removing the whole weak block at once
+
+      [isolate M d] neutralises one weak alternative.  [isolate_out B1 M]
+      keeps only the links inside [B1], which is the same operation for
+      the whole of [B2] at once.  Every lemma below is the corresponding
+      single-node lemma with the test "is this [d]?" replaced by "is this
+      outside [B1]?", and the argument is unchanged: a walk that leaves
+      [B1] has to cross back, and every crossing link is below [c]. *)
 
   Definition isolate_out {R : Semiring.type} (B : list Node) (M : @Matrix Node R)
     : @Matrix Node R :=

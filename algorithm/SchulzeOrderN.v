@@ -7,10 +7,8 @@ Import ListNotations SemiringNotations.
 Local Infix "≤" := Orel (at level 70).
 Local Infix "<" := (fun x y => x ≤ y ∧ x ≠ y) (at level 70).
 
-(* ============================================================================= *)
-(*  Schulze over a semiring: order and semiring algebra over a bounded semiring *)
-(*  Split out of the former monolithic SocialchoiceN.v.                         *)
-(* ============================================================================= *)
+(** Schulze over a semiring: order and semiring algebra over a bounded semiring
+    Split out of the former monolithic SocialchoiceN.v. *)
 
 Section SchulzeOrderN.
 
@@ -18,8 +16,8 @@ Section SchulzeOrderN.
 
 
 
-  (* [bounded_add_idem] (a + a = a) is proved once, in PathN.v, and used
-     throughout here.  It was duplicated in this file before the split. *)
+  (** [bounded_add_idem] (a + a = a) is proved once, in PathN.v, and used
+      throughout here.  It was duplicated in this file before the split. *)
 
   Lemma bounded_orel_refl {R : BoundedSemiring.type} (a : R) : a ≤ a.
   Proof. unfold Orel. apply bounded_add_idem. Qed.
@@ -86,11 +84,11 @@ Section SchulzeOrderN.
       + apply bounded_mul_lower_left.
   Qed.
 
-  (* The structure theorem for bottleneck carriers, pointwise: on a carrier
-     that is selective (so the natural order is a chain) addition returns
-     the larger argument and, given the meet-lower-bound property,
-     multiplication returns the smaller.  Together: + is the join (max) and
-     * is the meet (min) of the chain.                                       *)
+  (** The structure theorem for bottleneck carriers, pointwise: on a carrier
+      that is selective (so the natural order is a chain) addition returns
+      the larger argument and, given the meet-lower-bound property,
+      multiplication returns the smaller.  Together: + is the join (max) and
+      * is the meet (min) of the chain.                                       *)
   Lemma structure_add_is_max {R : BoundedSemiring.type} (a b : R) :
     a ≤ b -> a + b = b /\ b + a = b.
   Proof.
@@ -109,7 +107,7 @@ Section SchulzeOrderN.
     - apply H_meet_lower_bound; [exact h | apply bounded_orel_refl].
   Qed.
 
-  (* If every term of a sum is ≤ v, then the whole sum is ≤ v.               *)
+  (** If every term of a sum is ≤ v, then the whole sum is ≤ v. *)
   Lemma sum_orel_bound {R : Semiring.type} 
     (f : Node -> R) (v : R) :
     (forall x, (f x) ≤ v) -> (sum f) ≤ v.
@@ -119,7 +117,7 @@ Section SchulzeOrderN.
     induction (@elements Node) as [|a l IH]; cbn.
     - apply add0r.
     - (* Goal: (f a + fold_right ... l) + v = v *)
-      (* addA: (x+y)+z = x+(y+z) *)
+      (** addA: (x+y)+z = x+(y+z) *)
       transitivity (f a + (fold_right (fun (x : Node) (y : R) => f x + y) 0 l + v)).
       + apply addA.
       + assert (Htmp : fold_right (fun (x : Node) (y : R) => f x + y) 0 l + v = v).
@@ -127,7 +125,7 @@ Section SchulzeOrderN.
         rewrite Htmp. apply (H a).
   Qed.
 
-  (* If a ≤ c and b ≤ c then a+b ≤ c.  Works for any commutative monoid.    *)
+  (** If a ≤ c and b ≤ c then a+b ≤ c.  Works for any commutative monoid. *)
   Lemma add_orel_bound {R : CommutativeMonoid.type} (a b c : R) :
     a ≤ c -> b ≤ c -> (a + b) ≤ c.
   Proof.
@@ -176,7 +174,7 @@ Section SchulzeOrderN.
   Qed.
 
   
-  (* In a bounded semiring, the diagonal of geom_sum is always 1.            *)
+  (** In a bounded semiring, the diagonal of geom_sum is always 1. *)
   Lemma geom_sum_diag_one {R : BoundedSemiring.type}
     (M : @Matrix Node R) (n : nat) (A : Node) :
     geom_sum M n A A = 1.
@@ -186,22 +184,20 @@ Section SchulzeOrderN.
     - unfold matrix_add. rewrite IH. apply (add_bound (s := R) (pow M (S n) A A)).
   Qed.
 
-  (* ==================================================================== *)
-  (*  Selectivity: the closure invents no new values                       *)
-  (*                                                                       *)
-  (*  [Htotal] and [Hmeet] together — the pair already assumed by          *)
-  (*  [prudence] and [minmax_beats], and satisfied by the max-min semiring *)
-  (*  of the Schulze instance — make both operations SELECTIVE: [x + y]    *)
-  (*  and [x * y] each return one of their arguments.  So every entry of   *)
-  (*  the closure is either a bound or the strength of an actual link.     *)
-  (*  This is the algebraic content of the paper's habit of naming the     *)
-  (*  critical link of a strongest path, e.g. in 4.2.1.                    *)
-  (*                                                                       *)
-  (*  Note what this does NOT give: the value being some link's strength   *)
-  (*  says nothing about WHICH link, or that it lies on a path from [a] to *)
-  (*  [b].  Recovering that — and with it the paper's path-splitting       *)
-  (*  arguments — needs the witness, not just the value.                   *)
-  (* ==================================================================== *)
+  (** * Selectivity: the closure invents no new values
+
+      [Htotal] and [Hmeet] together — the pair already assumed by
+      [prudence] and [minmax_beats], and satisfied by the max-min semiring
+      of the Schulze instance — make both operations SELECTIVE: [x + y]
+      and [x * y] each return one of their arguments.  So every entry of
+      the closure is either a bound or the strength of an actual link.
+      This is the algebraic content of the paper's habit of naming the
+      critical link of a strongest path, e.g. in 4.2.1.
+
+      Note what this does NOT give: the value being some link's strength
+      says nothing about WHICH link, or that it lies on a path from [a] to
+      [b].  Recovering that — and with it the paper's path-splitting
+      arguments — needs the witness, not just the value. *)
 
   (** With a total order the meet of two elements is one of them. *)
   Lemma mul_selective {R : BoundedSemiring.type}
@@ -243,9 +239,7 @@ Section SchulzeOrderN.
 
 
 
-  (* =====================================================================  *)
-  (*  Helper lemmas for the Pareto proofs                                   *)
-  (* =====================================================================  *)
+  (** * Helper lemmas for the Pareto proofs *)
 
   (** If every element of a list is ≤ v, then the fold-right sum is ≤ v. *)
   Lemma fold_right_orel_bound {R : CommutativeMonoid.type} (l : list R) (v : R) :
@@ -320,9 +314,7 @@ Section SchulzeOrderN.
     destruct (elements (s := Node)) as [|z l]; [simpl in Hlen; lia | discriminate].
   Qed.
 
-  (* ==================================================================== *)
-  (*  Shared helpers for prudence (§4.9) and the MinMax set (§4.8)         *)
-  (* ==================================================================== *)
+  (** * Shared helpers for prudence (§4.9) and the MinMax set (§4.8) *)
 
   (** Every term of a finite sum lies below the sum. *)
   Lemma fold_right_in_le {R : BoundedSemiring.type}

@@ -9,10 +9,8 @@ Import ListNotations SemiringNotations.
 Local Infix "≤" := Orel (at level 70).
 Local Infix "<" := (fun x y => x ≤ y ∧ x ≠ y) (at level 70).
 
-(* ======================================================== *)
-(*  Schulze over a semiring: the Smith criterion (4.7.3/4) *)
-(*  Split out of the former monolithic SocialchoiceN.v.    *)
-(* ======================================================== *)
+(** Schulze over a semiring: the Smith criterion (4.7.3/4)
+    Split out of the former monolithic SocialchoiceN.v. *)
 
 Section SmithN.
 

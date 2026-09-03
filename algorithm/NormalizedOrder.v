@@ -1,47 +1,43 @@
-(* ========================================================================= *)
-(*  From a total PREORDER to a bounded commutative semiring                   *)
-(*                                                                           *)
-(*  [OrderSemiring.v] turns a total ORDER into the algebra: join for +, meet  *)
-(*  for *, with distributivity free.  It demands [le_antisym] with respect    *)
-(*  to Leibniz equality, and that is exactly the hypothesis a Schulze         *)
-(*  link-strength measure cannot satisfy — Schulze's orders on vote-count     *)
-(*  pairs are strict WEAK orders, so ties form equivalence classes of         *)
-(*  distinct elements.  For margin-then-ratio, for instance, every pairwise   *)
-(*  tie (k,k) is equivalent to every other, and commutativity of the join     *)
-(*  already fails: add_max (1,1) (2,2) = (1,1) while add_max (2,2) (1,1) =    *)
-(*  (2,2).                                                                    *)
-(*                                                                           *)
-(*  In a setoid development one would change the equality.  With Leibniz      *)
-(*  equality the move is to pick canonical representatives: supply an         *)
-(*  idempotent [cs_norm] that is sound and complete for the equivalence, and  *)
-(*  work in its image                                                        *)
-(*                                                                           *)
-(*      NT cs = { a : A | is_norm cs a = true }.                              *)
-(*                                                                           *)
-(*  Equality on [NT cs] is decided by the underlying element alone (via UIP   *)
-(*  on bool, so no axiom is used), antisymmetry holds there, and the whole    *)
-(*  of OrderSemiring applies.  Note that no operation needs renormalising:    *)
-(*  join and meet both RETURN ONE OF THEIR ARGUMENTS, so [NT cs] is closed    *)
-(*  under them by construction.                                               *)
-(*                                                                           *)
-(*  The obligations are bundled in the record [CanonSpec] rather than as an   *)
-(*  HB structure, deliberately.  Schulze's four strength measures — margin,   *)
-(*  ratio, winning votes, losing votes — are four different orders on the     *)
-(*  SAME carrier of vote-count pairs, and HB keys canonical instances on the  *)
-(*  type, so structures would force a wrapper type per measure (the problem   *)
-(*  mathcomp's Order library carries its [disp] parameter to work around).    *)
-(*  As records they are simply four values.  The OUTPUT is still an HB        *)
-(*  instance, declared once below, so clients get a bounded commutative       *)
-(*  semiring with no per-measure instance blocks.                             *)
-(* ========================================================================= *)
+(** * From a total PREORDER to a bounded commutative semiring
+
+    [OrderSemiring.v] turns a total ORDER into the algebra: join for +, meet
+    for *, with distributivity free.  It demands [le_antisym] with respect
+    to Leibniz equality, and that is exactly the hypothesis a Schulze
+    link-strength measure cannot satisfy — Schulze's orders on vote-count
+    pairs are strict WEAK orders, so ties form equivalence classes of
+    distinct elements.  For margin-then-ratio, for instance, every pairwise
+    tie (k,k) is equivalent to every other, and commutativity of the join
+    already fails: add_max (1,1) (2,2) = (1,1) while add_max (2,2) (1,1) =
+    (2,2).
+
+    In a setoid development one would change the equality.  With Leibniz
+    equality the move is to pick canonical representatives: supply an
+    idempotent [cs_norm] that is sound and complete for the equivalence, and
+    work in its image
+
+        NT cs = { a : A | is_norm cs a = true }.
+
+    Equality on [NT cs] is decided by the underlying element alone (via UIP
+    on bool, so no axiom is used), antisymmetry holds there, and the whole
+    of OrderSemiring applies.  Note that no operation needs renormalising:
+    join and meet both RETURN ONE OF THEIR ARGUMENTS, so [NT cs] is closed
+    under them by construction.
+
+    The obligations are bundled in the record [CanonSpec] rather than as an
+    HB structure, deliberately.  Schulze's four strength measures — margin,
+    ratio, winning votes, losing votes — are four different orders on the
+    SAME carrier of vote-count pairs, and HB keys canonical instances on the
+    type, so structures would force a wrapper type per measure (the problem
+    mathcomp's Order library carries its [disp] parameter to work around).
+    As records they are simply four values.  The OUTPUT is still an HB
+    instance, declared once below, so clients get a bounded commutative
+    semiring with no per-measure instance blocks. *)
 
 From Stdlib Require Import Utf8 Bool Eqdep_dec.
 From HB Require Import structures.
 From Semiring Require Import Structures OrelN OrderSemiring.
 
-(* ------------------------------------------------------------------ *)
-(*  The obligations                                                     *)
-(* ------------------------------------------------------------------ *)
+(** ** The obligations *)
 
 Record CanonSpec (A : Type) := {
   cs_eq_dec : forall x y : A, {x = y} + {x <> y};
@@ -50,22 +46,22 @@ Record CanonSpec (A : Type) := {
   cs_bot    : A;
   cs_top    : A;
 
-  (* [cs_le] is a total preorder — note the absence of antisymmetry *)
+  (** [cs_le] is a total preorder — note the absence of antisymmetry *)
   cs_refl  : forall a, cs_le a a = true;
   cs_trans : forall a b c,
     cs_le a b = true -> cs_le b c = true -> cs_le a c = true;
   cs_total : forall a b, cs_le a b = true \/ cs_le b a = true;
 
-  (* [cs_norm] picks a canonical representative of each equivalence class:
-     idempotent, sound (it stays inside the class) and complete (equivalent
-     elements get the same representative) *)
+  (** [cs_norm] picks a canonical representative of each equivalence class:
+      idempotent, sound (it stays inside the class) and complete (equivalent
+      elements get the same representative) *)
   cs_norm_idem  : forall a, cs_norm (cs_norm a) = cs_norm a;
   cs_norm_le    : forall a, cs_le a (cs_norm a) = true;
   cs_norm_ge    : forall a, cs_le (cs_norm a) a = true;
   cs_norm_compl : forall a b,
     cs_le a b = true -> cs_le b a = true -> cs_norm a = cs_norm b;
 
-  (* extremal elements, already canonical *)
+  (** extremal elements, already canonical *)
   cs_bot_canon    : cs_norm cs_bot = cs_bot;
   cs_top_canon    : cs_norm cs_top = cs_top;
   cs_bot_least    : forall a, cs_le cs_bot a = true;
@@ -97,9 +93,7 @@ Section Normalized.
   Local Notation snorm  := (cs_norm cs).
   Local Notation seqd   := (cs_eq_dec cs).
 
-  (* ----------------------------------------------------------------- *)
-  (*  The carrier of canonical representatives                          *)
-  (* ----------------------------------------------------------------- *)
+  (** ** The carrier of canonical representatives *)
 
   Definition is_norm (a : A) : bool :=
     if seqd (snorm a) a then true else false.
@@ -145,9 +139,7 @@ Section Normalized.
   Definition botN : NT := exist _ (cs_bot cs) bot_is_norm.
   Definition topN : NT := exist _ (cs_top cs) top_is_norm.
 
-  (* ----------------------------------------------------------------- *)
-  (*  …carries a total ORDER                                            *)
-  (* ----------------------------------------------------------------- *)
+  (** ** …carries a total ORDER *)
 
   Definition leN (x y : NT) : bool := sle (val x) (val y).
 
@@ -193,12 +185,10 @@ Section Normalized.
              (cs_trans cs _ _ _ Hab (cs_norm_ge cs b))).
   Qed.
 
-  (* ----------------------------------------------------------------- *)
-  (*  …and hence a bounded commutative semiring                         *)
-  (*                                                                     *)
-  (*  Every law comes from OrderSemiring applied to [leN]; nothing is     *)
-  (*  proved again here.                                                  *)
-  (* ----------------------------------------------------------------- *)
+  (** ** …and hence a bounded commutative semiring
+
+      Every law comes from OrderSemiring applied to [leN]; nothing is
+      proved again here. *)
 
   HB.instance Definition _ := IsCommutativeMonoid.Build NT
     botN (add_max leN)
@@ -223,22 +213,18 @@ Section Normalized.
   HB.instance Definition _ := IsBoundedSemiring.Build NT
     (add_max_top_l leN topN topN_greatest).
 
-  (* ----------------------------------------------------------------- *)
-  (*  The two orders agree                                              *)
-  (*                                                                     *)
-  (*  [Orel] is derived from addition as [x + y = y], and is what all of  *)
-  (*  SocialchoiceN.v reasons with.  A client who starts from [cs_le]     *)
-  (*  needs to know it is the same relation.                              *)
-  (* ----------------------------------------------------------------- *)
+  (** ** The two orders agree
 
-  (* ----------------------------------------------------------------- *)
-  (*  Structural facts, and why they are trivial here                   *)
-  (*                                                                     *)
-  (*  Several theorems in SocialchoiceN.v carry these as hypotheses on    *)
-  (*  the carrier.  On [NT] they are not assumptions at all: both         *)
-  (*  operations RETURN ONE OF THEIR ARGUMENTS, so selectivity and the    *)
-  (*  meet-lower-bound property hold by case analysis on a boolean.       *)
-  (* ----------------------------------------------------------------- *)
+      [Orel] is derived from addition as [x + y = y], and is what all of
+      SocialchoiceN.v reasons with.  A client who starts from [cs_le]
+      needs to know it is the same relation. *)
+
+  (** ** Structural facts, and why they are trivial here
+
+      Several theorems in SocialchoiceN.v carry these as hypotheses on
+      the carrier.  On [NT] they are not assumptions at all: both
+      operations RETURN ONE OF THEIR ARGUMENTS, so selectivity and the
+      meet-lower-bound property hold by case analysis on a boolean. *)
 
   (** Selectivity — [H_total_order] in SocialchoiceN.v. *)
   Lemma NT_selective : forall x y : NT, add x y = x \/ add x y = y.

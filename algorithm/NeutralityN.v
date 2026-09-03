@@ -10,31 +10,26 @@ Import ListNotations SemiringNotations.
 Local Infix "≤" := Orel (at level 70).
 Local Infix "<" := (fun x y => x ≤ y ∧ x ≠ y) (at level 70).
 
-(* ===================================================== *)
-(*  Schulze over a semiring: neutrality (2.1)           *)
-(*  Split out of the former monolithic SocialchoiceN.v. *)
-(* ===================================================== *)
+(** Schulze over a semiring: neutrality (2.1)
+    Split out of the former monolithic SocialchoiceN.v. *)
 
 Section NeutralityN.
 
   Context {Node : FinType.type}.
 
 
-  (* ==================================================================== *)
-  (*  Neutrality (§2.1)                                                    *)
-  (*                                                                       *)
-  (*  Schulze notes in §2.1 that making the strength of a link depend only *)
-  (*  on N[e,f] and N[f,e] guarantees that the proposed method satisfies   *)
-  (*  anonymity and neutrality, without proving it.  Neutrality is the     *)
-  (*  claim that the method treats the alternatives symmetrically: rename  *)
-  (*  them and the outcome is renamed to match.                            *)
-  (*                                                                       *)
-  (*  Here a renaming is a bijection [s] of [Node] with inverse [t], and   *)
-  (*  the relabelled profile is [permute_matrix M s].  The whole content   *)
-  (*  is that [sum] does not notice a permutation of its index — the       *)
-  (*  closure is then equivariant termwise.                                *)
-  (*                                                                       *)
-  (* ==================================================================== *)
+  (** * Neutrality (§2.1)
+
+      Schulze notes in §2.1 that making the strength of a link depend only
+      on N[e,f] and N[f,e] guarantees that the proposed method satisfies
+      anonymity and neutrality, without proving it.  Neutrality is the
+      claim that the method treats the alternatives symmetrically: rename
+      them and the outcome is renamed to match.
+
+      Here a renaming is a bijection [s] of [Node] with inverse [t], and
+      the relabelled profile is [permute_matrix M s].  The whole content
+      is that [sum] does not notice a permutation of its index — the
+      closure is then equivariant termwise. *)
 
   (** Relabelling the alternatives by [s]. *)
   Definition permute_matrix {R : Semiring.type}

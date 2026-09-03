@@ -8,20 +8,18 @@ Import ListNotations SemiringNotations.
 Local Infix "≤" := Orel (at level 70).
 Local Infix "<" := (fun x y => x ≤ y ∧ x ≠ y) (at level 70).
 
-(* ===================================================================== *)
-(*  Schulze over a semiring: the joint characterisations.               *)
-(*                                                                      *)
-(*  Transitivity and winner existence are each characterised in their   *)
-(*  own file, beside the criterion they complete.  The three results    *)
-(*  below belong to neither, because each combines both structural      *)
-(*  guarantees, so they are collected here.                             *)
-(*                                                                      *)
-(*  Well-formedness of the output (Schulze's Section 2.2) is            *)
-(*  characterised at three alternatives, because the transitivity       *)
-(*  component already supplies the converse.  The corollary that every  *)
-(*  non-winner is beaten by a winner (4.1.14) is characterised at four, *)
-(*  because refuting it means refuting winner existence.                *)
-(* ===================================================================== *)
+(** * Schulze over a semiring: the joint characterisations.
+
+    Transitivity and winner existence are each characterised in their
+    own file, beside the criterion they complete.  The three results
+    below belong to neither, because each combines both structural
+    guarantees, so they are collected here.
+
+    Well-formedness of the output (Schulze's Section 2.2) is
+    characterised at three alternatives, because the transitivity
+    component already supplies the converse.  The corollary that every
+    non-winner is beaten by a winner (4.1.14) is characterised at four,
+    because refuting it means refuting winner existence. *)
 
 Section CharacterisationsN.
 

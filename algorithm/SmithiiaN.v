@@ -6,23 +6,21 @@ Import ListNotations SemiringNotations.
 Local Infix "≤" := Orel (at level 70).
 Local Infix "<" := (fun x y => x ≤ y ∧ x ≠ y) (at level 70).
 
-(* ===================================================================== *)
-(*  Smith-IIA in its genuine removal form (Schulze 4.7.5a)               *)
-(*                                                                        *)
-(*  SocialchoiceN proves the isolation surrogate: zeroing out a weak      *)
-(*  alternative's row and column leaves the beat relation on the strong   *)
-(*  set unchanged.  The criterion Schulze states is about REMOVING the    *)
-(*  alternative, which changes the size of the alternative set and so     *)
-(*  needs the list-indexed closure of PathN.                              *)
-(*                                                                        *)
-(*  The two forms turn out to be the same object.  [isolate M d] gives    *)
-(*  [d] no links at all, which is exactly the hypothesis under which      *)
-(*  [path_star_restrict] identifies a closure over a sublist with the     *)
-(*  closure over everything.  So the removal form is the isolation form   *)
-(*  composed with a bridge, and the mathematical content, that no walk    *)
-(*  out of the weak block reaches the threshold, is already carried by    *)
-(*  [pow_from_B2_lt].                                                     *)
-(* ===================================================================== *)
+(** * Smith-IIA in its genuine removal form (Schulze 4.7.5a)
+
+    SocialchoiceN proves the isolation surrogate: zeroing out a weak
+    alternative's row and column leaves the beat relation on the strong
+    set unchanged.  The criterion Schulze states is about REMOVING the
+    alternative, which changes the size of the alternative set and so
+    needs the list-indexed closure of PathN.
+
+    The two forms turn out to be the same object.  [isolate M d] gives
+    [d] no links at all, which is exactly the hypothesis under which
+    [path_star_restrict] identifies a closure over a sublist with the
+    closure over everything.  So the removal form is the isolation form
+    composed with a bridge, and the mathematical content, that no walk
+    out of the weak block reaches the threshold, is already carried by
+    [pow_from_B2_lt]. *)
 
 Section SmithIIA.
 
@@ -74,17 +72,15 @@ Section SmithIIA.
   Lemma drop_sub (d x : Node) : List.In x (drop d) -> List.In x (@elements Node).
   Proof. intros _. apply elements_complete. Qed.
 
-  (* =================================================================== *)
-  (*  The removal theorem                                                 *)
-  (*                                                                      *)
-  (*  The hypotheses are those of [smith_iia_isolate] in SocialchoiceN,   *)
-  (*  with one addition: [M] must carry [1] on its diagonal.  The         *)
-  (*  isolation form does not need this, because [mat_star] supplies the  *)
-  (*  identity separately, whereas the list-indexed closure enumerates    *)
-  (*  paths that may take a self-loop and so reads the diagonal.  It      *)
-  (*  costs nothing in substance, since [M] and [M + I] have the same     *)
-  (*  star, but it is a genuine difference between the two statements.    *)
-  (* =================================================================== *)
+  (** * The removal theorem
+
+      The hypotheses are those of [smith_iia_isolate] in SocialchoiceN,
+      with one addition: [M] must carry [1] on its diagonal.  The
+      isolation form does not need this, because [mat_star] supplies the
+      identity separately, whereas the list-indexed closure enumerates
+      paths that may take a self-loop and so reads the diagonal.  It
+      costs nothing in substance, since [M] and [M + I] have the same
+      star, but it is a genuine difference between the two statements. *)
 
   Section Removal.
 
@@ -281,15 +277,13 @@ Section SmithIIA.
   Qed.
 
 
-  (* ------------------------------------------------------------------ *)
-  (*  Deleting the whole weak block                                      *)
-  (*                                                                     *)
-  (*  Above, one weak alternative is deleted and the rest of [B2] stays   *)
-  (*  on the ballot.  Deleting all of them is the same argument with      *)
-  (*  [isolate M d] replaced by [isolate_out B1 M], and it is in fact     *)
-  (*  simpler: once only [B1] survives, every potential beater is a       *)
-  (*  strong alternative, so the case for a surviving weak one disappears.*)
-  (* ------------------------------------------------------------------ *)
+  (** ** Deleting the whole weak block
+
+      Above, one weak alternative is deleted and the rest of [B2] stays
+      on the ballot.  Deleting all of them is the same argument with
+      [isolate M d] replaced by [isolate_out B1 M], and it is in fact
+      simpler: once only [B1] survives, every potential beater is a
+      strong alternative, so the case for a surviving weak one disappears. *)
 
   Hypothesis HB1 : B1 <> [].
 
@@ -383,18 +377,16 @@ Section SmithIIA.
 
   End Removal.
 
-  (* =================================================================== *)
-  (*  Removing a strong alternative (Schulze 4.7.6)                       *)
-  (*                                                                      *)
-  (*  The other half of the Smith-IIA definition: deleting [d ∈ B1]       *)
-  (*  leaves the beat relation on the WEAK block unchanged.  The paper    *)
-  (*  proves it as "analogous" to (4.7.5)(a), and the formal mirror is    *)
-  (*  exact: the bridge [path_star_drop_is_isolate] needs only            *)
-  (*  [e, f ≠ d], and the isolation content is [smith_iia_isolate_strong] *)
-  (*  in IsolateN.  Note the paper claims no winner-set statement here    *)
-  (*  — removing a strong alternative can of course change [S] — so       *)
-  (*  unlike (4.7.5) there is no analogue of [smith_iia_winner_set].      *)
-  (* =================================================================== *)
+  (** * Removing a strong alternative (Schulze 4.7.6)
+
+      The other half of the Smith-IIA definition: deleting [d ∈ B1]
+      leaves the beat relation on the WEAK block unchanged.  The paper
+      proves it as "analogous" to (4.7.5)(a), and the formal mirror is
+      exact: the bridge [path_star_drop_is_isolate] needs only
+      [e, f ≠ d], and the isolation content is [smith_iia_isolate_strong]
+      in IsolateN.  Note the paper claims no winner-set statement here
+      — removing a strong alternative can of course change [S] — so
+      unlike (4.7.5) there is no analogue of [smith_iia_winner_set]. *)
 
   Section RemovalStrong.
 

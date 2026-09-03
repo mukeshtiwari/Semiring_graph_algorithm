@@ -6,10 +6,8 @@ Import ListNotations SemiringNotations.
 Local Infix "≤" := Orel (at level 70).
 Local Infix "<" := (fun x y => x ≤ y ∧ x ≠ y) (at level 70).
 
-(* =================================================================== *)
-(*  Schulze over a semiring: the five definitions and the Kleene star *)
-(*  Split out of the former monolithic SocialchoiceN.v.               *)
-(* =================================================================== *)
+(** Schulze over a semiring: the five definitions and the Kleene star
+    Split out of the former monolithic SocialchoiceN.v. *)
 
 Section SchulzeDefsN.
 
@@ -17,9 +15,7 @@ Section SchulzeDefsN.
 
   Definition kleene_exp := (List.length (@elements Node) - 1)%nat.
 
-  (* =====================================================================  *)
-  (*  Kleene star as a named definition for readability                     *)
-  (* =====================================================================  *)
+  (** * Kleene star as a named definition for readability *)
 
   Definition mat_star {R : Semiring.type} (M : @Matrix Node R)
     : @Matrix Node R :=
@@ -42,74 +38,59 @@ Section SchulzeDefsN.
   Qed.
 
 
-  (* =====================================================================  *)
-  (*  Relationship between the four definitions (all built from beats):      *)
-  (*                                                                          *)
-  (*    beats N a b          := N_{ba} < N_{ab}     (fundamental)            *)
-  (*    condorcet_winner M a := ∀X≠a, beats M a X   (direct matrix)         *)
-  (*    schulze_beats M a b  := beats (mat_star M) a b  (Kleene star order) *)
-  (*    strict_winner M a    := ∀X≠a, schulze_beats M a X  (beats all)     *)
-  (*    schulze_winner M a   := ∀b≠a, ~ schulze_beats M b a  (undefeated)  *)
-  (*                                                                          *)
-  (*  The paper's Definition 2.2.1 (relation O) is schulze_beats.            *)
-  (*  The paper's Definition 2.2.2 (winner set S) is schulze_winner.         *)
-  (* =====================================================================  *)
-  (*  Stabilization lemma: pow (M+I) stabilizes after |N|-1 steps.           *)
-  (* =====================================================================  *)
+  (** * Relationship between the four definitions (all built from beats):
+
+        beats N a b          := N_{ba} < N_{ab}     (fundamental)
+        condorcet_winner M a := ∀X≠a, beats M a X   (direct matrix)
+        schulze_beats M a b  := beats (mat_star M) a b  (Kleene star order)
+        strict_winner M a    := ∀X≠a, schulze_beats M a X  (beats all)
+        schulze_winner M a   := ∀b≠a, ~ schulze_beats M b a  (undefeated)
+
+      The paper's Definition 2.2.1 (relation O) is schulze_beats.
+      The paper's Definition 2.2.2 (winner set S) is schulze_winner.
+      Stabilization lemma: pow (M+I) stabilizes after |N|-1 steps. *)
 
 
-  (* =====================================================================  *)
-  (*  Fundamental: a beats b in matrix N if N_{ba} < N_{ab}                 *)
-  (*  — i.e., N b a ≤ N a b  ∧  N b a ≠ N a b.                      *)
-  (* =====================================================================  *)
+  (** Fundamental: a beats b in matrix N if N_{ba} < N_{ab}
+      — i.e., N b a ≤ N a b  ∧  N b a ≠ N a b. *)
 
   Definition beats {R : Semiring.type}
     (N : @Matrix Node R) (a b : Node) : Prop :=
     N b a < N a b.
 
-  (* =====================================================================  *)
-  (*  Condorcet winner: beats everyone in the DIRECT matrix M               *)
-  (*  condorcet_winner M a := ∀X≠a, beats M a X                             *)
-  (* =====================================================================  *)
+  (** Condorcet winner: beats everyone in the DIRECT matrix M
+      condorcet_winner M a := ∀X≠a, beats M a X *)
 
   Definition condorcet_winner {R : Semiring.type}
     (M : @Matrix Node R) (a : Node) : Prop :=
     forall (X : Node), X ≠ a -> beats M a X.
 
-  (* =====================================================================  *)
-  (*  Schulze order: beats in the Kleene star M*                            *)
-  (*  schulze_beats M a b := beats (mat_star M) a b                         *)
-  (*  (Definition 2.2.1 in the paper)                                       *)
-  (* =====================================================================  *)
+  (** Schulze order: beats in the Kleene star M*
+      schulze_beats M a b := beats (mat_star M) a b
+      (Definition 2.2.1 in the paper) *)
 
   Definition schulze_beats {R : Semiring.type}
     (M : @Matrix Node R) (a b : Node) : Prop :=
     beats (mat_star M) a b.
 
-  (* =====================================================================  *)
-  (*  Strict winner: beats everyone in the Schulze sense (via M* )          *)
-  (*  strict_winner M a := ∀X≠a, schulze_beats M a X                        *)
-  (* =====================================================================  *)
+  (** Strict winner: beats everyone in the Schulze sense (via M* )
+      strict_winner M a := ∀X≠a, schulze_beats M a X *)
 
   Definition strict_winner {R : Semiring.type}
     (M : @Matrix Node R) (a : Node) : Prop :=
     forall (X : Node), X ≠ a -> schulze_beats M a X.
 
-  (* =====================================================================  *)
-  (*  Schulze winner: nobody beats me in the Schulze sense                  *)
-  (*  schulze_winner M a := ∀b≠a, ~ schulze_beats M b a                     *)
-  (*  (Definition 2.2.2 in the paper)                                       *)
-  (* =====================================================================  *)
+  (** Schulze winner: nobody beats me in the Schulze sense
+      schulze_winner M a := ∀b≠a, ~ schulze_beats M b a
+      (Definition 2.2.2 in the paper) *)
 
   Definition schulze_winner {R : Semiring.type}
     (M : @Matrix Node R) (a : Node) : Prop :=
     forall (b : Node), b ≠ a -> ~ schulze_beats M b a.
 
-  (* =====================================================================  *)
-  (*  Strict partial order (Definition in §2.1): transitive and asymmetric. *)
-  (*  This is the shape the paper claims for the output relation O; see     *)
-  (*  [schulze_output_well_formed] below.                                   *)
-  (* =====================================================================  *)
+  (** Strict partial order (Definition in §2.1): transitive and asymmetric.
+      This is the shape the paper claims for the output relation O; see
+      [schulze_output_well_formed] below. *)
 
   Definition strict_partial_order (Rel : Node -> Node -> Prop) : Prop :=
     (forall a b c, Rel a b -> Rel b c -> Rel a c) /\

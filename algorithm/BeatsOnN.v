@@ -6,30 +6,26 @@ Import ListNotations SemiringNotations.
 
 Local Infix "≤" := Orel (at level 70).
 
-(* ===================================================================== *)
-(*  Beating and winning over a candidate list.                          *)
-(*                                                                      *)
-(*  [beats_on] and [winner_on] are [schulze_beats] and [schulze_winner] *)
-(*  with [mat_star] replaced by the list-indexed closure, and with the  *)
-(*  quantifier ranging over a candidate list rather than over the whole *)
-(*  [Node] type.  At [elements] they are the originals, which is what   *)
-(*  the two bridge lemmas at the end of the file record.                *)
-(* ===================================================================== *)
+(** * Beating and winning over a candidate list.
+
+    [beats_on] and [winner_on] are [schulze_beats] and [schulze_winner]
+    with [mat_star] replaced by the list-indexed closure, and with the
+    quantifier ranging over a candidate list rather than over the whole
+    [Node] type.  At [elements] they are the originals, which is what
+    the two bridge lemmas at the end of the file record. *)
 
 Section BeatsOnN.
 
   Context {Node : FinType.type}.
   Context {R : BoundedSemiring.type}.
 
-  (* ------------------------------------------------------------------ *)
-  (*  Beating and winning over a candidate list                          *)
-  (*                                                                     *)
-  (*  [beats_on] and [winner_on] are [schulze_beats] and [schulze_winner] *)
-  (*  of SocialchoiceN with [mat_star] replaced by the list-indexed       *)
-  (*  closure, and with the quantifier ranging over the candidate list    *)
-  (*  rather than over the whole [Node] type.  At [ns := elements] they   *)
-  (*  agree with the originals via [path_star_elements_is_mat_star].      *)
-  (* ------------------------------------------------------------------ *)
+  (** ** Beating and winning over a candidate list
+
+      [beats_on] and [winner_on] are [schulze_beats] and [schulze_winner]
+      of SocialchoiceN with [mat_star] replaced by the list-indexed
+      closure, and with the quantifier ranging over the candidate list
+      rather than over the whole [Node] type.  At [ns := elements] they
+      agree with the originals via [path_star_elements_is_mat_star]. *)
 
   Definition beats_on (ns : list Node) (m : @OrelN.Matrix Node R)
     (a b : Node) : Prop :=
@@ -62,9 +58,7 @@ Section BeatsOnN.
     unfold beats_on. intros Hab Hba [Hle Hne].
     rewrite Hab, Hba in Hle, Hne. split; assumption.
   Qed.
-  (* ------------------------------------------------------------------ *)
-  (*  Decidability and transitivity of the list-indexed beat relation     *)
-  (* ------------------------------------------------------------------ *)
+  (** ** Decidability and transitivity of the list-indexed beat relation *)
 
   Lemma orel_dec (Hdec : forall x y : R, {x = y} + {x <> y}) (x y : R) :
     {x ≤ y} + {~ (x ≤ y)}.
@@ -158,18 +152,16 @@ Section BeatsOnN.
       apply (@bounded_orel_refl R (path_star ns m a c)).
   Qed.
 
-  (* ------------------------------------------------------------------ *)
-  (*  Three-cycles in the beat relation                                  *)
-  (*                                                                     *)
-  (*  A three-cycle forces a CYCLIC TRIPLE in the carrier: three values,  *)
-  (*  each strictly above the product of the other two.  This is the      *)
-  (*  triangle core of the transitivity argument read contrapositively,   *)
-  (*  and it needs no selectivity and no meet property — only the         *)
-  (*  composition bound.  A carrier with no cyclic triple, such as the    *)
-  (*  diamond lattice, therefore admits no beat three-cycle over any      *)
-  (*  candidate list, which is what the clone criterion at four           *)
-  (*  alternatives turns on.                                              *)
-  (* ------------------------------------------------------------------ *)
+  (** ** Three-cycles in the beat relation
+
+      A three-cycle forces a CYCLIC TRIPLE in the carrier: three values,
+      each strictly above the product of the other two.  This is the
+      triangle core of the transitivity argument read contrapositively,
+      and it needs no selectivity and no meet property — only the
+      composition bound.  A carrier with no cyclic triple, such as the
+      diamond lattice, therefore admits no beat three-cycle over any
+      candidate list, which is what the clone criterion at four
+      alternatives turns on. *)
 
   Lemma beats_on_cycle3_cyclic_triple (ns : list Node)
     (m : @OrelN.Matrix Node R)
@@ -271,9 +263,7 @@ Section BeatsOnN.
       + subst v3. exact (Hnc u0 v2 v1 Hu0 Hv2 Hv1 R3 R2 R1).
   Qed.
 
-  (* ------------------------------------------------------------------ *)
-  (*  Winner sets (Schulze 4.6.7 and 4.6.8)                              *)
-  (* ------------------------------------------------------------------ *)
+  (** ** Winner sets (Schulze 4.6.7 and 4.6.8) *)
 
   (** A nonempty list has a maximal element under any decidable relation that
       is transitive and irreflexive on its members.  Restricting the two

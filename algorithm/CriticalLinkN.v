@@ -1,31 +1,29 @@
-(* ========================================================================= *)
-(*  Thresholds, cuts, and the critical link (Schulze 4.2.1, second half)      *)
-(*                                                                           *)
-(*  Several of Schulze's arguments locate the weakest link of a strongest     *)
-(*  path and split the path there.  This development has no path witnesses    *)
-(*  for closure entries, so the same reasoning is done with two algebraic     *)
-(*  tools instead, both valid over a selective bounded semiring whose          *)
-(*  multiplication is the meet of the natural order:                          *)
-(*                                                                           *)
-(*    - THRESHOLDS.  Zeroing every link that is not strictly above [c] does   *)
-(*      not lower any closure entry that was strictly above [c]               *)
-(*      ([mat_star_above_restrict]).  So the statement that the strongest    *)
-(*      path from [a] to [b] uses only links above [c] is expressed without   *)
-(*      naming the path.                                                      *)
-(*    - CUTS.  If every link entering a set of nodes is strictly below [c],   *)
-(*      no closure entry from outside the set into it reaches [c]             *)
-(*      ([mat_star_lt_of_cut], a packaging of SmithN's [pow_from_B2_lt]).     *)
-(*                                                                           *)
-(*  With these, the second half of 4.2.1 goes through: when no two distinct   *)
-(*  links have the same strength, two winners [a ≠ b] force a tie             *)
-(*  [P[a,b] = P[b,a] = c], and [c] is the strength of exactly one link [ef].  *)
-(*  The set of nodes reachable from [a] above [c] must be left through a link  *)
-(*  of strength exactly [c] (else, by the cut lemma, [P[a,b] < c]), which is   *)
-(*  [ef]; likewise the set of nodes reaching [a] above [c] must be entered     *)
-(*  through [ef].  Hence [P[a,f] ≤ c < P[f,a]]: [f] beats [a], contradicting   *)
-(*  that [a] is a winner.  This is the paper's (4.2.1.4) to (4.2.1.9), with    *)
-(*  reachability sets in place of path prefixes and suffixes.                 *)
-(* ========================================================================= *)
+(** * Thresholds, cuts, and the critical link (Schulze 4.2.1, second half)
+
+    Several of Schulze's arguments locate the weakest link of a strongest
+    path and split the path there.  This development has no path witnesses
+    for closure entries, so the same reasoning is done with two algebraic
+    tools instead, both valid over a selective bounded semiring whose
+    multiplication is the meet of the natural order:
+
+      - THRESHOLDS.  Zeroing every link that is not strictly above [c] does
+        not lower any closure entry that was strictly above [c]
+        ([mat_star_above_restrict]).  So the statement that the strongest
+        path from [a] to [b] uses only links above [c] is expressed without
+        naming the path.
+      - CUTS.  If every link entering a set of nodes is strictly below [c],
+        no closure entry from outside the set into it reaches [c]
+        ([mat_star_lt_of_cut], a packaging of SmithN's [pow_from_B2_lt]).
+
+    With these, the second half of 4.2.1 goes through: when no two distinct
+    links have the same strength, two winners [a ≠ b] force a tie
+    [P[a,b] = P[b,a] = c], and [c] is the strength of exactly one link [ef].
+    The set of nodes reachable from [a] above [c] must be left through a link
+    of strength exactly [c] (else, by the cut lemma, [P[a,b] < c]), which is
+    [ef]; likewise the set of nodes reaching [a] above [c] must be entered
+    through [ef].  Hence [P[a,f] ≤ c < P[f,a]]: [f] beats [a], contradicting
+    that [a] is a winner.  This is the paper's (4.2.1.4) to (4.2.1.9), with
+    reachability sets in place of path prefixes and suffixes. *)
 
 From Stdlib Require Import Utf8 List Arith Lia Bool.
 From HB Require Import structures.
@@ -33,9 +31,7 @@ From Semiring Require Import Structures OrelN MatN SemimoduleN
   SocialchoiceN SmithN BeatsOnN.
 Import ListNotations SemiringNotations.
 
-(* ------------------------------------------------------------------ *)
-(*  Counting with filters                                              *)
-(* ------------------------------------------------------------------ *)
+(** ** Counting with filters *)
 
 Lemma filter_length_le_of_impl {A : Type} (f g : A -> bool) (l : list A) :
   (forall x, In x l -> f x = true -> g x = true) ->
@@ -79,9 +75,7 @@ Section CriticalLinkN.
   Hypothesis Htotal : forall x y : R, x + y = x \/ x + y = y.
   Hypothesis Hmeet : forall m a b : R, Orel m a -> Orel m b -> Orel m (a * b).
 
-  (* ---------------------------------------------------------------- *)
-  (*  Order facts                                                      *)
-  (* ---------------------------------------------------------------- *)
+  (** ** Order facts *)
 
   (** Multiplication is the minimum. *)
   Lemma mul_min : forall u v : R, u * v = u \/ u * v = v.
@@ -131,9 +125,7 @@ Section CriticalLinkN.
     split; [exact H |]. intro E. subst. apply Hn. apply bounded_orel_refl.
   Qed.
 
-  (* ---------------------------------------------------------------- *)
-  (*  Restricting a matrix to a set of links                           *)
-  (* ---------------------------------------------------------------- *)
+  (** ** Restricting a matrix to a set of links *)
 
   Definition restrict (M : @Matrix Node R) (keep : Node -> Node -> bool)
     : @Matrix Node R :=
@@ -216,9 +208,7 @@ Section CriticalLinkN.
     - rewrite filter_In. split; [apply elements_complete | exact Hx].
   Qed.
 
-  (* ---------------------------------------------------------------- *)
-  (*  Off-diagonal closure entries stay below the top                  *)
-  (* ---------------------------------------------------------------- *)
+  (** ** Off-diagonal closure entries stay below the top *)
 
   Lemma zero_ne_one_of_link : forall (M : @Matrix Node R) x y,
     x <> y -> M x y <> 1 -> (0 : R) <> 1.
@@ -250,10 +240,8 @@ Section CriticalLinkN.
     exact (pow_off_diag_lt_one M Hne_one n x y Hxy).
   Qed.
 
-  (* ================================================================ *)
-  (*  Pairwise distinct link strengths force a unique winner           *)
-  (*  (Schulze 4.2.1, the combinatorial statement behind Formulation 1)*)
-  (* ================================================================ *)
+  (** Pairwise distinct link strengths force a unique winner
+      (Schulze 4.2.1, the combinatorial statement behind Formulation 1) *)
 
   Section DistinctLinks.
 
@@ -322,7 +310,7 @@ Section CriticalLinkN.
       Lemma c_lt_one : Orel c 1 /\ c <> 1.
       Proof. split; [apply le_one | exact Hc1]. Qed.
 
-      (* --- the set reachable from [a] --- *)
+      (** --- the set reachable from [a] --- *)
 
       Lemma U_a : U a = true.
       Proof. unfold U. apply gtb_true. rewrite mat_star_diag_one. exact c_lt_one. Qed.
@@ -405,7 +393,7 @@ Section CriticalLinkN.
       Lemma f_ne_a : f <> a.
       Proof. intro E. destruct U_ef as [_ Hf]. rewrite E, U_a in Hf. discriminate. Qed.
 
-      (* --- the set reaching [a] --- *)
+      (** --- the set reaching [a] --- *)
 
       Lemma V_a : V a = true.
       Proof. unfold V. apply gtb_true. rewrite mat_star_diag_one. exact c_lt_one. Qed.
@@ -485,12 +473,12 @@ Section CriticalLinkN.
       forall a b, schulze_winner M a -> schulze_winner M b -> a = b.
     Proof.
       intros a b Hwa Hwb. destruct (fin_eq_dec a b) as [E | Hab]; [exact E | exfalso].
-      (* two winners tie *)
+      (** two winners tie *)
       assert (Hba : mat_star M b a = mat_star M a b).
       { apply orel_antisym.
         - apply not_lt_le. exact (Hwa b (not_eq_sym Hab)).
         - apply not_lt_le. exact (Hwb a Hab). }
-      (* the tie value is neither extreme *)
+      (** the tie value is neither extreme *)
       assert (Hc0 : mat_star M a b <> 0).
       { intro H0.
         assert (Hab0 : M a b = 0).
@@ -501,7 +489,7 @@ Section CriticalLinkN.
         exact (Hab E). }
       assert (Hc1 : mat_star M a b <> 1).
       { exact (proj2 (mat_star_off_diag_lt_one M Hne_one a b Hab)). }
-      (* …so it is the strength of a link, and that link is off-diagonal *)
+      (** …so it is the strength of a link, and that link is off-diagonal *)
       destruct (mat_star_link_or_extreme Htotal meet_of_le M a b) as [H0 | [H1 | [x [y Hxy]]]];
         [exact (Hc0 H0) | exact (Hc1 H1) |].
       destruct (fin_eq_dec x y) as [Exy | Hxy_ne].

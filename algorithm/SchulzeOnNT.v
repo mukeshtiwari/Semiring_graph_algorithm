@@ -1,33 +1,31 @@
-(* ========================================================================= *)
-(*  The Schulze theorems on a normalised carrier                             *)
-(*                                                                           *)
-(*  Several results in SocialchoiceN.v are stated with hypotheses on the      *)
-(*  carrier: selectivity of [+], the meet-lower-bound property of [*], and    *)
-(*  decidable equality.  Read as assumptions about an arbitrary semiring      *)
-(*  those look strong — the comment on [H_meet_lower_bound] in that file      *)
-(*  calls it "simply max-min semiring in disguise".                          *)
-(*                                                                           *)
-(*  For a carrier built by NormalizedOrder they are not assumptions.  They    *)
-(*  are consequences of the construction: [+] is the join and [*] the meet    *)
-(*  of a total order, so both return one of their arguments.  This file       *)
-(*  discharges them once, so the theorems apply to EVERY link-strength        *)
-(*  measure fed through the pipeline with nothing left to supply.             *)
-(*                                                                           *)
-(*  What does NOT become free is worth noting too.  [smith_criterion_weaker]  *)
-(*  and [condorcet_implies_strict_winner_weaker] each keep a condition about  *)
-(*  the MATRIX — a value separating the two blocks, and dominance of the      *)
-(*  Condorcet winner respectively.  Those are properties of a profile, not    *)
-(*  of an algebra, and no carrier construction can supply them.  The split    *)
-(*  is exactly the algebraic / ballot-level division of labour.               *)
-(* ========================================================================= *)
+(** * The Schulze theorems on a normalised carrier
+
+    Several results in SocialchoiceN.v are stated with hypotheses on the
+    carrier: selectivity of [+], the meet-lower-bound property of [*], and
+    decidable equality.  Read as assumptions about an arbitrary semiring
+    those look strong — the comment on [H_meet_lower_bound] in that file
+    calls it "simply max-min semiring in disguise".
+
+    For a carrier built by NormalizedOrder they are not assumptions.  They
+    are consequences of the construction: [+] is the join and [*] the meet
+    of a total order, so both return one of their arguments.  This file
+    discharges them once, so the theorems apply to EVERY link-strength
+    measure fed through the pipeline with nothing left to supply.
+
+    What does NOT become free is worth noting too.  [smith_criterion_weaker]
+    and [condorcet_implies_strict_winner_weaker] each keep a condition about
+    the MATRIX — a value separating the two blocks, and dominance of the
+    Condorcet winner respectively.  Those are properties of a profile, not
+    of an algebra, and no carrier construction can supply them.  The split
+    is exactly the algebraic / ballot-level division of labour. *)
 
 From Stdlib Require Import Utf8 List.
 From Semiring Require Import Structures OrelN MatN SemimoduleN
   OrderSemiring NormalizedOrder SocialchoiceN.
 Import ListNotations.
 
-(* The order notations are Local to SocialchoiceN.v, so they are restated
-   here; they unfold to the same thing. *)
+(** The order notations are Local to SocialchoiceN.v, so they are restated
+    here; they unfold to the same thing. *)
 Local Infix "≤" := Orel (at level 70).
 Local Infix "<" := (fun x y => x ≤ y /\ x <> y) (at level 70).
 
@@ -96,7 +94,7 @@ Section SchulzeOnNT.
     exact (untied_winner_unique (NT_selective cs) M a Hnoties).
   Qed.
 
-  (** The remaining Pareto #2 conclusions (4.3.2.3 / .4 / .5).  These carry
+  (** The remaining Pareto [#2] conclusions (4.3.2.3 / .4 / .5).  These carry
       no algebraic hypotheses even in the general file — only conditions on
       the matrix — so there is nothing for the normalised carrier to shed;
       they are listed here only to keep the paper-section index in one place.

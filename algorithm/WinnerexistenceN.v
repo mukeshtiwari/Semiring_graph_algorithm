@@ -8,10 +8,8 @@ Import ListNotations SemiringNotations.
 Local Infix "≤" := Orel (at level 70).
 Local Infix "<" := (fun x y => x ≤ y ∧ x ≠ y) (at level 70).
 
-(* ============================================================================== *)
-(*  Schulze over a semiring: winner existence, and its characterisation (4.1.14) *)
-(*  Split out of the former monolithic SocialchoiceN.v.                          *)
-(* ============================================================================== *)
+(** Schulze over a semiring: winner existence, and its characterisation (4.1.14)
+    Split out of the former monolithic SocialchoiceN.v. *)
 
 Section WinnerexistenceN.
 
@@ -32,7 +30,7 @@ Section WinnerexistenceN.
     destruct (Hdec (x + y) x) as [Hx|Hx]; [left; exact Hx |].
     destruct (Hdec (x + y) y) as [Hy|Hy]; [right; exact Hy |].
     exfalso.
-    (* x and y are incomparable *)
+    (** x and y are incomparable *)
     assert (Hxy : ~ (x ≤ y)) by exact Hy.
     assert (Hyx : ~ (y ≤ x)).
     { intro h. apply Hx. unfold Orel in h. rewrite addC. exact h. }
@@ -51,14 +49,14 @@ Section WinnerexistenceN.
              Hy0 H1 H1' H2 H2' w Hw).
   Qed.
 
-  (* The proof only ever establishes the meet property, never selectivity —
-     see the discussion in the ICALP paper (Section 6, "Why the
-     winner-existence witness cannot be the same one") for why the natural
-     three-node witness cannot also rule out non-selectivity: the analogous
-     triangle T(x, y, x*y) ties on its third edge instead of cycling, since
-     that edge compares x*y against itself by construction. The conclusion
-     is stated as the meet property outright, matching what is actually
-     proved, rather than as a disjunction with an unused left disjunct. *)
+  (** The proof only ever establishes the meet property, never selectivity —
+      see the discussion in the ICALP paper (Section 6, "Why the
+      winner-existence witness cannot be the same one") for why the natural
+      three-node witness cannot also rule out non-selectivity: the analogous
+      triangle T(x, y, x*y) ties on its third edge instead of cycling, since
+      that edge compares x*y against itself by construction. The conclusion
+      is stated as the meet property outright, matching what is actually
+      proved, rather than as a disjunction with an unused left disjunct. *)
   Theorem winner_exists_weaker_sufficient {R : BoundedSemiring.type}
     (Hlen : (3 <= length (@elements Node))%nat)
     (Hdec : forall x y : R, {x = y} + {x ≠ y})
@@ -71,7 +69,7 @@ Section WinnerexistenceN.
     exfalso.
     assert (Hnle : ~ (m ≤ a * b)) by exact H.
     destruct (three_distinct_nodes Hlen) as (X & Y & Z & HXY & HYZ & HXZ).
-    (* [a] is not the bottom: there both [m] and [a * b] would collapse to it *)
+    (** [a] is not the bottom: there both [m] and [a * b] would collapse to it *)
     assert (Hp : a <> 0).
     { intro h. apply Hnle.
       assert (Hab : a * b ≤ a) by apply (@bounded_mul_lower_left R a b).
@@ -79,8 +77,8 @@ Section WinnerexistenceN.
       rewrite (orel_antisym _ _ Hma (zero_is_bottom m)).
       rewrite (orel_antisym _ _ Hab (zero_is_bottom (0 * b))).
       apply (@bounded_orel_refl R 0). }
-    (* Raise [m] to [m + a*b], which still lies below [a] and [b] but now has
-       [a * b] STRICTLY below it — the third edge of the cycle. *)
+    (** Raise [m] to [m + a*b], which still lies below [a] and [b] but now has
+        [a * b] STRICTLY below it — the third edge of the cycle. *)
     assert (Hna : m + a * b ≤ a)
       by (apply add_orel_bound;
           [exact Hma | apply (@bounded_mul_lower_left R a b)]).
@@ -90,8 +88,8 @@ Section WinnerexistenceN.
     assert (H3 : a * b ≤ m + a * b) by apply orel_plus_upper_right.
     assert (H3' : a * b <> m + a * b)
       by (intro h; apply Hnle; unfold Orel; symmetry; exact h).
-    (* The other two edges.  Each can only tie by collapsing [a] or [b] onto
-       the normalised value, which contradicts [H3']. *)
+    (** The other two edges.  Each can only tie by collapsing [a] or [b] onto
+        the normalised value, which contradicts [H3']. *)
     assert (H1 : b * (m + a * b) ≤ a)
       by exact (orel_trans _ _ _
                   (@bounded_mul_lower_right R b (m + a * b)) Hna).
@@ -112,7 +110,7 @@ Section WinnerexistenceN.
           [rewrite <- h at 1; apply (@bounded_mul_lower_left R (m + a * b) a)
           | exact Hnb]. }
       rewrite <- Hbn in h. apply H3'. rewrite <- Hbn, (Hcomm a b). exact h. }
-    (* The triangle X → Y → Z → X carrying (a, b, m + a*b) has no winner. *)
+    (** The triangle X → Y → Z → X carrying (a, b, m + a*b) has no winner. *)
     destruct (Hwin (tri_matrix X Y Z a b (m + a * b))) as [w Hw].
     exact (tri_no_winner X Y Z HXY HYZ HXZ a b (m + a * b)
              Hp H1 H1' H2 H2' H3 H3' w Hw).
@@ -138,7 +136,7 @@ Section WinnerexistenceN.
     destruct (Hdec (m + a * b) (a * b)) as [H|H]; [exact H |].
     exfalso.
     assert (Hnle : ~ (m ≤ a * b)) by exact H.
-    (* totality: a * b sits strictly below m *)
+    (** totality: a * b sits strictly below m *)
     assert (Hab_le : a * b ≤ m).
     { destruct (Hsel m (a * b)) as [h|h].
       - unfold Orel. rewrite addC. exact h.
