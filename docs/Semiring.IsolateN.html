@@ -177,7 +177,47 @@ A closure entry between two members of <span class="inlinecode"><a class="idref"
 </div>
 
 <div class="doc">
-Smith-IIA (4.7.5)(a), in the isolation reading: a weak alternative has
+<a id="lab44"></a><h2 class="section">Smith-IIA (4.7.5a) — isolation rather than removal</h2>
+
+
+<div class="paragraph"> </div>
+
+      The paper compares the method before and after REMOVING a weak
+      alternative <span class="inlinecode"><a class="idref" href="Semiring.SmithiiaN.html#SmithIIA.RemovalStrong.d"><span class="id" title="variable">d</span></a></span> <span class="inlinecode">∈</span> <span class="inlinecode"><a class="idref" href="Semiring.SmithiiaN.html#SmithIIA.RemovalStrong.B2"><span class="id" title="variable">B2</span></a></span>.  Removal is not expressible here: <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#sum"><span class="id" title="definition">sum</span></a></span> folds
+      over <span class="inlinecode"><a class="idref" href="Semiring.Structures.html#elements"><span class="id" title="definition">elements</span></a></span>, the whole <span class="inlinecode"><a class="idref" href="Semiring.Structures.html#FinType"><span class="id" title="abbreviation">FinType</span></a></span> enumeration, so <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#matrix_mul"><span class="id" title="definition">matrix_mul</span></a></span>,
+      <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#pow"><span class="id" title="definition">pow</span></a></span>, <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#geom_sum"><span class="id" title="definition">geom_sum</span></a></span>, <span class="inlinecode"><a class="idref" href="Semiring.SchulzeDefsN.html#mat_star"><span class="id" title="definition">mat_star</span></a></span> and <span class="inlinecode"><a class="idref" href="Semiring.SchulzeDefsN.html#kleene_exp"><span class="id" title="definition">kleene_exp</span></a></span> are all tied to one
+      fixed alternative set, and there is no closure over a subset to
+      write <span class="inlinecode"><a class="idref" href="Semiring.BallotN.html#BallotN.Clones.P_new"><span class="id" title="variable">P_new</span></a></span> with.
+
+<div class="paragraph"> </div>
+
+      What is expressible is ISOLATION: cut every link into and out of
+      <span class="inlinecode"><a class="idref" href="Semiring.SmithiiaN.html#SmithIIA.RemovalStrong.d"><span class="id" title="variable">d</span></a></span>, leaving the node in place.  <span class="inlinecode"><a class="idref" href="Semiring.IsolateN.html#smith_iia_isolate"><span class="id" title="lemma">smith_iia_isolate</span></a></span> then says the
+      relation O restricted to <span class="inlinecode"><a class="idref" href="Semiring.SmithiiaN.html#SmithIIA.RemovalStrong.B1"><span class="id" title="variable">B1</span></a></span> is unchanged — the content of
+      (4.7.5)(a).  Two caveats, both real:
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> It needs <span class="inlinecode"><a class="idref" href="Semiring.SmithiiaN.html#SmithIIA.RemovalStrong.Hsep"><span class="id" title="variable">Hsep</span></a></span>, which the paper gets from (2.1.2): between two
+        distinct alternatives the stronger direction is at least a tie,
+        hence clears the threshold.  The Smith hypotheses alone relate
+        only B1-to-B2 pairs, so this has to be assumed.
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> (4.7.5)(b) <span class="inlinecode"><span class="id" title="var">S_old</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="var">S_new</span></span> does NOT transfer to isolation.  An
+        isolated <span class="inlinecode"><a class="idref" href="Semiring.SmithiiaN.html#SmithIIA.RemovalStrong.d"><span class="id" title="variable">d</span></a></span> has every link at <span class="inlinecode">0</span>, so nobody beats it and it
+        becomes a spurious winner — an artefact of leaving the node in
+        place.  Only removal gets (b) right. 
+</li>
+</ul>
+
+<div class="paragraph"> </div>
+
+ Smith-IIA (4.7.5)(a), in the isolation reading: a weak alternative has
       no bearing on how the strong ones compare. 
 </div>
 <div class="code">
@@ -263,7 +303,7 @@ were the converse also above c it would be preserved too, forcing a
 </div>
 
 <div class="doc">
-<a id="lab44"></a><h2 class="section">Removing a strong alternative (Schulze 4.7.6)</h2>
+<a id="lab45"></a><h2 class="section">Removing a strong alternative (Schulze 4.7.6)</h2>
 
 
 <div class="paragraph"> </div>
@@ -449,7 +489,7 @@ were the converse also above c it would be preserved too, forcing a
 </div>
 
 <div class="doc">
-<a id="lab45"></a><h2 class="section">Removing the whole weak block at once</h2>
+<a id="lab46"></a><h2 class="section">Removing the whole weak block at once</h2>
 
 
 <div class="paragraph"> </div>

@@ -101,7 +101,7 @@ Section: Generic Definitions
 </div>
 
 <div class="doc">
-<a id="lab46"></a><h1 class="section">Section: Proofs about the generic list combinators</h1>
+<a id="lab47"></a><h1 class="section">Section: Proofs about the generic list combinators</h1>
 
 </div>
 <div class="code">
@@ -404,7 +404,7 @@ generalised matrix multiplication
 </div>
 
 <div class="doc">
-<a id="lab47"></a><h2 class="section">Matrix exponentiation</h2>
+<a id="lab48"></a><h2 class="section">Matrix exponentiation</h2>
 
 </div>
 <div class="code">
@@ -459,7 +459,7 @@ Matrix exponentiation for <span class="inlinecode"><a class="idref" href="http:/
 </div>
 
 <div class="doc">
-<a id="lab48"></a><h2 class="section">Scalar exponentiation and partial sums</h2>
+<a id="lab49"></a><h2 class="section">Scalar exponentiation and partial sums</h2>
 
 </div>
 <div class="code">
@@ -501,7 +501,7 @@ Matrix geometric series: <span class="inlinecode"><a class="idref" href="Semirin
 </div>
 
 <div class="doc">
-<a id="lab49"></a><h2 class="section">Efficient list-based matrix operations</h2>
+<a id="lab50"></a><h2 class="section">Efficient list-based matrix operations</h2>
 
 <div class="paragraph"> </div>
 
@@ -573,7 +573,7 @@ Matrix exponentiation for <span class="inlinecode"><a class="idref" href="http:/
 </div>
 
 <div class="doc">
-<a id="lab50"></a><h2 class="section">Lookup &amp; conversion helpers (mirrors list_lookup in Semimodule)</h2>
+<a id="lab51"></a><h2 class="section">Lookup &amp; conversion helpers (mirrors list_lookup in Semimodule)</h2>
 
 <div class="paragraph"> </div>
 
@@ -645,7 +645,7 @@ Matrix exponentiation for <span class="inlinecode"><a class="idref" href="http:/
 </div>
 
 <div class="doc">
-<a id="lab51"></a><h2 class="section">Correctness: looking up a tabulated matrix returns the original</h2>
+<a id="lab52"></a><h2 class="section">Correctness: looking up a tabulated matrix returns the original</h2>
 
 </div>
 <div class="code">
@@ -723,11 +723,11 @@ Now: list_lookup 0 elements (map (fun c0 =&gt; m r c0) elements) c = m r c
 </div>
 
 <div class="doc">
-<a id="lab52"></a><h2 class="section">pow = pow_fun  (mathematical = efficient, unary case)</h2>
+<a id="lab53"></a><h2 class="section">pow = pow_fun  (mathematical = efficient, unary case)</h2>
 
 <div class="paragraph"> </div>
 
-<a id="lab53"></a><h2 class="section">Helper: positional index of a node in elements</h2>
+<a id="lab54"></a><h2 class="section">Helper: positional index of a node in elements</h2>
 
 </div>
 <div class="code">
@@ -774,7 +774,7 @@ The index of any node is within the element list length.
 </div>
 
 <div class="doc">
-<a id="lab54"></a><h2 class="section">list_lookup expressed via nth + index_of</h2>
+<a id="lab55"></a><h2 class="section">list_lookup expressed via nth + index_of</h2>
 
 </div>
 <div class="code">
@@ -846,7 +846,7 @@ Specialization of <span class="inlinecode"><a class="idref" href="Semiring.MatN.
 </div>
 
 <div class="doc">
-<a id="lab55"></a><h2 class="section">nth_map with custom defaults (in-bounds version)</h2>
+<a id="lab56"></a><h2 class="section">nth_map with custom defaults (in-bounds version)</h2>
 
 </div>
 <div class="code">
@@ -873,7 +873,7 @@ Use nth_indep to switch default, then nth_map
 </div>
 
 <div class="doc">
-<a id="lab56"></a><h2 class="section">fold_left add = fold_right add for the additive monoid</h2>
+<a id="lab57"></a><h2 class="section">fold_left add = fold_right add for the additive monoid</h2>
 
 </div>
 <div class="code">
@@ -911,7 +911,7 @@ Use nth_indep to switch default, then nth_map
 </div>
 
 <div class="doc">
-<a id="lab57"></a><h2 class="section">combine distributes over map</h2>
+<a id="lab58"></a><h2 class="section">combine distributes over map</h2>
 
 </div>
 <div class="code">
@@ -928,7 +928,7 @@ Use nth_indep to switch default, then nth_map
 </div>
 
 <div class="doc">
-<a id="lab58"></a><h2 class="section">dot_product of tabulated lists = sum of pointwise products</h2>
+<a id="lab59"></a><h2 class="section">dot_product of tabulated lists = sum of pointwise products</h2>
 
 </div>
 <div class="code">
@@ -967,7 +967,7 @@ Dot product of tabulated vectors equals the sum of pointwise products.
 </div>
 
 <div class="doc">
-<a id="lab59"></a><h2 class="section">Re-tabulation lemma: map over elements reconstructs the list</h2>
+<a id="lab60"></a><h2 class="section">Re-tabulation lemma: map over elements reconstructs the list</h2>
 
 </div>
 <div class="code">
@@ -1001,7 +1001,7 @@ Dot product of tabulated vectors equals the sum of pointwise products.
 </div>
 
 <div class="doc">
-<a id="lab60"></a><h2 class="section">Helper lemmas for transpose_list via nth</h2>
+<a id="lab61"></a><h2 class="section">Helper lemmas for transpose_list via nth</h2>
 
 </div>
 <div class="code">
@@ -1069,7 +1069,7 @@ Dot product with an empty vector is zero.
 </div>
 
 <div class="doc">
-<a id="lab61"></a><h2 class="section">Key lemma: transpose_list swaps element access under nth</h2>
+<a id="lab62"></a><h2 class="section">Key lemma: transpose_list swaps element access under nth</h2>
 
 <div class="paragraph"> </div>
 
@@ -1294,7 +1294,7 @@ Need: length (nth k (transpose_list (xssth :: L'')) <font size=-2>&#9744;</font>
 </div>
 
 <div class="doc">
-<a id="lab62"></a><h2 class="section">list_lookup_transpose: transpose swaps key lookup</h2>
+<a id="lab63"></a><h2 class="section">list_lookup_transpose: transpose swaps key lookup</h2>
 
 </div>
 <div class="code">
@@ -1374,7 +1374,7 @@ Prove nth j <font size=-2>&#9744;</font> 0 = 0 by destructing j, then handle RHS
 </div>
 
 <div class="doc">
-<a id="lab63"></a><h2 class="section">Main proof: of_list_mul_list_gen</h2>
+<a id="lab64"></a><h2 class="section">Main proof: of_list_mul_list_gen</h2>
 
 </div>
 <div class="code">
@@ -1456,7 +1456,7 @@ Base case: <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#po
 </div>
 
 <div class="doc">
-<a id="lab64"></a><h2 class="section">Helper lemmas: to_list and pow_list preserve the square shape</h2>
+<a id="lab65"></a><h2 class="section">Helper lemmas: to_list and pow_list preserve the square shape</h2>
 
 </div>
 <div class="code">
@@ -1550,7 +1550,7 @@ Rows of <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#mul_l
 </div>
 
 <div class="doc">
-<a id="lab65"></a><h2 class="section">Helper: mul_list preserves square shape</h2>
+<a id="lab66"></a><h2 class="section">Helper: mul_list preserves square shape</h2>
 
 </div>
 <div class="code">
@@ -1603,7 +1603,7 @@ Rows of <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#mul_l
 </div>
 
 <div class="doc">
-<a id="lab66"></a><h2 class="section">pow = pow_fun  (mathematical = efficient, unary case)</h2>
+<a id="lab67"></a><h2 class="section">pow = pow_fun  (mathematical = efficient, unary case)</h2>
 
 </div>
 <div class="code">
@@ -1635,7 +1635,7 @@ Rows of <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#mul_l
 </div>
 
 <div class="doc">
-<a id="lab67"></a><h2 class="section">pow via N.to_nat = powN  (unary = binary exponentiation)</h2>
+<a id="lab68"></a><h2 class="section">pow via N.to_nat = powN  (unary = binary exponentiation)</h2>
 
 <div class="paragraph"> </div>
 
@@ -2001,7 +2001,7 @@ Binary exponentiation agrees with linear exponentiation for matrices.
 </div>
 
 <div class="doc">
-<a id="lab68"></a><h2 class="section">pow_fun via N.to_nat = powN_fun</h2>
+<a id="lab69"></a><h2 class="section">pow_fun via N.to_nat = powN_fun</h2>
 
 <div class="paragraph"> </div>
 
@@ -2114,7 +2114,7 @@ List-level analogue of pow_pos_correct.
 </div>
 
 <div class="doc">
-<a id="lab69"></a><h2 class="section">Main theorem: mathematical binary = efficient binary</h2>
+<a id="lab70"></a><h2 class="section">Main theorem: mathematical binary = efficient binary</h2>
 
 </div>
 <div class="code">
@@ -2176,7 +2176,7 @@ Recurrence: <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#s
 </div>
 
 <div class="doc">
-<a id="lab70"></a><h2 class="section">k-closed semirings</h2>
+<a id="lab71"></a><h2 class="section">k-closed semirings</h2>
 
 <div class="paragraph"> </div>
 
@@ -2681,7 +2681,7 @@ The power of the closure matrix stabilizes after the finite-node
 </div>
 
 <div class="doc">
-<a id="lab71"></a><h2 class="section">1.  Monotonicity of <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#pow"><span class="id" title="definition">pow</span></a></span> in the matrix argument</h2>
+<a id="lab72"></a><h2 class="section">1.  Monotonicity of <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#pow"><span class="id" title="definition">pow</span></a></span> in the matrix argument</h2>
 
 
 <div class="paragraph"> </div>
@@ -2731,7 +2731,7 @@ The power of the closure matrix stabilizes after the finite-node
 </div>
 
 <div class="doc">
-<a id="lab72"></a><h2 class="section">2.  Monotonicity of <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#geom_sum"><span class="id" title="definition">geom_sum</span></a></span> in the matrix argument</h2>
+<a id="lab73"></a><h2 class="section">2.  Monotonicity of <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#geom_sum"><span class="id" title="definition">geom_sum</span></a></span> in the matrix argument</h2>
 
 
 <div class="paragraph"> </div>
@@ -2759,7 +2759,7 @@ The power of the closure matrix stabilizes after the finite-node
 </div>
 
 <div class="doc">
-<a id="lab73"></a><h2 class="section">3.  Each power term is below the geometric sum</h2>
+<a id="lab74"></a><h2 class="section">3.  Each power term is below the geometric sum</h2>
 
 
 <div class="paragraph"> </div>
@@ -2795,7 +2795,7 @@ The power of the closure matrix stabilizes after the finite-node
 </div>
 
 <div class="doc">
-<a id="lab74"></a><h2 class="section">4.  Geometric sum is monotone in <span class="inlinecode"><span class="id" title="var">n</span></span></h2>
+<a id="lab75"></a><h2 class="section">4.  Geometric sum is monotone in <span class="inlinecode"><span class="id" title="var">n</span></span></h2>
 
 
 <div class="paragraph"> </div>
@@ -2817,7 +2817,7 @@ The power of the closure matrix stabilizes after the finite-node
 </div>
 
 <div class="doc">
-<a id="lab75"></a><h2 class="section">5.  Closure matrix has <span class="inlinecode">1</span> on the diagonal</h2>
+<a id="lab76"></a><h2 class="section">5.  Closure matrix has <span class="inlinecode">1</span> on the diagonal</h2>
 
 
 <div class="paragraph"> </div>
@@ -2842,7 +2842,7 @@ The power of the closure matrix stabilizes after the finite-node
 </div>
 
 <div class="doc">
-<a id="lab76"></a><h2 class="section">6.  <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#I"><span class="id" title="definition">I</span></a></span> is the top element for the <span class="inlinecode"><a class="idref" href="Semiring.OrelN.html#Orel"><span class="id" title="definition">Orel</span></a></span> preorder on the diagonal</h2>
+<a id="lab77"></a><h2 class="section">6.  <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#I"><span class="id" title="definition">I</span></a></span> is the top element for the <span class="inlinecode"><a class="idref" href="Semiring.OrelN.html#Orel"><span class="id" title="definition">Orel</span></a></span> preorder on the diagonal</h2>
 
 
 <div class="paragraph"> </div>
@@ -2868,7 +2868,7 @@ The power of the closure matrix stabilizes after the finite-node
 </div>
 
 <div class="doc">
-<a id="lab77"></a><h1 class="section">Supplementary matrix facts</h1>
+<a id="lab78"></a><h1 class="section">Supplementary matrix facts</h1>
 
 
 <div class="paragraph"> </div>
@@ -2880,7 +2880,7 @@ The power of the closure matrix stabilizes after the finite-node
       rather than reproving the sum-monotonicity machinery inline. 
 <div class="paragraph"> </div>
 
-<a id="lab78"></a><h2 class="section">7.  Transpose is involutive</h2>
+<a id="lab79"></a><h2 class="section">7.  Transpose is involutive</h2>
 
 
 <div class="paragraph"> </div>
@@ -2899,7 +2899,7 @@ The power of the closure matrix stabilizes after the finite-node
 </div>
 
 <div class="doc">
-<a id="lab79"></a><h2 class="section">8.  Transpose is monotone in the matrix argument</h2>
+<a id="lab80"></a><h2 class="section">8.  Transpose is monotone in the matrix argument</h2>
 
 
 <div class="paragraph"> </div>
@@ -2920,7 +2920,7 @@ The power of the closure matrix stabilizes after the finite-node
 </div>
 
 <div class="doc">
-<a id="lab80"></a><h2 class="section">9.  The identity matrix is its own transpose</h2>
+<a id="lab81"></a><h2 class="section">9.  The identity matrix is its own transpose</h2>
 
 
 <div class="paragraph"> </div>
@@ -2940,7 +2940,7 @@ The power of the closure matrix stabilizes after the finite-node
 </div>
 
 <div class="doc">
-<a id="lab81"></a><h2 class="section">10.  Matrix multiplication is monotone in both arguments</h2>
+<a id="lab82"></a><h2 class="section">10.  Matrix multiplication is monotone in both arguments</h2>
 
 
 <div class="paragraph"> </div>
@@ -2989,7 +2989,7 @@ The power of the closure matrix stabilizes after the finite-node
 </div>
 
 <div class="doc">
-<a id="lab82"></a><h2 class="section">11.  Transpose reverses matrix products</h2>
+<a id="lab83"></a><h2 class="section">11.  Transpose reverses matrix products</h2>
 
 
 <div class="paragraph"> </div>
@@ -3010,7 +3010,7 @@ The power of the closure matrix stabilizes after the finite-node
 </div>
 
 <div class="doc">
-<a id="lab83"></a><h2 class="section">12.  The zero matrix is the <span class="inlinecode"><a class="idref" href="Semiring.OrelN.html#Orel"><span class="id" title="definition">Orel</span></a></span>-bottom</h2>
+<a id="lab84"></a><h2 class="section">12.  The zero matrix is the <span class="inlinecode"><a class="idref" href="Semiring.OrelN.html#Orel"><span class="id" title="definition">Orel</span></a></span>-bottom</h2>
 
 
 <div class="paragraph"> </div>
