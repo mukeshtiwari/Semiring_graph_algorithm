@@ -15,7 +15,8 @@
 From Stdlib Require Import Utf8 List Arith Lia.
 From HB Require Import structures.
 From Semiring Require Import Structures OrelN MatN SemimoduleN OrderSemiring
-  NormalizedOrder ExtendOrder MeasureN SocialchoiceN SchulzeOnNT BallotN.
+  NormalizedOrder ExtendOrder MeasureN SocialchoiceN SchulzeOnNT BallotN
+  ResolvabilityBallotN.
 From Examples Require Import MarginMeasure WinningVotes LosingVotes.
 Import ListNotations.
 
@@ -158,6 +159,21 @@ Section MarginProfiles.
   Theorem margin_reversal (P P' : @Profile Node) :
     reverse P P' -> forall A, strict_winner (M P) A -> ~ strict_winner (M P') A.
   Proof. exact (reversal_from_profile margin_measure P P'). Qed.
+
+  (** Resolvability, first formulation, combinatorial core (4.2.1): pairwise
+      distinct link strengths leave at most one winner. *)
+  Theorem margin_distinct_links (P : @Profile Node) :
+    (forall e f g h, e <> f -> g <> h -> M P e f = M P g h -> e = g /\ f = h) ->
+    forall a b, schulze_winner (M P) a -> schulze_winner (M P) b -> a = b.
+  Proof. exact (distinct_links_unique_winner_from_profile margin_measure P). Qed.
+
+  (** Resolvability, second formulation (4.2.2): one added ballot makes any
+      winner the unique winner. *)
+  Theorem margin_resolvability (P : @Profile Node) (a : Node) :
+    schulze_winner (M P) a ->
+    exists w : @Ballot Node,
+      strict_winner (M (w :: P)) a /\ forall x, schulze_winner (M (w :: P)) x <-> x = a.
+  Proof. exact (resolvability_from_profile margin_measure P a). Qed.
 
 End MarginProfiles.
 

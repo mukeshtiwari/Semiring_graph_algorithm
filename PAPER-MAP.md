@@ -12,11 +12,24 @@ to the Rocq formalisation in `algorithm/`. Equation numbers such as
 
 ## How to read the correspondence
 
-The formalisation works at the pairwise-matrix level over an abstract
-(bounded) semiring: a profile is a matrix `M : Node -> Node -> R` whose
-entry `M a b` is the *strength* of the link `ab`, playing the role of the
-paper's pair `(N[a,b], N[b,a])` under the order `≻_D`. There is no ballot
-layer. Consequently:
+The formalisation has two layers.
+
+The **matrix layer**, where the algebra lives, works at the pairwise level
+over an abstract (bounded) semiring: a profile is a matrix
+`M : Node -> Node -> R` whose entry `M a b` is the *strength* of the link
+`ab`, playing the role of the paper's pair `(N[a,b], N[b,a])` under the
+order `≻_D`. Every criterion is stated and proved here, so it holds of any
+matrix over any carrier satisfying the relevant axioms.
+
+The **ballot layer** (`BallotN.v`, `ResolvabilityBallotN.v`) sits on top and
+supplies what a matrix throws away: a ballot is a ranking
+`Node -> nat` (lower is better), a profile is a list of ballots, `count P i j`
+is the number of voters strictly preferring `i` to `j`, and `matrix_of P`
+sends each off-diagonal pair of counts through a `Measure` (`MeasureN.v`),
+any of Schulze's strength measures satisfying (2.1.1) and (2.1.2). See
+[the ballot layer](#the-ballot-layer) below.
+
+Consequently:
 
 - The paper's closure `P_D[a,b]` is `mat_star M a b`, the Kleene star
   `geom_sum M (|A| - 1)` of `SchulzeDefsN.v`.
@@ -24,11 +37,13 @@ layer. Consequently:
   the paper's `max_D` over paths is the semiring sum `+`; the derived order
   `x ≤ y := x + y = y` (`Orel`) plays the role of `≾_D`.
 - Criteria that the paper states by quantifying over profiles and voters
-  enter here as hypotheses on the matrix. For example the unanimity premise
-  (4.3.1.1) becomes `M B A = 0` together with dominance hypotheses on rows
-  and columns, and the ballot modifications of (4.5.1)–(4.5.3) and
-  (4.6.1)–(4.6.3) become the matrix comparisons (4.5.10)–(4.5.12) and
-  (4.6.12)–(4.6.14) taken as assumptions.
+  enter the matrix layer as hypotheses on the matrix. For example the
+  unanimity premise (4.3.1.1) becomes `M B A = 0` together with dominance
+  hypotheses on rows and columns, and the ballot modifications of
+  (4.5.1)–(4.5.3) and (4.6.1)–(4.6.3) become the matrix comparisons
+  (4.5.10)–(4.5.12) and (4.6.12)–(4.6.14). These are assumptions *at that
+  layer only*: the ballot layer derives each of them from Schulze's own
+  ballot-level premise, so none is left standing as an axiom.
 - Several theorems carry algebraic hypotheses (`Htotal` for selectivity of
   `+`, `Hmeet` or `H_meet_lower_bound` for the meet property of `*`,
   `Hdec` for decidable equality). These hold in the max-min semiring of the
@@ -53,13 +68,15 @@ layer. Consequently:
 | §2.2 | asymmetry of `O` | `schulze_beats_asym` | `SchulzeBasicsN.v` |
 | §2.2 | output is a strict partial order `O` and a non-empty `S ⊆ A` | `schulze_output_well_formed` | `WinnerexistenceN.v` |
 
-Notes on (2.1.1)–(2.1.3). (2.1.1), monotonicity of `≻_D` in support and
-opposition, has no direct analogue because links are abstract semiring
-values; where the paper invokes it, the formalisation assumes the resulting
-matrix comparison directly. (2.1.2), victories beat ties beat defeats, is
-what the separation hypothesis `Hsep` in `IsolateN.v` and `SmithiiaN.v`
-extracts. (2.1.3), homogeneity, has no analogue because there is no ballot
-count.
+Notes on (2.1.1)–(2.1.3). At the matrix layer links are abstract semiring
+values, so (2.1.1), monotonicity of `≻_D` in support and opposition, has no
+direct analogue there and the resulting matrix comparison is assumed
+instead; likewise (2.1.2), victories beat ties beat defeats, is what the
+separation hypothesis `Hsep` in `IsolateN.v` and `SmithiiaN.v` extracts.
+Both become real conditions in the ballot layer: they are the two fields
+`m_211` and `m_212` of the `Measure` record in `MeasureN.v`, and the
+concrete measures in `examples/` discharge them. (2.1.3), homogeneity, is
+not formalised.
 
 ## Section 4.1 — transitivity and winner existence
 
@@ -73,16 +90,26 @@ count.
 
 ## Section 4.2 — resolvability
 
-Only the *resolution step* of the paper's §4.2.1 argument is formalised:
-the contrapositive of "two distinct winners force a tie (4.2.1.3)". The
-paper's two full formulations quantify over profiles and voters and are out
-of scope without a ballot layer, as is the critical-link argument that
-distinct link strengths force an untied closure.
+Both of the paper's formulations are formalised. They quantify over
+profiles and voters, so they live in the ballot layer; the matrix-level
+resolution step and the critical-link machinery they rest on are in
+`ResolvabilityN.v` and `CriticalLinkN.v`.
 
 | Paper | Statement | Rocq | File |
 |---|---|---|---|
 | §4.2.1, from (4.2.1.3) | a winner untied in the closure beats everyone | `untied_winner_is_strict` | `ResolvabilityN.v` |
 | §4.2.1, resolution step | an untied winner is the unique winner | `untied_winner_unique` | `ResolvabilityN.v` |
+| §4.2.1, second half | distinct link strengths force an untied closure | `distinct_links_unique_winner` | `CriticalLinkN.v` |
+| §4.2.1, full statement | if no two links of the profile share a strength there is at most one winner | `distinct_links_unique_winner_from_profile` | `ResolvabilityBallotN.v` |
+| §4.2.2 | for every winner `a` some added ballot makes `a` the unique winner | `resolvability_from_profile` (via `add_ballot_strict_winner`, `add_ballot_unique_winner`) | `ResolvabilityBallotN.v` |
+
+The added ballot differs from Schulze's. His `w` ranks `a` first and orders
+the rest by closure strength into `a`, breaking ties along the predecessor
+tree of the strongest paths. The ballot used here ranks `a` first and orders
+the rest by `P[.,a]` descending, leaving ties as ties; the tree is not
+needed, because the claim it serves — that the strongest paths out of `a`
+are not weakened — is obtained instead by a threshold argument
+(`reach_level`), inducting on the number of levels above the threshold.
 
 ## Section 4.3 — Pareto
 
@@ -204,6 +231,48 @@ lower bound of every cut, `Ba` with `cut_in M Ba = beta` witnesses
 | (4.9.3) | `(N[a,b], N[b,a]) ≻_D λ_D ⇒ ab ∈ O` | `prudence` (global), `prudence_local` (per-link form of the paper's proof) | `PrudenceN.v` |
 | (4.9.4) | `(N[a,b], N[b,a]) ≻_D λ_D ⇒ b ∉ S` | `prudence_not_winner` | `PrudenceN.v` |
 
+## The ballot layer
+
+`BallotN.v` supplies the layer the matrix throws away and discharges the
+hypotheses the criterion files carry. A ballot is a ranking
+`Node -> nat` (lower is better), which makes each ballot transitive by
+construction and represents every strict weak order on a finite set; a
+profile is a list of ballots; `count P i j` counts the voters who strictly
+prefer `i` to `j`; and `matrix_of P` sends each off-diagonal pair of counts
+through a `Measure`. Changes to a profile (raising, cloning, reversing) are
+relations between profiles, stated as `Forall2` of a relation between
+ballots, so "some voters do X" is expressed without choosing which voters.
+
+Nothing here changes a matrix-level theorem. Each section states Schulze's
+ballot-level premise, derives the matrix hypotheses of the corresponding
+theorem from it, and applies that theorem to `matrix_of P`.
+
+| Paper | Ballot-level premise | Rocq | File |
+|---|---|---|---|
+| §2.1 | anonymity: permuting the ballots | `anonymity_from_profile` | `BallotN.v` |
+| (4.3.1.1) | every voter strictly prefers `A` to `B` (`unanimous`) | `pareto_from_profile`, `pareto_loser_from_profile` | `BallotN.v` |
+| (4.3.2.1) | every voter ranks `A` at least as high as `B` | `pareto_weak_from_profile`, `pareto_weak_winner_from_profile`, `pareto_weak_beats_from_profile`, `pareto_weak_loses_from_profile` | `BallotN.v` |
+| §4.4 | every ballot is reversed (`reverse`) | `reversal_from_profile`, `reversal_S_from_profile` | `BallotN.v` |
+| (4.5.1)–(4.5.3) | `A` is raised, voter by voter (`raise`) | `monotonicity_from_profile`, `monotonicity_unbeaten_from_profile` | `BallotN.v` |
+| (4.6.1)–(4.6.3) | `d` is replaced by clones, voter by voter (`cloned`) | `clones_from_profile` | `BallotN.v` |
+| §4.7 Remark | `A` wins every pairwise comparison | `condorcet_from_profile`, `condorcet_unique_from_profile` | `BallotN.v` |
+| (4.7.3), (4.7.4) | every member of `B1` pairwise beats every member of `B2` | `smith_beats_from_profile`, `smith_from_profile` | `BallotN.v` |
+| §4.2.1, §4.2.2 | resolvability (see above) | `distinct_links_unique_winner_from_profile`, `resolvability_from_profile` | `ResolvabilityBallotN.v` |
+
+Two of these bridges are worth singling out. Pareto is the only one that
+needs the individual ballots rather than the counts alone: `Htop_trans`
+holds because a link as strong as the unanimous one *is* unanimous, and
+unanimity composes because each ballot is transitive. And the separator that
+Smith and Condorcet take as a hypothesis on the matrix is the tie strength,
+by (2.1.2); `SchulzeOnNT.v` notes that no carrier construction can supply
+it, whereas the count layer can, because `M a b` and `M b a` come from one
+pair of counts.
+
+The measure itself is a parameter. `MeasureN.v` records Schulze's (2.1.1)
+and (2.1.2) as a record, and `examples/` discharges it for winning votes
+(`WinningVotes.v`), margins (`MarginMeasure.v`), and losing votes
+(`LosingVotes.v`), so every result above holds for each of them.
+
 ## The normalised instance
 
 `SchulzeOnNT.v` restates the main results over a carrier built by
@@ -218,9 +287,6 @@ equality hold by construction: `schulze_trans_normalized` (§4.1),
 
 ## Not formalised
 
-- The two resolvability formulations of §4.2 as literally stated (they
-  quantify over profiles and voters), and the critical-link argument of
-  §4.2.1.
 - The majority criterion for solid coalitions and participation
   ((4.7.14), (4.7.15)), which the paper also does not prove.
 - The paper's §2.3 Floyd–Warshall implementation as such; the extraction
