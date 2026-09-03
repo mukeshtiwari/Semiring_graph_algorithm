@@ -172,4 +172,14 @@ Section MeasureFacts.
     intro H. apply strength_lt_of_ps. apply (m_212 m 0 0 y1 y2). right. lia.
   Qed.
 
+  (** The general form of (2.1.2)'s second clause: a defeat sits strictly
+      below every link that is not a defeat, tie or victory alike. *)
+  Lemma defeat_lt_undefeated (x1 x2 y1 y2 : nat) :
+    y1 < y2 -> x2 <= x1 ->
+    Orel (strength m (y1, y2)) (strength m (x1, x2)) /\
+    strength m (y1, y2) <> strength m (x1, x2).
+  Proof.
+    intros Hy Hx. apply strength_lt_of_ps. apply (m_212 m x1 x2 y1 y2). right. lia.
+  Qed.
+
 End MeasureFacts.

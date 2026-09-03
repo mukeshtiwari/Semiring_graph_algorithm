@@ -17,6 +17,11 @@
 (*  sends each off-diagonal pair of counts through a [Measure] (MeasureN.v),   *)
 (*  which is any of Schulze's strength measures satisfying (2.1.1) and (2.1.2).*)
 (*                                                                           *)
+(*  Neutrality and anonymity, the two symmetries Schulze notes in Sect. 2.1,  *)
+(*  the Condorcet loser, and Smith-IIA in its removal form are bridged here   *)
+(*  as well; the last needs a separator that no single tie strength supplies, *)
+(*  and takes it as the weakest pair maximum instead.                         *)
+(*                                                                           *)
 (*  Nothing here changes a matrix-level theorem.  Each section below states    *)
 (*  Schulze's ballot-level premise, derives the matrix hypotheses of the       *)
 (*  corresponding theorem from it, and applies that theorem to [matrix_of P]. *)
@@ -29,7 +34,7 @@ From Stdlib Require Import Utf8 List Arith Lia Sorting.Permutation.
 From HB Require Import structures.
 From Semiring Require Import Structures OrelN MatN SemimoduleN OrderSemiring
   NormalizedOrder ExtendOrder MeasureN SocialchoiceN SchulzeOnNT
-  ClosureTransportN BeatsOnN CloneN.
+  ClosureTransportN BeatsOnN CloneN NeutralityN SmithiiaN.
 Import ListNotations.
 
 (* The weak order [≤] on strengths is the [Orel] notation from the imports.
@@ -242,6 +247,27 @@ Section BallotN.
   Proof.
     intros H a. unfold strict_winner.
     split; intros Hw b Hb; apply (schulze_beats_ext M N H); exact (Hw b Hb).
+  Qed.
+
+  (** A nonempty list over a totally ordered carrier has a least element.
+      Used to pick the separator for Smith-IIA as the weakest of the pair
+      maxima. *)
+  Lemma list_min_exists {R : BoundedSemiring.type}
+    (Htotal : forall x y : R, add x y = x \/ add x y = y) (l : list R) :
+    l <> [] -> exists c, In c l /\ forall x, In x l -> Orel c x.
+  Proof.
+    induction l as [|a l IH]; intro Hne; [contradiction |].
+    destruct l as [|a' l'].
+    - exists a. split; [left; reflexivity |].
+      intros x [Hx | []]. subst x. apply bounded_orel_refl.
+    - destruct IH as [c [Hc Hmin]]; [discriminate |].
+      destruct (Htotal a c) as [Hac | Hac].
+      + exists c. split; [right; exact Hc |].
+        intros x [Hx | Hx];
+          [subst x; unfold Orel; rewrite addC; exact Hac | exact (Hmin x Hx)].
+      + exists a. split; [left; reflexivity |].
+        intros x [Hx | Hx]; [subst x; apply bounded_orel_refl |].
+        apply (orel_trans a c x); [exact Hac | exact (Hmin x Hx)].
   Qed.
 
   (* ------------------------------------------------------------------ *)
@@ -582,6 +608,211 @@ Section BallotN.
   End Smith.
 
   (* ================================================================== *)
+  (*  Condorcet loser                                                    *)
+  (*                                                                     *)
+  (*  Premise: [B] loses every pairwise comparison.  This is the Smith   *)
+  (*  bridge with [B] alone as the weak block, so nothing new is needed  *)
+  (*  from the measure; the only extra hypothesis is that [B] has a      *)
+  (*  rival at all.                                                      *)
+  (* ================================================================== *)
+
+  Section CondorcetLoser.
+
+    Variable P : Profile.
+    Variable B : Node.
+    Hypothesis Hrival : exists X, X <> B.
+    Hypothesis Hcl : forall X, X <> B -> count P B X < count P X B.
+
+    Notation M := (matrix_of P).
+
+    Theorem condorcet_loser_from_profile : ~ schulze_winner M B.
+    Proof.
+      intro Hw.
+      assert (Hpart : forall x, In x (drop B) <-> ~ In x [B]).
+      { intro x. rewrite (in_drop B x). cbn [In]. split.
+        - intros Hx [Hx' | []]. exact (Hx (eq_sym Hx')).
+        - intros Hx Heq. apply Hx. left. exact (eq_sym Heq). }
+      assert (Hcut : forall a b, In a (drop B) -> In b [B] ->
+                count P b a < count P a b).
+      { intros a b Ha [Hb | []]. subst b. apply Hcl. exact (proj1 (in_drop B a) Ha). }
+      assert (Hne : drop B <> []).
+      { destruct Hrival as [X HX]. intro H.
+        pose proof (proj2 (in_drop B X) HX) as HX'. rewrite H in HX'. exact HX'. }
+      pose proof (smith_from_profile P (drop B) [B] Hpart Hcut Hne B Hw) as HB.
+      exact (proj1 (in_drop B B) HB eq_refl).
+    Qed.
+
+  End CondorcetLoser.
+
+  (* ================================================================== *)
+  (*  Smith-IIA, removal form (Schulze 4.7.5a and 4.7.6)                *)
+  (*                                                                     *)
+  (*  Premise: the cut of the Smith bridge.  The removal theorems of     *)
+  (*  SmithiiaN ask for a separator [c] with three properties: every     *)
+  (*  link across the cut from weak to strong is strictly below [c],     *)
+  (*  [c] is not the bottom, and [c] is at most the larger link of       *)
+  (*  every pair.  The tie strength does not serve here, since (2.1.1)   *)
+  (*  and (2.1.2) say nothing about how two ties compare.  Instead [c]   *)
+  (*  is the weakest of the pair maxima: it lies at most every pair      *)
+  (*  maximum by construction, and it is itself the larger link of some  *)
+  (*  pair, hence not a defeat, hence strictly above every defeat by     *)
+  (*  (2.1.2).                                                           *)
+  (* ================================================================== *)
+
+  Section SmithIIA.
+
+    Variable P : Profile.
+    Variable B1 B2 : list Node.
+    Hypothesis H_partition : forall x, In x B1 <-> ~ In x B2.
+    Hypothesis Hcut : forall a b, In a B1 -> In b B2 -> count P b a < count P a b.
+
+    Notation M := (matrix_of P).
+
+    (** The larger of the two links of a pair. *)
+    Definition pair_max (x y : Node) : Strength m := add (M x y) (M y x).
+
+    (** The pair maxima of all distinct pairs. *)
+    Definition pair_maxima : list (Strength m) :=
+      map (fun xy => pair_max (fst xy) (snd xy))
+        (filter (fun xy => if fin_eq_dec (fst xy) (snd xy) then false else true)
+           (list_prod (@elements Node) (@elements Node))).
+
+    (** Both links of a pair lie below their maximum.  Stated at the concrete
+        carrier, since the generic [plus_upper_left] does not unify along the
+        Hierarchy Builder path of [Strength m]. *)
+    Lemma pair_max_upper_l : forall x y, Orel (M x y) (pair_max x y).
+    Proof.
+      intros x y. unfold Orel, pair_max. rewrite <- addA. f_equal.
+      destruct (NT_selective (spec m) (M x y) (M x y)) as [H | H]; exact H.
+    Qed.
+
+    Lemma pair_max_upper_r : forall x y, Orel (M y x) (pair_max x y).
+    Proof.
+      intros x y. unfold Orel, pair_max. rewrite (addC (M x y) (M y x)), <- addA.
+      f_equal. destruct (NT_selective (spec m) (M y x) (M y x)) as [H | H]; exact H.
+    Qed.
+
+    Lemma pair_max_in : forall x y, x <> y -> In (pair_max x y) pair_maxima.
+    Proof.
+      intros x y Hxy. unfold pair_maxima.
+      apply in_map_iff. exists (x, y). split; [reflexivity |].
+      apply filter_In. split.
+      - apply in_prod; apply elements_complete.
+      - cbn [fst snd]. destruct (fin_eq_dec x y) as [Heq | _]; [contradiction | reflexivity].
+    Qed.
+
+    Lemma pair_maxima_nonempty : (exists x y : Node, x <> y) -> pair_maxima <> [].
+    Proof.
+      intros [x [y Hxy]] H. pose proof (pair_max_in x y Hxy) as Hin.
+      rewrite H in Hin. exact Hin.
+    Qed.
+
+    (** A pair maximum is never a defeat, so every defeat lies strictly
+        below it. *)
+    Lemma defeat_lt_pair_max : forall a b x y,
+      In a B1 -> In b B2 -> x <> y ->
+      Orel (M b a) (pair_max x y) /\ M b a <> pair_max x y.
+    Proof.
+      intros a b x y Ha Hb Hxy.
+      assert (Hab : a <> b). { intro Heq. subst b. exact (proj1 (H_partition a) Ha Hb). }
+      rewrite (matrix_of_off P b a (not_eq_sym Hab)).
+      destruct (le_lt_dec (count P y x) (count P x y)) as [Hle | Hlt].
+      - apply (orel_lt_le_trans _ (M x y) _); [| apply pair_max_upper_l].
+        rewrite (matrix_of_off P x y Hxy).
+        apply defeat_lt_undefeated; [exact (Hcut a b Ha Hb) | exact Hle].
+      - apply (orel_lt_le_trans _ (M y x) _); [| apply pair_max_upper_r].
+        rewrite (matrix_of_off P y x (not_eq_sym Hxy)).
+        apply defeat_lt_undefeated; [exact (Hcut a b Ha Hb) | lia].
+    Qed.
+
+    Lemma pair_max_ne_zero : forall x y, x <> y -> pair_max x y <> zero.
+    Proof.
+      intros x y Hxy. unfold pair_max.
+      destruct (NT_selective (spec m) (M x y) (M y x)) as [H | H]; setoid_rewrite H.
+      - rewrite (matrix_of_off P x y Hxy). apply strength_ne_zero.
+      - rewrite (matrix_of_off P y x (not_eq_sym Hxy)). apply strength_ne_zero.
+    Qed.
+
+    (** The separator the removal theorems ask for. *)
+    Lemma profile_iia_separator : (exists x y : Node, x <> y) ->
+      exists c : Strength m,
+        (forall a b, In a B1 -> In b B2 -> Orel (M b a) c /\ M b a <> c) /\
+        (Orel zero c /\ zero <> c) /\
+        (forall x y, x <> y -> Orel c (add (M x y) (M y x))).
+    Proof.
+      intro Hex.
+      destruct (list_min_exists (NT_selective (spec m)) pair_maxima
+                  (pair_maxima_nonempty Hex)) as [c [Hc Hmin]].
+      apply in_map_iff in Hc. destruct Hc as [[x y] [Hcxy Hxy_in]].
+      apply filter_In in Hxy_in. destruct Hxy_in as [_ Hne].
+      cbn [fst snd] in Hcxy, Hne.
+      assert (Hxy : x <> y).
+      { destruct (fin_eq_dec x y) as [Heq | Heq]; [discriminate | exact Heq]. }
+      subst c. exists (pair_max x y).
+      split; [| split].
+      - intros a b Ha Hb. exact (defeat_lt_pair_max a b x y Ha Hb Hxy).
+      - split; [apply zero_is_bottom |].
+        intro H. exact (pair_max_ne_zero x y Hxy (eq_sym H)).
+      - intros u v Huv. exact (Hmin _ (pair_max_in u v Huv)).
+    Qed.
+
+    (** Schulze (4.7.5a) on the beat relation: deleting a weak alternative
+        [d] leaves the comparison of two strong ones unchanged. *)
+    Theorem smith_iia_beats_from_profile : forall d, In d B2 ->
+      forall e f, In e B1 -> In f B1 ->
+      (schulze_beats M e f <-> beats_on (drop d) M e f).
+    Proof.
+      intros d Hd e f He Hf.
+      assert (Hex : exists x y : Node, x <> y).
+      { exists e, d. intro Heq. subst d. exact (proj1 (H_partition e) He Hd). }
+      destruct (profile_iia_separator Hex) as [c [H_lt [H0 Hsep]]].
+      exact (smith_iia_removal_beats M (NT_selective (spec m)) (matrix_of_diag P)
+               B1 B2 c d H_partition H_lt H0 Hd Hsep e f He Hf).
+    Qed.
+
+    (** Schulze (4.7.5a): deleting a weak alternative changes no strong
+        alternative's winner status. *)
+    Theorem smith_iia_from_profile : forall d, In d B2 ->
+      forall a, In a B1 -> (schulze_winner M a <-> winner_on (drop d) M a).
+    Proof.
+      intros d Hd a Ha.
+      assert (Hex : exists x y : Node, x <> y).
+      { exists a, d. intro Heq. subst d. exact (proj1 (H_partition a) Ha Hd). }
+      destruct (profile_iia_separator Hex) as [c [H_lt [H0 Hsep]]].
+      exact (smith_iia_removal M (NT_selective (spec m)) (matrix_of_diag P)
+               B1 B2 c d H_partition H_lt H0 Hd Hsep a Ha).
+    Qed.
+
+    (** The iterated form: deleting the whole weak block at once. *)
+    Theorem smith_iia_all_from_profile : forall d, In d B2 ->
+      forall a, In a B1 -> (schulze_winner M a <-> winner_on B1 M a).
+    Proof.
+      intros d Hd a Ha.
+      assert (Hex : exists x y : Node, x <> y).
+      { exists a, d. intro Heq. subst d. exact (proj1 (H_partition a) Ha Hd). }
+      assert (HB1 : B1 <> []). { intro H. rewrite H in Ha. exact Ha. }
+      destruct (profile_iia_separator Hex) as [c [H_lt [H0 Hsep]]].
+      exact (smith_iia_removal_all M (NT_selective (spec m)) (matrix_of_diag P)
+               B1 B2 c H_partition H_lt H0 Hsep HB1 a Ha).
+    Qed.
+
+    (** Schulze (4.7.6): deleting a strong alternative leaves the comparison
+        of two weak ones unchanged. *)
+    Theorem smith_iia_strong_beats_from_profile : forall d, In d B1 ->
+      forall e f, In e B2 -> In f B2 ->
+      (schulze_beats M e f <-> beats_on (drop d) M e f).
+    Proof.
+      intros d Hd e f He Hf.
+      assert (Hex : exists x y : Node, x <> y).
+      { exists d, e. intro Heq. subst e. exact (proj1 (H_partition d) Hd He). }
+      destruct (profile_iia_separator Hex) as [c [H_lt [_ Hsep]]].
+      exact (smith_iia_removal_strong_beats M (NT_selective (spec m))
+               (matrix_of_diag P) B1 B2 c d H_partition H_lt Hd Hsep e f He Hf).
+    Qed.
+
+  End SmithIIA.
+
+  (* ================================================================== *)
   (*  Monotonicity (Schulze 4.5)                                         *)
   (*                                                                     *)
   (*  Premise: Schulze's (4.5.1) to (4.5.3), voter by voter.  A voter    *)
@@ -884,5 +1115,65 @@ Section BallotN.
   Theorem anonymity_from_profile : forall P P', Permutation P P' ->
     forall a, schulze_winner (matrix_of P) a <-> schulze_winner (matrix_of P') a.
   Proof. intros P P' HP. exact (schulze_winner_ext _ _ (matrix_of_perm P P' HP)). Qed.
+
+  (* ================================================================== *)
+  (*  Neutrality (Schulze 2.1)                                           *)
+  (*                                                                     *)
+  (*  The companion of anonymity: the method treats the alternatives    *)
+  (*  symmetrically.  Renaming the alternatives in every ballot gives a  *)
+  (*  matrix that agrees entrywise with the permuted matrix of           *)
+  (*  NeutralityN, and the winner set is renamed to match.               *)
+  (* ================================================================== *)
+
+  Section Neutrality.
+
+    Context (s t : Node -> Node)
+            (Hst : forall x, s (t x) = x)
+            (Hts : forall x, t (s x) = x).
+
+    (** The ballot that ranks [x] where [b] ranked [s x]. *)
+    Definition rename (b : Ballot) : Ballot := fun x => b (s x).
+
+    Lemma count_rename : forall P i j,
+      count (map rename P) i j = count P (s i) (s j).
+    Proof.
+      intros P i j. unfold count.
+      apply (filter_length_eq_forall2 (fun b b' => b = rename b')).
+      - induction P as [|b P IH]; cbn [map]; constructor; [reflexivity | exact IH].
+      - intros b b' Hb. subst b. reflexivity.
+    Qed.
+
+    Lemma matrix_of_rename : forall P i j,
+      matrix_of (map rename P) i j = permute_matrix (matrix_of P) s i j.
+    Proof.
+      intros P i j. rewrite permute_matrix_unfold.
+      destruct (fin_eq_dec i j) as [Hij | Hij].
+      - rewrite (matrix_of_diag _ i j Hij), (matrix_of_diag P (s i) (s j) (f_equal s Hij)).
+        reflexivity.
+      - assert (Hsij : s i <> s j).
+        { intro H. apply Hij. rewrite <- (Hts i), <- (Hts j), H. reflexivity. }
+        rewrite (matrix_of_off _ i j Hij), (matrix_of_off P (s i) (s j) Hsij).
+        rewrite !count_rename. reflexivity.
+    Qed.
+
+    Theorem neutrality_beats_from_profile : forall P a b,
+      schulze_beats (matrix_of (map rename P)) a b
+      <-> schulze_beats (matrix_of P) (s a) (s b).
+    Proof.
+      intros P a b.
+      rewrite (schulze_beats_ext _ _ (matrix_of_rename P) a b).
+      exact (neutrality_beats s t Hst Hts (matrix_of P) a b).
+    Qed.
+
+    Theorem neutrality_from_profile : forall P a,
+      schulze_winner (matrix_of (map rename P)) a
+      <-> schulze_winner (matrix_of P) (s a).
+    Proof.
+      intros P a.
+      rewrite (schulze_winner_ext _ _ (matrix_of_rename P) a).
+      exact (neutrality_winner s t Hst Hts (matrix_of P) a).
+    Qed.
+
+  End Neutrality.
 
 End BallotN.

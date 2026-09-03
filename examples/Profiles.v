@@ -16,7 +16,7 @@ From Stdlib Require Import Utf8 List Arith Lia.
 From HB Require Import structures.
 From Semiring Require Import Structures OrelN MatN SemimoduleN OrderSemiring
   NormalizedOrder ExtendOrder MeasureN SocialchoiceN SchulzeOnNT BallotN
-  ResolvabilityBallotN.
+  ResolvabilityBallotN BeatsOnN SmithiiaN.
 From Examples Require Import MarginMeasure WinningVotes LosingVotes.
 Import ListNotations.
 
@@ -148,6 +148,28 @@ Section MarginProfiles.
     (forall a b, In a B1 -> In b B2 -> count P b a < count P a b) ->
     B1 <> [] -> forall w, schulze_winner (M P) w -> In w B1.
   Proof. exact (smith_from_profile margin_measure P B1 B2). Qed.
+
+  (** Condorcet loser: a pairwise loser with at least one rival never wins. *)
+  Theorem margin_condorcet_loser (P : @Profile Node) (B : Node) :
+    (exists X, X <> B) ->
+    (forall X, X <> B -> count P B X < count P X B) -> ~ schulze_winner (M P) B.
+  Proof. exact (condorcet_loser_from_profile margin_measure P B). Qed.
+
+  (** Smith-IIA (4.7.5a): deleting a weak alternative changes no strong
+      alternative's winner status. *)
+  Theorem margin_smith_iia (P : @Profile Node) (B1 B2 : list Node) :
+    (forall x, In x B1 <-> ~ In x B2) ->
+    (forall a b, In a B1 -> In b B2 -> count P b a < count P a b) ->
+    forall d, In d B2 ->
+    forall a, In a B1 -> (schulze_winner (M P) a <-> winner_on (drop d) (M P) a).
+  Proof. exact (smith_iia_from_profile margin_measure P B1 B2). Qed.
+
+  (** Neutrality (2.1): renaming the alternatives renames the winners. *)
+  Theorem margin_neutrality (s t : Node -> Node)
+    (Hst : forall x, s (t x) = x) (Hts : forall x, t (s x) = x)
+    (P : @Profile Node) (a : Node) :
+    schulze_winner (M (map (rename s) P)) a <-> schulze_winner (M P) (s a).
+  Proof. exact (neutrality_from_profile margin_measure s t Hst Hts P a). Qed.
 
   (** Monotonicity (4.5.6): raising a winner keeps it a winner. *)
   Theorem margin_monotonicity (A : Node) (P P' : @Profile Node) :
