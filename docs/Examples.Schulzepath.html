@@ -22,7 +22,7 @@
 </div>
 
 <div class="doc">
-<a id="lab201"></a><h1 class="section">Schulzepath.v — the language (trace) semiring for the Schulze method</h1>
+<a id="lab202"></a><h1 class="section">Schulzepath.v — the language (trace) semiring for the Schulze method</h1>
 
 
 <div class="paragraph"> </div>
@@ -70,7 +70,7 @@
 </div>
 
 <div class="doc">
-<a id="lab202"></a><h1 class="section">The language semiring over the max-min semiring R (from Schulze.v)</h1>
+<a id="lab203"></a><h1 class="section">The language semiring over the max-min semiring R (from Schulze.v)</h1>
 
 </div>
 <div class="code">
@@ -216,7 +216,7 @@ Every split of <span class="inlinecode"><a class="idref" href="Semiring.SchulzeW
 </div>
 
 <div class="doc">
-<a id="lab203"></a><h2 class="section">Pointwise algebraic laws</h2>
+<a id="lab204"></a><h2 class="section">Pointwise algebraic laws</h2>
 
 </div>
 <div class="code">
@@ -391,17 +391,17 @@ Left distributivity: (L ⊕ M) ⊗ N = (L⊗N) ⊕ (M⊗N).
 </div>
 
 <div class="doc">
-<a id="lab204"></a><h1 class="section">Bridging <span class="inlinecode"><a class="idref" href="Examples.Schulzepath.html#Lang"><span class="id" title="definition">Lang</span></a></span> back to the numeric Schulze fixed point</h1>
+<a id="lab205"></a><h1 class="section">Bridging <span class="inlinecode"><a class="idref" href="Examples.Schulzepath.html#Lang"><span class="id" title="definition">Lang</span></a></span> back to the numeric Schulze fixed point</h1>
 
 
 <div class="paragraph"> </div>
 
-    <span class="inlinecode"><a class="idref" href="Examples.Schulzepath.html#lift"><span class="id" title="definition">lift</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.m"><span class="id" title="variable">m</span></a></span> <span class="inlinecode"><span class="id" title="var">i</span></span> <span class="inlinecode"><span class="id" title="var">j</span></span> is the singleton language of exactly the one direct
-    edge (i,j,m i j).  Kleene-closing <span class="inlinecode"><a class="idref" href="Examples.Schulzepath.html#lift"><span class="id" title="definition">lift</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.m"><span class="id" title="variable">m</span></a></span> therefore denotes, at
+    <span class="inlinecode"><a class="idref" href="Examples.Schulzepath.html#lift"><span class="id" title="definition">lift</span></a></span> <span class="inlinecode"><a class="idref" href="Examples.Bench.html#m"><span class="id" title="definition">m</span></a></span> <span class="inlinecode"><span class="id" title="var">i</span></span> <span class="inlinecode"><span class="id" title="var">j</span></span> is the singleton language of exactly the one direct
+    edge (i,j,m i j).  Kleene-closing <span class="inlinecode"><a class="idref" href="Examples.Schulzepath.html#lift"><span class="id" title="definition">lift</span></a></span> <span class="inlinecode"><a class="idref" href="Examples.Bench.html#m"><span class="id" title="definition">m</span></a></span> therefore denotes, at
     <span class="inlinecode"><span class="id" title="var">i</span>,<span class="id" title="var">j</span></span>, the set of every walk of a given length from i to j (every
     witness kept -- see the header comment on why the value+witness
     pairing could not do this).  <span class="inlinecode"><a class="idref" href="Examples.Schulzepath.html#pow_lift_sound"><span class="id" title="lemma">pow_lift_sound</span></a></span>/<span class="inlinecode"><a class="idref" href="Examples.Schulzepath.html#pow_lift_complete"><span class="id" title="lemma">pow_lift_complete</span></a></span>
-    show the numeric <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#pow"><span class="id" title="definition">pow</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.m"><span class="id" title="variable">m</span></a></span> <span class="inlinecode"><span class="id" title="var">n</span></span> <span class="inlinecode"><span class="id" title="var">i</span></span> <span class="inlinecode"><span class="id" title="var">j</span></span> is exactly the max measure over that
+    show the numeric <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#pow"><span class="id" title="definition">pow</span></a></span> <span class="inlinecode"><a class="idref" href="Examples.Bench.html#m"><span class="id" title="definition">m</span></a></span> <span class="inlinecode"><span class="id" title="var">n</span></span> <span class="inlinecode"><span class="id" title="var">i</span></span> <span class="inlinecode"><span class="id" title="var">j</span></span> is exactly the max measure over that
     set: no counted walk exceeds it, and whenever the value is not the
     bottom <span class="inlinecode">0</span> (i.e. some walk really exists), some counted walk attains
     it exactly. 
@@ -488,7 +488,7 @@ Left distributivity: (L ⊕ M) ⊗ N = (L⊗N) ⊕ (M⊗N).
 </div>
 
 <div class="doc">
-<a id="lab205"></a><h1 class="section">Lang is now a genuine Semiring (not bounded, not commutative),</h1>
+<a id="lab206"></a><h1 class="section">Lang is now a genuine Semiring (not bounded, not commutative),</h1>
 
       so the generic <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#pow"><span class="id" title="definition">pow</span></a></span> / <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#geom_sum"><span class="id" title="definition">geom_sum</span></a></span> / <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#matrix_mul"><span class="id" title="definition">matrix_mul</span></a></span> machinery from
       <span class="inlinecode"><span class="id" title="library">MatN</span></span> applies to Lang-valued matrices.
@@ -562,7 +562,7 @@ Left distributivity: (L ⊕ M) ⊗ N = (L⊗N) ⊕ (M⊗N).
 </div>
 
 <div class="doc">
-The language of exactly one path: the direct edge <span class="inlinecode">(<span class="id" title="var">i</span>,<span class="id" title="var">j</span>,<a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.m"><span class="id" title="variable">m</span></a></span> <span class="inlinecode"><span class="id" title="var">i</span></span> <span class="inlinecode"><span class="id" title="var">j</span>)</span>. 
+The language of exactly one path: the direct edge <span class="inlinecode">(<span class="id" title="var">i</span>,<span class="id" title="var">j</span>,<a class="idref" href="Examples.Bench.html#m"><span class="id" title="definition">m</span></a></span> <span class="inlinecode"><span class="id" title="var">i</span></span> <span class="inlinecode"><span class="id" title="var">j</span>)</span>. 
 </div>
 <div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="lift" class="idref" href="#lift"><span class="id" title="definition">lift</span></a> (<a id="m:84" class="idref" href="#m:84"><span class="id" title="binder">m</span></a> : <a class="idref" href="Examples.Schulze.html#Node"><span class="id" title="inductive">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Examples.Schulze.html#Node"><span class="id" title="inductive">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Examples.Schulze.html#R"><span class="id" title="inductive">R</span></a>) (<a id="i:85" class="idref" href="#i:85"><span class="id" title="binder">i</span></a> <a id="j:86" class="idref" href="#j:86"><span class="id" title="binder">j</span></a> : <a class="idref" href="Examples.Schulze.html#Node"><span class="id" title="inductive">Node</span></a>) : <a class="idref" href="Examples.Schulzepath.html#Lang"><span class="id" title="definition">Lang</span></a> :=<br/>
@@ -669,8 +669,8 @@ Every term of a <span class="inlinecode"><a class="idref" href="Semiring.Structu
 </div>
 
 <div class="doc">
-Unfolds one <span class="inlinecode"><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#S"><span class="id" title="constructor">S</span></a></span> <span class="inlinecode"><span class="id" title="var">n</span></span> step of <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#pow"><span class="id" title="definition">pow</span></a></span> <span class="inlinecode">(<a class="idref" href="Examples.Schulzepath.html#lift"><span class="id" title="definition">lift</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.m"><span class="id" title="variable">m</span></a>)</span> into: <span class="inlinecode"><a class="idref" href="Semiring.SchulzeWitnessN.html#SchulzeWitnessN.TriangleClosures.p"><span class="id" title="variable">p</span></a></span> is counted iff
-      it starts with a direct edge <span class="inlinecode">(<span class="id" title="var">i</span>,<a class="idref" href="Semiring.SchulzeWitnessN.html#SchulzeWitnessN.Square.y"><span class="id" title="variable">y</span></a>,<a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.m"><span class="id" title="variable">m</span></a></span> <span class="inlinecode"><span class="id" title="var">i</span></span> <span class="inlinecode"><a class="idref" href="Semiring.SchulzeWitnessN.html#SchulzeWitnessN.Square.y"><span class="id" title="variable">y</span></a>)</span> into some <span class="inlinecode"><a class="idref" href="Semiring.SchulzeWitnessN.html#SchulzeWitnessN.Square.y"><span class="id" title="variable">y</span></a></span> followed
+Unfolds one <span class="inlinecode"><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#S"><span class="id" title="constructor">S</span></a></span> <span class="inlinecode"><span class="id" title="var">n</span></span> step of <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#pow"><span class="id" title="definition">pow</span></a></span> <span class="inlinecode">(<a class="idref" href="Examples.Schulzepath.html#lift"><span class="id" title="definition">lift</span></a></span> <span class="inlinecode"><a class="idref" href="Examples.Bench.html#m"><span class="id" title="definition">m</span></a>)</span> into: <span class="inlinecode"><a class="idref" href="Semiring.SchulzeWitnessN.html#SchulzeWitnessN.TriangleClosures.p"><span class="id" title="variable">p</span></a></span> is counted iff
+      it starts with a direct edge <span class="inlinecode">(<span class="id" title="var">i</span>,<a class="idref" href="Semiring.SchulzeWitnessN.html#SchulzeWitnessN.Square.y"><span class="id" title="variable">y</span></a>,<a class="idref" href="Examples.Bench.html#m"><span class="id" title="definition">m</span></a></span> <span class="inlinecode"><span class="id" title="var">i</span></span> <span class="inlinecode"><a class="idref" href="Semiring.SchulzeWitnessN.html#SchulzeWitnessN.Square.y"><span class="id" title="variable">y</span></a>)</span> into some <span class="inlinecode"><a class="idref" href="Semiring.SchulzeWitnessN.html#SchulzeWitnessN.Square.y"><span class="id" title="variable">y</span></a></span> followed
       by a walk counted at <span class="inlinecode"><span class="id" title="var">n</span></span> from <span class="inlinecode"><a class="idref" href="Semiring.SchulzeWitnessN.html#SchulzeWitnessN.Square.y"><span class="id" title="variable">y</span></a></span> to <span class="inlinecode"><span class="id" title="var">j</span></span>. 
 </div>
 <div class="code">
@@ -695,7 +695,7 @@ Unfolds one <span class="inlinecode"><a class="idref" href="http://rocq-prover.o
 </div>
 
 <div class="doc">
-SOUNDNESS: no walk counted by <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#pow"><span class="id" title="definition">pow</span></a></span> <span class="inlinecode">(<a class="idref" href="Examples.Schulzepath.html#lift"><span class="id" title="definition">lift</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.m"><span class="id" title="variable">m</span></a>)</span> <span class="inlinecode"><span class="id" title="var">n</span></span> exceeds the numeric
+SOUNDNESS: no walk counted by <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#pow"><span class="id" title="definition">pow</span></a></span> <span class="inlinecode">(<a class="idref" href="Examples.Schulzepath.html#lift"><span class="id" title="definition">lift</span></a></span> <span class="inlinecode"><a class="idref" href="Examples.Bench.html#m"><span class="id" title="definition">m</span></a>)</span> <span class="inlinecode"><span class="id" title="var">n</span></span> exceeds the numeric
       Schulze fixed point. 
 </div>
 <div class="code">
@@ -764,7 +764,7 @@ A <span class="inlinecode"><a class="idref" href="Semiring.Structures.html#Bound
 <div class="doc">
 COMPLETENESS: whenever the numeric value at <span class="inlinecode"><span class="id" title="var">i</span>,<span class="id" title="var">j</span>,<span class="id" title="var">n</span></span> is not the
       bottom <span class="inlinecode">0</span> (i.e. some walk of length <span class="inlinecode"><span class="id" title="var">n</span></span> genuinely exists), it is
-      attained exactly by some walk counted in <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#pow"><span class="id" title="definition">pow</span></a></span> <span class="inlinecode">(<a class="idref" href="Examples.Schulzepath.html#lift"><span class="id" title="definition">lift</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.m"><span class="id" title="variable">m</span></a>)</span> <span class="inlinecode"><span class="id" title="var">n</span></span>. 
+      attained exactly by some walk counted in <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#pow"><span class="id" title="definition">pow</span></a></span> <span class="inlinecode">(<a class="idref" href="Examples.Schulzepath.html#lift"><span class="id" title="definition">lift</span></a></span> <span class="inlinecode"><a class="idref" href="Examples.Bench.html#m"><span class="id" title="definition">m</span></a>)</span> <span class="inlinecode"><span class="id" title="var">n</span></span>. 
 </div>
 <div class="code">
 &nbsp;&nbsp;<span class="id" title="keyword">Theorem</span> <a id="pow_lift_complete" class="idref" href="#pow_lift_complete"><span class="id" title="lemma">pow_lift_complete</span></a> (<a id="m:176" class="idref" href="#m:176"><span class="id" title="binder">m</span></a> : <a class="idref" href="Examples.Schulze.html#Node"><span class="id" title="inductive">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Examples.Schulze.html#Node"><span class="id" title="inductive">Node</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Examples.Schulze.html#R"><span class="id" title="inductive">R</span></a>) :<br/>
@@ -975,19 +975,19 @@ CORRECTNESS of the computable extractor: it matches
 </div>
 
 <div class="doc">
-<a id="lab206"></a><h1 class="section">Schulze beatpath strengths via the Kleene closure</h1>
+<a id="lab207"></a><h1 class="section">Schulze beatpath strengths via the Kleene closure</h1>
 
 
 <div class="paragraph"> </div>
 
-    The single power <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.m"><span class="id" title="variable">m</span></a>³</span> counts only exact length-3 paths; the Schulze
+    The single power <span class="inlinecode"><a class="idref" href="Examples.Bench.html#m"><span class="id" title="definition">m</span></a>³</span> counts only exact length-3 paths; the Schulze
     strongest-path strengths are the geometric closure
         (m + I)³ = I + m + m² + m³
     (paths of up to three hops — with |Node| = 4 candidates, every
     simple path has at most 3 edges, so this is the fixed point). 
 <div class="paragraph"> </div>
 
- Kleene-closure matrix: <span class="inlinecode">(<a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.m"><span class="id" title="variable">m</span></a></span> <span class="inlinecode">+</span> <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#I"><span class="id" title="definition">I</span></a>)³</span> — the strongest-path strengths
+ Kleene-closure matrix: <span class="inlinecode">(<a class="idref" href="Examples.Bench.html#m"><span class="id" title="definition">m</span></a></span> <span class="inlinecode">+</span> <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#I"><span class="id" title="definition">I</span></a>)³</span> — the strongest-path strengths
     between all candidate pairs (the Schulze beatpath matrix). 
 </div>
 <div class="code">
@@ -1019,10 +1019,10 @@ Functional matrix-vector action of the beatpath closure.
 
 <div class="doc">
 A real, computable witness path -- not just the strength value.
-    <span class="inlinecode"><a class="idref" href="Examples.Schulzepath.html#pow_witness_spec"><span class="id" title="lemma">pow_witness_spec</span></a></span> guarantees <span class="inlinecode"><a class="idref" href="Examples.Schulzepath.html#schulze_witness_value"><span class="id" title="definition">schulze_witness_value</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.m"><span class="id" title="variable">m</span></a></span> <span class="inlinecode"><span class="id" title="var">i</span></span> <span class="inlinecode"><span class="id" title="var">j</span></span> equals
-    <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#pow"><span class="id" title="definition">pow</span></a></span> <span class="inlinecode">(<a class="idref" href="Semiring.MatN.html#matrix_add"><span class="id" title="definition">matrix_add</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.m"><span class="id" title="variable">m</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#I"><span class="id" title="definition">I</span></a>)</span> <span class="inlinecode">3</span> <span class="inlinecode"><span class="id" title="var">i</span></span> <span class="inlinecode"><span class="id" title="var">j</span></span>, which -- since a beatpath closure of
+    <span class="inlinecode"><a class="idref" href="Examples.Schulzepath.html#pow_witness_spec"><span class="id" title="lemma">pow_witness_spec</span></a></span> guarantees <span class="inlinecode"><a class="idref" href="Examples.Schulzepath.html#schulze_witness_value"><span class="id" title="definition">schulze_witness_value</span></a></span> <span class="inlinecode"><a class="idref" href="Examples.Bench.html#m"><span class="id" title="definition">m</span></a></span> <span class="inlinecode"><span class="id" title="var">i</span></span> <span class="inlinecode"><span class="id" title="var">j</span></span> equals
+    <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#pow"><span class="id" title="definition">pow</span></a></span> <span class="inlinecode">(<a class="idref" href="Semiring.MatN.html#matrix_add"><span class="id" title="definition">matrix_add</span></a></span> <span class="inlinecode"><a class="idref" href="Examples.Bench.html#m"><span class="id" title="definition">m</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#I"><span class="id" title="definition">I</span></a>)</span> <span class="inlinecode">3</span> <span class="inlinecode"><span class="id" title="var">i</span></span> <span class="inlinecode"><span class="id" title="var">j</span></span>, which -- since a beatpath closure of
     up to 3 hops over 4 candidates has already stabilised -- coincides
-    with <span class="inlinecode"><a class="idref" href="Examples.Schulzepath.html#schulze_star"><span class="id" title="definition">schulze_star</span></a></span> <span class="inlinecode"><a class="idref" href="Semiring.ResolvabilityBallotN.html#ResolvabilityBallotN.m"><span class="id" title="variable">m</span></a></span> <span class="inlinecode"><span class="id" title="var">i</span></span> <span class="inlinecode"><span class="id" title="var">j</span></span> above. 
+    with <span class="inlinecode"><a class="idref" href="Examples.Schulzepath.html#schulze_star"><span class="id" title="definition">schulze_star</span></a></span> <span class="inlinecode"><a class="idref" href="Examples.Bench.html#m"><span class="id" title="definition">m</span></a></span> <span class="inlinecode"><span class="id" title="var">i</span></span> <span class="inlinecode"><span class="id" title="var">j</span></span> above. 
 <div class="paragraph"> </div>
 
  An actual strongest beatpath from <span class="inlinecode"><span class="id" title="var">i</span></span> to <span class="inlinecode"><span class="id" title="var">j</span></span> (up to 3 hops), or

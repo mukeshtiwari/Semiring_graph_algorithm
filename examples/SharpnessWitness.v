@@ -36,6 +36,9 @@ Local Infix "≤" := Orel (at level 70).
 
 Section Tropical.
 
+  (** The rock-paper-scissors profile.  Each alternative reaches its successor
+      round the triangle in one hop and its predecessor in two, and the diagonal
+      is [oneR], which is distance zero. *)
   Definition M0 : Node -> Node -> R :=
     fun x y =>
       match x, y with
@@ -64,12 +67,16 @@ Section Tropical.
     unfold Orel in Hmeet. vm_compute in Hmeet. discriminate.
   Qed.
 
+  (** The first edge of the cycle: the one-hop route from [A] to [B] is strictly
+      shorter than the two-hop route back, so [A] beats [B]. *)
   Lemma trop_beats_AB : schulze_beats M0 A B.
   Proof. split; vm_compute; [reflexivity | discriminate]. Qed.
 
+  (** The second edge, [B] beats [C], by the same computation. *)
   Lemma trop_beats_BC : schulze_beats M0 B C.
   Proof. split; vm_compute; [reflexivity | discriminate]. Qed.
 
+  (** The third edge, [C] beats [A], closing the cycle. *)
   Lemma trop_beats_CA : schulze_beats M0 C A.
   Proof. split; vm_compute; [reflexivity | discriminate]. Qed.
 
@@ -88,8 +95,15 @@ End Tropical.
 
 (** * Part 2: the diamond lattice. *)
 
+(** The diamond lattice D4: a bottom, two incomparable atoms [Dp] and [Dq], and
+    a top.  It is the smallest lattice that is distributive and yet not a chain,
+    which is exactly what is needed here: a chain would be selective, and
+    selectivity is the axiom under test. *)
 Inductive D4 : Type := Dbot | Dp | Dq | Dtop.
 
+(** Join, the least upper bound and the additive operation of the semiring.
+    [Dbot] is neutral and [Dtop] absorbing; the two incomparable atoms join to
+    [Dtop], which is where non-selectivity comes from. *)
 Definition joinD (x y : D4) : D4 :=
   match x, y with
   | Dbot, z => z
@@ -102,6 +116,9 @@ Definition joinD (x y : D4) : D4 :=
   | Dq, Dp => Dtop
   end.
 
+(** Meet, the greatest lower bound and the multiplicative operation.  [Dtop] is
+    neutral and [Dbot] absorbing; the two incomparable atoms meet at [Dbot].
+    The strength of a path is the meet of its links. *)
 Definition meetD (x y : D4) : D4 :=
   match x, y with
   | Dtop, z => z
@@ -114,53 +131,75 @@ Definition meetD (x y : D4) : D4 :=
   | Dq, Dp => Dbot
   end.
 
+(** The lattice laws, each by exhaustive case analysis over the four elements,
+    and the Hierarchy-Builder instances they feed.  The upshot is that [D4] is a
+    bounded semiring under (join, meet), so every result of the development
+    applies to it unchanged. *)
 Section D4Instances.
 
+  (** Join is associative. *)
   Lemma joinD_assoc : forall x y z, joinD (joinD x y) z = joinD x (joinD y z).
   Proof. intros [| | |] [| | |] [| | |]; reflexivity. Qed.
 
+  (** Join is commutative. *)
   Lemma joinD_comm : forall x y, joinD x y = joinD y x.
   Proof. intros [| | |] [| | |]; reflexivity. Qed.
 
+  (** [Dbot] is a left identity for join, so it is the semiring zero. *)
   Lemma joinD_0l : forall x, joinD Dbot x = x.
   Proof. intros [| | |]; reflexivity. Qed.
 
+  (** [Dbot] is a right identity for join. *)
   Lemma joinD_0r : forall x, joinD x Dbot = x.
   Proof. intros [| | |]; reflexivity. Qed.
 
+  (** The additive structure: [(D4, joinD, Dbot)] is a commutative monoid. *)
   HB.instance Definition _ := IsCommutativeMonoid.Build D4
     Dbot joinD joinD_assoc joinD_comm joinD_0l joinD_0r.
 
+  (** Meet is associative. *)
   Lemma meetD_assoc : forall x y z, meetD (meetD x y) z = meetD x (meetD y z).
   Proof. intros [| | |] [| | |] [| | |]; reflexivity. Qed.
 
+  (** [Dtop] is a left identity for meet, so it is the semiring one. *)
   Lemma meetD_1l : forall x, meetD Dtop x = x.
   Proof. intros [| | |]; reflexivity. Qed.
 
+  (** [Dtop] is a right identity for meet. *)
   Lemma meetD_1r : forall x, meetD x Dtop = x.
   Proof. intros [| | |]; reflexivity. Qed.
 
+  (** Meet distributes over join on the right. *)
   Lemma meetD_joinD_distr_r : forall x y z,
     meetD (joinD x y) z = joinD (meetD x z) (meetD y z).
   Proof. intros [| | |] [| | |] [| | |]; reflexivity. Qed.
 
+  (** Meet distributes over join on the left. *)
   Lemma meetD_joinD_distr_l : forall x y z,
     meetD x (joinD y z) = joinD (meetD x y) (meetD x z).
   Proof. intros [| | |] [| | |] [| | |]; reflexivity. Qed.
 
+  (** [Dbot] annihilates on the left under meet. *)
   Lemma meetD_0l : forall x, meetD Dbot x = Dbot.
   Proof. intros [| | |]; reflexivity. Qed.
 
+  (** [Dbot] annihilates on the right under meet. *)
   Lemma meetD_0r : forall x, meetD x Dbot = Dbot.
   Proof. intros [| | |]; reflexivity. Qed.
 
+  (** The multiplicative structure closes the semiring: meet distributes over
+      join in both arguments and [Dbot] annihilates. *)
   HB.instance Definition _ := IsSemiring.Build D4
     Dtop meetD meetD_assoc meetD_1l meetD_1r
     meetD_joinD_distr_r meetD_joinD_distr_l meetD_0l meetD_0r.
 
+  (** [Dtop] is absorbing for join, which is the boundedness axiom.  Its effect
+      is that the geometric sum defining the closure stabilises. *)
   Lemma joinD_bound : forall x, joinD Dtop x = Dtop.
   Proof. intros [| | |]; reflexivity. Qed.
 
+  (** [D4] is therefore a bounded semiring, and [mat_star], [schulze_beats] and
+      [schulze_winner] are all available on it. *)
   HB.instance Definition _ := IsBoundedSemiring.Build D4 joinD_bound.
 
 End D4Instances.
@@ -201,30 +240,38 @@ Qed.
 
 Section Reflection.
 
+  (** Boolean equality on the diamond, so that the checkers below reduce under
+      [vm_compute]. *)
   Definition Deqb (x y : D4) : bool :=
     match x, y with
     | Dbot, Dbot | Dp, Dp | Dq, Dq | Dtop, Dtop => true
     | _, _ => false
     end.
 
+  (** [Deqb] reflects equality. *)
   Lemma Deqb_eq : forall x y, Deqb x y = true <-> x = y.
   Proof.
     intros [| | |] [| | |]; cbn; split; congruence.
   Qed.
 
+  (** Boolean equality on the three alternatives. *)
   Definition node_eqb (x y : Node) : bool :=
     match x, y with
     | A, A | B, B | C, C => true
     | _, _ => false
     end.
 
+  (** [node_eqb] reflects equality. *)
   Lemma node_eqb_eq : forall x y, node_eqb x y = true <-> x = y.
   Proof.
     intros [| |] [| |]; cbn; split; congruence.
   Qed.
 
+  (** The three alternatives, as a list for the checkers to fold over. *)
   Definition nodes : list Node := [A; B; C].
 
+  (** [nodes] enumerates every alternative, which is what lets a [forallb] over
+      it stand for a universal quantifier. *)
   Lemma nodes_complete : forall n : Node, In n nodes.
   Proof. intros [| |]; cbn; auto. Qed.
 
@@ -232,6 +279,7 @@ Section Reflection.
   Definition T9 : Type :=
     ((((((((D4 * D4) * D4) * D4) * D4) * D4) * D4) * D4) * D4).
 
+  (** The matrix denoted by a table: an entry is selected by its two indices. *)
   Definition mtx (t : T9) : Node -> Node -> D4 :=
     fun x y =>
       let '((((((((aa, ab), ac), ba), bb), bc), ca), cb), cc) := t in
@@ -241,24 +289,34 @@ Section Reflection.
       | C, A => ca | C, B => cb | C, C => cc
       end.
 
+  (** The table of a matrix, its nine entries evaluated once.  Inverse to [mtx]
+      by [mtx_tableof]. *)
   Definition tableof (M : Node -> Node -> D4) : T9 :=
     ((((((((M A A, M A B), M A C), M B A), M B B), M B C),
         M C A), M C B), M C C).
 
+  (** Tabulating a matrix and reading it back returns the original entries, so
+      nothing is lost in passing to the finite representation. *)
   Lemma mtx_tableof : forall (M : Node -> Node -> D4) (x y : Node),
     mtx (tableof M) x y = M x y.
   Proof. intros M [| |] [| |]; reflexivity. Qed.
 
+  (** The four elements of the diamond, as a list. *)
   Definition enumD : list D4 := [Dbot; Dp; Dq; Dtop].
 
+  (** [enumD] enumerates the whole carrier. *)
   Lemma enumD_complete : forall d : D4, In d enumD.
   Proof. intros [| | |]; cbn; auto. Qed.
 
+  (** All 4^9 = 262144 tables, as the ninefold product of [enumD] with itself. *)
   Definition all_tabs : list T9 :=
     list_prod (list_prod (list_prod (list_prod (list_prod (list_prod
       (list_prod (list_prod enumD enumD) enumD) enumD) enumD) enumD)
       enumD) enumD) enumD.
 
+  (** Every matrix over the diamond is tabulated somewhere in [all_tabs].  This
+      is the step that turns a claim about all matrices into a claim about a
+      finite list. *)
   Lemma tableof_in : forall M : Node -> Node -> D4, In (tableof M) all_tabs.
   Proof.
     intro M. unfold tableof, all_tabs.
@@ -272,6 +330,7 @@ Section Reflection.
            mat_star Mf B A), mat_star Mf B B), mat_star Mf B C),
            mat_star Mf C A), mat_star Mf C B), mat_star Mf C C).
 
+  (** Reading an entry out of a closure table, by the same layout as [mtx]. *)
   Definition getS (s : T9) (x y : Node) : D4 :=
     let '((((((((aa, ab), ac), ba), bb), bc), ca), cb), cc) := s in
     match x, y with
@@ -280,6 +339,7 @@ Section Reflection.
     | C, A => ca | C, B => cb | C, C => cc
     end.
 
+  (** [star9] does tabulate the closure. *)
   Lemma getS_star9 : forall (t : T9) (x y : Node),
     getS (star9 t) x y = mat_star (mtx t) x y.
   Proof. intros t [| |] [| |]; reflexivity. Qed.
@@ -289,6 +349,8 @@ Section Reflection.
     andb (Deqb (getS s b a + getS s a b) (getS s a b))
          (negb (Deqb (getS s b a) (getS s a b))).
 
+  (** The boolean beat test agrees with [schulze_beats] on the matrix the table
+      denotes: the reflection lemma for a single pair. *)
   Lemma beatsb_correct : forall (t : T9) (a b : Node),
     beatsb (star9 t) a b = true <-> schulze_beats (mtx t) a b.
   Proof.
@@ -306,10 +368,15 @@ Section Reflection.
           [ exfalso; exact (H2 (proj1 (Deqb_eq _ _) E)) | reflexivity ].
   Qed.
 
+  (** [w] is a winner, read off a closure table: no alternative other than [w]
+      beats it. *)
   Definition winnerb (t : T9) (w : Node) : bool :=
     let s := star9 t in
     forallb (fun b => orb (node_eqb b w) (negb (beatsb s b w))) nodes.
 
+  (** [winnerb] is sound for [schulze_winner].  Only soundness is needed, since
+      the exhaustive check produces [true] and this lemma turns each [true] into
+      a genuine winner. *)
   Lemma winnerb_correct : forall (t : T9) (w : Node),
     winnerb t w = true -> schulze_winner (mtx t) w.
   Proof.
@@ -322,9 +389,11 @@ Section Reflection.
       cbn in Hb. discriminate.
   Qed.
 
+  (** Some alternative is a winner of the tabulated matrix. *)
   Definition has_winnerb (t : T9) : bool :=
     existsb (fun w => winnerb t w) nodes.
 
+  (** Soundness of [has_winnerb]: a positive answer yields an actual winner. *)
   Lemma has_winnerb_correct : forall t : T9,
     has_winnerb t = true -> exists w : Node, schulze_winner (mtx t) w.
   Proof.
@@ -346,6 +415,7 @@ Section Reflection.
       rewrite (Hpt x z), (IH z y). reflexivity.
   Qed.
 
+  (** The geometric sum is likewise pointwise. *)
   Lemma geom_sum_ext (M N : @Matrix Node D4)
     (Hpt : forall x y, M x y = N x y) :
     forall (n : nat) (x y : Node), geom_sum M n x y = geom_sum N n x y.
@@ -356,11 +426,14 @@ Section Reflection.
       f_equal; [apply IH | apply (pow_ext M N Hpt (S n) x y)].
   Qed.
 
+  (** Hence the closure depends only on a matrix's entries, not on how the
+      function computing them is written. *)
   Lemma mat_star_ext (M N : @Matrix Node D4)
     (Hpt : forall x y, M x y = N x y) :
     forall x y, mat_star M x y = mat_star N x y.
   Proof. intros x y. unfold mat_star. apply geom_sum_ext. exact Hpt. Qed.
 
+  (** The beat relation transports along a pointwise equality of matrices. *)
   Lemma schulze_beats_ext (M N : @Matrix Node D4)
     (Hpt : forall x y, M x y = N x y) (a b : Node) :
     schulze_beats M a b -> schulze_beats N a b.
@@ -371,6 +444,7 @@ Section Reflection.
     exact (conj Hle Hne).
   Qed.
 
+  (** So does being a winner. *)
   Lemma schulze_winner_ext (M N : @Matrix Node D4)
     (Hpt : forall x y, M x y = N x y) (w : Node) :
     schulze_winner M w -> schulze_winner N w.
@@ -425,32 +499,44 @@ Section Counts.
   (** Six off-diagonal entries; diagonal fixed at top. *)
   Definition T6 : Type := (((((D4 * D4) * D4) * D4) * D4) * D4).
 
+  (** A six-entry table embedded into a nine-entry one by filling the diagonal
+      with [Dtop], the reflexive strength. *)
   Definition emb6 (t : T6) : T9 :=
     let '(((((ab, ac), ba), bc), ca), cb) := t in
     ((((((((Dtop, ab), ac), ba), Dtop), bc), ca), cb), Dtop).
 
+  (** All 4^6 = 4096 tables with the diagonal fixed. *)
   Definition all_tabs6 : list T6 :=
     list_prod (list_prod (list_prod (list_prod (list_prod
       enumD enumD) enumD) enumD) enumD) enumD.
 
+  (** The six ordered triples of distinct alternatives, over which transitivity
+      and cyclicity are tested. *)
   Definition triples : list (Node * Node * Node) :=
     [(A,B,C); (A,C,B); (B,A,C); (B,C,A); (C,A,B); (C,B,A)].
 
+  (** The beat relation of a table is intransitive: some triple has [a] beating
+      [b] and [b] beating [c] without [a] beating [c]. *)
   Definition intransb (t : T9) : bool :=
     let s := star9 t in
     existsb (fun '(a,b,c) =>
       andb (andb (beatsb s a b) (beatsb s b c)) (negb (beatsb s a c)))
       triples.
 
+  (** The beat relation of a table contains a three-cycle. *)
   Definition cycleb (t : T9) : bool :=
     let s := star9 t in
     existsb (fun '(a,b,c) =>
       andb (andb (beatsb s a b) (beatsb s b c)) (beatsb s c a)) triples.
 
+  (** Exactly 36 of the 4096 profiles are intransitive, so intransitivity is
+      possible over the diamond, but uncommon. *)
   Lemma diamond_order3_intransitive_count :
     List.length (List.filter (fun t => intransb (emb6 t)) all_tabs6) = 36%nat.
   Proof. vm_compute. reflexivity. Qed.
 
+  (** None of them is cyclic: the computational counterpart of
+      [diamond_no_cyclic_triple]. *)
   Lemma diamond_order3_no_cycle :
     forallb (fun t => negb (cycleb (emb6 t))) all_tabs6 = true.
   Proof. vm_compute. reflexivity. Qed.
@@ -477,6 +563,10 @@ Section Level1Tight.
       | C, A => Dtop | C, B => Dtop | C, C => Dtop
       end.
 
+  (** The Smith hypotheses hold with Smith set [[C]] and threshold [Dtop]:
+      nothing outside reaches [C] at that strength, while [C] reaches everything
+      at it.  Yet [B], which lies outside the Smith set, is a winner.
+      Selectivity is what would rule this out. *)
   Theorem smith_fails_over_diamond :
     (forall x : Node, In x [C] <-> ~ In x [A; B])
     /\ (exists c : D4,
@@ -511,6 +601,9 @@ Section Level1Tight.
       | C, A => Dq   | C, B => Dp   | C, C => Dtop
       end.
 
+  (** [A] is a Condorcet winner and meets the cross-pair condition, and is still
+      not a strict winner: its closure strength against [C] ties instead of
+      dominating. *)
   Theorem condorcet_fails_over_diamond :
     condorcet_winner Mcond A
     /\ (forall Z X : Node, Z <> A -> X <> A -> Z <> X ->
@@ -538,6 +631,9 @@ Section Level1Tight.
       | C, A => Dp   | C, B => Dq   | C, C => Dtop
       end.
 
+  (** [B] is a winner and is untied against every other alternative, which is
+      the hypothesis of the resolution step, and yet [C] is a winner too.  Being
+      untied does not make a winner unique over the diamond. *)
   Theorem resolution_fails_over_diamond :
     schulze_winner Muntied B
     /\ (forall b : Node, b <> B ->
@@ -566,6 +662,8 @@ Section Level1Tight.
       | C, A => Dq   | C, B => Dp   | C, C => Dtop
       end.
 
+  (** Every hypothesis of [smith_iia_isolate] is met and its conclusion fails:
+      [B] beats [C] before [A] is isolated and no longer does after. *)
   Theorem smith_iia_fails_over_diamond :
     (forall x : Node, In x [B; C] <-> ~ In x [A])
     /\ (forall a b : Node, In a [B; C] -> In b [A] ->
@@ -607,6 +705,9 @@ Section Level1Tight.
       | C, A => Dq   | C, B => Dp   | C, C => Dtop
       end.
 
+  (** Every hypothesis of [smith_iia_isolate_strong] is met and its conclusion
+      fails in the opposite direction: [B] does not beat [C] until [A] is
+      isolated, and then it does. *)
   Theorem smith_iia_strong_fails_over_diamond :
     (forall x : Node, In x [A] <-> ~ In x [B; C])
     /\ (forall a b : Node, In a [A] -> In b [B; C] ->
@@ -647,6 +748,9 @@ End Level1Tight.
 
 Section WorkedExample.
 
+  (** The worked profile: direct links [A -> B] at 8, [B -> C] at 6 and [C -> A]
+      at 4, every other off-diagonal entry at [Left 0], the bottom of the
+      max-min carrier, and the diagonal at [Infinity]. *)
   Definition Mw : Node -> Node -> Schulze.R :=
     fun x y =>
       match x, y with
@@ -705,20 +809,28 @@ End WorkedExample.
 
 Inductive Node4 := W1 | W2 | W3 | W4.
 
+(** Decidable equality on the four alternatives, required by [IsFinType]. *)
 Definition node4_eq_dec : forall x y : Node4, {x = y} + {x <> y}.
 Proof. decide equality. Defined.
 
+(** The four alternatives, in the order the alternating square uses them. *)
 Definition elements4 : list Node4 := [W1; W2; W3; W4].
 
+(** The enumeration is duplicate-free. *)
 Lemma elements4_nodup : NoDup elements4.
 Proof. repeat constructor; cbn; intuition discriminate. Qed.
 
+(** The enumeration is complete. *)
 Lemma elements4_complete : forall x : Node4, In x elements4.
 Proof. intros [| | |]; cbn; auto. Qed.
 
+(** There are at least two alternatives, which the development assumes
+    throughout. *)
 Lemma elements4_two_or_more : (2 <= List.length elements4)%nat.
 Proof. cbn; lia. Qed.
 
+(** [Node4] is therefore a [FinType], so [mat_star] and the beat relation are
+    available on it. *)
 HB.instance Definition _ := IsFinType.Build Node4
   elements4 elements4_nodup elements4_complete
   elements4_two_or_more node4_eq_dec.

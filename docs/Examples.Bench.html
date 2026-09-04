@@ -1,0 +1,167 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="coqdoc.css" rel="stylesheet" type="text/css" />
+<title>Examples.Bench</title>
+</head>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+</div>
+
+<div id="main">
+
+<h1 class="libtitle">Examples.Bench</h1>
+
+<div class="code">
+</div>
+
+<div class="doc">
+<a id="lab174"></a><h1 class="section">Bench.v — functional versus tabulated matrix power</h1>
+
+
+<div class="paragraph"> </div>
+
+    Reproduces the timing table of the paper.  A matrix over an arbitrary
+    semiring is a FUNCTION <span class="inlinecode"><a class="idref" href="Examples.WinningVotes.html#WinningVotesSchulze.Node"><span class="id" title="variable">Node</span></a></span> <span class="inlinecode">→</span> <span class="inlinecode"><a class="idref" href="Examples.WinningVotes.html#WinningVotesSchulze.Node"><span class="id" title="variable">Node</span></a></span> <span class="inlinecode">→</span> <span class="inlinecode"><a class="idref" href="Examples.Wikimedia.html#R"><span class="id" title="inductive">R</span></a></span>.  That is what makes the
+    theory pleasant to state, but it is unusable as a program: evaluating
+    an entry of <span class="inlinecode"><a class="idref" href="Examples.Profiles.html#M"><span class="id" title="abbreviation">M</span></a>^<span class="id" title="var">k</span></span> re-expands <span class="inlinecode"><a class="idref" href="Examples.Profiles.html#M"><span class="id" title="abbreviation">M</span></a></span> along every walk of length <span class="inlinecode"><span class="id" title="var">k</span></span>, with
+    nothing shared, so one entry costs Theta(n^(k-1)) semiring operations.
+
+<div class="paragraph"> </div>
+
+    <span class="inlinecode"><span class="id" title="var">MatN.v</span></span> therefore carries a tabulated representation as well —
+    <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#to_list"><span class="id" title="definition">to_list</span></a></span>, <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#of_list"><span class="id" title="definition">of_list</span></a></span>, <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#mul_list"><span class="id" title="definition">mul_list</span></a></span>, <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#pow_list"><span class="id" title="definition">pow_list</span></a></span> — where each entry is
+    computed once, and exponentiation is by repeated squaring.  The two
+    are proved to agree (<span class="inlinecode"><a class="idref" href="Semiring.MatN.html#of_list_pow_pos_list"><span class="id" title="lemma">of_list_pow_pos_list</span></a></span>, <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#pow_fun_powN_fun_eqv"><span class="id" title="lemma">pow_fun_powN_fun_eqv</span></a></span>),
+    so the statements may quantify over functions while the extracted
+    program runs on lists.
+
+<div class="paragraph"> </div>
+
+    Below, <span class="inlinecode"><a class="idref" href="Examples.Bench.html#fun_pow"><span class="id" title="definition">fun_pow</span></a></span> is the functional power and <span class="inlinecode"><a class="idref" href="Examples.Bench.html#list_pow"><span class="id" title="definition">list_pow</span></a></span> the tabulated
+    one, over the max-min carrier of <span class="inlinecode"><span class="id" title="var">Schulze.v</span></span> with n = 9 alternatives.
+    The closure of an n-alternative election needs k = n - 1 = 8.
+
+<div class="paragraph"> </div>
+
+    Measured with Rocq 9.0.1 on an Apple M3 Pro:
+
+<div class="paragraph"> </div>
+
+        k     fun_pow (s)    list_pow (s)
+        3       0.002           0.001
+        4       0.016
+        5       0.138           0.002
+        6       1.246
+        7      11.159           0.002
+        8     102.364           0.002
+       16                       0.005
+       64                       0.021
+
+<div class="paragraph"> </div>
+
+    The functional column multiplies by nine at each step, which is
+    Theta(n^(k-1)) with n = 9.  Uncomment a line at the bottom to re-run. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">From</span> <span class="id" title="var">Stdlib</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <span class="id" title="library">List</span> <span class="id" title="library">Utf8</span> <span class="id" title="library">BinNatDef</span> <span class="id" title="library">PeanoNat</span> <span class="id" title="library">Lia</span>.<br/>
+<span class="id" title="keyword">From</span> <span class="id" title="var">HB</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <span class="id" title="library">structures</span>.<br/>
+<span class="id" title="keyword">From</span> <span class="id" title="var">Semiring</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="Semiring.MatN.html#"><span class="id" title="library">MatN</span></a> <a class="idref" href="Semiring.SemimoduleN.html#"><span class="id" title="library">SemimoduleN</span></a> <a class="idref" href="Semiring.Structures.html#"><span class="id" title="library">Structures</span></a>.<br/>
+<span class="id" title="keyword">From</span> <span class="id" title="var">Examples</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="Examples.Schulze.html#"><span class="id" title="library">Schulze</span></a>.<br/>
+<span class="id" title="keyword">Import</span> <span class="id" title="module">ListNotations</span> <a class="idref" href="Semiring.Structures.html#SemiringNotations"><span class="id" title="module">SemiringNotations</span></a>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Nine alternatives. 
+</div>
+<div class="code">
+<span class="id" title="keyword">Inductive</span> <a id="BNode" class="idref" href="#BNode"><span class="id" title="definition, inductive"><span id="BNode_rect" class="id"><span id="BNode_ind" class="id"><span id="BNode_rec" class="id"><span id="BNode_sind" class="id">BNode</span></span></span></span></span></a> := <a id="N0" class="idref" href="#N0"><span class="id" title="constructor">N0</span></a> | <a id="N1" class="idref" href="#N1"><span class="id" title="constructor">N1</span></a> | <a id="N2" class="idref" href="#N2"><span class="id" title="constructor">N2</span></a> | <a id="N3" class="idref" href="#N3"><span class="id" title="constructor">N3</span></a> | <a id="N4" class="idref" href="#N4"><span class="id" title="constructor">N4</span></a> | <a id="N5" class="idref" href="#N5"><span class="id" title="constructor">N5</span></a> | <a id="N6" class="idref" href="#N6"><span class="id" title="constructor">N6</span></a> | <a id="N7" class="idref" href="#N7"><span class="id" title="constructor">N7</span></a> | <a id="N8" class="idref" href="#N8"><span class="id" title="constructor">N8</span></a>.<br/>
+
+<br/>
+<span class="id" title="keyword">Definition</span> <a id="belements" class="idref" href="#belements"><span class="id" title="definition">belements</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Examples.Bench.html#BNode"><span class="id" title="inductive">BNode</span></a> := <span class="id" title="notation">[</span><a class="idref" href="Examples.Bench.html#N0"><span class="id" title="constructor">N0</span></a><span class="id" title="notation">;</span><a class="idref" href="Examples.Bench.html#N1"><span class="id" title="constructor">N1</span></a><span class="id" title="notation">;</span><a class="idref" href="Examples.Bench.html#N2"><span class="id" title="constructor">N2</span></a><span class="id" title="notation">;</span><a class="idref" href="Examples.Bench.html#N3"><span class="id" title="constructor">N3</span></a><span class="id" title="notation">;</span><a class="idref" href="Examples.Bench.html#N4"><span class="id" title="constructor">N4</span></a><span class="id" title="notation">;</span><a class="idref" href="Examples.Bench.html#N5"><span class="id" title="constructor">N5</span></a><span class="id" title="notation">;</span><a class="idref" href="Examples.Bench.html#N6"><span class="id" title="constructor">N6</span></a><span class="id" title="notation">;</span><a class="idref" href="Examples.Bench.html#N7"><span class="id" title="constructor">N7</span></a><span class="id" title="notation">;</span><a class="idref" href="Examples.Bench.html#N8"><span class="id" title="constructor">N8</span></a><span class="id" title="notation">]</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Lemma</span> <a id="bnodup" class="idref" href="#bnodup"><span class="id" title="lemma">bnodup</span></a> : <span class="id" title="inductive">NoDup</span> <a class="idref" href="Examples.Bench.html#belements"><span class="id" title="definition">belements</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>. <span class="id" title="tactic">unfold</span> <a class="idref" href="Examples.Bench.html#belements"><span class="id" title="definition">belements</span></a>. <span class="id" title="tactic">repeat</span> <span class="id" title="tactic">constructor</span>; <span class="id" title="var">cbn</span>; <span class="id" title="tactic">intuition</span> <span class="id" title="tactic">congruence</span>. <span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Lemma</span> <a id="bcomplete" class="idref" href="#bcomplete"><span class="id" title="lemma">bcomplete</span></a> : <span class="id" title="keyword">∀</span> <a id="x:3" class="idref" href="#x:3"><span class="id" title="binder">x</span></a> : <a class="idref" href="Examples.Bench.html#BNode"><span class="id" title="inductive">BNode</span></a>, <span class="id" title="definition">In</span> <a class="idref" href="Examples.Bench.html#x:3"><span class="id" title="variable">x</span></a> <a class="idref" href="Examples.Bench.html#belements"><span class="id" title="definition">belements</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>. <span class="id" title="tactic">unfold</span> <a class="idref" href="Examples.Bench.html#belements"><span class="id" title="definition">belements</span></a>; <span class="id" title="tactic">intros</span> []; <span class="id" title="var">cbn</span>; <span class="id" title="tactic">tauto</span>. <span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Lemma</span> <a id="btwo" class="idref" href="#btwo"><span class="id" title="lemma">btwo</span></a> : (2 <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Peano.html#cb53cf0ee22c036a03b4a9281c68b5a3"><span class="id" title="notation">≤</span></a> <span class="id" title="abbreviation">List.length</span> <a class="idref" href="Examples.Bench.html#belements"><span class="id" title="definition">belements</span></a>)%<span class="id" title="var">nat</span>.<br/>
+<span class="id" title="keyword">Proof</span>. <span class="id" title="var">cbn</span>. <span class="id" title="var">lia</span>. <span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Definition</span> <a id="beq_dec" class="idref" href="#beq_dec"><span class="id" title="definition">beq_dec</span></a> (<a id="x:4" class="idref" href="#x:4"><span class="id" title="binder">x</span></a> <a id="y:5" class="idref" href="#y:5"><span class="id" title="binder">y</span></a> : <a class="idref" href="Examples.Bench.html#BNode"><span class="id" title="inductive">BNode</span></a>) : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Specif.html#87727981cdc1579fef00b9d9c1d3b9da"><span class="id" title="notation">{</span></a><a class="idref" href="Examples.Bench.html#x:4"><span class="id" title="variable">x</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="Examples.Bench.html#y:5"><span class="id" title="variable">y</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Specif.html#87727981cdc1579fef00b9d9c1d3b9da"><span class="id" title="notation">}</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Specif.html#87727981cdc1579fef00b9d9c1d3b9da"><span class="id" title="notation">+</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Specif.html#87727981cdc1579fef00b9d9c1d3b9da"><span class="id" title="notation">{</span></a><a class="idref" href="Examples.Bench.html#x:4"><span class="id" title="variable">x</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'&lt;&gt;'_x"><span class="id" title="notation">≠</span></a> <a class="idref" href="Examples.Bench.html#y:5"><span class="id" title="variable">y</span></a><a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Specif.html#87727981cdc1579fef00b9d9c1d3b9da"><span class="id" title="notation">}</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>. <span class="id" title="var">decide</span> <span class="id" title="var">equality</span>. <span class="id" title="keyword">Defined</span>.<br/>
+
+<br/>
+<a id="HB_unnamed_factory_1" class="idref" href="#HB_unnamed_factory_1"><span class="id" title="definition"><span id="Bench_BNode__canonical__Structures_FinType" class="id">HB.instance</span></span></a> <a id="HB_unnamed_factory_1" class="idref" href="#HB_unnamed_factory_1"><span class="id" title="definition"><span id="Bench_BNode__canonical__Structures_FinType" class="id">Definition</span></span></a> <a id="HB_unnamed_factory_1" class="idref" href="#HB_unnamed_factory_1"><span class="id" title="definition"><span id="Bench_BNode__canonical__Structures_FinType" class="id">_</span></span></a> <a id="HB_unnamed_factory_1" class="idref" href="#HB_unnamed_factory_1"><span class="id" title="definition"><span id="Bench_BNode__canonical__Structures_FinType" class="id">:=</span></span></a><br/>
+&nbsp;&nbsp;<a id="HB_unnamed_factory_1" class="idref" href="#HB_unnamed_factory_1"><span class="id" title="definition"><span id="Bench_BNode__canonical__Structures_FinType" class="id">IsFinType.Build</span></span></a> <a id="HB_unnamed_factory_1" class="idref" href="#HB_unnamed_factory_1"><span class="id" title="definition"><span id="Bench_BNode__canonical__Structures_FinType" class="id">BNode</span></span></a> <a id="HB_unnamed_factory_1" class="idref" href="#HB_unnamed_factory_1"><span class="id" title="definition"><span id="Bench_BNode__canonical__Structures_FinType" class="id">belements</span></span></a> <a id="HB_unnamed_factory_1" class="idref" href="#HB_unnamed_factory_1"><span class="id" title="definition"><span id="Bench_BNode__canonical__Structures_FinType" class="id">bnodup</span></span></a> <a id="HB_unnamed_factory_1" class="idref" href="#HB_unnamed_factory_1"><span class="id" title="definition"><span id="Bench_BNode__canonical__Structures_FinType" class="id">bcomplete</span></span></a> <a id="HB_unnamed_factory_1" class="idref" href="#HB_unnamed_factory_1"><span class="id" title="definition"><span id="Bench_BNode__canonical__Structures_FinType" class="id">btwo</span></span></a> <a id="HB_unnamed_factory_1" class="idref" href="#HB_unnamed_factory_1"><span class="id" title="definition"><span id="Bench_BNode__canonical__Structures_FinType" class="id">beq_dec</span></span></a>.<br/>
+
+<br/>
+<span class="id" title="keyword">Definition</span> <a id="idx" class="idref" href="#idx"><span class="id" title="definition">idx</span></a> (<a id="n:6" class="idref" href="#n:6"><span class="id" title="binder">n</span></a> : <a class="idref" href="Examples.Bench.html#BNode"><span class="id" title="inductive">BNode</span></a>) : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="Examples.Bench.html#n:6"><span class="id" title="variable">n</span></a> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;| <a class="idref" href="Examples.Bench.html#N0"><span class="id" title="constructor">N0</span></a>=&gt;0|<a class="idref" href="Examples.Bench.html#N1"><span class="id" title="constructor">N1</span></a>=&gt;1|<a class="idref" href="Examples.Bench.html#N2"><span class="id" title="constructor">N2</span></a>=&gt;2|<a class="idref" href="Examples.Bench.html#N3"><span class="id" title="constructor">N3</span></a>=&gt;3|<a class="idref" href="Examples.Bench.html#N4"><span class="id" title="constructor">N4</span></a>=&gt;4|<a class="idref" href="Examples.Bench.html#N5"><span class="id" title="constructor">N5</span></a>=&gt;5|<a class="idref" href="Examples.Bench.html#N6"><span class="id" title="constructor">N6</span></a>=&gt;6|<a class="idref" href="Examples.Bench.html#N7"><span class="id" title="constructor">N7</span></a>=&gt;7|<a class="idref" href="Examples.Bench.html#N8"><span class="id" title="constructor">N8</span></a>=&gt;8<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+A dense matrix over the max-min carrier of <span class="inlinecode"><span class="id" title="var">Schulze.v</span></span>. 
+</div>
+<div class="code">
+<span class="id" title="keyword">Definition</span> <a id="m" class="idref" href="#m"><span class="id" title="definition">m</span></a> (<a id="i:8" class="idref" href="#i:8"><span class="id" title="binder">i</span></a> <a id="j:9" class="idref" href="#j:9"><span class="id" title="binder">j</span></a> : <a class="idref" href="Examples.Bench.html#BNode"><span class="id" title="inductive">BNode</span></a>) : <a class="idref" href="Examples.Schulze.html#R"><span class="id" title="inductive">Schulze.R</span></a> :=<br/>
+&nbsp;&nbsp;<a class="idref" href="Examples.Schulze.html#Left"><span class="id" title="constructor">Schulze.Left</span></a> (1 <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Peano.html#0dacc1786c5ba797d47dd85006231633"><span class="id" title="notation">+</span></a> <span class="id" title="definition">Nat.modulo</span> (<a class="idref" href="Examples.Bench.html#idx"><span class="id" title="definition">idx</span></a> <a class="idref" href="Examples.Bench.html#i:8"><span class="id" title="variable">i</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Peano.html#ea2ff3d561159081cea6fb2e8113cc54"><span class="id" title="notation">×</span></a> 7 <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Peano.html#0dacc1786c5ba797d47dd85006231633"><span class="id" title="notation">+</span></a> <a class="idref" href="Examples.Bench.html#idx"><span class="id" title="definition">idx</span></a> <a class="idref" href="Examples.Bench.html#j:9"><span class="id" title="variable">j</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Peano.html#ea2ff3d561159081cea6fb2e8113cc54"><span class="id" title="notation">×</span></a> 3) 11).<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+The functional power: nothing is tabulated, nothing is shared. 
+</div>
+<div class="code">
+<span class="id" title="keyword">Definition</span> <a id="fun_pow" class="idref" href="#fun_pow"><span class="id" title="definition">fun_pow</span></a> (<a id="k:10" class="idref" href="#k:10"><span class="id" title="binder">k</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>) : <a class="idref" href="Examples.Bench.html#BNode"><span class="id" title="inductive">BNode</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Examples.Bench.html#BNode"><span class="id" title="inductive">BNode</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Examples.Schulze.html#R"><span class="id" title="inductive">Schulze.R</span></a> := <a class="idref" href="Semiring.MatN.html#pow"><span class="id" title="definition">pow</span></a> <a class="idref" href="Examples.Bench.html#m"><span class="id" title="definition">m</span></a> <a class="idref" href="Examples.Bench.html#k:10"><span class="id" title="variable">k</span></a>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+The tabulated power: <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#to_list"><span class="id" title="definition">to_list</span></a></span>, then <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#pow_list"><span class="id" title="definition">pow_list</span></a></span>, then <span class="inlinecode"><a class="idref" href="Semiring.MatN.html#of_list"><span class="id" title="definition">of_list</span></a></span>. 
+</div>
+<div class="code">
+<span class="id" title="keyword">Definition</span> <a id="list_pow" class="idref" href="#list_pow"><span class="id" title="definition">list_pow</span></a> (<a id="k:11" class="idref" href="#k:11"><span class="id" title="binder">k</span></a> : <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>) : <a class="idref" href="Examples.Bench.html#BNode"><span class="id" title="inductive">BNode</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Examples.Bench.html#BNode"><span class="id" title="inductive">BNode</span></a> <a class="idref" href="http://rocq-prover.org/doc/V9.0.1/stdlib//Corelib.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Examples.Schulze.html#R"><span class="id" title="inductive">Schulze.R</span></a> := <a class="idref" href="Semiring.MatN.html#pow_fun"><span class="id" title="definition">pow_fun</span></a> <a class="idref" href="Examples.Bench.html#m"><span class="id" title="definition">m</span></a> <a class="idref" href="Examples.Bench.html#k:11"><span class="id" title="variable">k</span></a>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Re-run the table by uncommenting these, one at a time.
+    <span class="inlinecode"><a class="idref" href="Examples.Bench.html#fun_pow"><span class="id" title="definition">fun_pow</span></a></span> <span class="inlinecode">8</span> takes about a minute and a half. 
+</div>
+<div class="code">
+
+<br/>
+</div>
+</div>
+
+<div id="footer">
+<hr/><a href="indexpage.html">Index</a><hr/>This page has been generated by <a href="http://rocq-prover.org/">coqdoc</a>
+</div>
+
+</div>
+
+</body>
+</html>
